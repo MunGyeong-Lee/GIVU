@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/nav_graph_main"
+    app:startDestination="@id/fragment_home">
+
+    <fragment
+        android:id="@+id/fragment_home"
+        android:name="com.wukiki.givu.views.home.HomeFragment"
+        android:label="@string/menu_title_home"
+        tools:layout="@layout/fragment_home">
+
+        <action
+            android:id="@+id/action_home_to_search"
+            app:destination="@id/fragment_search" />
+
+    </fragment>
+
+    <fragment
+        android:id="@+id/fragment_community"
+        android:name="com.wukiki.givu.views.community.CommunityFragment"
+        android:label="@string/menu_title_community"
+        tools:layout="@layout/fragment_community">
+
+    </fragment>
+
+    <fragment
+        android:id="@+id/fragment_mall"
+        android:name="com.wukiki.givu.views.mall.MallFragment"
+        android:label="@string/menu_title_mall"
+        tools:layout="@layout/fragment_mall">
+
+    </fragment>
+
+    <fragment
+        android:id="@+id/fragment_my_page"
+        android:name="com.wukiki.givu.views.mypage.MyPageFragment"
+        android:label="@string/menu_title_my_page"
+        tools:layout="@layout/fragment_my_page">
+
+    </fragment>
+
+    <fragment
+        android:id="@+id/fragment_search"
+        android:name="com.wukiki.givu.views.search.SearchFragment"
+        android:label="@string/label_search"
+        tools:layout="@layout/fragment_search">
+
+    </fragment>
+
+</navigation>
