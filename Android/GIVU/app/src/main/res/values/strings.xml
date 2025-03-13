@@ -1,3 +1,27 @@
 <resources>
+
+    <!-- App Name -->
     <string name="app_name">GIVU</string>
+
+    <!-- Menu -->
+    <string name="menu_title_home">홈</string>
+    <string name="menu_title_community">친구</string>
+    <string name="menu_title_mall">마켓</string>
+    <string name="menu_title_my_page">내 정보</string>
+
+    <!-- Home -->
+    <string name="label_home">Home</string>
+
+    <!-- Community -->
+    <string name="label_community">Community</string>
+
+    <!-- Mall -->
+    <string name="label_mall">Mall</string>
+
+    <!-- My Page -->
+    <string name="label_my_page">My Page</string>
+
+    <!-- Search -->
+    <string name="label_search">Search</string>
+
 </resources>

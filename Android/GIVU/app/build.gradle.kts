@@ -40,6 +40,7 @@ android {
     buildFeatures {
         dataBinding = true
         buildConfig = true
+        compose = true
     }
 }
 
@@ -66,7 +67,7 @@ dependencies {
     implementation("androidx.navigation:navigation-dynamic-features-fragment:2.8.6")
     implementation("com.google.android.material:material:1.9.0")
 
-    // Jeypack Compose
+    // Jetpack Compose
     implementation("androidx.compose.ui:ui")
     implementation("androidx.compose.foundation:foundation")
     implementation("androidx.compose.foundation:foundation-layout")
