@@ -37,6 +37,9 @@ android {
     kotlinOptions {
         jvmTarget = "11"
     }
+    composeOptions {
+        kotlinCompilerExtensionVersion = "1.5.14"
+    }
     buildFeatures {
         dataBinding = true
         buildConfig = true
@@ -71,7 +74,7 @@ dependencies {
     implementation("androidx.compose.ui:ui")
     implementation("androidx.compose.foundation:foundation")
     implementation("androidx.compose.foundation:foundation-layout")
-    implementation("androidx.compose.material:material")
+    implementation("androidx.compose.material:material:1.1.1")
     implementation("androidx.compose.ui:ui-tooling-preview")
     debugImplementation("androidx.compose.ui:ui-tooling")
 
