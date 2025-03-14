@@ -28,7 +28,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import coil.compose.AsyncImage
 import com.wukiki.givu.R
 import com.wukiki.givu.ui.pretendard
 import com.wukiki.givu.ui.suit
@@ -38,6 +37,7 @@ fun FriendFundingCard() {
     Card(
         modifier = Modifier
             .width(250.dp)
+            .padding(16.dp)
             .shadow(
                 elevation = 4.dp,
                 shape = RoundedCornerShape(10.dp),
@@ -78,8 +78,6 @@ fun FriendFundingCard() {
                         modifier = Modifier.size(28.dp)
                     )
                 }
-
-
             }
 
             Spacer(Modifier.height(12.dp))
@@ -141,9 +139,8 @@ fun FriendFundingCard() {
             Spacer(Modifier.height(16.dp))
         }
     }
-    
-}
 
+}
 
 @Composable
 fun CategoryTag() {
@@ -168,5 +165,4 @@ fun CategoryTag() {
 @Composable
 private fun PreviewTest() {
     FriendFundingCard()
-
 }
