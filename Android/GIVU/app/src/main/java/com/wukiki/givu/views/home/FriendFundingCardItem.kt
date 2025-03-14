@@ -37,7 +37,7 @@ fun FriendFundingCard() {
     Card(
         modifier = Modifier
             .width(250.dp)
-            .padding(16.dp)
+            .padding(horizontal = 8.dp, vertical = 16.dp)
             .shadow(
                 elevation = 4.dp,
                 shape = RoundedCornerShape(10.dp),

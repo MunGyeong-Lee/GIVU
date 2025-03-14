@@ -38,8 +38,8 @@ import com.wukiki.givu.ui.suit
 fun PopularFundingCardItem(funding: Funding) {
     Card(
         modifier = Modifier
-            .width(360.dp)
-            .padding(16.dp)
+            .width(320.dp)
+            .padding(horizontal = 8.dp, vertical = 16.dp)
             .shadow(6.dp, RoundedCornerShape(10.dp), clip = true),
         colors = CardDefaults.cardColors(containerColor = Color.White)
     ) {
@@ -106,7 +106,9 @@ fun PopularFundingCardItem(funding: Funding) {
                     text = funding.title,
                     fontSize = 18.sp,
                     fontWeight = FontWeight.Bold,
-                    fontFamily = suit
+                    fontFamily = suit,
+                    maxLines = 2,
+                    minLines = 2
                 )
 
                 Spacer(modifier = Modifier.height(4.dp))

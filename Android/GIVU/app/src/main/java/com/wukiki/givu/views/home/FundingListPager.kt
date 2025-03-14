@@ -14,7 +14,7 @@ fun FundingListPager(fundings: List<Funding>) {
     LazyColumn(
         modifier = Modifier
             .fillMaxWidth()
-            .height(300.dp)
+            .height((100 * fundings.size).dp)
     ) {
         items(fundings, key = { it.id }) { funding ->
             FundingItem(funding) { }
