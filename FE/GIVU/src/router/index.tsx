@@ -1,39 +1,40 @@
-// 라우터 설정 파일을 생성
-
-import { createBrowserRouter } from 'react-router-dom';
-import Layout from '../components/layout/Layout';
+import { createBrowserRouter } from "react-router-dom";
+import Layout from "../components/Layout/Layout";
+import MainPage from "../pages/Main/MainPage";
+import FundingListPage from "../pages/Funding/FundingListPage";
+import FundingDetailPage from "../pages/Funding/FundingDetailPage";
+import MyPage from "../pages/MyPage/MyPage";
 
 const router = createBrowserRouter([
   {
-    path: '/',
+    path: "/",
     element: <Layout />,
     children: [
-      // {
-      //   path: '/',
-      //   element: <HomePage />
-      // },
-      // {
-      //   path: '/volunteer',
-      //   element: <VolunteerPage />
-      // },
-      // {
-      //   path: '/community',
-      //   element: <CommunityPage />
-      // },
-      // {
-      //   path: '/mypage',
-      //   element: <MyPage />
-      // },
-      // {
-      //   path: '/login',
-      //   element: <LoginPage />
-      // },
-      // {
-      //   path: '/signup',
-      //   element: <SignupPage />
-      // }
+      {
+        index: true,
+        element: <MainPage />,
+      },
+      {
+        path: "funding",
+        children: [
+          {
+            index: true,
+            element: <FundingListPage />,
+          },
+          {
+            path: ":id",
+            element: <FundingDetailPage />,
+          },
+        ],
+      },
+      {
+        path: "mypage",
+        element: <MyPage />,
+      },
+      
     ],
   },
+ 
 ]);
 
-export default router; 
+export default router;
