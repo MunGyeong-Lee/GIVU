@@ -10,14 +10,17 @@ const NavItem = ({ to, label, isActive }: NavItemProps) => {
   return (
     <Link
       to={to}
-      className={`px-3 py-2 rounded-md text-sm font-medium transition-colors
+      className={`px-3 py-2 rounded-md text-sm font-medium transition-colors relative
         ${
           isActive
-            ? 'bg-blue-50 text-blue-700'
-            : 'text-gray-600 hover:bg-gray-50 hover:text-gray-800'
+            ? 'text-blue-600'
+            : 'text-gray-600 hover:text-gray-900'
         }`}
     >
       {label}
+      {isActive && (
+        <span className="absolute bottom-0 left-0 w-full h-0.5 bg-blue-600 rounded-full"></span>
+      )}
     </Link>
   );
 };
