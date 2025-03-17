@@ -1,197 +1,89 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import styled from "styled-components";
 
 const MainPage = () => {
   return (
-    <Container>
+    <div className="max-w-7xl mx-auto px-5">
       {/* 히어로 섹션 */}
-      <HeroSection>
-        <h2>히어로 섹션</h2>
+      <div className="bg-gray-500 h-[300px] flex flex-col justify-center items-center text-white mb-10 text-center">
+        <h2 className="text-2xl mb-2">히어로 섹션</h2>
         <p>소크를 내려면 싱품이 되지는 애니메이션?</p>
-      </HeroSection>
+      </div>
 
       {/* 인기 펀딩 섹션 */}
-      <Section>
-        <SectionTitle>인기펀딩</SectionTitle>
-        <CardContainer>
-          <Card />
-          <Card />
-          <Card />
-        </CardContainer>
-      </Section>
+      <section className="mb-10">
+        <h2 className="text-center mb-5 text-2xl">인기펀딩</h2>
+        <div className="flex gap-5 justify-between">
+          <div className="bg-gray-500 h-[200px] flex-1"></div>
+          <div className="bg-gray-500 h-[200px] flex-1"></div>
+          <div className="bg-gray-500 h-[200px] flex-1"></div>
+        </div>
+      </section>
 
       {/* 카테고리 섹션 */}
-      <CategorySection>
-        <CategoryButton>생활</CategoryButton>
-        <CategoryButton>굿즈</CategoryButton>
-        <CategoryButton>홈인</CategoryButton>
-        <CategoryButton>기타</CategoryButton>
-      </CategorySection>
+      <div className="flex justify-between gap-2.5 mb-10">
+        <button className="bg-gray-500 border-none text-white py-4 flex-1 cursor-pointer">생활</button>
+        <button className="bg-gray-500 border-none text-white py-4 flex-1 cursor-pointer">굿즈</button>
+        <button className="bg-gray-500 border-none text-white py-4 flex-1 cursor-pointer">홈인</button>
+        <button className="bg-gray-500 border-none text-white py-4 flex-1 cursor-pointer">기타</button>
+      </div>
 
       {/* 서비스 이용 방법 */}
-      <Section>
-        <SectionTitle>서비스 이용 방법</SectionTitle>
-        <CardContainer>
-          <StepCard>
+      <section className="mb-10">
+        <h2 className="text-center mb-5 text-2xl">서비스 이용 방법</h2>
+        <div className="flex gap-5 justify-between">
+          <div className="bg-gray-500 h-[200px] flex-1 flex flex-col justify-center items-center text-white">
             <p>단계 1</p>
             <p>설명</p>
-          </StepCard>
-          <StepCard>
+          </div>
+          <div className="bg-gray-500 h-[200px] flex-1 flex flex-col justify-center items-center text-white">
             <p>단계 2</p>
             <p>설명</p>
-          </StepCard>
-          <StepCard>
+          </div>
+          <div className="bg-gray-500 h-[200px] flex-1 flex flex-col justify-center items-center text-white">
             <p>단계 3</p>
             <p>설명</p>
-          </StepCard>
-        </CardContainer>
-      </Section>
+          </div>
+        </div>
+      </section>
 
       {/* 성공 사례 */}
-      <Section>
-        <SectionTitle>성공 사례 (베스트 후기)</SectionTitle>
-        <SuccessCase>
+      <section className="mb-10">
+        <h2 className="text-center mb-5 text-2xl">성공 사례 (베스트 후기)</h2>
+        <div className="bg-gray-500 h-[150px] flex justify-center items-center text-white">
           <p>사례 내용</p>
-        </SuccessCase>
-      </Section>
+        </div>
+      </section>
 
       {/* GIVU의 자랑점 */}
-      <Section>
-        <SectionTitle>GIVU의 자랑점</SectionTitle>
-        <CardContainer>
-          <FeatureCard>
+      <section className="mb-10">
+        <h2 className="text-center mb-5 text-2xl">GIVU의 자랑점</h2>
+        <div className="flex gap-5 justify-between">
+          <div className="bg-gray-500 h-[200px] flex-1 flex flex-col justify-center items-center text-white">
             <p>특징 1</p>
             <p>설명</p>
-          </FeatureCard>
-          <FeatureCard>
+          </div>
+          <div className="bg-gray-500 h-[200px] flex-1 flex flex-col justify-center items-center text-white">
             <p>특징 2</p>
             <p>설명</p>
-          </FeatureCard>
-          <FeatureCard>
+          </div>
+          <div className="bg-gray-500 h-[200px] flex-1 flex flex-col justify-center items-center text-white">
             <p>특징 3</p>
             <p>설명</p>
-          </FeatureCard>
-        </CardContainer>
-      </Section>
+          </div>
+        </div>
+      </section>
 
       {/* 앱 다운로드 */}
-      <DownloadSection>
-        <SectionTitle>앱 다운로드</SectionTitle>
-        <DownloadContainer>
-          <DownloadButton>플레이스토어</DownloadButton>
-          <DownloadButton>QR코드</DownloadButton>
-        </DownloadContainer>
-      </DownloadSection>
-    </Container>
+      <section className="mb-10">
+        <h2 className="text-center mb-5 text-2xl">앱 다운로드</h2>
+        <div className="flex gap-5 justify-center">
+          <button className="bg-gray-500 border-none text-white p-[50px] w-[200px] cursor-pointer">플레이스토어</button>
+          <button className="bg-gray-500 border-none text-white p-[50px] w-[200px] cursor-pointer">QR코드</button>
+        </div>
+      </section>
+    </div>
   );
 };
-
-// 스타일 컴포넌트
-const Container = styled.div`
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 20px;
-`;
-
-const HeroSection = styled.div`
-  background-color: #999;
-  height: 300px;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  color: white;
-  margin-bottom: 40px;
-  text-align: center;
-`;
-
-const Section = styled.section`
-  margin-bottom: 40px;
-`;
-
-const SectionTitle = styled.h2`
-  text-align: center;
-  margin-bottom: 20px;
-  font-size: 1.5rem;
-`;
-
-const CardContainer = styled.div`
-  display: flex;
-  gap: 20px;
-  justify-content: space-between;
-`;
-
-const Card = styled.div`
-  background-color: #999;
-  height: 200px;
-  flex: 1;
-`;
-
-const CategorySection = styled.div`
-  display: flex;
-  justify-content: space-between;
-  gap: 10px;
-  margin-bottom: 40px;
-`;
-
-const CategoryButton = styled.button`
-  background-color: #999;
-  border: none;
-  color: white;
-  padding: 15px 0;
-  flex: 1;
-  cursor: pointer;
-`;
-
-const StepCard = styled.div`
-  background-color: #999;
-  height: 200px;
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  color: white;
-`;
-
-const SuccessCase = styled.div`
-  background-color: #999;
-  height: 150px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  color: white;
-`;
-
-const FeatureCard = styled.div`
-  background-color: #999;
-  height: 200px;
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  color: white;
-`;
-
-const DownloadSection = styled.section`
-  margin-bottom: 40px;
-`;
-
-const DownloadContainer = styled.div`
-  display: flex;
-  gap: 20px;
-  justify-content: center;
-`;
-
-const DownloadButton = styled.button`
-  background-color: #999;
-  border: none;
-  color: white;
-  padding: 50px;
-  width: 200px;
-  cursor: pointer;
-`;
 
 export default MainPage;

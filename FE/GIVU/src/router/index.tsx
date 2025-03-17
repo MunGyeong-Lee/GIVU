@@ -4,6 +4,7 @@ import MainPage from "../pages/Main/MainPage";
 import FundingListPage from "../pages/Funding/FundingListPage";
 import FundingDetailPage from "../pages/Funding/FundingDetailPage";
 import MyPage from "../pages/MyPage/MyPage";
+import MainShopping from "../pages/ShoppingMall/MainShopping";
 
 const router = createBrowserRouter([
   {
@@ -24,6 +25,10 @@ const router = createBrowserRouter([
           {
             path: ":id",
             element: <FundingDetailPage />,
+          },
+          {
+            path: "shopping",
+            element: <MainShopping />,
           },
         ],
       },

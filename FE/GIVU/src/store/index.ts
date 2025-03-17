@@ -1,10 +1,10 @@
 //기본 store 설정 파일
 
 import { configureStore } from '@reduxjs/toolkit';
-
+import { shoppingReducer } from '../store/slices/shoppingSlice';
 export const store = configureStore({
   reducer: {
-    // 여기에 리듀서들을 추가할 예정입니다
+    shopping: shoppingReducer,
   },
 });
 
