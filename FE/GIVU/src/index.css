@@ -3,7 +3,8 @@
 @tailwind utilities;
 
 :root {
-  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
+  --color-primary: #FF5B61;
+  font-family: 'Pretendard', system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;
   font-weight: 400;
   -webkit-font-smoothing: antialiased;
@@ -104,5 +105,21 @@ button:focus-visible {
   }
   button {
     background-color: #f9f9f9;
+  }
+}
+
+/* 커스텀 유틸리티 클래스 */
+@layer utilities {
+  .text-primary-color {
+    color: var(--color-primary);
+  }
+  .bg-primary-color {
+    background-color: var(--color-primary);
+  }
+  .border-primary-color {
+    border-color: var(--color-primary);
+  }
+  .hover\:text-primary-color:hover {
+    color: var(--color-primary);
   }
 }
