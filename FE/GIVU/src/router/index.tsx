@@ -6,6 +6,8 @@ import MainShopping from "../pages/ShoppingMall/MainShopping";
 import FundingListPage from "../pages/Funding/FundingListPage";
 import FundingDetailPage from "../pages/Funding/FundingDetailPage";
 import FundingReviewPage from "../pages/Funding/FundingReviewPage";
+import FundingReviewDetailPage from "../pages/Funding/FundingReviewDetailPage";
+import FundingReviewWritePage from "../pages/Funding/FundingReviewWritePage";
 
 const router = createBrowserRouter([
   {
@@ -26,6 +28,14 @@ const router = createBrowserRouter([
           {
             path: "review",
             element: <FundingReviewPage />,
+          },
+          {
+            path: "review/write",
+            element: <FundingReviewWritePage />,
+          },
+          {
+            path: "review/:id",
+            element: <FundingReviewDetailPage />,
           },
           {
             path: ":id",
