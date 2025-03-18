@@ -44,7 +44,7 @@ function Navbar() {
         <div className='flex justify-between items-center h-16'>
           {/* 로고 */}
           <div>
-            <Link to='/' className='text-xl font-bold text-blue-600'>GIVU</Link>
+            <Link to='/' className='text-xl font-bold text-primary-color'>GIVU</Link>
           </div>
 
           {/* 메뉴 아이템 */}
@@ -68,7 +68,7 @@ function Navbar() {
                 placeholder="펀딩 검색..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="border border-gray-300 rounded-full px-4 py-1 text-sm focus:outline-none focus:border-blue-500 w-64"
+                className="border border-gray-300 rounded-full px-4 py-1 text-sm focus:outline-none focus:border-primary-color w-64"
               />
               <button
                 type="submit"
@@ -102,7 +102,7 @@ function Navbar() {
               <Link
                 to='/login'
                 onClick={toggleLogin} // 테스트용
-                className='text-gray-700 hover:text-blue-600 font-medium'
+                className='text-gray-700 hover:text-primary-color font-medium'
               >
                 로그인
               </Link>
