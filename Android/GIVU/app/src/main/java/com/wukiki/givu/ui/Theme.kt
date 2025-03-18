@@ -10,6 +10,7 @@ val pretendard = FontFamily(
     Font(R.font.pretendardbold, FontWeight.Bold, FontStyle.Normal),
     Font(R.font.pretendardextrabold, FontWeight.ExtraBold, FontStyle.Normal),
     Font(R.font.pretendardblack, FontWeight.Black, FontStyle.Normal),
+    Font(R.font.pretendardsemibold, FontWeight.SemiBold, FontStyle.Normal),
 
     Font(R.font.pretendardmedium, FontWeight.Medium, FontStyle.Normal),
     Font(R.font.pretendardregular, FontWeight.Normal, FontStyle.Normal),

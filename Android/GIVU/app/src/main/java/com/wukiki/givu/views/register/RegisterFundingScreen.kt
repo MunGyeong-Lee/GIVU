@@ -30,10 +30,12 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.wukiki.givu.R
+import com.wukiki.givu.ui.pretendard
 import com.wukiki.givu.ui.suit
 import com.wukiki.givu.util.CommonBottomButton
 import com.wukiki.givu.util.CommonTopBar
@@ -105,9 +107,11 @@ fun RegisterFundingScreen() {
                         )
                     }
 
+                    // 점선 박스
                     Box(
                         modifier = Modifier
                             .fillMaxSize()
+                            .padding(1.dp)
                             .drawWithContent {
                                 drawRoundRect(
                                     color = Color(0xFFFF6F61),
@@ -122,7 +126,21 @@ fun RegisterFundingScreen() {
                                 )
                             }
                     )
+
+                    // 선택한 상품 이미지
+                    Image(
+                        painter = painterResource(R.drawable.test_img_doll),
+                        contentDescription = null,
+                        contentScale = ContentScale.FillWidth,
+                        modifier = Modifier.clip(shape = RoundedCornerShape(10.dp))
+                    )
                 }
+
+                Spacer(Modifier.height(16.dp))
+
+                SelectInfoText()
+
+
             }
 
         }
@@ -136,6 +154,25 @@ fun RegisterFundingScreen() {
     }
 }
 
+@Composable
+private fun SelectInfoText() {
+    Text(
+        text = "상품 이름 표시",
+        fontFamily = pretendard,
+        fontWeight = FontWeight.SemiBold,
+        fontSize = 22.sp,
+        maxLines = 2,
+        overflow = TextOverflow.Ellipsis
+    )
+    Spacer(Modifier.height(6.dp))
+    Text(
+        text = "15,800원",
+        fontFamily = pretendard,
+        fontWeight = FontWeight.Medium,
+        fontSize = 19.sp,
+        color = colorResource(R.color.main_secondary)
+    )
+}
 
 @Preview(showBackground = true)
 @Composable
