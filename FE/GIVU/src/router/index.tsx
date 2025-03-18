@@ -22,15 +22,16 @@ const router = createBrowserRouter([
             index: true,
             element: <FundingListPage />,
           },
-          {
-            path: ":id",
-            element: <FundingDetailPage />,
-          },
-          {
-            path: "shopping",
-            element: <MainShopping />,
-          },
+          
         ],
+      },
+      {
+        path: ":id",
+        element: <FundingDetailPage />,
+      },
+      {
+        path: "shopping",
+        element: <MainShopping />,
       },
       {
         path: "mypage",
