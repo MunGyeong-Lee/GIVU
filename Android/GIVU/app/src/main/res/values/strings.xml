@@ -16,6 +16,9 @@
     <string name="text_funding_list">펀딩 목록</string>
     <string name="text_search_keyword_need">검색어를 입력하세요</string>
 
+    <!-- Login -->
+    <string name="text_login_description">간편하게 로그인하고\n특별한 날에\n펀딩을 통해 선물을 받아보세요</string>
+
     <!-- Community -->
     <string name="label_community">Community</string>
 
