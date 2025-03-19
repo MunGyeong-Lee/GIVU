@@ -5,6 +5,11 @@
 
     <data>
 
+        <import type="android.view.View" />
+
+        <variable
+            name="vm"
+            type="com.wukiki.givu.views.MainViewModel" />
 
     </data>
 
@@ -32,6 +37,7 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:background="@android:color/transparent"
+            android:visibility="@{(vm.bnvState == true) ? View.VISIBLE : View.GONE}"
             app:elevation="0dp"
             app:itemActiveIndicatorStyle="@null"
             app:itemBackground="@android:color/transparent"
