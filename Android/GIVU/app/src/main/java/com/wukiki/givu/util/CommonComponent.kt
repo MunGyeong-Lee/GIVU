@@ -1,6 +1,8 @@
 package com.wukiki.givu.util
 
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -9,6 +11,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Button
 import androidx.compose.material.ButtonDefaults
@@ -18,6 +21,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
@@ -29,7 +33,7 @@ import com.wukiki.givu.R
 import com.wukiki.givu.ui.suit
 
 @Composable
-fun CommonTopBar() {
+fun CommonTopBar(title: String) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -46,7 +50,7 @@ fun CommonTopBar() {
         }
         Spacer(Modifier.weight(1f))
         Text(
-            text = "펀딩 생성하기",
+            text = title,
             fontFamily = suit,
             fontWeight = FontWeight.Bold,
             fontSize = 20.sp
@@ -77,7 +81,7 @@ fun CommonBottomButton(modifier: Modifier) {
             border = BorderStroke(1.dp, Color(0xFFECECEC)),
             colors = ButtonDefaults.buttonColors(colorResource(R.color.main_primary)),
             elevation = ButtonDefaults.elevation(0.dp)
-            ) {
+        ) {
             Text(
                 text = "선물 선택하기",
                 fontFamily = suit,
@@ -89,8 +93,37 @@ fun CommonBottomButton(modifier: Modifier) {
     }
 }
 
+@Composable
+fun StoreItemCategoryComponent(
+    name: String, isSelected: Boolean,
+    onClick: () -> Unit
+) {
+    Box(
+        modifier = Modifier
+            .height(24.dp)
+            .wrapContentWidth()
+            .clip(shape = RoundedCornerShape(5.dp))
+            .background(
+                color = if (isSelected) colorResource(R.color.main_secondary)
+                else Color(0xFFECECEC)
+            )
+            .clickable(onClick = onClick),
+        contentAlignment = Alignment.Center
+    ) {
+        Text(
+            text = name,
+            fontFamily = suit,
+            fontWeight = FontWeight.Normal,
+            fontSize = 12.sp,
+            color = if (isSelected) Color.White else Color(0xFF1B1B1B),
+            modifier = Modifier.padding(horizontal = 12.dp)
+        )
+
+    }
+}
+
 @Preview(showBackground = true)
 @Composable
-private fun test() {
-    CommonTopBar()
+private fun TestPreview() {
+
 }

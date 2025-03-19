@@ -29,9 +29,14 @@ import androidx.compose.ui.unit.sp
 import com.wukiki.givu.R
 import com.wukiki.givu.ui.pretendard
 import com.wukiki.givu.ui.suit
+import com.wukiki.givu.util.CommonUtils
+import com.wukiki.givu.views.register.Product
 
 @Composable
-fun GiftListItem() {
+fun GiftListItem(
+    product: Product,
+    onClick: () -> Unit
+) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -56,33 +61,36 @@ fun GiftListItem() {
 //            verticalArrangement = Arrangement.Center
         ) {
             Text(
-                text = "브랜드 이름",
+                text = "브랜드 이름: ${product.category}",
                 fontFamily = suit,
                 fontWeight = FontWeight.Bold,
                 fontSize = 14.sp
             )
             Spacer(Modifier.height(6.dp))
             Text(
-                text = "좋은 로션",
+                text = "${product.name}",
                 fontFamily = suit,
                 fontWeight = FontWeight.Medium,
                 fontSize = 14.sp
             )
             Spacer(Modifier.weight(1f))
-            Row(modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
                 Text(
-                    text = "60,000원",
+                    text = CommonUtils.makeCommaPrice(product.price),
                     fontFamily = pretendard,
                     fontWeight = FontWeight.Black,
                     fontSize = 16.sp,
                     color = colorResource(R.color.main_secondary)
                 )
                 Spacer(Modifier.weight(1f))
-                Image(painter = painterResource(R.drawable.ic_like_on), null,
-                    modifier = Modifier.size(24.dp))
-//                Image(painter = painterResource(R.drawable.ic_favorite_border), null,
-//                    modifier = Modifier.size(24.dp))
+                Image(
+                    painter = painterResource(R.drawable.ic_like_on), null,
+                    modifier = Modifier.size(24.dp)
+                )
+
                 Spacer(Modifier.width(4.dp))
                 Text(
                     text = "999+",
@@ -103,13 +111,14 @@ private fun previewItem() {
     Column(
         Modifier
             .fillMaxSize()
-            .padding(horizontal = 24.dp)) {
+            .padding(horizontal = 24.dp)
+    ) {
 
-        GiftListItem()
-        GiftListItem()
-        GiftListItem()
-        GiftListItem()
+//        GiftListItem()
+//        GiftListItem()
+//        GiftListItem()
+//        GiftListItem()
     }
-    
+
 
 }

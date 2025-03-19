@@ -50,7 +50,7 @@ fun RegisterFundingScreen() {
 
     Box(modifier = Modifier.fillMaxSize()) {
         Column(Modifier.fillMaxSize()) {
-            CommonTopBar()
+            CommonTopBar("펀딩 생성하기")
 
             Column(
                 modifier = Modifier
