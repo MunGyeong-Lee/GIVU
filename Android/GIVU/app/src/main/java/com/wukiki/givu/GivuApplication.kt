@@ -1,10 +1,8 @@
 package com.wukiki.givu
 
 import android.app.Application
-import dagger.hilt.android.HiltAndroidApp
 import timber.log.Timber
 
-@HiltAndroidApp
 class GivuApplication : Application() {
 
     init {
