@@ -3,9 +3,12 @@ package com.wukiki.givu.util
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -30,6 +33,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.wukiki.givu.R
+import com.wukiki.givu.ui.pretendard
 import com.wukiki.givu.ui.suit
 
 @Composable
@@ -67,7 +71,7 @@ fun CommonTopBar(title: String) {
 
 
 @Composable
-fun CommonBottomButton(modifier: Modifier) {
+fun CommonBottomButton(modifier: Modifier, text: String) {
     Box(
         modifier = modifier
     ) {
@@ -83,7 +87,7 @@ fun CommonBottomButton(modifier: Modifier) {
             elevation = ButtonDefaults.elevation(0.dp)
         ) {
             Text(
-                text = "선물 선택하기",
+                text = text,
                 fontFamily = suit,
                 fontWeight = FontWeight.Bold,
                 fontSize = 18.sp,
@@ -118,6 +122,110 @@ fun StoreItemCategoryComponent(
             color = if (isSelected) Color.White else Color(0xFF1B1B1B),
             modifier = Modifier.padding(horizontal = 12.dp)
         )
+
+    }
+}
+
+@Composable
+fun StoreDetailTopBar() {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(60.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+
+        IconButton(
+            modifier = Modifier.padding(start = 8.dp),
+            onClick = {
+
+            }
+        ) {
+            Icon(
+                painter = painterResource(R.drawable.ic_arrow_back),
+                contentDescription = null,
+                modifier = Modifier.size(24.dp)
+            )
+        }
+        Spacer(Modifier.weight(1f))
+        Text(
+            text = "",
+            fontFamily = suit,
+            fontWeight = FontWeight.Bold,
+            fontSize = 20.sp
+        )
+        Spacer(Modifier.weight(1f))
+        IconButton(
+            onClick = {},
+        ) {
+            Icon(painter = painterResource(R.drawable.ic_share), null)
+        }
+
+        IconButton(
+            onClick = {},
+        ) {
+            Icon(painter = painterResource(R.drawable.ic_home), null)
+        }
+
+    }
+}
+
+@Composable
+fun StoreDetailBottomButton(modifier: Modifier, text: String) {
+    Box(
+        modifier = modifier
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(8.dp),
+        ) {
+
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth(0.15f)
+                    .fillMaxHeight(),
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                IconButton(
+                    onClick = {},
+                    modifier = Modifier.size(24.dp)
+                    ) {
+                    Icon(
+                        painter = painterResource(R.drawable.ic_heart_outline), null,
+                        modifier = Modifier.fillMaxSize()
+                    )
+                }
+                Spacer(Modifier.height(4.dp))
+                Text(
+                    text = "123",
+                    fontFamily = pretendard,
+                    fontWeight = FontWeight.Medium,
+                    fontSize = 14.sp
+
+                )
+            }
+
+
+            Button(
+                onClick = { },
+                modifier = Modifier.fillMaxSize(),
+                enabled = true,
+                shape = RoundedCornerShape(5.dp),
+                border = BorderStroke(1.dp, Color(0xFFECECEC)),
+                colors = ButtonDefaults.buttonColors(colorResource(R.color.main_primary)),
+                elevation = ButtonDefaults.elevation(0.dp)
+            ) {
+                Text(
+                    text = text,
+                    fontFamily = suit,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 18.sp,
+                    color = Color.White
+                )
+            }
+        }
 
     }
 }

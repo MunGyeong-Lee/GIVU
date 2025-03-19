@@ -149,7 +149,8 @@ fun RegisterFundingScreen() {
             Modifier
                 .fillMaxWidth()
                 .height(68.dp)
-                .align(Alignment.BottomCenter)
+                .align(Alignment.BottomCenter),
+            text = "선물 선택하기"
         )
     }
 }
