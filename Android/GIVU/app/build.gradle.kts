@@ -19,6 +19,9 @@ android {
         versionName = "0.1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+        buildConfigField("String", "KAKAO_NATIVE_APP_KEY", "\"${project.properties["kakao.native.app.key"]}\"")
+        resValue("string", "KAKAO_REDIRECT_URI", "\"${project.properties["kakao.redirect.uri"]}\"")
     }
 
     buildTypes {
@@ -76,6 +79,8 @@ dependencies {
     implementation("androidx.compose.material:material:1.1.1")
     implementation("androidx.compose.material3:material3:1.3.1")
     implementation("androidx.compose.ui:ui-tooling-preview")
+    implementation("androidx.hilt:hilt-navigation-compose:1.1.0")
+    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.6.2")
     debugImplementation("androidx.compose.ui:ui-tooling")
 
     // Compose View
@@ -85,6 +90,10 @@ dependencies {
     // Accompanist Pager
     implementation("com.google.accompanist:accompanist-pager:0.32.0")
     implementation("com.google.accompanist:accompanist-pager-indicators:0.32.0")
+
+    // Kakao SDK
+    implementation("com.kakao.sdk:v2-user:2.20.6")
+
 
     // Swipe Refresh Layout
     implementation("androidx.swiperefreshlayout:swiperefreshlayout:1.1.0")
