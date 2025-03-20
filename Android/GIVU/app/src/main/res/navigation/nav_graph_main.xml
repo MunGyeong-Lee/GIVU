@@ -19,6 +19,14 @@
             android:id="@+id/action_home_to_login"
             app:destination="@id/fragment_login" />
 
+        <action
+            android:id="@+id/action_home_to_detail_funding"
+            app:destination="@id/fragment_detail_funding" />
+
+        <action
+            android:id="@+id/action_home_to_register_funding"
+            app:destination="@id/fragment_register_funding" />
+
     </fragment>
 
     <fragment
@@ -58,6 +66,22 @@
         android:name="com.wukiki.givu.views.auth.LoginFragment"
         android:label="Login"
         tools:layout="@layout/fragment_login">
+
+    </fragment>
+
+    <fragment
+        android:id="@+id/fragment_detail_funding"
+        android:name="com.wukiki.givu.views.detail.DetailFundingFragment"
+        android:label="Detail Funding"
+        tools:layout="@layout/fragment_detail_funding">
+
+    </fragment>
+
+    <fragment
+        android:id="@+id/fragment_register_funding"
+        android:name="com.wukiki.givu.views.register.RegisterFundingFragment"
+        android:label="Register Funding"
+        tools:layout="@layout/fragment_register_funding">
 
     </fragment>
 
