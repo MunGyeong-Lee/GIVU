@@ -6,30 +6,27 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavController
 import com.wukiki.domain.model.Funding
+import com.wukiki.domain.model.Letter
 
 @Composable
-fun DetailFundingContent(funding: Funding, navController: NavController) {
+fun DetailFundingContent(funding: Funding, letters: List<Letter>, navController: NavController) {
     LazyColumn(
         modifier = Modifier.fillMaxWidth()
     ) {
-        // 펀딩 대표 이미지
         item {
             FundingImageSliderPager(funding.images)
         }
 
-        // 펀딩 정보
         item {
             FundingInfoItem(funding)
         }
 
-        // 메시지 박스
         item {
             FundingDescriptionItem(funding.description)
         }
 
-        // 축하 편지 목록
         item {
-            LetterListPager(emptyList())
+            LetterListPager(letters)
         }
     }
 }

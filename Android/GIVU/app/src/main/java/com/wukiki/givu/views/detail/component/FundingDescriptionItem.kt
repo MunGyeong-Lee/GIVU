@@ -31,7 +31,9 @@ fun FundingDescriptionItem(message: String) {
         Column(
             modifier = Modifier.padding(12.dp)
         ) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically
+            ) {
                 Icon(
                     painterResource(id = R.drawable.ic_funding_description),
                     contentDescription = "메시지"
