@@ -37,13 +37,9 @@ android {
     kotlinOptions {
         jvmTarget = "11"
     }
-    composeOptions {
-        kotlinCompilerExtensionVersion = "1.5.14"
-    }
     buildFeatures {
         dataBinding = true
         buildConfig = true
-        compose = true
     }
 }
 
@@ -54,6 +50,7 @@ dependencies {
 
     implementation("androidx.appcompat:appcompat:1.6.1")
     implementation("androidx.core:core-ktx:1.12.0")
+    implementation("com.google.android.material:material:1.10.0")
     implementation("androidx.work:work-runtime-ktx:2.9.0")
 
     // UI
@@ -69,22 +66,17 @@ dependencies {
     implementation("androidx.navigation:navigation-dynamic-features-fragment:2.8.6")
     implementation("com.google.android.material:material:1.9.0")
 
-    // Jetpack Compose
+    // Jeypack Compose
     implementation("androidx.compose.ui:ui")
     implementation("androidx.compose.foundation:foundation")
     implementation("androidx.compose.foundation:foundation-layout")
-    implementation("androidx.compose.material:material:1.1.1")
-    implementation("androidx.compose.material3:material3:1.3.1")
+    implementation("androidx.compose.material:material")
     implementation("androidx.compose.ui:ui-tooling-preview")
     debugImplementation("androidx.compose.ui:ui-tooling")
 
     // Compose View
     implementation("androidx.activity:activity-compose")
     implementation("androidx.compose.ui:ui-viewbinding")
-
-    // Accompanist Pager
-    implementation("com.google.accompanist:accompanist-pager:0.32.0")
-    implementation("com.google.accompanist:accompanist-pager-indicators:0.32.0")
 
     // Swipe Refresh Layout
     implementation("androidx.swiperefreshlayout:swiperefreshlayout:1.1.0")
@@ -115,7 +107,6 @@ dependencies {
 
     // Coil
     implementation("io.coil-kt:coil:2.0.0-rc03")
-    implementation ("io.coil-kt:coil-compose:2.4.0")
 
     // Glide
     implementation("com.github.bumptech.glide:glide:4.12.0")
