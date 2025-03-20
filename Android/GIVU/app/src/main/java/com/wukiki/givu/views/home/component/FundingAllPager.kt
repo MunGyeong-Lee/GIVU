@@ -1,4 +1,4 @@
-package com.wukiki.givu.views.home
+package com.wukiki.givu.views.home.component
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Column
@@ -32,13 +32,13 @@ import kotlinx.coroutines.launch
 @Composable
 fun FundingAllPager(fundings: List<Funding>) {
     val categories = listOf(
-        Pair("ALL", R.drawable.ic_category_all),
-        Pair("생일", R.drawable.ic_category_birth),
-        Pair("집들이", R.drawable.ic_category_house),
-        Pair("결혼", R.drawable.ic_category_marriage),
-        Pair("졸업", R.drawable.ic_category_graduate),
-        Pair("취업", R.drawable.ic_category_job),
-        Pair("출산", R.drawable.ic_category_child)
+        Pair("ALL", R.drawable.ic_classification_all),
+        Pair("생일", R.drawable.ic_classification_birth),
+        Pair("집들이", R.drawable.ic_classification_house),
+        Pair("결혼", R.drawable.ic_classification_marriage),
+        Pair("졸업", R.drawable.ic_classification_graduate),
+        Pair("취업", R.drawable.ic_classification_job),
+        Pair("출산", R.drawable.ic_classification_child)
     )
     val pagerState = rememberPagerState(
         initialPage = 0,

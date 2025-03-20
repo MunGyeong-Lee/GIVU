@@ -1,4 +1,4 @@
-package com.wukiki.givu.views.home
+package com.wukiki.givu.views.home.component
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -52,7 +52,7 @@ fun FundingItem(
         ) {
             // 이미지 (왼쪽)
             SubcomposeAsyncImage(
-                model = funding.image,
+                model = funding.images[0],
                 contentDescription = "Funding Image",
                 contentScale = ContentScale.Crop,
                 loading = { CircularProgressIndicator() },
@@ -156,9 +156,7 @@ fun PreviewFundingItem() {
             participantsNumber = "100",
             fundedAmount = "58,000",
             status = "liked",
-            image = "https://images.unsplash.com/photo-1522383225653-ed111181a951",
-            image2 = "",
-            image3 = "",
+            images = listOf("https://images.unsplash.com/photo-1522383225653-ed111181a951"),
             createdAt = "2024-03-01",
             updatedAt = "2024-03-10"
         ),

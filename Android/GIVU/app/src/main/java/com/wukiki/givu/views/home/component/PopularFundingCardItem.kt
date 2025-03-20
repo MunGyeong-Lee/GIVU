@@ -1,6 +1,7 @@
-package com.wukiki.givu.views.home
+package com.wukiki.givu.views.home.component
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -26,21 +27,22 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
 import coil.compose.SubcomposeAsyncImage
 import com.wukiki.domain.model.Funding
 import com.wukiki.givu.R
 import com.wukiki.givu.ui.suit
 
 @Composable
-fun PopularFundingCardItem(funding: Funding) {
+fun PopularFundingCardItem(funding: Funding, navController: NavController) {
     Card(
         modifier = Modifier
             .width(320.dp)
             .padding(horizontal = 8.dp, vertical = 16.dp)
-            .shadow(6.dp, RoundedCornerShape(10.dp), clip = true),
+            .shadow(6.dp, RoundedCornerShape(10.dp), clip = true)
+            .clickable { navController.navigate(R.id.action_home_to_detail_funding) },
         colors = CardDefaults.cardColors(containerColor = Color.White)
     ) {
         Column {
@@ -50,7 +52,7 @@ fun PopularFundingCardItem(funding: Funding) {
                     .height(180.dp)
             ) {
                 SubcomposeAsyncImage(
-                    model = funding.image,
+                    model = funding.images[0],
                     contentDescription = "Funding Image",
                     contentScale = ContentScale.Crop,
                     loading = { CircularProgressIndicator() },
@@ -78,7 +80,7 @@ fun PopularFundingCardItem(funding: Funding) {
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 SubcomposeAsyncImage(
-                    model = funding.image,
+                    model = funding.images[0],
                     contentDescription = "Profile Image",
                     contentScale = ContentScale.Crop,
                     modifier = Modifier
@@ -139,30 +141,4 @@ fun PopularFundingCardItem(funding: Funding) {
             Spacer(modifier = Modifier.height(8.dp))
         }
     }
-}
-
-@Preview(showBackground = false)
-@Composable
-fun PreviewPopularFundingCardItem() {
-    PopularFundingCardItem(
-        Funding(
-            id = "1",
-            userId = "user123",
-            productId = "product456",
-            title = "호날두 축구화 구매",
-            body = "펀딩 내용 설명",
-            description = "설명",
-            category = "sports",
-            categoryName = "스포츠",
-            scope = "public",
-            participantsNumber = "100",
-            fundedAmount = "58,000",
-            status = "liked",
-            image = "https://images.unsplash.com/photo-1522383225653-ed111181a951",
-            image2 = "",
-            image3 = "",
-            createdAt = "2024-03-01",
-            updatedAt = "2024-03-10"
-        )
-    )
 }
