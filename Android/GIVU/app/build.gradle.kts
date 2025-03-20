@@ -94,7 +94,6 @@ dependencies {
     // Kakao SDK
     implementation("com.kakao.sdk:v2-user:2.20.6")
 
-
     // Swipe Refresh Layout
     implementation("androidx.swiperefreshlayout:swiperefreshlayout:1.1.0")
 
