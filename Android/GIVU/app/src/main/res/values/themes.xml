@@ -3,8 +3,9 @@
     <!-- Base application theme. -->
     <style name="Base.Theme.GIVU" parent="Theme.MaterialComponents.DayNight.NoActionBar">
 
-        <item name="android:statusBarColor">@color/main_primary</item>
+        <item name="android:statusBarColor">@color/neutral_white</item>
         <item name="android:fontFamily">@font/pretendardbold</item>
+        <item name="android:windowLightStatusBar">true</item>
 
     </style>
 

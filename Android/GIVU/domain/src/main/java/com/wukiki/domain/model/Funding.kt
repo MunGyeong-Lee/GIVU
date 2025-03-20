@@ -13,9 +13,7 @@ data class Funding(
     val participantsNumber: String,
     val fundedAmount: String,
     val status: String,
-    val image: String,
-    val image2: String,
-    val image3: String,
+    val images: List<String>,
     val createdAt: String,
     val updatedAt: String
 )

@@ -1,4 +1,4 @@
-package com.wukiki.givu.views.home
+package com.wukiki.givu.views.home.component
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background

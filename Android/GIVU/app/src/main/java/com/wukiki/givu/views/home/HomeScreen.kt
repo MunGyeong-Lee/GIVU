@@ -18,6 +18,11 @@ import androidx.navigation.NavController
 import com.wukiki.domain.model.Funding
 import com.wukiki.givu.R
 import com.wukiki.givu.ui.suit
+import com.wukiki.givu.views.home.component.FriendFundingListPager
+import com.wukiki.givu.views.home.component.FundingAllPager
+import com.wukiki.givu.views.home.component.HomeAppBarPager
+import com.wukiki.givu.views.home.component.PopularFundingListPager
+import com.wukiki.givu.views.home.component.SearchBarItem
 import com.wukiki.givu.views.home.viewmodel.HomeViewModel
 
 @Composable
@@ -38,9 +43,7 @@ fun HomeScreen(homeViewModel: HomeViewModel = hiltViewModel(), navController: Na
             participantsNumber = "100",
             fundedAmount = "10,000",
             status = "active",
-            image = "https://images.unsplash.com/photo-1522383225653-ed111181a951",
-            image2 = "",
-            image3 = "",
+            images = listOf("https://images.unsplash.com/photo-1522383225653-ed111181a951"),
             createdAt = "2024-03-01",
             updatedAt = "2024-03-10"
         ),
@@ -57,9 +60,7 @@ fun HomeScreen(homeViewModel: HomeViewModel = hiltViewModel(), navController: Na
             participantsNumber = "50",
             fundedAmount = "120,000",
             status = "active",
-            image = "https://images.unsplash.com/photo-1604023009903-95644dfc1c2c",
-            image2 = "",
-            image3 = "",
+            images = listOf("https://images.unsplash.com/photo-1604023009903-95644dfc1c2c"),
             createdAt = "2024-03-02",
             updatedAt = "2024-03-12"
         ),
@@ -76,9 +77,7 @@ fun HomeScreen(homeViewModel: HomeViewModel = hiltViewModel(), navController: Na
             participantsNumber = "80",
             fundedAmount = "250,000",
             status = "active",
-            image = "https://images.unsplash.com/photo-1517705008128-361805f42e86",
-            image2 = "",
-            image3 = "",
+            images = listOf("https://images.unsplash.com/photo-1517705008128-361805f42e86"),
             createdAt = "2024-03-03",
             updatedAt = "2024-03-13"
         ),
@@ -95,9 +94,7 @@ fun HomeScreen(homeViewModel: HomeViewModel = hiltViewModel(), navController: Na
             participantsNumber = "30",
             fundedAmount = "500,000",
             status = "active",
-            image = "https://images.unsplash.com/photo-1529042410759-befb1204b468",
-            image2 = "",
-            image3 = "",
+            images = listOf("https://images.unsplash.com/photo-1529042410759-befb1204b468"),
             createdAt = "2024-03-04",
             updatedAt = "2024-03-14"
         ),
@@ -114,9 +111,7 @@ fun HomeScreen(homeViewModel: HomeViewModel = hiltViewModel(), navController: Na
             participantsNumber = "90",
             fundedAmount = "800,000",
             status = "active",
-            image = "https://images.unsplash.com/photo-1502865787650-3f8318917153",
-            image2 = "",
-            image3 = "",
+            images = listOf("https://images.unsplash.com/photo-1502865787650-3f8318917153"),
             createdAt = "2024-03-05",
             updatedAt = "2024-03-15"
         ),
@@ -133,9 +128,7 @@ fun HomeScreen(homeViewModel: HomeViewModel = hiltViewModel(), navController: Na
             participantsNumber = "70",
             fundedAmount = "320,000",
             status = "active",
-            image = "https://images.unsplash.com/photo-1507679799987-c73779587ccf",
-            image2 = "",
-            image3 = "",
+            images = listOf("https://images.unsplash.com/photo-1507679799987-c73779587ccf"),
             createdAt = "2024-03-06",
             updatedAt = "2024-03-16"
         ),
@@ -152,9 +145,7 @@ fun HomeScreen(homeViewModel: HomeViewModel = hiltViewModel(), navController: Na
             participantsNumber = "120",
             fundedAmount = "950,000",
             status = "active",
-            image = "https://images.unsplash.com/photo-1511974035430-5de47d3b95da",
-            image2 = "",
-            image3 = "",
+            images = listOf("https://images.unsplash.com/photo-1511974035430-5de47d3b95da"),
             createdAt = "2024-03-07",
             updatedAt = "2024-03-17"
         ),
@@ -171,9 +162,7 @@ fun HomeScreen(homeViewModel: HomeViewModel = hiltViewModel(), navController: Na
             participantsNumber = "40",
             fundedAmount = "180,000",
             status = "active",
-            image = "https://images.unsplash.com/photo-1517423440428-a5a00ad493e8",
-            image2 = "",
-            image3 = "",
+            images = listOf("https://images.unsplash.com/photo-1517423440428-a5a00ad493e8"),
             createdAt = "2024-03-08",
             updatedAt = "2024-03-18"
         ),
@@ -190,9 +179,7 @@ fun HomeScreen(homeViewModel: HomeViewModel = hiltViewModel(), navController: Na
             participantsNumber = "60",
             fundedAmount = "420,000",
             status = "active",
-            image = "https://images.unsplash.com/photo-1523540490786-7cc9c1fced68",
-            image2 = "",
-            image3 = "",
+            images = listOf("https://images.unsplash.com/photo-1523540490786-7cc9c1fced68"),
             createdAt = "2024-03-09",
             updatedAt = "2024-03-19"
         ),
@@ -209,9 +196,7 @@ fun HomeScreen(homeViewModel: HomeViewModel = hiltViewModel(), navController: Na
             participantsNumber = "100",
             fundedAmount = "600,000",
             status = "active",
-            image = "https://images.unsplash.com/photo-1497935586351-b67a49e012bf",
-            image2 = "",
-            image3 = "",
+            images = listOf("https://images.unsplash.com/photo-1497935586351-b67a49e012bf"),
             createdAt = "2024-03-10",
             updatedAt = "2024-03-20"
         )
@@ -233,7 +218,7 @@ fun HomeScreen(homeViewModel: HomeViewModel = hiltViewModel(), navController: Na
                 fontWeight = FontWeight.Bold,
                 fontFamily = suit
             )
-            PopularFundingListPager(sampleFundings)
+            PopularFundingListPager(sampleFundings, navController)
         }
         if (user != null) {
             item {
