@@ -51,7 +51,7 @@ const PRODUCTS = [
     price: 359000, 
     category: "가전/디지털", 
     imageUrl: "https://via.placeholder.com/200x200?text=에어팟+프로", 
-    discount: 10 
+    discount: 0 
   },
   { 
     id: 6, 
@@ -59,7 +59,7 @@ const PRODUCTS = [
     price: 769000, 
     category: "가전/디지털", 
     imageUrl: "https://via.placeholder.com/200x200?text=에어팟+맥스", 
-    discount: 5 
+    discount: 0 
   },
   { 
     id: 7, 
@@ -67,7 +67,7 @@ const PRODUCTS = [
     price: 499000, 
     category: "뷰티/코스메틱", 
     imageUrl: "https://via.placeholder.com/200x200?text=다이슨+드라이어", 
-    discount: 15 
+    discount: 0 
   },
   { 
     id: 8, 
@@ -88,7 +88,7 @@ const EXTENDED_PRODUCTS = [
     price: 219000, 
     category: "가전/디지털", 
     imageUrl: "https://via.placeholder.com/200x200?text=갤럭시+버즈", 
-    discount: 20 
+    discount: 0 
   },
   { 
     id: 10, 
@@ -96,7 +96,7 @@ const EXTENDED_PRODUCTS = [
     price: 429000, 
     category: "가전/디지털", 
     imageUrl: "https://via.placeholder.com/200x200?text=소니+헤드폰", 
-    discount: 10 
+    discount: 0 
   },
   { 
     id: 11, 
@@ -104,7 +104,7 @@ const EXTENDED_PRODUCTS = [
     price: 2490000, 
     category: "가전/디지털", 
     imageUrl: "https://via.placeholder.com/200x200?text=맥북+프로", 
-    discount: 5 
+    discount: 0 
   },
   { 
     id: 12, 
@@ -112,7 +112,7 @@ const EXTENDED_PRODUCTS = [
     price: 129000, 
     category: "가전/디지털", 
     imageUrl: "https://via.placeholder.com/200x200?text=공기청정기", 
-    discount: 15 
+    discount: 0 
   },
   { 
     id: 13, 
@@ -120,7 +120,7 @@ const EXTENDED_PRODUCTS = [
     price: 1790000, 
     category: "가전/디지털", 
     imageUrl: "https://via.placeholder.com/200x200?text=LG+그램", 
-    discount: 7 
+    discount: 0 
   },
   { 
     id: 14, 
@@ -128,7 +128,7 @@ const EXTENDED_PRODUCTS = [
     price: 1990000, 
     category: "가전/디지털", 
     imageUrl: "https://via.placeholder.com/200x200?text=갤럭시+폴드", 
-    discount: 12 
+    discount: 0 
   },
   { 
     id: 15, 
@@ -136,7 +136,7 @@ const EXTENDED_PRODUCTS = [
     price: 1290000, 
     category: "가전/디지털", 
     imageUrl: "https://via.placeholder.com/200x200?text=아이패드+프로", 
-    discount: 8 
+    discount: 0 
   }
 ];
 
@@ -148,7 +148,7 @@ const MAIN_BANNER_PRODUCTS = [
     description: "고품질 사운드와 액티브 노이즈 캔슬링을 갖춘 프리미엄 헤드폰",
     price: 769000,
     imageUrl: "https://via.placeholder.com/800x500?text=에어팟+맥스",
-    discount: 5,
+    discount: 0,
     bgColor: "bg-gradient-to-r from-black to-gray-800",
     icon: "🎧"
   },
@@ -158,7 +158,7 @@ const MAIN_BANNER_PRODUCTS = [
     description: "열 손상 없이 빠르게 드라이 가능한 혁신적인 헤어 드라이어",
     price: 499000,
     imageUrl: "https://via.placeholder.com/800x500?text=다이슨+드라이어",
-    discount: 15,
+    discount: 0,
     bgColor: "bg-gradient-to-r from-purple-900 to-pink-700",
     icon: "💨"
   },
@@ -168,7 +168,7 @@ const MAIN_BANNER_PRODUCTS = [
     description: "압도적인 성능과 배터리 수명을 갖춘 최신형 노트북",
     price: 2490000,
     imageUrl: "https://via.placeholder.com/800x500?text=맥북+프로",
-    discount: 5,
+    discount: 0,
     bgColor: "bg-gradient-to-r from-blue-900 to-indigo-800",
     icon: "💻"
   }
@@ -410,8 +410,9 @@ const MainShopping = () => {
             style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
           >
             {BEST_PRODUCTS.map(product => (
-              <div 
-                key={product.id} 
+              <Link 
+                key={product.id}
+                to={`/shopping/product/${product.id}`} 
                 className="border border-gray-200 rounded-lg overflow-hidden flex-shrink-0 transition-transform hover:scale-[1.02] hover:shadow-md"
                 style={{ width: '250px' }}
               >
@@ -440,7 +441,7 @@ const MainShopping = () => {
                     )}
                   </div>
                 </div>
-              </div>
+              </Link>
             ))}
           </div>
         </div>
@@ -498,8 +499,9 @@ const MainShopping = () => {
             style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
           >
             {TRENDING_PRODUCTS.map((product, index) => (
-              <div 
+              <Link 
                 key={product.id} 
+                to={`/shopping/product/${product.id}`}
                 className="border border-gray-200 rounded-lg overflow-hidden flex-shrink-0 transition-transform hover:scale-[1.02] hover:shadow-md bg-white relative"
                 style={{ width: '300px' }}
               >
@@ -538,7 +540,7 @@ const MainShopping = () => {
                     <span>인기 급상승 중</span>
                   </div>
                 </div>
-              </div>
+              </Link>
             ))}
           </div>
         </div>
@@ -576,8 +578,9 @@ const MainShopping = () => {
             style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
           >
             {filteredProducts.map(product => (
-              <div 
+              <Link 
                 key={product.id} 
+                to={`/shopping/product/${product.id}`}
                 className="border border-gray-200 rounded-lg overflow-hidden flex-shrink-0 transition-transform hover:scale-[1.02] hover:shadow-md"
                 style={{ width: '250px' }}
               >
@@ -606,7 +609,7 @@ const MainShopping = () => {
                     </span>
                   </div>
                 </div>
-              </div>
+              </Link>
             ))}
           </div>
         </div>
@@ -618,7 +621,11 @@ const MainShopping = () => {
           <h3 className="text-xl font-bold mb-6">모든 상품</h3>
           <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-8">
             {filteredProducts.slice(0, 8).map(product => (
-              <div key={product.id} className="border border-gray-200 rounded-lg overflow-hidden bg-white">
+              <Link 
+                key={product.id} 
+                to={`/shopping/product/${product.id}`}
+                className="border border-gray-200 rounded-lg overflow-hidden bg-white"
+              >
                 <div className="relative h-48 md:h-64">
                   <img 
                     src={product.imageUrl} 
@@ -644,7 +651,7 @@ const MainShopping = () => {
                     </span>
                   </div>
                 </div>
-              </div>
+              </Link>
             ))}
           </div>
         </div>
