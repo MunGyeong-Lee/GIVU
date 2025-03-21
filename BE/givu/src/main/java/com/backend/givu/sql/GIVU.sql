@@ -125,14 +125,13 @@ CREATE TABLE reviews (
                          CONSTRAINT FK_fundings_TO_reviews FOREIGN KEY (funding_id) REFERENCES fundings (funding_id) ON DELETE CASCADE
 );
 
--- bank_transaction 테이블
+-- bank_transaction 테이블 (수정된 버전)
 CREATE TABLE bank_transaction (
-                                  transaction_key VARCHAR(255) NOT NULL,
+                                  transaction_id SERIAL PRIMARY KEY, -- 자동 증가 + PK
                                   user_id BIGINT NOT NULL,
                                   transaction_type bank_transaction_type NULL,
                                   amount INT NULL,
                                   bank_name VARCHAR(20) NULL,
                                   date TIMESTAMP DEFAULT now(),
-                                  PRIMARY KEY (transaction_key, user_id),
                                   CONSTRAINT FK_users_TO_bank_transaction FOREIGN KEY (user_id) REFERENCES users (user_id) ON DELETE CASCADE
 );

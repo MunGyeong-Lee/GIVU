@@ -2,13 +2,14 @@ package com.backend.givu.model.dto;
 
 import com.backend.givu.model.Enum.UsersAgeRange;
 import com.backend.givu.model.Enum.UsersGender;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
 import java.time.LocalDateTime;
 
 @Setter
 @Getter
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor
 public class UsersDTO {
     private long userId;
     private long kakaoId;

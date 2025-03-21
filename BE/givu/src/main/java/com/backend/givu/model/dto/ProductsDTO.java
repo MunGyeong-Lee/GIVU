@@ -1,16 +1,13 @@
 package com.backend.givu.model.dto;
 
 import com.backend.givu.model.Enum.ProductsCateogry;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import java.time.LocalDateTime;
 
 @Getter
 @Setter
-@NoArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 public class ProductsDTO {
     private int productId;

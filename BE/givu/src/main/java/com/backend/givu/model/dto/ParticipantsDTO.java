@@ -1,17 +1,14 @@
 package com.backend.givu.model.dto;
 
 import com.backend.givu.model.Enum.ParticipantsRefundStatus;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import java.time.LocalDateTime;
 
 @Getter
 @Setter
 @AllArgsConstructor
-@NoArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class ParticipantsDTO {
     private long userId;
     private int fundingId;
