@@ -2,16 +2,13 @@ package com.backend.givu.model.dto;
 
 import com.backend.givu.model.Enum.PaymentsStatus;
 import com.backend.givu.model.Enum.PaymentsTransationType;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import java.time.LocalDateTime;
 
 @Setter
 @Getter
-@NoArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 public class PaymentsDTO {
     private int transationId;
