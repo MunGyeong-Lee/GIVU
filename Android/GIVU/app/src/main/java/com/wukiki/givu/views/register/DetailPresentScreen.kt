@@ -78,15 +78,15 @@ fun DetailPresentScreen() {
 
         }
 
-        StoreDetailBottomButton(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(68.dp)
-                .align(
-                    Alignment.BottomCenter
-                ),
-            text = "이 상품 선택하기"
-        )
+//        StoreDetailBottomButton(
+//            modifier = Modifier
+//                .fillMaxWidth()
+//                .height(68.dp)
+//                .align(
+//                    Alignment.BottomCenter
+//                ),
+//            text = "이 상품 선택하기"
+//        )
     }
 
 }

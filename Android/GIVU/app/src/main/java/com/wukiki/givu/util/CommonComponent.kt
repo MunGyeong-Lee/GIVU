@@ -1,7 +1,6 @@
 package com.wukiki.givu.util
 
 import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -37,9 +36,9 @@ import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
 import com.wukiki.givu.R
 import com.wukiki.givu.ui.pretendard
 import com.wukiki.givu.ui.suit
@@ -179,7 +178,7 @@ fun StoreDetailTopBar() {
 }
 
 @Composable
-fun StoreDetailBottomButton(modifier: Modifier, text: String) {
+fun StoreDetailBottomButton(modifier: Modifier, text: String, navController: NavController, actionId: Int) {
     Box(
         modifier = modifier
     ) {
@@ -217,7 +216,7 @@ fun StoreDetailBottomButton(modifier: Modifier, text: String) {
 
 
             Button(
-                onClick = { },
+                onClick = { navController.navigate(actionId) },
                 modifier = Modifier.fillMaxSize(),
                 enabled = true,
                 shape = RoundedCornerShape(5.dp),
