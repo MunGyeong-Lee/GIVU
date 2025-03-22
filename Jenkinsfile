@@ -109,11 +109,7 @@ pipeline {
             }
         }
 
-        post {
-	    success {
-	        archiveArtifacts artifacts: 'apk-output/**/*.apk', fingerprint: true
-			    }
-				}
+
 
     }
 }
