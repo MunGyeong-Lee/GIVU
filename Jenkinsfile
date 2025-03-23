@@ -23,7 +23,7 @@ pipeline {
 		// 스프링 부트 서버 코드를 도커 이미지로 빌드(repo에 있는 스프링부트 dockerfile 가지고!)
         stage('Build Spring Boot') {
             steps {
-                sh "docker build -t ${SPRING_IMAGE} -f S12P21D107/BE/givu/Dockerfile S12P21D107/BE/givu"
+                sh "docker build -t ${SPRING_IMAGE} -f BE/givu/Dockerfile BE/givu"
             }
         }
 
