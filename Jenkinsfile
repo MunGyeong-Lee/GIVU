@@ -19,6 +19,12 @@ pipeline {
 
     stages {
 
+        stage('Checkout') {
+            steps {
+                checkout scm // ✅ 반드시 필요!
+            }
+        }
+
 		// 스프링 부트 서버 코드를 도커 이미지로 빌드(repo에 있는 스프링부트 dockerfile 가지고!)
         stage('Build Spring Boot') {
             steps {
