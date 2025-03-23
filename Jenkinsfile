@@ -1,6 +1,10 @@
 pipeline {
     agent any
 
+    options {
+        skipDefaultCheckout(true) // ✅ Jenkins 기본 checkout 비활성화
+    }
+
 
 		
 		// 환경 변수 정의
