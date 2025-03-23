@@ -30,7 +30,7 @@ pipeline {
 		// 리엑트 코드를 도커 이미지로 빌드(repo에 있는 리엑트 dockerfile 가지고!)
         stage('Build React') {
             steps {
-                sh "docker build -t ${REACT_IMAGE} -f FE/givu/Dockerfile FE/GIVU"
+                sh "docker build -t ${REACT_IMAGE} -f FE/GIVU/Dockerfile FE/GIVU"
             }
         }
 
