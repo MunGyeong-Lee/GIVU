@@ -2,7 +2,7 @@
 # Node.js 기반으로 React 빌드 수행
 FROM node:18 AS build
 WORKDIR /app
-# package.json, package-lock.json 둘 다 있으면 복사
+# package.json, package-lock.json 둘 중 하나만 있으면 됨
 COPY package*.json ./
 RUN npm install
 COPY . .
