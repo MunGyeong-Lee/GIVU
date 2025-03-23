@@ -3,7 +3,7 @@
 FROM node:18 AS build
 WORKDIR /app
 # package.json, package-lock.json 둘 중 하나만 있으면 됨
-COPY package*.json ./
+COPY package.json ./
 RUN npm install
 COPY . .
 RUN npm run build
