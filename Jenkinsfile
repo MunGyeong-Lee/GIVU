@@ -1,12 +1,11 @@
 pipeline {
     agent any
 
-        options {
-        skipDefaultCheckout(true)  // ✅ 이걸 안 넣으면 Jenkins가 자동으로 checkout함
+    options {
+        skipDefaultCheckout(true)  // 기본 자동 checkout 비활성화
     }
-
-
-	// 환경 변수 정의
+		
+		// 환경 변수 정의
     environment {
         SPRING_IMAGE = "my-spring-app"
         REACT_IMAGE = "my-react-app"
@@ -16,33 +15,28 @@ pipeline {
         COMPOSE_FILE = "docker-compose.yml"
     }
 
-        stages {
+    stages {
         stage('Checkout') {
             steps {
                 checkout scm
             }
         }
 
-
-    stages {
-
-	
-
-		// 스프링 부트 서버 코드를 도커 이미지로 빌드(repo에 있는 스프링부트 dockerfile 가지고!)
+				// 스프링 부트 서버 코드를 도커 이미지로 빌드(repo에 있는 스프링부트 dockerfile 가지고!)
         stage('Build Spring Boot') {
             steps {
                 sh "docker build -t ${SPRING_IMAGE} -f BE/givu/Dockerfile BE/givu"
             }
         }
-
-		// 리엑트 코드를 도커 이미지로 빌드(repo에 있는 리엑트 dockerfile 가지고!)
+				
+				// 리엑트 코드를 도커 이미지로 빌드(repo에 있는 리엑트 dockerfile 가지고!)
         stage('Build React') {
             steps {
                 sh "docker build -t ${REACT_IMAGE} -f FE/GIVU/Dockerfile FE/GIVU"
             }
         }
 
-		// 안드로이드 코드를 도커 이미지로 빌드(repo에 있는 안드로이드 dockerfile 가지고!)
+				// 안드로이드 코드를 도커 이미지로 빌드(repo에 있는 안드로이드 dockerfile 가지고!)
         stage('Build Android') {
             steps {
                 sh "docker build -t ${ANDROID_IMAGE} -f Android/GIVU/Dockerfile Android/GIVU"
@@ -55,12 +49,12 @@ pipeline {
                 sh "docker rm temp-android"
             }
         }
-
-		// 백엔드 무중단 배포
+				
+				// 백엔드 무중단 배포
         stage('Deploy Backend (Blue-Green)') {
             steps {
                 script {
-		            // 현재 실행 중인 백엔드 컨테이너가 backend-v1인지 확인
+	                  // 현재 실행 중인 백엔드 컨테이너가 backend-v1인지 확인
                     def active = sh(script: "docker ps --format '{{.Names}}' | grep backend-v1 || true", returnStdout: true).trim()
                     // 새로 띄울 컨테이너를 backend-v2 또는 backend-v1로 결정
                     def newContainer = (active == 'backend-v1') ? 'backend-v2' : 'backend-v1'
@@ -84,8 +78,8 @@ pipeline {
                 }
             }
         }
-
-		// 프론트 무중단 배포
+				
+				// 프론트 무중단 배포
         stage('Deploy Frontend (Blue-Green)') {
             steps {
                 script {
@@ -108,15 +102,13 @@ pipeline {
                 }
             }
         }
-		// zookeeper kafka kafka-ui postgres redis 서비스를 생성하고 실행
-		// 일단 zookeeper kafka kafka-ui 는 뺀 상태
-         stage('Start Infra Services') {
+				
+				// zookeeper kafka kafka-ui postgres redis 서비스를 생성하고 실행
+				// 일단 zookeeper kafka kafka-ui 는 뺀 상태
+        stage('Start Infra Services') {
             steps {
                 sh "docker-compose -f ${COMPOSE_FILE} up -d postgres redis"
             }
         }
-
-
-
     }
 }
