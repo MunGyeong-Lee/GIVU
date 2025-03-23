@@ -30,14 +30,14 @@ pipeline {
 		// 리엑트 코드를 도커 이미지로 빌드(repo에 있는 리엑트 dockerfile 가지고!)
         stage('Build React') {
             steps {
-                sh "docker build -t ${REACT_IMAGE} -f FE/givu/Dockerfile ."
+                sh "docker build -t ${REACT_IMAGE} -f FE/givu/Dockerfile FE/GIVU"
             }
         }
 
 		// 안드로이드 코드를 도커 이미지로 빌드(repo에 있는 안드로이드 dockerfile 가지고!)
         stage('Build Android') {
             steps {
-                sh "docker build -t ${ANDROID_IMAGE} -f Android/GIVU/Dockerfile ."
+                sh "docker build -t ${ANDROID_IMAGE} -f Android/GIVU/Dockerfile Android/GIVU"
                 // temp-android 컨테이너를 일시적으로 생성
                 sh "docker create --name temp-android ${ANDROID_IMAGE}"
                 //그 안에 있는 apk 파일을 꺼낸 뒤,
