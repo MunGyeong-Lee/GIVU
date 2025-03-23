@@ -12,7 +12,7 @@ RUN npm run build
 # Nginx를 사용하여 정적 파일 서빙
 FROM nginx:latest
 WORKDIR /usr/share/nginx/html
-COPY --from=build /app/build ./
+COPY --from=build /app/dist ./
 
 EXPOSE 80
 CMD ["nginx", "-g", "daemon off;"]
