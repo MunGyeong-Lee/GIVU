@@ -1,9 +1,7 @@
 pipeline {
     agent any
 
-    options {
-        skipDefaultCheckout(true)  // 기본 자동 checkout 비활성화
-    }
+
 		
 		// 환경 변수 정의
     environment {
@@ -15,14 +13,9 @@ pipeline {
         COMPOSE_FILE = "docker-compose.yml"
     }
 
-    stages {
-        stage('Checkout') {
-            steps {
-                checkout scm
-            }
-        }
 
-				// 스프링 부트 서버 코드를 도커 이미지로 빌드(repo에 있는 스프링부트 dockerfile 가지고!)
+
+		// 스프링 부트 서버 코드를 도커 이미지로 빌드(repo에 있는 스프링부트 dockerfile 가지고!)
         stage('Build Spring Boot') {
             steps {
                 sh "docker build -t ${SPRING_IMAGE} -f BE/givu/Dockerfile BE/givu"
