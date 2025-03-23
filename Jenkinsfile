@@ -5,14 +5,6 @@ pipeline {
         skipDefaultCheckout(true) // ✅ Jenkins 기본 checkout 비활성화
     }
 
-    stage('Check Docker Compose Version') {
-        steps {
-            script {
-                sh 'docker-compose --version'
-            }
-        }
-    }
-
 
 		
 		// 환경 변수 정의
