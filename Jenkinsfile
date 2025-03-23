@@ -40,18 +40,18 @@ pipeline {
         }
 
 				// 안드로이드 코드를 도커 이미지로 빌드(repo에 있는 안드로이드 dockerfile 가지고!)
-        stage('Build Android') {
-            steps {
-                sh "docker build -t ${ANDROID_IMAGE} -f Android/GIVU/Dockerfile Android/GIVU"
+//        stage('Build Android') {
+//            steps {
+//                sh "docker build -t ${ANDROID_IMAGE} -f Android/GIVU/Dockerfile Android/GIVU"
                 // temp-android 컨테이너를 일시적으로 생성
-                sh "docker create --name temp-android ${ANDROID_IMAGE}"
+//                sh "docker create --name temp-android ${ANDROID_IMAGE}"
                 //그 안에 있는 apk 파일을 꺼낸 뒤,
                 // 절대경로: ~/jenkins-data/workspace/givu/apk-output
-                sh "docker cp temp-android:/app/app/build/outputs/apk/release ./apk-output"
+//                sh "docker cp temp-android:/app/app/build/outputs/apk/release ./apk-output"
                 //컨테이너는 제거
-                sh "docker rm temp-android"
-            }
-        }
+//                sh "docker rm temp-android"
+//            }
+//        }
 				
 				// 백엔드 무중단 배포
         stage('Deploy Backend (Blue-Green)') {
