@@ -89,3 +89,7 @@ networks:
     driver: bridge
   kafka-network:
     driver: bridge
+
+volumes:
+  pgdata:
+  redis-data:
