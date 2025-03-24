@@ -53,11 +53,12 @@ pipeline {
 //            }
 //        }
 				
-            def nginxConfPath = "/home/ubuntu/nginx/nginx.conf"
+            
 
             stage('Deploy Backend (Blue-Green)') {
                 steps {
                     script {
+                        def nginxConfPath = "/home/ubuntu/nginx/nginx.conf"
                         def active = sh(script: "docker ps -a --format '{{.Names}}' | grep backend-v1 || true", returnStdout: true).trim()
                         def newContainer = (active == 'backend-v1') ? 'backend-v2' : 'backend-v1'
                         def newPort = (newContainer == 'backend-v1') ? '1115' : '1116'
@@ -84,6 +85,7 @@ pipeline {
             stage('Deploy Frontend (Blue-Green)') {
                 steps {
                     script {
+                        def nginxConfPath = "/home/ubuntu/nginx/nginx.conf"
                         def active = sh(script: "docker ps -a --format '{{.Names}}' | grep frontend-v1 || true", returnStdout: true).trim()
                         def newContainer = (active == 'frontend-v1') ? 'frontend-v2' : 'frontend-v1'
                         def newPort = (newContainer == 'frontend-v1') ? '3000' : '3001'
