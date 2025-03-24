@@ -259,40 +259,50 @@ const MyPage = () => {
       
       {/* 탭 메뉴 */}
       <div className="mb-8 mt-10">
-        <ul className="flex border-b border-gray-200">
-          <li className={`mr-5 ${activeTab === "created" ? "border-b-2 border-black" : ""}`}>
+        <div className="mb-4">
+          <div className="inline-flex rounded-md shadow-sm" role="group">
             <button
-              className={`px-1 py-3 text-center ${activeTab === "created" ? "font-bold" : "text-gray-500"}`}
+              className={`px-5 py-2.5 text-sm ${
+                activeTab === "created" 
+                  ? "bg-black text-white" 
+                  : "bg-white text-gray-700 hover:bg-gray-50"
+              } border border-gray-200 rounded-l-lg`}
               onClick={() => setActiveTab("created")}
             >
               내가 만든 펀딩
             </button>
-          </li>
-          <li className={`mr-5 ${activeTab === "participated" ? "border-b-2 border-black" : ""}`}>
             <button
-              className={`px-1 py-3 text-center ${activeTab === "participated" ? "font-bold" : "text-gray-500"}`}
+              className={`px-5 py-2.5 text-sm ${
+                activeTab === "participated" 
+                  ? "bg-black text-white" 
+                  : "bg-white text-gray-700 hover:bg-gray-50"
+              } border-t border-b border-gray-200`}
               onClick={() => setActiveTab("participated")}
             >
               참여한 펀딩
             </button>
-          </li>
-          <li className={`mr-5 ${activeTab === "liked" ? "border-b-2 border-black" : ""}`}>
             <button
-              className={`px-1 py-3 text-center ${activeTab === "liked" ? "font-bold" : "text-gray-500"}`}
+              className={`px-5 py-2.5 text-sm ${
+                activeTab === "liked" 
+                  ? "bg-black text-white" 
+                  : "bg-white text-gray-700 hover:bg-gray-50"
+              } border-t border-b border-gray-200`}
               onClick={() => setActiveTab("liked")}
             >
               내가 쓴 후기
             </button>
-          </li>
-          <li className={`mr-5 ${activeTab === "wishlist" ? "border-b-2 border-black" : ""}`}>
             <button
-              className={`px-1 py-3 text-center ${activeTab === "wishlist" ? "font-bold" : "text-gray-500"}`}
+              className={`px-5 py-2.5 text-sm ${
+                activeTab === "wishlist" 
+                  ? "bg-black text-white" 
+                  : "bg-white text-gray-700 hover:bg-gray-50"
+              } border border-gray-200 rounded-r-lg`}
               onClick={() => setActiveTab("wishlist")}
             >
               찜 목록
             </button>
-          </li>
-        </ul>
+          </div>
+        </div>
       </div>
       
       {/* 탭 컨텐츠 */}
