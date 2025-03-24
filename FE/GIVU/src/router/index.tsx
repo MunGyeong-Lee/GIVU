@@ -8,6 +8,7 @@ import FundingDetailPage from "../pages/Funding/FundingDetailPage";
 import FundingReviewPage from "../pages/Funding/FundingReviewPage";
 import FundingReviewDetailPage from "../pages/Funding/FundingReviewDetailPage";
 import FundingReviewWritePage from "../pages/Funding/FundingReviewWritePage";
+import ShoppingDetail from '../pages/ShoppingMall/ShoppingDetail';
 import { authRoutes } from './authRouter';
 
 const routes = [
@@ -47,6 +48,10 @@ const routes = [
       {
         path: "shopping",
         element: <MainShopping />,
+      },
+      {
+        path: "shopping/product/:id",
+        element: <ShoppingDetail />,
       },
       {
         path: "mypage",
