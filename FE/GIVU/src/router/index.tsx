@@ -8,8 +8,9 @@ import FundingDetailPage from "../pages/Funding/FundingDetailPage";
 import FundingReviewPage from "../pages/Funding/FundingReviewPage";
 import FundingReviewDetailPage from "../pages/Funding/FundingReviewDetailPage";
 import FundingReviewWritePage from "../pages/Funding/FundingReviewWritePage";
+import { authRoutes } from './authRouter';
 
-const router = createBrowserRouter([
+const routes = [
   {
     path: "/",
     element: <Layout />,
@@ -53,6 +54,9 @@ const router = createBrowserRouter([
       },
     ],
   },
-]);
+  ...authRoutes
+];
+
+const router = createBrowserRouter(routes);
 
 export default router;
