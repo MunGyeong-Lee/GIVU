@@ -14,7 +14,7 @@ pipeline {
         ANDROID_IMAGE = "my-android-app"
         NETWORK = "nginx-network"
         KAFKA_NETWORK = "kafka-network"
-        COMPOSE_FILE = "docker-compose.yml"
+        COMPOSE_FILE = "/var/jenkins_home/workspace/givu/docker-compose.yml"
     }
 
     stages {
