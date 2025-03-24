@@ -53,63 +53,59 @@ pipeline {
 //            }
 //        }
 				
-				// 백엔드 무중단 배포
-        stage('Deploy Backend (Blue-Green)') {
-            steps {
-                script {
-	                  // 현재 실행 중인 백엔드 컨테이너가 backend-v1인지 확인
-                    def active = sh(script: "docker ps -a --format '{{.Names}}' | grep backend-v1 || true", returnStdout: true).trim()
-                    // 새로 띄울 컨테이너를 backend-v2 또는 backend-v1로 결정
-                    def newContainer = (active == 'backend-v1') ? 'backend-v2' : 'backend-v1'
-                    // 새 포트(1115 or 1116)로 실행
-                    def newPort = (newContainer == 'backend-v1') ? '1115' : '1116'
+            def nginxConfPath = "/home/ubuntu/nginx/nginx.conf"
 
-                    sh """
-                        #새 컨테이너 이름이 이미 존재하는 경우를 대비해서 먼저 강제 삭제
-                        docker rm -f ${newContainer} || true
-                        docker run -d --name ${newContainer} \
-                            --network ${NETWORK} \
-                            -e PORT=8080 \
-                            -p ${newPort}:8080 \
-                            ${SPRING_IMAGE}
+            stage('Deploy Backend (Blue-Green)') {
+                steps {
+                    script {
+                        def active = sh(script: "docker ps -a --format '{{.Names}}' | grep backend-v1 || true", returnStdout: true).trim()
+                        def newContainer = (active == 'backend-v1') ? 'backend-v2' : 'backend-v1'
+                        def newPort = (newContainer == 'backend-v1') ? '1115' : '1116'
 
-                        sleep 5
-                        sed -i 's/${active}/${newContainer}/g' ./nginx/nginx.conf || true
-                        docker restart nginx
+                        sh """
+                            docker rm -f ${newContainer} || true
+                            docker run -d --name ${newContainer} \
+                                --network ${NETWORK} \
+                                -e PORT=8080 \
+                                -p ${newPort}:8080 \
+                                ${SPRING_IMAGE}
 
-                        docker stop ${active} || true
-                        docker rm ${active} || true
-                    """
+                            sleep 5
+                            sed -i 's/${active}/${newContainer}/g' ${nginxConfPath} || true
+                            docker restart nginx
+
+                            docker stop ${active} || true
+                            docker rm ${active} || true
+                        """
+                    }
                 }
             }
-        }
-				
-				// 프론트 무중단 배포
-        stage('Deploy Frontend (Blue-Green)') {
-            steps {
-                script {
-                    def active = sh(script: "docker ps -a --format '{{.Names}}' | grep frontend-v1 || true", returnStdout: true).trim()
-                    def newContainer = (active == 'frontend-v1') ? 'frontend-v2' : 'frontend-v1'
-                    def newPort = (newContainer == 'frontend-v1') ? '3000' : '3001'
 
-                    sh """
-                        #새 컨테이너 이름이 이미 존재하는 경우를 대비해서 먼저 강제 삭제
-                        docker rm -f ${newContainer} || true
-                        docker run -d --name ${newContainer} \
-                            --network ${NETWORK} \
-                            -p ${newPort}:80 \
-                            ${REACT_IMAGE}
+            stage('Deploy Frontend (Blue-Green)') {
+                steps {
+                    script {
+                        def active = sh(script: "docker ps -a --format '{{.Names}}' | grep frontend-v1 || true", returnStdout: true).trim()
+                        def newContainer = (active == 'frontend-v1') ? 'frontend-v2' : 'frontend-v1'
+                        def newPort = (newContainer == 'frontend-v1') ? '3000' : '3001'
 
-                        sleep 3
-                        sed -i 's/${active}/${newContainer}/g' ./nginx/nginx.conf || true
-                        docker restart nginx
+                        sh """
+                            docker rm -f ${newContainer} || true
+                            docker run -d --name ${newContainer} \
+                                --network ${NETWORK} \
+                                -p ${newPort}:80 \
+                                ${REACT_IMAGE}
 
-                        docker stop ${active} || true
-                        docker rm ${active} || true
-                    """
+                            sleep 3
+                            sed -i 's/${active}/${newContainer}/g' ${nginxConfPath} || true
+                            docker restart nginx
+
+                            docker stop ${active} || true
+                            docker rm ${active} || true
+                        """
+                    }
                 }
             }
-        }
+
 				
 				// zookeeper kafka kafka-ui postgres redis 서비스를 생성하고 실행
 				// 일단 zookeeper kafka kafka-ui 는 뺀 상태
