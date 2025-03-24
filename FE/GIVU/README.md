@@ -1,5 +1,4 @@
 # Web Front-End
-
 [기술스택]
 - React + vite
 - TypeScript
@@ -25,3 +24,6 @@ src/
 ├── types/          # TypeScript 타입 정의
 ├── utils/          # 유틸리티 함수
 └── constants/      # 상수 값 정의
+
+# GIVU 서비스 설명
+- GIVU는 생일, 결혼, 취직 등의 이벤트가 있을 때 친구들에게 펀딩을 받아 원하는 상품을 구매할 수 있는 크라우드펀딩 서비스입니다. 
