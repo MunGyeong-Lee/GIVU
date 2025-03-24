@@ -1,7 +1,7 @@
 package com.backend.givu.model.dto;
 
 import com.backend.givu.model.Enum.PaymentsStatus;
-import com.backend.givu.model.Enum.PaymentsTransationType;
+import com.backend.givu.model.Enum.PaymentsTransactionType;
 import lombok.*;
 
 import java.time.LocalDateTime;
@@ -15,7 +15,7 @@ public class PaymentsDTO {
     private long userId;
     private int relatedFundingId;
     private int relatedProductId;
-    private PaymentsTransationType transationType;
+    private PaymentsTransactionType transationType;
     private int amount;
     private PaymentsStatus status;
     private LocalDateTime date;

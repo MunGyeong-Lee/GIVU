@@ -1,6 +1,6 @@
 package com.backend.givu.model.Enum;
 
-public enum ProductsCateogry {
+public enum ProductsCategory {
     ELECTRONICS, // 전자제품
 
     CLOTHING, // 옷
