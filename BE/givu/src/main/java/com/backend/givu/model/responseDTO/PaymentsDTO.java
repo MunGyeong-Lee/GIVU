@@ -1,4 +1,4 @@
-package com.backend.givu.model.dto;
+package com.backend.givu.model.responseDTO;
 
 import com.backend.givu.model.Enum.PaymentsStatus;
 import com.backend.givu.model.Enum.PaymentsTransactionType;

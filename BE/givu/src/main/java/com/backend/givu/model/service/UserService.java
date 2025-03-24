@@ -1,13 +1,14 @@
 package com.backend.givu.model.service;
 
-import com.backend.givu.model.dto.UsersDTO;
+import com.backend.givu.model.responseDTO.UsersDTO;
 import com.backend.givu.model.entity.User;
 import com.backend.givu.model.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-import java.time.Instant;
 import java.time.LocalDateTime;
+
+import static com.backend.givu.util.DateTimeUtil.toInstant;
 
 @Service
 @RequiredArgsConstructor
@@ -27,8 +28,8 @@ public class UserService {
                 .gender(dto.getGender())
                 .ageRange(dto.getAgeRange())
                 .balance(0)
-                .createdAt(Instant.from(LocalDateTime.now()))
-                .updatedAt(Instant.from(LocalDateTime.now()))
+                .createdAt(toInstant(LocalDateTime.now()))
+                .updatedAt(toInstant(LocalDateTime.now()))
                 .build();
 
         return userRepository.save(user);
