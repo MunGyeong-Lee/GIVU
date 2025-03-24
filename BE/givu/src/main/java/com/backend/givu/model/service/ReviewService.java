@@ -14,14 +14,14 @@ public class ReviewService {
 
     public Review saveReview(ReviewsDTO dto){
         Review review = Review.builder()
-                .reviewId(dto.getReviewId())
+//                .reviewId(dto.getReviewId())
                 .image(dto.getImage())
                 .visit(dto.getVisit())
                 .comment(dto.getComment())
-                .createdAt(dto.getCreatedAt())
-                .fundingId(dto.getFundingId())
-                .updatedAt(dto.getUpdatedAt())
-                .userId(dto.getUserId())
+//                .createdAt(dto.getCreatedAt())
+//                .fundingId(dto.getFundingId())
+//                .updatedAt(dto.getUpdatedAt())
+//                .userId(dto.getUserId())
                 .build();
 
         return reviewRepository.save(review);
