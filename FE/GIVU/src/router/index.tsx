@@ -8,13 +8,16 @@ import FundingDetailPage from "../pages/Funding/FundingDetailPage";
 import FundingReviewPage from "../pages/Funding/FundingReviewPage";
 import FundingReviewDetailPage from "../pages/Funding/FundingReviewDetailPage";
 import FundingReviewWritePage from "../pages/Funding/FundingReviewWritePage";
-import ShoppingDetail from '../pages/ShoppingMall/ShoppingDetail';
+import ShoppingProductDetail from '../pages/ShoppingMall/ShoppingDetail';
 import { authRoutes } from './authRouter';
+import FundingCreate from "../pages/Funding/FundingCreate";
+// import NotFound from "../pages/NotFound/NotFound";
 
 const routes = [
   {
     path: "/",
     element: <Layout />,
+    // errorElement: <NotFound />,
     children: [
       {
         index: true,
@@ -43,6 +46,10 @@ const routes = [
             path: ":id",
             element: <FundingDetailPage />,
           },
+          {
+            path: "create",
+            element: <FundingCreate />,
+          },
         ],
       },
       {
@@ -51,7 +58,7 @@ const routes = [
       },
       {
         path: "shopping/product/:id",
-        element: <ShoppingDetail />,
+        element: <ShoppingProductDetail />,
       },
       {
         path: "mypage",

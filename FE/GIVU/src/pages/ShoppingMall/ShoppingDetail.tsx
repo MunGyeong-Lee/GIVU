@@ -205,14 +205,17 @@ const ShoppingProductDetail = () => {
             </div>
           </div>
           
-          {/* 구매 버튼 */}
+          {/* 구매 버튼을 펀딩 만들기 버튼으로 변경 */}
           <div className="flex gap-2">
             <button className="flex-1 py-3 border border-black rounded-md hover:bg-gray-100 transition-colors">
               장바구니
             </button>
-            <button className="flex-1 py-3 bg-black text-white rounded-md hover:bg-gray-800 transition-colors">
-              바로 구매하기
-            </button>
+            <Link 
+              to="/funding/create" 
+              className="flex-1 py-3 bg-pink-500 text-white rounded-md hover:bg-pink-600 transition-colors text-center"
+            >
+              이 상품으로 펀딩 만들기
+            </Link>
           </div>
         </div>
       </div>

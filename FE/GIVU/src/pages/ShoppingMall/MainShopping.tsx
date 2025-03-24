@@ -302,7 +302,6 @@ const MainShopping = () => {
               </svg>
             </button>
           </div>
-          {/* <button className="px-4 py-1 border border-gray-300 rounded-md">이문동</button> */}
         </div>
       </header>
 
