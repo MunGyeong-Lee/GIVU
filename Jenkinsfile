@@ -65,7 +65,7 @@ pipeline {
                     def newPort = (newContainer == 'backend-v1') ? '1115' : '1116'
 
                     sh """
-                        /새 컨테이너 이름이 이미 존재하는 경우를 대비해서 먼저 강제 삭제
+                        //새 컨테이너 이름이 이미 존재하는 경우를 대비해서 먼저 강제 삭제
                         docker rm -f ${newContainer} || true
                         docker run -d --name ${newContainer} \
                             --network ${NETWORK} \
