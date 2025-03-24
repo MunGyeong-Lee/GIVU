@@ -3,8 +3,7 @@ package com.backend.givu.model.entity;
 import com.backend.givu.model.Enum.BankTransactionType;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Size;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
@@ -16,6 +15,9 @@ import java.time.Instant;
 @Setter
 @Entity
 @Table(name = "bank_transaction")
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor
+@Builder
 public class BankTransaction {
     @EmbeddedId
     private BankTransactionId id;

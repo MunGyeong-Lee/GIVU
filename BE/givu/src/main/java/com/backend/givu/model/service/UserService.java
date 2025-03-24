@@ -6,6 +6,7 @@ import com.backend.givu.model.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
 
 @Service
@@ -18,7 +19,7 @@ public class UserService {
     public User saveUser(UsersDTO dto) {
         User user = User.builder()
                 .kakaoId(dto.getKakaoId())
-                .nickName(dto.getNickName())
+                .nickname(dto.getNickName())
                 .email(dto.getEmail())
                 .birth(dto.getBirth().toLocalDate())
                 .profileImage(dto.getProfileImage())
@@ -26,8 +27,8 @@ public class UserService {
                 .gender(dto.getGender())
                 .ageRange(dto.getAgeRange())
                 .balance(0)
-                .createdAt(LocalDateTime.now())
-                .updatedAt(LocalDateTime.now())
+                .createdAt(Instant.from(LocalDateTime.now()))
+                .updatedAt(Instant.from(LocalDateTime.now()))
                 .build();
 
         return userRepository.save(user);
