@@ -1,29 +1,54 @@
-# Web Front-End
-[기술스택]
-- React + vite
-- TypeScript
-- Tailwind CSS
-- Redux Toolkit
-- react-router-dom
-- react query
-- axios
-- node.js
+# React + TypeScript + Vite
 
+This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
 
-# 폴더 구조
-src/
-├── assets/          # 이미지, 폰트 등 정적 파일
-├── components/      # 재사용 가능한 컴포넌트
-│   ├── common/     # 공통 컴포넌트 (버튼, 인풋 등)
-│   └── layout/     # 레이아웃 관련 컴포넌트
-├── hooks/          # 커스텀 훅
-├── pages/          # 페이지 컴포넌트
-├── api/            # API 통신 관련 로직
-├── store/          # 상태 관리 (Redux, Zustand 등)
-├── styles/         # 전역 스타일, 테마 설정
-├── types/          # TypeScript 타입 정의
-├── utils/          # 유틸리티 함수
-└── constants/      # 상수 값 정의
+Currently, two official plugins are available:
 
-# GIVU 서비스 설명
-- GIVU는 생일, 결혼, 취직 등의 이벤트가 있을 때 친구들에게 펀딩을 받아 원하는 상품을 구매할 수 있는 크라우드펀딩 서비스입니다. 
+- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
+- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+
+## Expanding the ESLint configuration
+
+If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+
+```js
+export default tseslint.config({
+  extends: [
+    // Remove ...tseslint.configs.recommended and replace with this
+    ...tseslint.configs.recommendedTypeChecked,
+    // Alternatively, use this for stricter rules
+    ...tseslint.configs.strictTypeChecked,
+    // Optionally, add this for stylistic rules
+    ...tseslint.configs.stylisticTypeChecked,
+  ],
+  languageOptions: {
+    // other options...
+    parserOptions: {
+      project: ['./tsconfig.node.json', './tsconfig.app.json'],
+      tsconfigRootDir: import.meta.dirname,
+    },
+  },
+})
+```
+
+You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+
+```js
+// eslint.config.js
+import reactX from 'eslint-plugin-react-x'
+import reactDom from 'eslint-plugin-react-dom'
+
+export default tseslint.config({
+  plugins: {
+    // Add the react-x and react-dom plugins
+    'react-x': reactX,
+    'react-dom': reactDom,
+  },
+  rules: {
+    // other rules...
+    // Enable its recommended typescript rules
+    ...reactX.configs['recommended-typescript'].rules,
+    ...reactDom.configs.recommended.rules,
+  },
+})
+```
