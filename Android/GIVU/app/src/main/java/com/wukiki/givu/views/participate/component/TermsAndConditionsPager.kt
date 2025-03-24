@@ -21,11 +21,12 @@ import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
 import com.wukiki.givu.R
 import com.wukiki.givu.ui.suit
 
 @Composable
-fun TermsAndConditionsPager() {
+fun TermsAndConditionsPager(navController: NavController) {
     Column(modifier = Modifier.fillMaxWidth()) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Checkbox(checked = false, onCheckedChange = {})
@@ -95,7 +96,7 @@ fun TermsAndConditionsPager() {
 
         Spacer(modifier = Modifier.height(16.dp))
         Button(
-            onClick = {  },
+            onClick = { navController.navigate(R.id.action_participate_funding_to_write_letter) },
             modifier = Modifier.fillMaxSize().height(56.dp),
             enabled = true,
             shape = RoundedCornerShape(10.dp),

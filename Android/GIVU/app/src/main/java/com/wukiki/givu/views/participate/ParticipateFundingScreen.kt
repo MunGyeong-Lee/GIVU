@@ -34,7 +34,7 @@ fun ParticipateFundingScreen(
     val funding by fundingViewModel.selectedFunding.collectAsState()
 
     Scaffold(
-        topBar = { CommonTopBar(stringResource(R.string.label_participate_funding)) },
+        topBar = { CommonTopBar(stringResource(R.string.title_participate_funding)) },
         containerColor = Color.White
     ) { paddingValues ->
         Column(
@@ -56,7 +56,7 @@ fun ParticipateFundingScreen(
                     ParticipantInfoPager()
                     IdentityVerificationPager()
                     PaymentBalancePager()
-                    TermsAndConditionsPager()
+                    TermsAndConditionsPager(navController)
                 }
             }
         }
