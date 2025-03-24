@@ -88,11 +88,12 @@ pipeline {
                 script {
                     def active = sh(script: "docker ps -a --format '{{.Names}}' | grep frontend-v1 || true", returnStdout: true).trim()
                     def newContainer = (active == 'frontend-v1') ? 'frontend-v2' : 'frontend-v1'
+                    def newPort = (newContainer == 'frontend-v1') ? '3000' : '3001'
 
                     sh """
                         docker run -d --name ${newContainer} \
                             --network ${NETWORK} \
-                            -p 3000:80 \
+                            -p ${newPort}:80 \
                             ${REACT_IMAGE}
 
                         sleep 3
