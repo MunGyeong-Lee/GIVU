@@ -16,3 +16,9 @@ spring:
       hibernate:
         format_sql: true
     database-platform: org.hibernate.dialect.PostgreSQLDialect
+
+kakao:
+  client-id: 08cd78d237da6ad8828d168ac223e313
+  redirect-uri: http://localhost:5173/auth/kakao/callback
+  token-uri: https://kauth.kakao.com/oauth/token
+  user-info-uri: https://kapi.kakao.com/v2/user/me
