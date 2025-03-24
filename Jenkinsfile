@@ -58,7 +58,7 @@ pipeline {
             steps {
                 script {
 	                  // 현재 실행 중인 백엔드 컨테이너가 backend-v1인지 확인
-                    def active = sh(script: "docker ps --format '{{.Names}}' | grep backend-v1 || true", returnStdout: true).trim()
+                    def active = sh(script: "docker ps -a --format '{{.Names}}' | grep backend-v1 || true", returnStdout: true).trim()
                     // 새로 띄울 컨테이너를 backend-v2 또는 backend-v1로 결정
                     def newContainer = (active == 'backend-v1') ? 'backend-v2' : 'backend-v1'
                     // 새 포트(1115 or 1116)로 실행
@@ -86,7 +86,7 @@ pipeline {
         stage('Deploy Frontend (Blue-Green)') {
             steps {
                 script {
-                    def active = sh(script: "docker ps --format '{{.Names}}' | grep frontend-v1 || true", returnStdout: true).trim()
+                    def active = sh(script: "docker ps -a --format '{{.Names}}' | grep frontend-v1 || true", returnStdout: true).trim()
                     def newContainer = (active == 'frontend-v1') ? 'frontend-v2' : 'frontend-v1'
 
                     sh """
