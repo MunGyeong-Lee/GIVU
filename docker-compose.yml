@@ -93,4 +93,4 @@ networks:
 volumes:
   pgdata:
   redis-data:
-# 확인1
+# 확인2
