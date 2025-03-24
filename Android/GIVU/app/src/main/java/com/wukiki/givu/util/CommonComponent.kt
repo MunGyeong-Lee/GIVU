@@ -319,6 +319,25 @@ fun SortButton(
     }
 }
 
+@Composable
+fun InfoRow(label: String, value: String) {
+    Row {
+        Text(
+            text = label,
+            fontWeight = FontWeight.Bold,
+            fontFamily = suit,
+            fontSize = 18.sp,
+            modifier = Modifier.width(60.dp)
+        )
+        Text(
+            text = value,
+            fontWeight = FontWeight.Normal,
+            fontFamily = suit,
+            fontSize = 18.sp,
+        )
+    }
+}
+
 @Preview(showBackground = true)
 @Composable
 private fun TestPreview() {
