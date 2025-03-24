@@ -3,12 +3,12 @@ import { Link } from "react-router-dom";
 
 // 카테고리 데이터
 const CATEGORIES = [
-  { id: 1, name: "가전/디지털" },
-  { id: 2, name: "문구/오피스" },
-  { id: 3, name: "생활용품" },
-  { id: 4, name: "완구/취미" },
-  { id: 5, name: "헬스/건강식품" },
-  { id: 6, name: "출산/유아동" },
+  { id: 1, name: "가전/디지털", icon: "📱" },
+  { id: 2, name: "문구/오피스", icon: "✏️" },
+  { id: 3, name: "생활용품", icon: "🧼" },
+  { id: 4, name: "완구/취미", icon: "🧸" },
+  { id: 5, name: "헬스/건강식품", icon: "💪" },
+  { id: 6, name: "출산/유아동", icon: "🍼" },
 ];
 
 // 상품 데이터
@@ -199,6 +199,8 @@ const TRENDING_PRODUCTS = [
 const MainShopping = () => {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [currentBannerIndex, setCurrentBannerIndex] = useState(0);
+  const [visibleProducts, setVisibleProducts] = useState(8);
+  const [loading, setLoading] = useState(false);
   
   const filteredProducts = selectedCategory 
     ? EXTENDED_PRODUCTS.filter(product => product.category === selectedCategory)
@@ -208,6 +210,7 @@ const MainShopping = () => {
   const productGridRef = useRef<HTMLDivElement>(null);
   const trendingProductsRef = useRef<HTMLDivElement>(null);
   const mainBannerRef = useRef<HTMLDivElement>(null);
+  const allProductsRef = useRef<HTMLDivElement>(null);
 
   // 타입 정의 간소화
   const scrollHorizontally = (ref: any, direction: 'left' | 'right') => {
@@ -250,6 +253,37 @@ const MainShopping = () => {
 
   const currentBanner = MAIN_BANNER_PRODUCTS[currentBannerIndex];
 
+  // 무한 스크롤 감지 함수
+  const handleScroll = () => {
+    if (allProductsRef.current) {
+      const { scrollTop, scrollHeight, clientHeight } = document.documentElement;
+      
+      // 스크롤이 페이지 하단에 가까워지면 더 많은 상품 로드
+      if (scrollTop + clientHeight >= scrollHeight - 300 && !loading) {
+        loadMoreProducts();
+      }
+    }
+  };
+
+  // 더 많은 상품 로드 함수
+  const loadMoreProducts = () => {
+    if (visibleProducts >= filteredProducts.length) return; // 더 이상 로드할 상품이 없으면 리턴
+    
+    setLoading(true);
+    
+    // 로딩 효과를 위한 타임아웃 (실제 API 호출 시에는 필요 없음)
+    setTimeout(() => {
+      setVisibleProducts(prev => Math.min(prev + 4, filteredProducts.length));
+      setLoading(false);
+    }, 800);
+  };
+
+  // 스크롤 이벤트 리스너 추가
+  React.useEffect(() => {
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, [visibleProducts, loading]);
+
   return (
     <div className="w-full">
       {/* 헤더 영역 */}
@@ -268,7 +302,6 @@ const MainShopping = () => {
               </svg>
             </button>
           </div>
-          {/* <button className="px-4 py-1 border border-gray-300 rounded-md">이문동</button> */}
         </div>
       </header>
 
@@ -355,7 +388,7 @@ const MainShopping = () => {
             {CATEGORIES.map(category => (
               <div key={category.id} className="flex flex-col items-center">
                 <div className="w-16 h-16 bg-gray-100 rounded-lg mb-2 flex items-center justify-center">
-                  <span className="text-xl">🛒</span>
+                  <span className="text-2xl">{category.icon}</span>
                 </div>
                 <span className="text-sm text-center">{category.name}</span>
               </div>
@@ -615,12 +648,15 @@ const MainShopping = () => {
         </div>
       </div>
 
-      {/* 기존 그리드 표시 형태도 유지 */}
+      {/* 기존 그리드 표시 형태를 무한 스크롤로 변경 */}
       <div className="py-12 w-full bg-gray-50">
         <div className="container mx-auto px-4">
           <h3 className="text-xl font-bold mb-6">모든 상품</h3>
-          <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-8">
-            {filteredProducts.slice(0, 8).map(product => (
+          <div 
+            ref={allProductsRef}
+            className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-8"
+          >
+            {filteredProducts.slice(0, visibleProducts).map(product => (
               <Link 
                 key={product.id} 
                 to={`/shopping/product/${product.id}`}
@@ -654,6 +690,20 @@ const MainShopping = () => {
               </Link>
             ))}
           </div>
+          
+          {/* 로딩 스피너 */}
+          {loading && (
+            <div className="flex justify-center my-8">
+              <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-pink-500"></div>
+            </div>
+          )}
+          
+          {/* 더 이상 상품이 없을 경우 메시지 표시 */}
+          {visibleProducts >= filteredProducts.length && filteredProducts.length > 0 && (
+            <div className="text-center text-gray-500 my-8">
+              모든 상품을 확인하셨습니다.
+            </div>
+          )}
         </div>
       </div>
     </div>
