@@ -20,6 +20,9 @@ class FundingViewModel @Inject constructor(
     private val _selectedFundingLetter = MutableStateFlow<List<Letter>>(emptyList())
     val selectedFundingLetter = _selectedFundingLetter.asStateFlow()
 
+    private val _writeLetter = MutableStateFlow<String>("")
+    val writeLetter = _writeLetter
+
     init {
         val newFunding = Funding(
             id = "1",
