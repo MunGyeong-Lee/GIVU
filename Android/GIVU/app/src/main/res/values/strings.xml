@@ -36,5 +36,18 @@
 
     <!-- Participate -->
     <string name="label_participate_funding">Participate Funding</string>
+    <string name="title_participate_funding">펀딩 참여하기</string>
+
+    <!-- Write Letter -->
+    <string name="label_write_letter">Write Letter</string>
+    <string name="title_write_letter">축하 편지 남기기</string>
+    <string name="text_write_letter">메시지 남기기</string>
+    <string name="text_hint_write_letter">축하 메시지를 입력해주세요</string>
+
+    <!-- Complete Funding -->
+    <string name="label_complete_funding">Complete Funding</string>
+    <string name="title_complete_funding">펀딩 참여 완료</string>
+    <string name="text_complete_funding">펀딩에 참여했습니다.</string>
+    <string name="text_return">돌아가기</string>
 
 </resources>
