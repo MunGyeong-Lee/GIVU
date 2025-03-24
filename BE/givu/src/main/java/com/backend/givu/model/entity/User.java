@@ -1,10 +1,11 @@
 package com.backend.givu.model.entity;
 
 import com.backend.givu.model.Enum.PaymentsStatus;
+import com.backend.givu.model.Enum.UsersAgeRange;
+import com.backend.givu.model.Enum.UsersGender;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Size;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 
@@ -19,6 +20,9 @@ import java.util.Set;
 @Setter
 @Entity
 @Table(name = "users")
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor
+@Builder
 public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -78,10 +82,10 @@ public class User {
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     @Column(name = "gender", columnDefinition = "user_gender")
-    private PaymentsStatus gender;
+    private UsersGender gender;
 
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     @Column(name = "age_range", columnDefinition = "user_age_range")
-    private PaymentsStatus ageRange;
+    private UsersAgeRange ageRange;
 }
