@@ -23,6 +23,9 @@ class FundingViewModel @Inject constructor(
     private val _writeLetter = MutableStateFlow<String>("")
     val writeLetter = _writeLetter
 
+    private val _paymentPassword = MutableStateFlow<String>("")
+    val paymentPassword = _paymentPassword
+
     init {
         val newFunding = Funding(
             id = "1",
