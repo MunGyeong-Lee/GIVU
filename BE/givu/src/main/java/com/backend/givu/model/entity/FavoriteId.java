@@ -11,9 +11,9 @@ import java.util.Objects;
 
 @Getter
 @Setter
-@Embeddable
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
+@Embeddable
 public class FavoriteId implements Serializable {
     private static final long serialVersionUID = 4505767663694982624L;
     @NotNull
