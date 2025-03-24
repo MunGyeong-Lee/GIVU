@@ -1,6 +1,6 @@
 package com.backend.givu.model.dto;
 
-import com.backend.givu.model.Enum.ProductsCateogry;
+import com.backend.givu.model.Enum.ProductsCategory;
 import lombok.*;
 
 import java.time.LocalDateTime;
@@ -12,7 +12,7 @@ import java.time.LocalDateTime;
 public class ProductsDTO {
     private int productId;
     private String productName;
-    private ProductsCateogry category;
+    private ProductsCategory category;
     private int price;
     private String image;
     private int favorite;

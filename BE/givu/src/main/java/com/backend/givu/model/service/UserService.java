@@ -25,7 +25,7 @@ public class UserService {
                 .address(dto.getAddress())
                 .gender(dto.getGender())
                 .ageRange(dto.getAgeRange())
-                .balance(dto.getBalance())
+                .balance(0)
                 .createdAt(LocalDateTime.now())
                 .updatedAt(LocalDateTime.now())
                 .build();

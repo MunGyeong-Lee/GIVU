@@ -11,7 +11,6 @@ import java.time.LocalDateTime;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 public class UsersDTO {
-    private long userId;
     private long kakaoId;
     private String nickName;
     private String email;
@@ -20,7 +19,4 @@ public class UsersDTO {
     private String address;
     private UsersGender gender;
     private UsersAgeRange ageRange;
-    private int balance;
-    private LocalDateTime createdAt;
-    private LocalDateTime updatedAt;
 }
