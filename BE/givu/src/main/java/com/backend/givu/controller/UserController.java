@@ -1,7 +1,8 @@
 package com.backend.givu.controller;
 
-import com.backend.givu.model.dto.UsersDTO;
+import com.backend.givu.model.responseDTO.UsersDTO;
 import com.backend.givu.model.entity.User;
+import com.backend.givu.model.responseDTO.UserIdResponseDTO;
 import com.backend.givu.model.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -19,9 +20,9 @@ public class UserController {
 
     @Operation(summary = "사용자 등록", description = "카카오 연동 정보를 바탕으로 새로운 사용자를 등록합니다.")
     @PostMapping
-    public ResponseEntity<User> saveUser(@RequestBody UsersDTO dto) {
+    public ResponseEntity<UserIdResponseDTO> saveUser(@RequestBody UsersDTO dto) {
         User savedUser = userService.saveUser(dto);
-        return ResponseEntity.ok(savedUser);
+        return ResponseEntity.ok(new UserIdResponseDTO(savedUser.getId()));
     }
 
     @GetMapping("/{userId}")
