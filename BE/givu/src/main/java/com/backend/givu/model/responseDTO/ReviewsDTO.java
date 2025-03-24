@@ -1,6 +1,5 @@
-package com.backend.givu.model.dto;
+package com.backend.givu.model.responseDTO;
 
-import com.backend.givu.model.Enum.LettersPrivate;
 import lombok.*;
 
 import java.time.LocalDateTime;
@@ -9,13 +8,13 @@ import java.time.LocalDateTime;
 @Setter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
-public class LettersDTO {
-    private int letterId;
+public class ReviewsDTO {
+    private int reviewId;
     private int fundingId;
     private long userId;
     private String comment;
     private String image;
-    private LettersPrivate access;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+    private long visit;
 }
