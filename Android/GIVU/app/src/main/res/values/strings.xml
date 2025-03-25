@@ -76,11 +76,14 @@
 
     <!-- Finish Funding -->
     <string name="label_finish_funding">Finish Funding</string>
+    <string name="label_funding_finished">Funding Finished</string>
     <string name="title_finish_funding">펀딩 완료하기</string>
     <string name="title_finish_funding_review">펀딩 후기 작성</string>
     <string name="text_hint_finish_funding_review">펀딩 후기 작성하기</string>
     <string name="title_finish_funding_image_add">이미지 추가하기</string>
     <string name="title_finish_funding_participate">펀딩에 참여하신 분들</string>
     <string name="title_authentication">본인 인증하기</string>
+    <string name="title_funding_finished">펀딩을 성공적으로 종료했어요.</string>
+    <string name="text_funding_confirm">펀딩 확인하기</string>
 
 </resources>
