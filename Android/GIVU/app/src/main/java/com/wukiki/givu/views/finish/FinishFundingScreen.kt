@@ -19,9 +19,9 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.wukiki.givu.R
 import com.wukiki.givu.util.CommonTopBar
-import com.wukiki.givu.views.cancel.component.FinishFundingImagePager
-import com.wukiki.givu.views.cancel.component.FinishFundingParticipantPager
-import com.wukiki.givu.views.cancel.component.FinishFundingReviewPager
+import com.wukiki.givu.views.finish.component.FinishFundingImagePager
+import com.wukiki.givu.views.finish.component.FinishFundingParticipantPager
+import com.wukiki.givu.views.finish.component.FinishFundingReviewPager
 import com.wukiki.givu.views.detail.viewmodel.FundingViewModel
 import com.wukiki.givu.views.participate.component.FundingInfoPager
 import com.wukiki.givu.views.participate.component.IdentityVerificationPager
@@ -68,7 +68,8 @@ fun FinishFundingScreen(
 
                 TermsAndConditionsPager(
                     stringResource(R.string.title_finish_funding),
-                    navController
+                    navController,
+                    R.id.action_finish_funding_to_funding_finished
                 )
             }
         }

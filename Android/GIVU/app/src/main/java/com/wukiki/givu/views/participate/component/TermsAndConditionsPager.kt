@@ -26,7 +26,11 @@ import com.wukiki.givu.R
 import com.wukiki.givu.ui.suit
 
 @Composable
-fun TermsAndConditionsPager(navController: NavController) {
+fun TermsAndConditionsPager(
+    btnText: String,
+    navController: NavController,
+    actionId: Int
+) {
     Column(modifier = Modifier.fillMaxWidth()) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Checkbox(checked = false, onCheckedChange = {})
@@ -96,7 +100,7 @@ fun TermsAndConditionsPager(navController: NavController) {
 
         Spacer(modifier = Modifier.height(16.dp))
         Button(
-            onClick = { navController.navigate(R.id.action_participate_funding_to_write_letter) },
+            onClick = { navController.navigate(actionId) },
             modifier = Modifier.fillMaxSize().height(56.dp),
             enabled = true,
             shape = RoundedCornerShape(10.dp),
@@ -104,7 +108,7 @@ fun TermsAndConditionsPager(navController: NavController) {
             colors = ButtonDefaults.buttonColors(colorResource(R.color.main_primary)),
         ) {
             Text(
-                text = "펀딩 결제하기",
+                text = btnText,
                 fontFamily = suit,
                 fontWeight = FontWeight.Bold,
                 fontSize = 18.sp,
