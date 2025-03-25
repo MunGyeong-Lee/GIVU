@@ -33,6 +33,7 @@
 
     <!-- Search -->
     <string name="label_search">Search</string>
+    <string name="title_empty_result">검색 결과가 없습니다.</string>
 
     <!-- Detail -->
     <string name="label_detail_funding">Detail Funding</string>
