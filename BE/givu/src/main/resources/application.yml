@@ -17,6 +17,9 @@ spring:
         format_sql: true
     database-platform: org.hibernate.dialect.PostgreSQLDialect
 
+server:
+    port: 1115
+
 kakao:
   client-id: 08cd78d237da6ad8828d168ac223e313
   redirect-uri: http://localhost:5173/auth/kakao/callback
