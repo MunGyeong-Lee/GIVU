@@ -1,12 +1,15 @@
 /** @type {import('tailwindcss').Config} */
+import scrollbarHide from 'tailwind-scrollbar-hide';
+
 export default {
   content: [
-    "./index.html", // HTML 파일 경로
-    "./src/**/*.{js,jsx,ts,tsx}", // React 컴포넌트 파일 경로
+    "./index.html",
+    "./src/**/*.{js,ts,jsx,tsx}",
   ],
   theme: {
     extend: {
       colors: {
+        primary: '#FF5B61',
         cusRed: {
           DEFAULT: "rgb(255, 92, 92)",
           light: "rgb(255, 127, 127)",
@@ -61,7 +64,7 @@ export default {
         paperlogy: ['Paperlogy', 'sans-serif'],
         pretendard: ['Pretendard', 'sans-serif'],
       },
-    }, // 테마 확장
+    },
   },
-  plugins: [require("tailwind-scrollbar-hide")], // 플러그인 추가
-};
+  plugins: [scrollbarHide],
+} 
