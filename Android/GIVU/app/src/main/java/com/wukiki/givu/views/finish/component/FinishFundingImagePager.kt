@@ -1,4 +1,4 @@
-package com.wukiki.givu.views.cancel.component
+package com.wukiki.givu.views.finish.component
 
 import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult

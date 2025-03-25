@@ -1,4 +1,4 @@
-package com.wukiki.givu.views.cancel.component
+package com.wukiki.givu.views.finish.component
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
