@@ -43,6 +43,6 @@ public class UserService {
     }
 
     public Optional<User> getUserByKakaoId(Long kakaoId){
-        return userRepository.findByKakaoId(kakaoId)
+        return userRepository.findByKakaoId(kakaoId);
     }
 }
