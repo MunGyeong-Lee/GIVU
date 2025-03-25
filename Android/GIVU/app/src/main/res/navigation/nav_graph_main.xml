@@ -59,6 +59,10 @@
         android:label="@string/label_search"
         tools:layout="@layout/fragment_search">
 
+        <action
+            android:id="@+id/action_search_to_detail_funding"
+            app:destination="@id/fragment_detail_funding" />
+
     </fragment>
 
     <fragment
