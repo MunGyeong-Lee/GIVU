@@ -1,11 +1,12 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { initializeKakao, getUserInfoWithCode } from '../api/kakaoAuth';
-import { KakaoUser } from '../types/kakao';
+import { initializeKakao, getAccessTokenFromCode, sendAccessTokenToBackend } from '../api/kakaoAuth';
+import { useAppSelector } from '../hooks/reduxHooks';
 
 const KakaoCallback = () => {
   const navigate = useNavigate();
   const [error, setError] = useState<string | null>(null);
+  const { loading, error: authError } = useAppSelector(state => state.auth);
 
   useEffect(() => {
     const processKakaoLogin = async () => {
@@ -24,16 +25,12 @@ const KakaoCallback = () => {
 
         console.log('인증 코드 확인:', code);
 
-        // 인증 코드로 사용자 정보 가져오기
-        const userData = await getUserInfoWithCode(code);
+        // 인증 코드로 액세스 토큰 받기 (프론트엔드에서)
+        const accessToken = await getAccessTokenFromCode(code);
+        console.log('액세스 토큰 획득:', accessToken);
 
-        // 사용자 정보 로컬 스토리지에 저장 (실제로는 JWT 등의 토큰만 저장하는 것이 좋습니다)
-        localStorage.setItem('user', JSON.stringify({
-          id: userData.id,
-          nickname: userData.properties.nickname,
-          profileImage: userData.properties.profile_image,
-          email: userData.kakao_account.email,
-        }));
+        // 액세스 토큰을 백엔드로 전송하고 JWT 받기
+        await sendAccessTokenToBackend(accessToken);
 
         // 홈페이지로 리다이렉트
         navigate('/');
@@ -45,6 +42,13 @@ const KakaoCallback = () => {
 
     processKakaoLogin();
   }, [navigate]);
+
+  // Redux 에러 상태가 변경되면 로컬 에러 상태도 업데이트
+  useEffect(() => {
+    if (authError) {
+      setError(authError);
+    }
+  }, [authError]);
 
   if (error) {
     return (
