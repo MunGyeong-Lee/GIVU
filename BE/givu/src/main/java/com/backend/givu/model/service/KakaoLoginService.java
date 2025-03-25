@@ -30,21 +30,21 @@ public class KakaoLoginService {
 
     private final RestTemplate restTemplate = new RestTemplate();
 
-    public String getAccessToken(String code) {
-        HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
-
-        MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
-        params.add("grant_type", "authorization_code");
-        params.add("client_id", clientId);
-        params.add("redirect_uri", redirectUri);
-        params.add("code", code);
-
-        HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(params, headers);
-
-        ResponseEntity<Map> response = restTemplate.postForEntity(tokenUri, request, Map.class);
-        return (String) response.getBody().get("access_token");
-    }
+//    public String getAccessToken(String code) {
+//        HttpHeaders headers = new HttpHeaders();
+//        headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+//
+//        MultiValueMap<String, String> params = new LinkedMultiValueMap<>();
+//        params.add("grant_type", "authorization_code");
+//        params.add("client_id", clientId);
+//        params.add("redirect_uri", redirectUri);
+//        params.add("code", code);
+//
+//        HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(params, headers);
+//
+//        ResponseEntity<Map> response = restTemplate.postForEntity(tokenUri, request, Map.class);
+//        return (String) response.getBody().get("access_token");
+//    }
 
     public KakaoProfileDTO getUserInfo(String accessToken) {
         HttpHeaders headers = new HttpHeaders();

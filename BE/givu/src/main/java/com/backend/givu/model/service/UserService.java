@@ -23,7 +23,7 @@ public class UserService {
                 .kakaoId(dto.getKakaoId())
                 .nickname(dto.getNickName())
                 .email(dto.getEmail())
-                .birth(dto.getBirth().toLocalDate())
+                .birth(dto.getBirth())
                 .profileImage(dto.getProfileImage())
                 .address(dto.getAddress())
                 .gender(dto.getGender())

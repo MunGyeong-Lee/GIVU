@@ -45,4 +45,17 @@ public class DateTimeUtil {
     public static Instant now() {
         return Instant.now();
     }
+
+    public static LocalDate parseKakaoBirthday(String birthday) {
+        if (birthday == null || birthday.length() != 4) return null;
+
+        try {
+            int month = Integer.parseInt(birthday.substring(0, 2));
+            int day = Integer.parseInt(birthday.substring(2, 4));
+            return LocalDate.of(1000, month, day); // 연도는 의미 없는 값 (예: 2000)
+        } catch (NumberFormatException | DateTimeException e) {
+            return null;
+        }
+    }
+
 }
