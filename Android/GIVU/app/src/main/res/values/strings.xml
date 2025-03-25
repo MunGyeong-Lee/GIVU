@@ -3,6 +3,9 @@
     <!-- App Name -->
     <string name="app_name">GIVU</string>
 
+    <!-- Common -->
+    <string name="text_return">돌아가기</string>
+
     <!-- Menu -->
     <string name="menu_title_home">홈</string>
     <string name="menu_title_community">친구</string>
@@ -30,6 +33,7 @@
 
     <!-- Search -->
     <string name="label_search">Search</string>
+    <string name="title_empty_result">검색 결과가 없습니다.</string>
 
     <!-- Detail -->
     <string name="label_detail_funding">Detail Funding</string>
@@ -49,5 +53,24 @@
     <string name="title_complete_funding">펀딩 참여 완료</string>
     <string name="text_complete_funding">펀딩에 참여했습니다.</string>
     <string name="text_return">돌아가기</string>
+
+    <!-- Cancel Funding -->
+    <string name="label_cancel_funding">Cancel Funding</string>
+    <string name="label_finish_cancel_funding">Finish Cancel Funding</string>
+    <string name="title_cancel_funding">펀딩 취소하기</string>
+    <string name="title_finish_cancel_funding">펀딩 취소 완료</string>
+    <string name="title_recommend_other_funding">잠깐,\n이 선물은 어떠세요?</string>
+    <string name="text_recommend_other_funding">금액에 맞는 다른 선물을 추천해드립니다.</string>
+    <string name="title_confirm_cancel_funding">펀딩 취소 전\n다음 사항을 확인해주세요.</string>
+    <string name="text_confirm_cancel_funding">펀딩이 종료된 이후에도 선물 전달 완료일로부터 7일 이내에 후원자가 환불을 신청할 수 있습니다.\n
+        1. 펀딩은 종료되었으나, 아직 결제가 진행되지 않은 예약 주문은 창작자의 승인 없이 자동 승인됩니다.\n
+        2. 결제가 이미 완료된 예약 주문의 환불 신청에 대해서는 창작자의 승인/거절 처리가 필요합니다.\n
+         · 접수된 환불은 신청일로부터 7일 이내 승인/거절 처리가 필요합니다. 7일 이내 처리되지 않을 시, 자동으로 승인됩니다.\n
+         · 아직 반품을 받지 못해 환불 처리가 어렵다면, [보류]하여 1회에 한해 처리 기간을 3일 연장할 수 있습니다.\n
+        3. 승인된 환불은 후원금 전액이 환불 됩니다. 부분 환불 및 반품 배송비 공제는 불가합니다.</string>
+    <string name="text_givu_pay_password">기뷰페이 비밀번호 입력</string>
+    <string name="text_question_cancel_funding">정말 해당 펀딩을 취소하시겠습니까?</string>
+    <string name="text_cancel_funding">펀딩 취소</string>
+    <string name="text_finish_cancel_funding">펀딩이 취소되었어요.</string>
 
 </resources>

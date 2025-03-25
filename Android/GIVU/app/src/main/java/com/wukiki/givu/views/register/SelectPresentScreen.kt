@@ -20,6 +20,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
 import com.wukiki.givu.util.CommonTopBar
 import com.wukiki.givu.util.StoreItemCategoryComponent
 import com.wukiki.givu.views.home.component.SearchBarItem
@@ -27,7 +28,7 @@ import com.wukiki.givu.views.mall.GiftListItem
 
 
 @Composable
-fun SelectPresentScreen() {
+fun SelectPresentScreen(navController: NavController) {
     val tabs = listOf("전체", "화장품", "생활 가전", "전자기기", "디저트", "인테리어")
     var selectedCategory by remember { mutableStateOf("전체") }
 
@@ -40,7 +41,7 @@ fun SelectPresentScreen() {
                 .fillMaxWidth()
                 .padding(horizontal = 16.dp)
         ) {
-            SearchBarItem("") { }
+            SearchBarItem(navController)
         }
 
         Spacer(Modifier.height(8.dp))
@@ -128,5 +129,5 @@ fun getSampleProducts(): List<Product> {
 @Preview(showBackground = true)
 @Composable
 private fun TEST1() {
-    SelectPresentScreen()
+    // SelectPresentScreen()
 }

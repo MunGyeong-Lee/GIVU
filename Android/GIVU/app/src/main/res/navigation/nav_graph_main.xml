@@ -59,6 +59,10 @@
         android:label="@string/label_search"
         tools:layout="@layout/fragment_search">
 
+        <action
+            android:id="@+id/action_search_to_detail_funding"
+            app:destination="@id/fragment_detail_funding" />
+
     </fragment>
 
     <fragment
@@ -78,6 +82,10 @@
         <action
             android:id="@+id/action_detail_funding_to_participate_funding"
             app:destination="@id/fragment_participate_funding" />
+
+        <action
+            android:id="@+id/action_detail_funding_to_cancel_funding"
+            app:destination="@id/fragment_cancel_funding" />
 
     </fragment>
 
@@ -118,6 +126,26 @@
         android:name="com.wukiki.givu.views.participate.CompleteFundingFragment"
         android:label="@string/label_complete_funding"
         tools:layout="@layout/fragment_complete_funding">
+
+    </fragment>
+
+    <fragment
+        android:id="@+id/fragment_cancel_funding"
+        android:name="com.wukiki.givu.views.cancel.CancelFundingFragment"
+        android:label="@string/label_cancel_funding"
+        tools:layout="@layout/fragment_cancel_funding">
+
+        <action
+            android:id="@+id/action_cancel_funding_to_finish_cancel_funding"
+            app:destination="@id/fragment_finish_cancel_funding" />
+
+    </fragment>
+
+    <fragment
+        android:id="@+id/fragment_finish_cancel_funding"
+        android:name="com.wukiki.givu.views.cancel.FinishCancelFundingFragment"
+        android:label="@string/label_finish_cancel_funding"
+        tools:layout="@layout/fragment_finish_cancel_funding">
 
     </fragment>
 
