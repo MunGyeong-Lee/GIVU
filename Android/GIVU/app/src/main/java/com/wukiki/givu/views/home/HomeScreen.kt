@@ -208,7 +208,7 @@ fun HomeScreen(homeViewModel: HomeViewModel = hiltViewModel(), navController: Na
         item {
             HomeAppBarPager(navController, user)
             Spacer(modifier = Modifier.height(4.dp))
-            SearchBarItem("웅") { }
+            SearchBarItem(navController)
         }
         item {
             Spacer(modifier = Modifier.height(16.dp))

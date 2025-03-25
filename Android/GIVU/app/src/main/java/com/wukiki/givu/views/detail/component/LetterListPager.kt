@@ -22,7 +22,9 @@ import com.wukiki.givu.util.DottedDivider
 import com.wukiki.givu.util.SortButton
 
 @Composable
-fun LetterListPager(letters: List<Letter>) {
+fun LetterListPager(
+    letters: List<Letter>
+) {
     Column(modifier = Modifier.padding(16.dp)) {
         Row(
             verticalAlignment = Alignment.CenterVertically
@@ -39,7 +41,10 @@ fun LetterListPager(letters: List<Letter>) {
                 fontWeight = FontWeight.Bold,
                 fontFamily = suit
             )
-            SortButton {  }
+            SortButton(
+                modifier = Modifier,
+                category = "최신순"
+            ) {  }
         }
 
         Spacer(modifier = Modifier.height(8.dp))

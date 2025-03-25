@@ -9,6 +9,7 @@ import com.wukiki.givu.R
 import com.wukiki.givu.config.BaseActivity
 import com.wukiki.givu.databinding.ActivityMainBinding
 import com.wukiki.givu.views.detail.viewmodel.FundingViewModel
+import com.wukiki.givu.views.search.viewmodel.SearchViewModel
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
@@ -16,6 +17,7 @@ class MainActivity : BaseActivity<ActivityMainBinding>(ActivityMainBinding::infl
 
     private val mainViewModel: MainViewModel by viewModels()
     private val fundingViewModel: FundingViewModel by viewModels()
+    private val searchViewModel: SearchViewModel by viewModels()
     private lateinit var navController: NavController
     private val navHostFragment: NavHostFragment by lazy {
         supportFragmentManager.findFragmentById(R.id.fcv_main) as NavHostFragment

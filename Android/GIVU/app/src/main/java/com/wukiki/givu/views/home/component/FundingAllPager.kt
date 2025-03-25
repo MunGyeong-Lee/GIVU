@@ -91,7 +91,6 @@ fun FundingAllPager(fundings: List<Funding>) {
             }
         }
 
-        // ViewPager
         HorizontalPager(
             state = pagerState,
             modifier = Modifier
