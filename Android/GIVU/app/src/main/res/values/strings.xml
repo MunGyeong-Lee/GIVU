@@ -5,6 +5,8 @@
 
     <!-- Common -->
     <string name="text_return">돌아가기</string>
+    <string name="text_image_upload">이미지 업로드</string>
+    <string name="message_image_limit">이미지는 최대 3장까지 업로드 가능합니다.</string>
 
     <!-- Menu -->
     <string name="menu_title_home">홈</string>
@@ -71,5 +73,14 @@
     <string name="text_question_cancel_funding">정말 해당 펀딩을 취소하시겠습니까?</string>
     <string name="text_cancel_funding">펀딩 취소</string>
     <string name="text_finish_cancel_funding">펀딩이 취소되었어요.</string>
+
+    <!-- Finish Funding -->
+    <string name="label_finish_funding">Finish Funding</string>
+    <string name="title_finish_funding">펀딩 완료하기</string>
+    <string name="title_finish_funding_review">펀딩 후기 작성</string>
+    <string name="text_hint_finish_funding_review">펀딩 후기 작성하기</string>
+    <string name="title_finish_funding_image_add">이미지 추가하기</string>
+    <string name="title_finish_funding_participate">펀딩에 참여하신 분들</string>
+    <string name="title_authentication">본인 인증하기</string>
 
 </resources>
