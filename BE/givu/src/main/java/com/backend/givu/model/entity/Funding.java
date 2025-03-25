@@ -76,11 +76,13 @@ public class Funding {
 
     @Column(name = "created_at")
     private Instant createdAt;
+
     @OneToMany(mappedBy = "funding")
     private Set<Participant> participants = new LinkedHashSet<>();
 
     @Column(name = "updated_at")
     private Instant updatedAt;
+
     @OneToMany(mappedBy = "relatedFunding")
     private Set<Payment> payments = new LinkedHashSet<>();
 
@@ -90,6 +92,7 @@ public class Funding {
 
     @OneToMany(mappedBy = "funding")
     private Set<Letter> letters = new LinkedHashSet<>();
+
     @OneToMany(mappedBy = "funding")
     private Set<Review> reviews = new LinkedHashSet<>();
 
