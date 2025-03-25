@@ -15,5 +15,6 @@ public class KakaoProfileDTO {
         private String email;
         private String birthday;
         private String gender;
+        private String age_range;
     }
 }

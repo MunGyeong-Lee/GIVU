@@ -24,40 +24,40 @@ public class UserController {
     private final UserService userService;
     private final KakaoLoginService kakaoLoginService;
 
-    @Operation(summary = "카카오 로그인/회원가입", description = "카카오 인가 코드를 받아 사용자 정보를 확인하고, 존재하면 로그인, 없으면 회원가입을 처리합니다.")
-    @PostMapping("/kakao")
-    public ResponseEntity<UserIdResponseDTO> kakaoLogin(@RequestParam String code) {
-        // 1. access token 요청
-        String accessToken = kakaoLoginService.getAccessToken(code);
-
-        // 2. 사용자 정보 요청
-        KakaoProfileDTO profile = kakaoLoginService.getUserInfo(accessToken);
-        Long kakaoId = profile.getId();
-
-        // 3. DB에 존재 여부 확인
-        Optional<User> existingUser = userService.getUserByKakaoId(kakaoId);
-
-        // 4. 존재하면 그대로 반환
-        if (existingUser.isPresent()) {
-            return ResponseEntity.ok(new UserIdResponseDTO(existingUser.get().getId()));
-        }
-
-        // 5. 존재하지 않으면 회원가입
-        UsersDTO dto = UsersDTO.builder()
-                .kakaoId(kakaoId)
-                .nickName((String) profile.getProperties().get("nickname"))
-                .email(Optional.ofNullable(profile.getKakao_account().getEmail()).orElse("no-email@kakao.com"))
-                .profileImage((String) profile.getProperties().getOrDefault("profile_image", "https://default.image.url"))
-                .gender(GenderMapper.fromKakao(profile.getKakao_account().getGender())) // null-safe 내부 처리
-                .ageRange(AgeRangeMapper.fromKakao(profile.getKakao_account().getAge_range()))
-                .birth(LocalDate.now()) // 동의 안 한 경우 생년월일 없음
-                .balance(0)
-                .address("카카오 주소 없음") // 기본값
-                .build();
-
-        User newUser = userService.saveUser(dto);
-        return ResponseEntity.ok(new UserIdResponseDTO(newUser.getId()));
-    }
+//    @Operation(summary = "카카오 로그인/회원가입", description = "카카오 인가 코드를 받아 사용자 정보를 확인하고, 존재하면 로그인, 없으면 회원가입을 처리합니다.")
+//    @PostMapping("/kakao")
+//    public ResponseEntity<UserIdResponseDTO> kakaoLogin(@RequestParam String code) {
+//        // 1. access token 요청
+//        String accessToken = kakaoLoginService.getAccessToken(code);
+//
+//        // 2. 사용자 정보 요청
+//        KakaoProfileDTO profile = kakaoLoginService.getUserInfo(accessToken);
+//        Long kakaoId = profile.getId();
+//
+//        // 3. DB에 존재 여부 확인
+//        Optional<User> existingUser = userService.getUserByKakaoId(kakaoId);
+//
+//        // 4. 존재하면 그대로 반환
+//        if (existingUser.isPresent()) {
+//            return ResponseEntity.ok(new UserIdResponseDTO(existingUser.get().getId()));
+//        }
+//
+//        // 5. 존재하지 않으면 회원가입
+//        UsersDTO dto = UsersDTO.builder()
+//                .kakaoId(kakaoId)
+//                .nickName((String) profile.getProperties().get("nickname"))
+//                .email(Optional.ofNullable(profile.getKakao_account().getEmail()).orElse("no-email@kakao.com"))
+//                .profileImage((String) profile.getProperties().getOrDefault("profile_image", "https://default.image.url"))
+//                .gender(GenderMapper.fromKakao(profile.getKakao_account().getGender())) // null-safe 내부 처리
+//                .ageRange(AgeRangeMapper.fromKakao(profile.getKakao_account().getAge_range()))
+//                .birth(LocalDate.now()) // 동의 안 한 경우 생년월일 없음
+//                .balance(0)
+//                .address("카카오 주소 없음") // 기본값
+//                .build();
+//
+//        User newUser = userService.saveUser(dto);
+//        return ResponseEntity.ok(new UserIdResponseDTO(newUser.getId()));
+//    }
 
 
     @GetMapping("/{userId}")
