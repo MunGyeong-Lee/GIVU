@@ -5,7 +5,9 @@
 
     <data>
 
-
+        <variable
+            name="vm"
+            type="com.wukiki.givu.views.search.viewmodel.SearchViewModel" />
 
     </data>
 
@@ -28,6 +30,14 @@
             android:layout_height="wrap_content"
             android:orientation="horizontal"
             app:layout_constraintGuide_begin="@dimen/dp_medium" />
+
+        <androidx.compose.ui.platform.ComposeView
+            android:id="@+id/compose_search"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
 
         <androidx.constraintlayout.widget.Guideline
             android:id="@+id/gl_end_search"
