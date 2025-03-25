@@ -25,6 +25,7 @@ import androidx.compose.ui.unit.sp
 import com.wukiki.domain.model.Funding
 import com.wukiki.givu.R
 import com.wukiki.givu.ui.suit
+import com.wukiki.givu.util.CommonUtils
 import com.wukiki.givu.util.ReportButton
 
 @Composable
@@ -80,7 +81,7 @@ fun FundingInfoItem(funding: Funding) {
         )
         Spacer(modifier = Modifier.height(4.dp))
         Text(
-            text = funding.fundedAmount,
+            text = CommonUtils.makeCommaPrice(funding.fundedAmount),
             fontSize = 20.sp,
             fontFamily = suit,
             fontWeight = FontWeight.SemiBold

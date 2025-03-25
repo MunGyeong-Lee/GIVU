@@ -34,6 +34,7 @@ import coil.compose.SubcomposeAsyncImage
 import com.wukiki.domain.model.Funding
 import com.wukiki.givu.R
 import com.wukiki.givu.ui.suit
+import com.wukiki.givu.util.CommonUtils
 
 @Composable
 fun FundingItem(
@@ -96,7 +97,7 @@ fun FundingItem(
                     horizontalArrangement = Arrangement.Start
                 ) {
                     Text(
-                        text = funding.fundedAmount,
+                        text = CommonUtils.makeCommaPrice(funding.fundedAmount),
                         fontSize = 16.sp,
                         fontWeight = FontWeight.SemiBold,
                         fontFamily = suit,
@@ -154,7 +155,7 @@ fun PreviewFundingItem() {
             categoryName = "스포츠",
             scope = "public",
             participantsNumber = "100",
-            fundedAmount = "58,000",
+            fundedAmount = 58000,
             status = "liked",
             images = listOf("https://images.unsplash.com/photo-1522383225653-ed111181a951"),
             createdAt = "2024-03-01",

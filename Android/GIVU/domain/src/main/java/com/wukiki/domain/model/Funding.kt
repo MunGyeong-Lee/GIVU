@@ -11,7 +11,7 @@ data class Funding(
     val categoryName: String,
     val scope: String,
     val participantsNumber: String,
-    val fundedAmount: String,
+    val fundedAmount: Int,
     val status: String,
     val images: List<String>,
     val createdAt: String,

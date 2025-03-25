@@ -34,6 +34,7 @@ import coil.compose.SubcomposeAsyncImage
 import com.wukiki.domain.model.Funding
 import com.wukiki.givu.R
 import com.wukiki.givu.ui.suit
+import com.wukiki.givu.util.CommonUtils
 
 @Composable
 fun PopularFundingCardItem(funding: Funding, navController: NavController) {
@@ -119,7 +120,7 @@ fun PopularFundingCardItem(funding: Funding, navController: NavController) {
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = funding.fundedAmount,
+                        text = CommonUtils.makeCommaPrice(funding.fundedAmount),
                         fontSize = 16.sp,
                         fontWeight = FontWeight.ExtraBold,
                         color = Color.Black,

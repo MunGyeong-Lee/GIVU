@@ -48,6 +48,7 @@ fun CommonTopBar(title: String) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
+            .background(color = Color.White)
             .height(60.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -70,7 +71,7 @@ fun CommonTopBar(title: String) {
         IconButton(
             onClick = {},
         ) {
-            Icon(painter = painterResource(R.drawable.ic_home), null)
+            Icon(painter = painterResource(R.drawable.ic_topbar_home), null)
         }
 
     }
@@ -171,7 +172,7 @@ fun StoreDetailTopBar() {
         IconButton(
             onClick = {},
         ) {
-            Icon(painter = painterResource(R.drawable.ic_home), null)
+            Icon(painter = painterResource(R.drawable.ic_topbar_home), null)
         }
 
     }
