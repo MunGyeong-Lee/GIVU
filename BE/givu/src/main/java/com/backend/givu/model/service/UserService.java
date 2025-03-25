@@ -7,6 +7,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.Optional;
 
 import static com.backend.givu.util.DateTimeUtil.toInstant;
 
@@ -41,5 +42,7 @@ public class UserService {
                 .orElseThrow(() -> new RuntimeException("해당 사용자가 존재하지 않습니다."));
     }
 
-    // 기타 로직들 (수정, 삭제 등등) 추가 가능
+    public Optional<User> getUserByKakaoId(Long kakaoId){
+        return userRepository.findByKakaoId(kakaoId);
+    }
 }
