@@ -7,32 +7,33 @@
 
         <variable
             name="vm"
-            type="com.wukiki.givu.views.search.viewmodel.SearchViewModel" />
-
+            type="com.wukiki.givu.views.detail.viewmodel.FundingViewModel" />
+        
     </data>
-
+    
     <androidx.constraintlayout.widget.ConstraintLayout
-        android:id="@+id/fragment_search"
+        android:id="@+id/fragment_cancel_funding"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        tools:context=".views.search.SearchFragment">
+        android:background="@color/neutral_white"
+        tools:context=".views.cancel.CancelFundingFragment">
 
         <androidx.constraintlayout.widget.Guideline
-            android:id="@+id/gl_start_search"
+            android:id="@+id/gl_start_cancel_funding"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:orientation="vertical"
             app:layout_constraintGuide_begin="@dimen/dp_medium" />
 
         <androidx.constraintlayout.widget.Guideline
-            android:id="@+id/gl_top_search"
+            android:id="@+id/gl_top_cancel_funding"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
             app:layout_constraintGuide_begin="@dimen/dp_medium" />
 
         <androidx.compose.ui.platform.ComposeView
-            android:id="@+id/compose_search"
+            android:id="@+id/compose_cancel_funding"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             app:layout_constraintEnd_toEndOf="parent"
@@ -40,19 +41,19 @@
             app:layout_constraintTop_toTopOf="parent" />
 
         <androidx.constraintlayout.widget.Guideline
-            android:id="@+id/gl_end_search"
+            android:id="@+id/gl_end_cancel_funding"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:orientation="vertical"
             app:layout_constraintGuide_end="@dimen/dp_medium" />
 
         <androidx.constraintlayout.widget.Guideline
-            android:id="@+id/gl_bottom_search"
+            android:id="@+id/gl_bottom_cancel_funding"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
             app:layout_constraintGuide_end="@dimen/dp_medium" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
-
+    
 </layout>

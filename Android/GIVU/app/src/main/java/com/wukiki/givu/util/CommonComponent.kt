@@ -290,11 +290,13 @@ fun ReportButton(
 
 @Composable
 fun SortButton(
+    modifier: Modifier,
+    category: String,
     onClick: () -> Unit
 ) {
     Box(
         modifier = Modifier
-            .clickable { onClick }
+            .clickable { onClick() }
             .background(Color.White, shape = RoundedCornerShape(20.dp))
             .border(1.dp, Color(0xFFBDBDBD), shape = RoundedCornerShape(20.dp))
             .padding(horizontal = 12.dp, vertical = 8.dp)
@@ -303,7 +305,7 @@ fun SortButton(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
-                text = "최신순",
+                text = category,
                 fontSize = 16.sp,
                 color = Color(0xFFBDBDBD),
                 fontWeight = FontWeight.Bold,
