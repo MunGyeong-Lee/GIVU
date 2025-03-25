@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 
 // 임시 데이터 - 나중에 API로 대체
 const PRODUCT_DETAILS = {
@@ -59,10 +59,16 @@ const PRODUCT_DETAILS = {
 
 const ShoppingProductDetail = () => {
   const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
   const [quantity, setQuantity] = useState(1);
   const [selectedOptions, setSelectedOptions] = useState<Record<string, string>>({});
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
+  
+  // 페이지 로드 시 스크롤을 맨 위로 이동
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
   
   // 실제 구현에서는 id를 사용하여 API에서 데이터를 가져와야 함
   const product = PRODUCT_DETAILS;
@@ -90,6 +96,28 @@ const ShoppingProductDetail = () => {
   
   // 총 금액 계산
   const totalPrice = discountedPrice * quantity;
+  
+  // 구매 버튼 클릭 핸들러
+  const handlePurchase = () => {
+    // 옵션이 모두 선택되었는지 확인
+    const isAllOptionsSelected = product.options.every(
+      option => selectedOptions[option.name]
+    );
+    
+    if (!isAllOptionsSelected) {
+      alert('모든 옵션을 선택해주세요.');
+      return;
+    }
+    
+    // 주문 페이지로 이동하면서 상품 정보, 수량, 선택한 옵션 전달
+    navigate('/shopping/order', { 
+      state: { 
+        product,
+        quantity,
+        options: selectedOptions
+      } 
+    });
+  };
   
   return (
     <div className="max-w-7xl mx-auto px-4 py-8">
@@ -205,14 +233,20 @@ const ShoppingProductDetail = () => {
             </div>
           </div>
           
-          {/* 구매 버튼을 펀딩 만들기 버튼으로 변경 */}
-          <div className="flex gap-2">
-            <button className="flex-1 py-3 border border-black rounded-md hover:bg-gray-100 transition-colors">
+          {/* 구매 버튼을 펀딩 만들기 버튼으로 변경 - 가로 길이 동일하게 */}
+          <div className="grid grid-cols-3 gap-2">
+            <button className="py-3 border border-black rounded-md hover:bg-gray-100 transition-colors">
               장바구니
+            </button>
+            <button 
+              className="py-3 border border-black rounded-md hover:bg-gray-100 transition-colors"
+              onClick={handlePurchase}
+            >
+              상품 구매하기
             </button>
             <Link 
               to="/funding/create" 
-              className="flex-1 py-3 bg-pink-500 text-white rounded-md hover:bg-pink-600 transition-colors text-center"
+              className="py-3 bg-pink-500 text-white rounded-md hover:bg-pink-600 transition-colors text-center"
             >
               이 상품으로 펀딩 만들기
             </Link>

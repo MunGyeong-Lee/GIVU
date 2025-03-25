@@ -1,180 +1,38 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { Link } from "react-router-dom";
+import axios from 'axios';
 
-// 카테고리 데이터
+// .env 파일에서 기본 URL 가져오기
+const API_BASE_URL = import.meta.env.VITE_BASE_URL;
+
+// API 응답 타입에 맞게 수정된 상품 인터페이스
+interface Product {
+  id: number;
+  productName: string;
+  price: number;
+  image: string;
+  favorite: number;
+  star: number;
+  description: string;
+  createdAt: string;
+  payments: any[];
+  category: string;
+}
+
+// 카테고리 정의 (API에서 받아온 카테고리 종류에 맞게 정의)
 const CATEGORIES = [
-  { id: 1, name: "가전/디지털", icon: "📱" },
-  { id: 2, name: "문구/오피스", icon: "✏️" },
-  { id: 3, name: "생활용품", icon: "🧼" },
-  { id: 4, name: "완구/취미", icon: "🧸" },
-  { id: 5, name: "헬스/건강식품", icon: "💪" },
-  { id: 6, name: "출산/유아동", icon: "🍼" },
+  { id: 1, name: "전체", icon: "🏠", value: null },
+  { id: 2, name: "전자기기", icon: "📱", value: "ELECTRONICS" },
+  { id: 3, name: "패션/의류", icon: "👕", value: "FASHION" },
+  { id: 4, name: "식품/음료", icon: "🍎", value: "FOOD" },
+  { id: 5, name: "가정용품", icon: "🧹", value: "HOME" },
+  { id: 6, name: "건강/뷰티", icon: "💄", value: "BEAUTY" },
+  { id: 7, name: "스포츠/레저", icon: "⚽", value: "SPORTS" },
+  { id: 8, name: "도서/문구", icon: "📚", value: "BOOKS" },
+  { id: 9, name: "기타", icon: "🎁", value: "OTHER" }
 ];
 
-// 상품 데이터
-const PRODUCTS = [
-  { 
-    id: 1, 
-    name: "도현이의 노란 텐트", 
-    price: 29000, 
-    category: "홈인/리빙", 
-    imageUrl: "https://via.placeholder.com/200x200?text=노란+텐트", 
-    discount: 0 
-  },
-  { 
-    id: 2, 
-    name: "도현이의 노란 텐트", 
-    price: 29000, 
-    category: "홈인/리빙", 
-    imageUrl: "https://via.placeholder.com/200x200?text=노란+텐트", 
-    discount: 0 
-  },
-  { 
-    id: 3, 
-    name: "도현이의 노란 텐트", 
-    price: 29000, 
-    category: "홈인/리빙", 
-    imageUrl: "https://via.placeholder.com/200x200?text=노란+텐트", 
-    discount: 0 
-  },
-  { 
-    id: 4, 
-    name: "도현이의 노란 텐트", 
-    price: 29000, 
-    category: "홈인/리빙", 
-    imageUrl: "https://via.placeholder.com/200x200?text=노란+텐트", 
-    discount: 0 
-  },
-  { 
-    id: 5, 
-    name: "에어팟 프로 2", 
-    price: 359000, 
-    category: "가전/디지털", 
-    imageUrl: "https://via.placeholder.com/200x200?text=에어팟+프로", 
-    discount: 0 
-  },
-  { 
-    id: 6, 
-    name: "애플 에어팟 맥스", 
-    price: 769000, 
-    category: "가전/디지털", 
-    imageUrl: "https://via.placeholder.com/200x200?text=에어팟+맥스", 
-    discount: 0 
-  },
-  { 
-    id: 7, 
-    name: "다이슨 헤어 드라이어", 
-    price: 499000, 
-    category: "뷰티/코스메틱", 
-    imageUrl: "https://via.placeholder.com/200x200?text=다이슨+드라이어", 
-    discount: 0 
-  },
-  { 
-    id: 8, 
-    name: "친환경 대나무 칫솔", 
-    price: 5000, 
-    category: "생활용품", 
-    imageUrl: "https://via.placeholder.com/200x200?text=대나무+칫솔", 
-    discount: 0 
-  },
-];
-
-// 더 많은 상품 데이터 추가
-const EXTENDED_PRODUCTS = [
-  ...PRODUCTS,
-  { 
-    id: 9, 
-    name: "삼성 갤럭시 버즈 프로", 
-    price: 219000, 
-    category: "가전/디지털", 
-    imageUrl: "https://via.placeholder.com/200x200?text=갤럭시+버즈", 
-    discount: 0 
-  },
-  { 
-    id: 10, 
-    name: "소니 WH-1000XM4", 
-    price: 429000, 
-    category: "가전/디지털", 
-    imageUrl: "https://via.placeholder.com/200x200?text=소니+헤드폰", 
-    discount: 0 
-  },
-  { 
-    id: 11, 
-    name: "애플 맥북 프로", 
-    price: 2490000, 
-    category: "가전/디지털", 
-    imageUrl: "https://via.placeholder.com/200x200?text=맥북+프로", 
-    discount: 0 
-  },
-  { 
-    id: 12, 
-    name: "샤오미 공기청정기", 
-    price: 129000, 
-    category: "가전/디지털", 
-    imageUrl: "https://via.placeholder.com/200x200?text=공기청정기", 
-    discount: 0 
-  },
-  { 
-    id: 13, 
-    name: "LG 그램 노트북", 
-    price: 1790000, 
-    category: "가전/디지털", 
-    imageUrl: "https://via.placeholder.com/200x200?text=LG+그램", 
-    discount: 0 
-  },
-  { 
-    id: 14, 
-    name: "삼성 갤럭시 Z 폴드", 
-    price: 1990000, 
-    category: "가전/디지털", 
-    imageUrl: "https://via.placeholder.com/200x200?text=갤럭시+폴드", 
-    discount: 0 
-  },
-  { 
-    id: 15, 
-    name: "애플 아이패드 프로", 
-    price: 1290000, 
-    category: "가전/디지털", 
-    imageUrl: "https://via.placeholder.com/200x200?text=아이패드+프로", 
-    discount: 0 
-  }
-];
-
-// 배너 슬라이더에 사용할 메인 상품 데이터
-const MAIN_BANNER_PRODUCTS = [
-  {
-    id: 1,
-    name: "애플 에어팟 맥스",
-    description: "고품질 사운드와 액티브 노이즈 캔슬링을 갖춘 프리미엄 헤드폰",
-    price: 769000,
-    imageUrl: "https://via.placeholder.com/800x500?text=에어팟+맥스",
-    discount: 0,
-    bgColor: "bg-gradient-to-r from-black to-gray-800",
-    icon: "🎧"
-  },
-  {
-    id: 2,
-    name: "다이슨 헤어 드라이어",
-    description: "열 손상 없이 빠르게 드라이 가능한 혁신적인 헤어 드라이어",
-    price: 499000,
-    imageUrl: "https://via.placeholder.com/800x500?text=다이슨+드라이어",
-    discount: 0,
-    bgColor: "bg-gradient-to-r from-purple-900 to-pink-700",
-    icon: "💨"
-  },
-  {
-    id: 3,
-    name: "애플 맥북 프로",
-    description: "압도적인 성능과 배터리 수명을 갖춘 최신형 노트북",
-    price: 2490000,
-    imageUrl: "https://via.placeholder.com/800x500?text=맥북+프로",
-    discount: 0,
-    bgColor: "bg-gradient-to-r from-blue-900 to-indigo-800",
-    icon: "💻"
-  }
-];
-
-// 가격대 필터 옵션
+// 가격대 필터 (필요 시 사용)
 const PRICE_RANGES = [
   { id: 1, name: "가격대별" },
   { id: 2, name: "1만원 미만" },
@@ -184,38 +42,158 @@ const PRICE_RANGES = [
   { id: 6, name: "10만원 이상" },
 ];
 
-// 베스트 상품
-const BEST_PRODUCTS = EXTENDED_PRODUCTS.slice(4, 12);
-
-// 지금 뜨는 상품
-const TRENDING_PRODUCTS = [
-  EXTENDED_PRODUCTS[6], // 다이슨 헤어 드라이어
-  EXTENDED_PRODUCTS[12], // LG 그램
-  EXTENDED_PRODUCTS[14], // 아이패드 프로
-  EXTENDED_PRODUCTS[5], // 에어팟 맥스
-  EXTENDED_PRODUCTS[13] // 갤럭시 폴드
-];
-
 const MainShopping = () => {
-  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
-  const [currentBannerIndex, setCurrentBannerIndex] = useState(0);
-  const [visibleProducts, setVisibleProducts] = useState(8);
-  const [loading, setLoading] = useState(false);
+  // 상태 관리
+  const [products, setProducts] = useState<Product[]>([]);
+  const [displayedProducts, setDisplayedProducts] = useState<Product[]>([]);
+  const [bestProducts, setBestProducts] = useState<Product[]>([]);
+  const [trendingProducts, setTrendingProducts] = useState<Product[]>([]);
   
-  const filteredProducts = selectedCategory 
-    ? EXTENDED_PRODUCTS.filter(product => product.category === selectedCategory)
-    : EXTENDED_PRODUCTS;
-
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [selectedPriceRange, setSelectedPriceRange] = useState<number | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  
+  // 무한 스크롤을 위한 상태
+  const [page, setPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(8); // 한 번에 보여줄 상품 수
+  const [hasMore, setHasMore] = useState(true);
+  
+  // ref 정의
   const bestProductsRef = useRef<HTMLDivElement>(null);
   const productGridRef = useRef<HTMLDivElement>(null);
   const trendingProductsRef = useRef<HTMLDivElement>(null);
-  const mainBannerRef = useRef<HTMLDivElement>(null);
   const allProductsRef = useRef<HTMLDivElement>(null);
+  const categoryRef = useRef<HTMLDivElement>(null);
+  const loadingRef = useRef<HTMLDivElement>(null); // 무한 스크롤 감지를 위한 ref
 
-  // 타입 정의 간소화
+  // API에서 상품 목록 가져오기
+  const fetchProducts = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      // 카테고리 필터링 파라미터 추가
+      const categoryParam = selectedCategory ? `&category=${selectedCategory}` : '';
+      
+      // API 호출
+      const response = await axios.get(`${API_BASE_URL}/products/list?${categoryParam}`);
+      
+      console.log('API 응답:', response.data);
+      
+      // 데이터 처리
+      const newProducts = response.data; // API 응답 구조에 따라 조정
+      
+      // 모든 상품 저장
+      setProducts(newProducts);
+      
+      // 처음에는 일부만 표시
+      setDisplayedProducts(newProducts.slice(0, itemsPerPage));
+      
+      // 더 불러올 상품이 있는지 확인
+      setHasMore(newProducts.length > itemsPerPage);
+      
+      // 페이지 초기화
+      setPage(1);
+      
+      // 베스트 상품과 인기 상품 설정
+      if (newProducts.length > 0) {
+        // 가격 기준으로 정렬하여 상위 제품 선택
+        const sortedByPrice = [...newProducts].sort((a, b) => b.price - a.price);
+        setBestProducts(sortedByPrice.slice(0, 8));
+        
+        // 임의로 인기 상품 선택
+        setTrendingProducts(newProducts.slice(0, 5));
+      }
+      
+    } catch (err) {
+      console.error('상품을 불러오는 중 오류가 발생했습니다:', err);
+      setError('상품을 불러오는데 실패했습니다. 다시 시도해주세요.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // 더 많은 상품 로드하기
+  const loadMoreProducts = () => {
+    if (!hasMore || loading) return;
+    
+    // 다음 페이지 계산
+    const nextPage = page + 1;
+    const startIndex = page * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    
+    // 표시할 추가 상품이 있는지 확인
+    if (startIndex >= products.length) {
+      setHasMore(false);
+      return;
+    }
+    
+    // 로딩 표시
+    setLoading(true);
+    
+    // 로딩 효과를 위한 지연 (실제 API 호출 시에는 필요 없음)
+    setTimeout(() => {
+      // 새로운 상품 추가
+      const newDisplayedProducts = [
+        ...displayedProducts,
+        ...products.slice(startIndex, endIndex)
+      ];
+      
+      setDisplayedProducts(newDisplayedProducts);
+      setPage(nextPage);
+      
+      // 더 로드할 상품이 있는지 확인
+      setHasMore(endIndex < products.length);
+      setLoading(false);
+    }, 500);
+  };
+
+  // 인터섹션 옵저버 설정 (무한 스크롤용)
+  useEffect(() => {
+    // 관찰할 요소가 없으면 리턴
+    if (!loadingRef.current) return;
+    
+    const observer = new IntersectionObserver(
+      (entries) => {
+        // 관찰 대상이 화면에 보이면 추가 상품 로드
+        if (entries[0].isIntersecting && hasMore && !loading) {
+          loadMoreProducts();
+        }
+      },
+      { threshold: 0.1 } // 10% 정도 보이면 로드 시작
+    );
+    
+    // 관찰 시작
+    observer.observe(loadingRef.current);
+    
+    // 컴포넌트 언마운트 시 관찰 중지
+    return () => {
+      if (loadingRef.current) {
+        observer.unobserve(loadingRef.current);
+      }
+    };
+  }, [loadingRef, hasMore, loading]);
+
+  // 첫 로드 시 상품 가져오기
+  useEffect(() => {
+    fetchProducts();
+  }, []);
+  
+  // 카테고리 변경 시 상품 다시 가져오기
+  useEffect(() => {
+    fetchProducts();
+  }, [selectedCategory]);
+
+  // 카테고리 선택 핸들러
+  const handleCategorySelect = (categoryValue: string | null) => {
+    setSelectedCategory(categoryValue);
+  };
+
+  // 가로 스크롤 함수
   const scrollHorizontally = (ref: any, direction: 'left' | 'right') => {
     if (ref.current) {
-      const scrollAmount = 300; // 스크롤 양
+      const scrollAmount = 300;
       const scrollLeft = direction === 'left' 
         ? ref.current.scrollLeft - scrollAmount 
         : ref.current.scrollLeft + scrollAmount;
@@ -226,66 +204,64 @@ const MainShopping = () => {
       });
     }
   };
-
-  // 배너 슬라이드 이동 함수
-  const changeBanner = (direction: 'left' | 'right') => {
-    if (direction === 'left') {
-      setCurrentBannerIndex(prev => 
-        prev === 0 ? MAIN_BANNER_PRODUCTS.length - 1 : prev - 1
-      );
-    } else {
-      setCurrentBannerIndex(prev => 
-        (prev + 1) % MAIN_BANNER_PRODUCTS.length
-      );
-    }
-  };
-
-  // 자동 슬라이드 효과
-  React.useEffect(() => {
-    const interval = setInterval(() => {
-      setCurrentBannerIndex(prev => 
-        (prev + 1) % MAIN_BANNER_PRODUCTS.length
-      );
-    }, 5000); // 5초마다 변경
-    
-    return () => clearInterval(interval);
-  }, []);
-
-  const currentBanner = MAIN_BANNER_PRODUCTS[currentBannerIndex];
-
-  // 무한 스크롤 감지 함수
-  const handleScroll = () => {
-    if (allProductsRef.current) {
-      const { scrollTop, scrollHeight, clientHeight } = document.documentElement;
+  
+  // 카테고리 스크롤 함수
+  const scrollCategory = (direction: 'left' | 'right') => {
+    if (categoryRef.current) {
+      const scrollAmount = 200;
+      const scrollLeft = direction === 'left' 
+        ? categoryRef.current.scrollLeft - scrollAmount 
+        : categoryRef.current.scrollLeft + scrollAmount;
       
-      // 스크롤이 페이지 하단에 가까워지면 더 많은 상품 로드
-      if (scrollTop + clientHeight >= scrollHeight - 300 && !loading) {
-        loadMoreProducts();
-      }
+      categoryRef.current.scrollTo({
+        left: scrollLeft,
+        behavior: 'smooth'
+      });
     }
   };
 
-  // 더 많은 상품 로드 함수
-  const loadMoreProducts = () => {
-    if (visibleProducts >= filteredProducts.length) return; // 더 이상 로드할 상품이 없으면 리턴
-    
-    setLoading(true);
-    
-    // 로딩 효과를 위한 타임아웃 (실제 API 호출 시에는 필요 없음)
-    setTimeout(() => {
-      setVisibleProducts(prev => Math.min(prev + 4, filteredProducts.length));
-      setLoading(false);
-    }, 800);
+  // 카테고리 이름 가져오기 유틸 함수
+  const getCategoryName = (categoryValue: string) => {
+    const category = CATEGORIES.find(cat => cat.value === categoryValue);
+    return category ? category.name : categoryValue;
+  };
+  
+  // 카테고리 아이콘 가져오기 유틸 함수
+  const getCategoryIcon = (categoryValue: string) => {
+    const category = CATEGORIES.find(cat => cat.value === categoryValue);
+    return category ? category.icon : "🏷️";
   };
 
-  // 스크롤 이벤트 리스너 추가
-  React.useEffect(() => {
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, [visibleProducts, loading]);
+  // 필터 상태 텍스트 가져오기
+  const getFilterStatusText = () => {
+    if (selectedCategory && selectedPriceRange) {
+      return `카테고리: ${getCategoryName(selectedCategory)}, 가격대: ${PRICE_RANGES.find(r => r.id === selectedPriceRange)?.name}`;
+    } else if (selectedCategory) {
+      return `카테고리: ${getCategoryName(selectedCategory)}`;
+    } else if (selectedPriceRange) {
+      return `가격대: ${PRICE_RANGES.find(r => r.id === selectedPriceRange)?.name}`;
+    } else {
+      return "전체 상품";
+    }
+  };
 
   return (
     <div className="w-full">
+      {/* 초기 로딩 인디케이터 */}
+      {loading && products.length === 0 && (
+        <div className="fixed inset-0 bg-white bg-opacity-80 z-50 flex items-center justify-center">
+          <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-pink-500"></div>
+        </div>
+      )}
+      
+      {/* 에러 메시지 */}
+      {error && (
+        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4 mx-4" role="alert">
+          <strong className="font-bold">오류!</strong>
+          <span className="block sm:inline"> {error}</span>
+        </div>
+      )}
+      
       {/* 헤더 영역 */}
       <header className="py-4 border-b border-gray-200 bg-white w-full">
         <div className="container mx-auto px-4 flex justify-between items-center">
@@ -304,181 +280,125 @@ const MainShopping = () => {
           </div>
         </div>
       </header>
-
-      {/* 메인 배너 슬라이더 */}
-      <div 
-        className={`w-full relative h-[400px] md:h-[500px] overflow-hidden transition-all duration-500 ease-in-out ${currentBanner.bgColor}`}
-      >
-        <div className="container mx-auto h-full relative">
-          {/* 왼쪽 화살표 */}
+      
+      {/* 카테고리 영역 - 한 줄 가로 스크롤 */}
+      <div className="bg-white py-4 border-b border-gray-200 sticky top-0 z-30 shadow-sm">
+        <div className="container mx-auto px-4 relative">
+          {/* 왼쪽 스크롤 버튼 */}
           <button 
-            onClick={() => changeBanner('left')}
-            className="absolute left-4 top-1/2 transform -translate-y-1/2 z-10 p-2 bg-white/50 hover:bg-white/80 rounded-full w-10 h-10 flex items-center justify-center text-gray-800"
-            aria-label="이전 상품"
+            onClick={() => scrollCategory('left')} 
+            className="absolute left-0 top-1/2 transform -translate-y-1/2 z-10 bg-white rounded-full shadow-md p-1 md:hidden"
+            aria-label="카테고리 왼쪽으로 스크롤"
           >
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" className="w-6 h-6">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-500" viewBox="0 0 20 20" fill="currentColor">
+              <path fillRule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clipRule="evenodd" />
             </svg>
           </button>
           
-          {/* 배너 콘텐츠 */}
-          <div className="flex h-full items-center justify-between px-4 md:px-0">
-            <div className="z-10 max-w-lg text-white">
-              <h2 className="text-3xl md:text-5xl font-bold mb-2 drop-shadow-md">{currentBanner.name}</h2>
-              <p className="text-lg md:text-xl mb-4 opacity-90 drop-shadow-md">{currentBanner.description}</p>
-              <div className="flex items-center gap-3 mb-6">
-                {currentBanner.discount > 0 && (
-                  <span className="text-white/80 line-through text-lg">
-                    {currentBanner.price.toLocaleString()}원
-                  </span>
-                )}
-                <span className="text-white font-bold text-2xl">
-                  {(currentBanner.price * (100 - currentBanner.discount) / 100).toLocaleString()}원
-                </span>
-                {currentBanner.discount > 0 && (
-                  <span className="bg-orange-500 text-white text-sm font-bold px-2 py-1 rounded-full">
-                    {currentBanner.discount}% 할인
-                  </span>
-                )}
-              </div>
-              <button className="px-6 py-3 bg-white text-black font-bold rounded-md hover:bg-white/90 transition-colors">
-                자세히 보기
-              </button>
-            </div>
-            <div className="hidden md:flex items-center justify-center">
-              {/* 이미지가 없어도 멋진 디자인을 보여주는 대체 요소 */}
-              <div className="relative w-[400px] h-[400px] flex items-center justify-center">
-                <div className="absolute w-full h-full rounded-full bg-white/10 animate-pulse"></div>
-                <div className="absolute w-[300px] h-[300px] rounded-full bg-white/20 animate-pulse" style={{ animationDelay: '0.5s' }}></div>
-                <div className="absolute w-[200px] h-[200px] rounded-full bg-white/30 animate-pulse" style={{ animationDelay: '1s' }}></div>
-                <div className="text-[120px] drop-shadow-lg">{currentBanner.icon}</div>
-              </div>
-            </div>
-          </div>
-          
-          {/* 오른쪽 화살표 */}
-          <button 
-            onClick={() => changeBanner('right')}
-            className="absolute right-4 top-1/2 transform -translate-y-1/2 z-10 p-2 bg-white/50 hover:bg-white/80 rounded-full w-10 h-10 flex items-center justify-center text-gray-800"
-            aria-label="다음 상품"
+          {/* 카테고리 가로 스크롤 */}
+          <div 
+            ref={categoryRef}
+            className="flex overflow-x-auto scrollbar-hide space-x-4 py-1 px-6 md:px-0 md:justify-center"
+            style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
           >
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" className="w-6 h-6">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-            </svg>
-          </button>
-          
-          {/* 인디케이터 점 */}
-          <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex gap-2">
-            {MAIN_BANNER_PRODUCTS.map((_, index) => (
-              <button
-                key={index}
-                className={`w-2.5 h-2.5 rounded-full ${index === currentBannerIndex ? 'bg-white' : 'bg-white/50'}`}
-                onClick={() => setCurrentBannerIndex(index)}
-                aria-label={`배너 ${index + 1}로 이동`}
-              />
-            ))}
-          </div>
-        </div>
-      </div>
-
-      {/* 카테고리 영역 */}
-      <div className="bg-white py-8 w-full">
-        <div className="container mx-auto px-4">
-          <div className="grid grid-cols-3 md:grid-cols-6 gap-4">
             {CATEGORIES.map(category => (
-              <div key={category.id} className="flex flex-col items-center">
-                <div className="w-16 h-16 bg-gray-100 rounded-lg mb-2 flex items-center justify-center">
-                  <span className="text-2xl">{category.icon}</span>
-                </div>
-                <span className="text-sm text-center">{category.name}</span>
+              <div 
+                key={category.id} 
+                className={`flex items-center flex-shrink-0 cursor-pointer transition-all px-3 py-2 rounded-full ${
+                  selectedCategory === category.value 
+                    ? 'bg-pink-100 text-pink-600 font-medium shadow-sm' 
+                    : 'hover:bg-gray-100'
+                }`}
+                onClick={() => handleCategorySelect(category.value)}
+              >
+                <span className="mr-1.5">{category.icon}</span>
+                <span className="whitespace-nowrap">{category.name}</span>
               </div>
             ))}
           </div>
-        </div>
-      </div>
-
-      {/* 카테고리 필터 영역 */}
-      <div className="py-8 border-t border-b border-gray-200 w-full">
-        <div className="container mx-auto px-4">
-          <h3 className="text-lg font-bold mb-4">카테고리별 추천</h3>
-          <div className="flex flex-wrap gap-2 mb-6">
-            <button className="px-4 py-1 bg-gray-100 rounded-md text-sm">생일선물</button>
-            <button className="px-4 py-1 bg-gray-100 rounded-md text-sm">기념일</button>
-            <button className="px-4 py-1 bg-gray-100 rounded-md text-sm">커플선물</button>
-            <button className="px-4 py-1 bg-gray-100 rounded-md text-sm">친구선물</button>
-            <button className="px-4 py-1 bg-gray-100 rounded-md text-sm">출산산선물</button>
-          </div>
+          
+          {/* 오른쪽 스크롤 버튼 */}
+          <button 
+            onClick={() => scrollCategory('right')} 
+            className="absolute right-0 top-1/2 transform -translate-y-1/2 z-10 bg-white rounded-full shadow-md p-1 md:hidden"
+            aria-label="카테고리 오른쪽으로 스크롤"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-500" viewBox="0 0 20 20" fill="currentColor">
+              <path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd" />
+            </svg>
+          </button>
         </div>
       </div>
 
       {/* 베스트 상품 영역 - 가로 스크롤 */}
-      <div className="py-10 w-full">
-        <div className="container mx-auto px-4">
-          <div className="flex items-center justify-between mb-6">
-            <h3 className="text-xl font-bold">베스트 상품</h3>
-            <div className="flex gap-2">
-              <button 
-                onClick={() => scrollHorizontally(bestProductsRef, 'left')}
-                className="p-2 bg-gray-100 hover:bg-gray-200 rounded-full w-8 h-8 flex items-center justify-center text-gray-600"
-                aria-label="이전 상품"
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" className="w-4 h-4">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                </svg>
-              </button>
-              <button 
-                onClick={() => scrollHorizontally(bestProductsRef, 'right')}
-                className="p-2 bg-gray-100 hover:bg-gray-200 rounded-full w-8 h-8 flex items-center justify-center text-gray-600"
-                aria-label="다음 상품"
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" className="w-4 h-4">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                </svg>
-              </button>
+      {bestProducts.length > 0 && (
+        <div className="py-10 w-full">
+          <div className="container mx-auto px-4">
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-xl font-bold">베스트 상품</h3>
+              <div className="flex gap-2">
+                <button 
+                  onClick={() => scrollHorizontally(bestProductsRef, 'left')}
+                  className="p-2 bg-gray-100 hover:bg-gray-200 rounded-full w-8 h-8 flex items-center justify-center text-gray-600"
+                  aria-label="이전 상품"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" className="w-4 h-4">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                  </svg>
+                </button>
+                <button 
+                  onClick={() => scrollHorizontally(bestProductsRef, 'right')}
+                  className="p-2 bg-gray-100 hover:bg-gray-200 rounded-full w-8 h-8 flex items-center justify-center text-gray-600"
+                  aria-label="다음 상품"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" className="w-4 h-4">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+            <div 
+              ref={bestProductsRef} 
+              className="flex overflow-x-auto scrollbar-hide gap-4 pb-4"
+              style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+            >
+              {bestProducts.map(product => (
+                <Link 
+                  key={product.id}
+                  to={`/shopping/product/${product.id}`} 
+                  className="border border-gray-200 rounded-lg overflow-hidden flex-shrink-0 transition-transform hover:scale-[1.02] hover:shadow-md"
+                  style={{ width: '250px' }}
+                >
+                  <div className="h-48 bg-gray-100 relative">
+                    {product.image ? (
+                      <img 
+                        src={product.image} 
+                        alt={product.productName} 
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center bg-gray-200">
+                        <span className="text-3xl">{getCategoryIcon(product.category)}</span>
+                      </div>
+                    )}
+                    <div className="absolute top-2 right-2 bg-blue-500 text-white text-xs px-2 py-1 rounded-full">
+                      {getCategoryName(product.category)}
+                    </div>
+                  </div>
+                  <div className="p-3">
+                    <h4 className="font-medium text-sm">{product.productName}</h4>
+                    <div className="flex items-center gap-2 mt-1">
+                      <span className="text-black font-bold text-sm">
+                        {product.price ? Number(product.price).toLocaleString() + '원' : '가격 정보 없음'}
+                      </span>
+                    </div>
+                  </div>
+                </Link>
+              ))}
             </div>
           </div>
-          <div 
-            ref={bestProductsRef} 
-            className="flex overflow-x-auto scrollbar-hide gap-4 pb-4"
-            style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
-          >
-            {BEST_PRODUCTS.map(product => (
-              <Link 
-                key={product.id}
-                to={`/shopping/product/${product.id}`} 
-                className="border border-gray-200 rounded-lg overflow-hidden flex-shrink-0 transition-transform hover:scale-[1.02] hover:shadow-md"
-                style={{ width: '250px' }}
-              >
-                <div className="h-48 bg-gray-100">
-                  <img 
-                    src={product.imageUrl} 
-                    alt={product.name} 
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-                <div className="p-3">
-                  <h4 className="font-medium text-sm">{product.name}</h4>
-                  <div className="flex items-center gap-2 mt-1">
-                    {product.discount > 0 && (
-                      <span className="text-gray-500 line-through text-xs">
-                        {product.price.toLocaleString()}원
-                      </span>
-                    )}
-                    <span className="text-black font-bold text-sm">
-                      {(product.price * (100 - product.discount) / 100).toLocaleString()}원
-                    </span>
-                    {product.discount > 0 && (
-                      <span className="text-orange-500 text-xs font-bold ml-auto">
-                        {product.discount}% OFF
-                      </span>
-                    )}
-                  </div>
-                </div>
-              </Link>
-            ))}
-          </div>
         </div>
-      </div>
+      )}
 
       {/* 가격대별 필터 */}
       <div className="py-8 bg-gray-50 w-full">
@@ -497,215 +417,198 @@ const MainShopping = () => {
       </div>
 
       {/* 지금 뜨는 상품 섹션 */}
-      <div className="py-12 w-full border-b border-gray-100">
+      {trendingProducts.length > 0 && (
+        <div className="py-12 w-full border-b border-gray-100">
+          <div className="container mx-auto px-4">
+            <div className="flex items-center justify-between mb-6">
+              <div>
+                <h3 className="text-xl font-bold">지금 뜨는 상품</h3>
+                <p className="text-gray-500 text-sm mt-1">많은 사람들이 지금 이 상품을 찾고 있어요!</p>
+              </div>
+              <div className="flex gap-2">
+                <button 
+                  onClick={() => scrollHorizontally(trendingProductsRef, 'left')}
+                  className="p-2 bg-gray-100 hover:bg-gray-200 rounded-full w-8 h-8 flex items-center justify-center text-gray-600"
+                  aria-label="이전 상품"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" className="w-4 h-4">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                  </svg>
+                </button>
+                <button 
+                  onClick={() => scrollHorizontally(trendingProductsRef, 'right')}
+                  className="p-2 bg-gray-100 hover:bg-gray-200 rounded-full w-8 h-8 flex items-center justify-center text-gray-600"
+                  aria-label="다음 상품"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" className="w-4 h-4">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  </svg>
+                </button>
+              </div>
+            </div>
+            
+            <div 
+              ref={trendingProductsRef}
+              className="flex overflow-x-auto scrollbar-hide gap-4 pb-4"
+              style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+            >
+              {trendingProducts.map((product, index) => (
+                <Link 
+                  key={product.id} 
+                  to={`/shopping/product/${product.id}`}
+                  className="border border-gray-200 rounded-lg overflow-hidden flex-shrink-0 transition-transform hover:scale-[1.02] hover:shadow-md bg-white relative"
+                  style={{ width: '300px' }}
+                >
+                  {/* 인기 순위 배지 */}
+                  <div className="absolute top-3 left-3 bg-orange-500 text-white rounded-full w-8 h-8 flex items-center justify-center text-lg font-bold">
+                    {index + 1}
+                  </div>
+                  <div className="h-48 bg-gray-100">
+                    {product.image ? (
+                      <img 
+                        src={product.image} 
+                        alt={product.productName} 
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center bg-gray-200">
+                        <span className="text-3xl">{getCategoryIcon(product.category)}</span>
+                      </div>
+                    )}
+                  </div>
+                  <div className="p-4">
+                    <h4 className="font-bold text-base">{product.productName}</h4>
+                    <div className="flex items-center gap-2 mt-2">
+                      <span className="text-black font-bold text-lg">
+                        {product.price ? Number(product.price).toLocaleString() + '원' : '가격 정보 없음'}
+                      </span>
+                    </div>
+                    <div className="mt-4 flex items-center text-sm text-gray-500">
+                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" className="w-4 h-4 mr-1">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                      </svg>
+                      <span>인기 급상승 중</span>
+                    </div>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 모든 상품 그리드 - 무한 스크롤 적용 */}
+      <div className="py-12 w-full bg-gray-50" ref={allProductsRef}>
         <div className="container mx-auto px-4">
-          <div className="flex items-center justify-between mb-6">
+          {/* 필터 상태 표시 */}
+          <div className="flex justify-between items-center mb-6">
             <div>
-              <h3 className="text-xl font-bold">지금 뜨는 상품</h3>
-              <p className="text-gray-500 text-sm mt-1">많은 사람들이 지금 이 상품을 찾고 있어요!</p>
+              <h3 className="text-xl font-bold">모든 상품</h3>
+              {(selectedCategory || selectedPriceRange) && (
+                <div className="mt-2 text-sm text-gray-600 flex items-center">
+                  <span>현재 필터: {getFilterStatusText()}</span>
+                  <button 
+                    onClick={() => {
+                      setSelectedCategory(null);
+                      setSelectedPriceRange(null);
+                    }}
+                    className="ml-2 text-pink-500 hover:text-pink-700"
+                  >
+                    초기화
+                  </button>
+                </div>
+              )}
             </div>
-            <div className="flex gap-2">
-              <button 
-                onClick={() => scrollHorizontally(trendingProductsRef, 'left')}
-                className="p-2 bg-gray-100 hover:bg-gray-200 rounded-full w-8 h-8 flex items-center justify-center text-gray-600"
-                aria-label="이전 상품"
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" className="w-4 h-4">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                </svg>
-              </button>
-              <button 
-                onClick={() => scrollHorizontally(trendingProductsRef, 'right')}
-                className="p-2 bg-gray-100 hover:bg-gray-200 rounded-full w-8 h-8 flex items-center justify-center text-gray-600"
-                aria-label="다음 상품"
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" className="w-4 h-4">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                </svg>
-              </button>
+            
+            {/* 필터링된 상품 개수 표시 */}
+            <div className="text-sm text-gray-500">
+              총 {products.length}개 상품
             </div>
           </div>
-          
-          <div 
-            ref={trendingProductsRef}
-            className="flex overflow-x-auto scrollbar-hide gap-4 pb-4"
-            style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
-          >
-            {TRENDING_PRODUCTS.map((product, index) => (
-              <Link 
-                key={product.id} 
-                to={`/shopping/product/${product.id}`}
-                className="border border-gray-200 rounded-lg overflow-hidden flex-shrink-0 transition-transform hover:scale-[1.02] hover:shadow-md bg-white relative"
-                style={{ width: '300px' }}
-              >
-                {/* 인기 순위 배지 */}
-                <div className="absolute top-3 left-3 bg-orange-500 text-white rounded-full w-8 h-8 flex items-center justify-center text-lg font-bold">
-                  {index + 1}
-                </div>
-                <div className="h-48 bg-gray-100">
-                  <img 
-                    src={product.imageUrl} 
-                    alt={product.name} 
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-                <div className="p-4">
-                  <h4 className="font-bold text-base">{product.name}</h4>
-                  <div className="flex items-center gap-2 mt-2">
-                    {product.discount > 0 && (
-                      <span className="text-gray-500 line-through text-sm">
-                        {product.price.toLocaleString()}원
-                      </span>
-                    )}
-                    <span className="text-black font-bold text-lg">
-                      {(product.price * (100 - product.discount) / 100).toLocaleString()}원
-                    </span>
-                    {product.discount > 0 && (
-                      <span className="text-orange-500 text-xs font-bold ml-auto">
-                        {product.discount}% 할인
-                      </span>
-                    )}
-                  </div>
-                  <div className="mt-4 flex items-center text-sm text-gray-500">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" className="w-4 h-4 mr-1">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-                    </svg>
-                    <span>인기 급상승 중</span>
-                  </div>
-                </div>
-              </Link>
-            ))}
-          </div>
-        </div>
-      </div>
 
-      {/* 상품 그리드 - 가로 스크롤 섹션으로 변경 */}
-      <div className="py-12 w-full">
-        <div className="container mx-auto px-4">
-          <div className="flex items-center justify-between mb-6">
-            <h3 className="text-xl font-bold">추천 상품</h3>
-            <div className="flex gap-2">
-              <button 
-                onClick={() => scrollHorizontally(productGridRef, 'left')}
-                className="p-2 bg-gray-100 hover:bg-gray-200 rounded-full w-8 h-8 flex items-center justify-center text-gray-600"
-                aria-label="이전 상품"
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" className="w-4 h-4">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                </svg>
-              </button>
-              <button 
-                onClick={() => scrollHorizontally(productGridRef, 'right')}
-                className="p-2 bg-gray-100 hover:bg-gray-200 rounded-full w-8 h-8 flex items-center justify-center text-gray-600"
-                aria-label="다음 상품"
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" className="w-4 h-4">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                </svg>
-              </button>
+          {loading && displayedProducts.length === 0 ? (
+            <div className="flex justify-center items-center h-64">
+              <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-pink-500"></div>
             </div>
-          </div>
-          <div 
-            ref={productGridRef}
-            className="flex overflow-x-auto scrollbar-hide gap-4 pb-4"
-            style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
-          >
-            {filteredProducts.map(product => (
-              <Link 
-                key={product.id} 
-                to={`/shopping/product/${product.id}`}
-                className="border border-gray-200 rounded-lg overflow-hidden flex-shrink-0 transition-transform hover:scale-[1.02] hover:shadow-md"
-                style={{ width: '250px' }}
+          ) : displayedProducts.length > 0 ? (
+            <>
+              <div 
+                className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-8"
               >
-                <div className="relative h-48">
-                  <img 
-                    src={product.imageUrl} 
-                    alt={product.name} 
-                    className="w-full h-full object-cover"
-                  />
-                  {product.discount > 0 && (
-                    <span className="absolute top-2 right-2 bg-orange-500 text-white text-xs font-bold px-2 py-1 rounded-full">
-                      {product.discount}% 할인
-                    </span>
-                  )}
-                </div>
-                <div className="p-4">
-                  <h3 className="font-medium mb-2 text-sm md:text-base">{product.name}</h3>
-                  <div className="flex items-center gap-2 mb-4">
-                    {product.discount > 0 && (
-                      <span className="text-gray-500 line-through text-xs md:text-sm">
-                        {product.price.toLocaleString()}원
-                      </span>
-                    )}
-                    <span className="text-black font-bold text-sm md:text-base">
-                      {(product.price * (100 - product.discount) / 100).toLocaleString()}원
-                    </span>
+                {displayedProducts.map(product => (
+                  <Link 
+                    key={product.id} 
+                    to={`/shopping/product/${product.id}`}
+                    className="border border-gray-200 rounded-lg overflow-hidden bg-white transition-transform hover:scale-[1.02] hover:shadow-md"
+                  >
+                    <div className="relative h-48 md:h-64 bg-gray-100">
+                      {product.image ? (
+                        <img 
+                          src={product.image} 
+                          alt={product.productName} 
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center bg-gray-200">
+                          <span className="text-4xl">{getCategoryIcon(product.category)}</span>
+                        </div>
+                      )}
+                      <div className="absolute top-2 right-2 bg-blue-500 text-white text-xs px-2 py-1 rounded-full">
+                        {getCategoryName(product.category)}
+                      </div>
+                    </div>
+                    <div className="p-4">
+                      <h3 className="font-medium mb-2 text-sm md:text-base">{product.productName}</h3>
+                      <div className="flex items-center gap-2 mb-4">
+                        <span className="text-black font-bold text-sm md:text-base">
+                          {product.price ? Number(product.price).toLocaleString() + '원' : '가격 정보 없음'}
+                        </span>
+                      </div>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+              
+              {/* 무한 스크롤 로딩 인디케이터 */}
+              <div ref={loadingRef} className="py-4 flex justify-center">
+                {loading && hasMore && (
+                  <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-pink-500"></div>
+                )}
+                {!hasMore && displayedProducts.length > 0 && (
+                  <div className="text-center text-gray-500 my-4">
+                    모든 상품을 확인하셨습니다.
                   </div>
-                </div>
-              </Link>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      {/* 기존 그리드 표시 형태를 무한 스크롤로 변경 */}
-      <div className="py-12 w-full bg-gray-50">
-        <div className="container mx-auto px-4">
-          <h3 className="text-xl font-bold mb-6">모든 상품</h3>
-          <div 
-            ref={allProductsRef}
-            className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-8"
-          >
-            {filteredProducts.slice(0, visibleProducts).map(product => (
-              <Link 
-                key={product.id} 
-                to={`/shopping/product/${product.id}`}
-                className="border border-gray-200 rounded-lg overflow-hidden bg-white"
+                )}
+              </div>
+            </>
+          ) : (
+            <div className="text-center text-gray-500 my-8 py-12 bg-white rounded-lg shadow-sm">
+              <p className="text-lg">선택한 필터에 맞는 상품이 없습니다.</p>
+              <p className="mt-2">다른 카테고리를 선택하거나 필터를 해제해보세요.</p>
+              <button 
+                onClick={() => {
+                  setSelectedCategory(null);
+                  setSelectedPriceRange(null);
+                }}
+                className="mt-4 px-4 py-2 bg-pink-500 text-white rounded-md hover:bg-pink-600 transition-colors"
               >
-                <div className="relative h-48 md:h-64">
-                  <img 
-                    src={product.imageUrl} 
-                    alt={product.name} 
-                    className="w-full h-full object-cover"
-                  />
-                  {product.discount > 0 && (
-                    <span className="absolute top-2 right-2 bg-orange-500 text-white text-xs font-bold px-2 py-1 rounded">
-                      {product.discount}% 할인
-                    </span>
-                  )}
-                </div>
-                <div className="p-4">
-                  <h3 className="font-medium mb-2 text-sm md:text-base">{product.name}</h3>
-                  <div className="flex items-center gap-2 mb-4">
-                    {product.discount > 0 && (
-                      <span className="text-gray-500 line-through text-xs md:text-sm">
-                        {product.price.toLocaleString()}원
-                      </span>
-                    )}
-                    <span className="text-black font-bold text-sm md:text-base">
-                      {(product.price * (100 - product.discount) / 100).toLocaleString()}원
-                    </span>
-                  </div>
-                </div>
-              </Link>
-            ))}
-          </div>
-          
-          {/* 로딩 스피너 */}
-          {loading && (
-            <div className="flex justify-center my-8">
-              <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-pink-500"></div>
-            </div>
-          )}
-          
-          {/* 더 이상 상품이 없을 경우 메시지 표시 */}
-          {visibleProducts >= filteredProducts.length && filteredProducts.length > 0 && (
-            <div className="text-center text-gray-500 my-8">
-              모든 상품을 확인하셨습니다.
+                필터 초기화
+              </button>
             </div>
           )}
         </div>
       </div>
+      
+      {/* 맨 위로 가기 버튼 */}
+      <button
+        onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+        className="fixed bottom-6 right-6 bg-pink-500 text-white p-3 rounded-full shadow-lg hover:bg-pink-600 transition-colors"
+        aria-label="맨 위로 가기"
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 10l7-7m0 0l7 7m-7-7v18" />
+        </svg>
+      </button>
     </div>
   );
 };
