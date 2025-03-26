@@ -18,6 +18,10 @@ export default {
           DEFAULT: "rgb(255, 210, 210)",
           light: "rgb(255, 214, 214)",
         },
+        kakao: {
+          DEFAULT: "#FEE500",
+          hover: "#FEE100",
+        },
         cusBlue: {
           DEFAULT: "rgb(92, 157, 255)",
           light: "rgb(118, 177, 255)",

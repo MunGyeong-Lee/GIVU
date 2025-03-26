@@ -29,7 +29,8 @@ const KakaoLoginButton = ({
       type="button"
       onClick={handleLogin}
       disabled={isLoading}
-      className={`flex items-center justify-center w-full bg-[#FEE500] text-[#191919] font-medium py-3 px-4 rounded-md hover:bg-[#FEE100] focus:outline-none transition-colors ${className}`}
+      style={{ backgroundColor: '#FEE500', color: '#191919', border: 'none' }}
+      className={`flex items-center justify-center w-full font-medium py-3 px-4 rounded-md transition-colors bg-kakao hover:bg-kakao-hover text-[#191919] kakao-btn ${className}`}
     >
       {isLoading ? (
         <span className="flex items-center">
@@ -40,12 +41,12 @@ const KakaoLoginButton = ({
           로그인 중...
         </span>
       ) : (
-        <>
+        <span className="flex items-center justify-center">
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="mr-2">
             <path d="M12 3C7.0374 3 3 6.09478 3 9.95478C3 12.3095 4.4346 14.3908 6.63708 15.5688C6.4626 16.1365 5.88806 18.0993 5.76414 18.5366C5.6085 19.0902 5.95371 19.0866 6.20834 18.9105C6.40413 18.7747 8.82736 17.1498 9.59923 16.6292C10.384 16.7553 11.1849 16.9098 12 16.9098C16.9626 16.9098 21 13.8148 21 9.95478C21 6.09478 16.9626 3 12 3Z" fill="black" />
           </svg>
           {text}
-        </>
+        </span>
       )}
     </button>
   );

@@ -82,7 +82,14 @@ function Navbar() {
           </div>
 
           {/* 로그인 상태에 따른 UI 분기 */}
-          <div>
+          <div className="flex items-center space-x-4">
+            <Link
+              to="/funding/create"
+              className="bg-primary-color text-white px-4 py-1.5 rounded-md text-sm font-medium hover:bg-primary-color/90 transition"
+            >
+              펀딩 생성하기
+            </Link>
+
             {isLoggedIn ? (
               <div className="flex items-center">
                 <img

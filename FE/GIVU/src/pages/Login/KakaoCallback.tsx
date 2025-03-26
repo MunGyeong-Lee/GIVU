@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { initializeKakao, getAccessTokenFromCode, sendAccessTokenToBackend } from '../api/kakaoAuth';
-import { useAppSelector } from '../hooks/reduxHooks';
+import { initializeKakao, getAccessTokenFromCode, sendAccessTokenToBackend } from '../../api/kakaoAuth';
+import { useAppSelector } from '../../hooks/reduxHooks';
 
 const KakaoCallback = () => {
   const navigate = useNavigate();
