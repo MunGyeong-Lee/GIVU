@@ -3,6 +3,7 @@ package com.backend.givu.controller;
 import com.backend.givu.model.entity.Product;
 import com.backend.givu.model.entity.User;
 import com.backend.givu.model.responseDTO.ImageUploadResponseDTO;
+import com.backend.givu.model.responseDTO.ProductReviewSimpleDTO;
 import com.backend.givu.model.responseDTO.ProductsDTO;
 import com.backend.givu.model.responseDTO.UserInfoDTO;
 import com.backend.givu.model.service.ProductService;
@@ -67,5 +68,11 @@ public class ProductController {
                     .body(new ImageUploadResponseDTO(null, "이미지 업로드에 실패했습니다."));
         }
 
+    }
+    @Operation(summary = "상품 리뷰 리스트 조회", description = "해당 상품 리뷰 리스트를 조회합니다.")
+    @GetMapping("/{productId}/reviews")
+    public ResponseEntity<List<ProductReviewSimpleDTO>> findProductReviews(@PathVariable int productId){
+        List<ProductReviewSimpleDTO> productReviewSimpleDTOList = productService.findProductReviews(productId);
+        return ResponseEntity.ok(productReviewSimpleDTOList);
     }
 }
