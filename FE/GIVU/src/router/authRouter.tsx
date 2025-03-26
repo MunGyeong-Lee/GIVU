@@ -2,8 +2,8 @@
 
 import { Navigate } from 'react-router-dom';
 import { ReactNode } from 'react';
-import LoginPage from '../pages/LoginPage';
-import KakaoCallback from '../pages/KakaoCallback';
+import LoginPage from '../pages/Login/LoginPage';
+import KakaoCallback from '../pages/Login/KakaoCallback';
 
 // 홈 페이지 컴포넌트 (테스트용)
 export const HomePage = () => {
