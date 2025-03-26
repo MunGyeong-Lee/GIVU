@@ -19,10 +19,11 @@ import java.time.Instant;
 @AllArgsConstructor
 @Builder
 public class BankTransaction {
-    @EmbeddedId
-    private BankTransactionId id;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "transaction_id", nullable = false)
+    private int transactionId; // 여기선 ID
 
-    @MapsId("userId")
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @OnDelete(action = OnDeleteAction.CASCADE)
     @JoinColumn(name = "user_id", nullable = false)
