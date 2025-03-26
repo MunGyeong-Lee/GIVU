@@ -1,14 +1,10 @@
 package com.backend.givu.controller;
 
 import com.backend.givu.model.entity.Product;
-import com.backend.givu.model.entity.User;
 import com.backend.givu.model.responseDTO.ImageUploadResponseDTO;
-import com.backend.givu.model.responseDTO.ProductReviewSimpleDTO;
 import com.backend.givu.model.responseDTO.ProductsDTO;
-import com.backend.givu.model.responseDTO.UserInfoDTO;
 import com.backend.givu.model.service.ProductService;
 import com.backend.givu.model.service.S3UploadService;
-import com.backend.givu.util.DateTimeUtil;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -20,7 +16,6 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 
 @Tag(name = "Product", description = "상품(GIVU몰) 관련 API")
@@ -67,12 +62,5 @@ public class ProductController {
                     .status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(new ImageUploadResponseDTO(null, "이미지 업로드에 실패했습니다."));
         }
-
-    }
-    @Operation(summary = "상품 리뷰 리스트 조회", description = "해당 상품 리뷰 리스트를 조회합니다.")
-    @GetMapping("/{productId}/reviews")
-    public ResponseEntity<List<ProductReviewSimpleDTO>> findProductReviews(@PathVariable int productId){
-        List<ProductReviewSimpleDTO> productReviewSimpleDTOList = productService.findProductReviews(productId);
-        return ResponseEntity.ok(productReviewSimpleDTOList);
     }
 }
