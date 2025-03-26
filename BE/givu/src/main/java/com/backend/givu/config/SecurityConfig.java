@@ -1,19 +1,29 @@
 package com.backend.givu.config;
 
+import com.backend.givu.security.JwtExceptionFilter;
+import com.backend.givu.security.JwtRequestFilter;
+import io.jsonwebtoken.JwtException;
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 @Configuration
 @EnableWebSecurity
+@RequiredArgsConstructor
 public class SecurityConfig {
+
+    private final JwtRequestFilter jwtRequestFilter;
+    private final JwtExceptionFilter jwtExceptionFilter;
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
@@ -21,9 +31,40 @@ public class SecurityConfig {
 
         return http
                 .cors(Customizer.withDefaults()) // CORS 설정 활성화
+                // 기본 로그인 폼 미사용
+                .formLogin(httpSecurityFormLoginConfigurer -> httpSecurityFormLoginConfigurer.disable())
+                // 세션을 사용하지 않음 (JWT 기반 인증)
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+
                 .authorizeHttpRequests(auth -> auth
-                        .anyRequest().permitAll()
-                )
+                        .requestMatchers(
+                                "/swagger-ui/**",               // Swagger UI 관련 경로
+                                "/swagger-resources/**",        // Swagger 리소스 허용
+                                "/webjars/**",                  // Swagger UI에서 사용하는 WebJars 리소스 허용
+                                "/error",                       // 에러 핸들링 경로
+                                "/users/kakao",                 // 로그인, 회원가입
+                                "/users/newToken",              // 토큰 재발급
+                                "/images/**",
+                                "/fundinds/**"
+                        ).permitAll()
+                        .requestMatchers(
+                                "/users/info",
+                                "/users/givupay/**",    // 기뷰페이 관련
+                                "/users/payment",       // 유저 거래 내역 조회
+                                "/users",               // 로그아웃, 회원 탈퇴
+                                "/users/test"        // 테스트
+                        ).authenticated())
+
+                /**
+                 * JWT 필터 추가(인증 처리)
+                 * 1. addFilterBefore - jwtExceptionFilter:
+                 * 2. addFilterBefore - jwtRequestFilter : API 요청이 올때마다 Access 토큰이 유효한지 확인하는 역할
+                 *
+                 */
+                .addFilterBefore(jwtExceptionFilter, UsernamePasswordAuthenticationFilter.class)
+                .addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class)
+
+                // CSRF 비활성화 (Swagger 테스트 시 편리)
                 .csrf(AbstractHttpConfigurer::disable)
                 .build();
     }
