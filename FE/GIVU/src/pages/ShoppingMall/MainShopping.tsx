@@ -11,8 +11,9 @@ interface Product {
   productName: string;
   price: number;
   image: string;
-  favorite: number;
+  favorite: boolean;
   star: number;
+  views: number;  // 조회수 추가
   description: string;
   createdAt: string;
   payments: any[];
@@ -32,15 +33,62 @@ const CATEGORIES = [
   { id: 9, name: "기타", icon: "🎁", value: "OTHER" }
 ];
 
-// 가격대 필터 (필요 시 사용)
-const PRICE_RANGES = [
-  { id: 1, name: "가격대별" },
-  { id: 2, name: "1만원 미만" },
-  { id: 3, name: "1~3만원" },
-  { id: 4, name: "3~5만원" },
-  { id: 5, name: "5~10만원" },
-  { id: 6, name: "10만원 이상" },
+// 가격대 필터 인터페이스 추가
+interface PriceRange {
+  id: number;
+  name: string;
+  min: number | null;
+  max: number | null;
+}
+
+// 가격대 필터 수정 - 명시적 타입 지정
+const PRICE_RANGES: PriceRange[] = [
+  { id: 1, name: "가격대별", min: null, max: null },
+  { id: 2, name: "1만원 미만", min: 0, max: 10000 },
+  { id: 3, name: "1~3만원", min: 10000, max: 30000 },
+  { id: 4, name: "3~5만원", min: 30000, max: 50000 },
+  { id: 5, name: "5~10만원", min: 50000, max: 100000 },
+  { id: 6, name: "10만원 이상", min: 100000, max: null }
 ];
+
+// 카테고리 아이콘 가져오기 유틸 함수
+const getCategoryIcon = (categoryValue: string) => {
+  const category = CATEGORIES.find(cat => cat.value === categoryValue);
+  return category ? category.icon : "🏷️";
+};
+
+// 이미지 컴포넌트 - 규격화된 이미지 표시를 위한 공통 컴포넌트
+const ProductImage = ({ 
+  image, 
+  productName, 
+  category 
+}: { 
+  image: string | null, 
+  productName: string, 
+  category: string 
+}) => {
+  return (
+    <>
+      {image ? (
+        <div className="w-full h-full overflow-hidden bg-gray-100">
+          <img 
+            src={image} 
+            alt={productName} 
+            className="w-full h-full object-cover transform transition-transform duration-300 hover:scale-105"
+            onError={(e) => {
+              // 이미지 로드 실패 시 기본 이미지로 대체
+              e.currentTarget.src = `https://via.placeholder.com/300x300?text=${getCategoryIcon(category)}`;
+            }}
+          />
+        </div>
+      ) : (
+        <div className="w-full h-full flex items-center justify-center bg-gray-200">
+          <span className="text-4xl">{getCategoryIcon(category)}</span>
+        </div>
+      )}
+    </>
+  );
+};
 
 const MainShopping = () => {
   // 상태 관리
@@ -67,44 +115,82 @@ const MainShopping = () => {
   const categoryRef = useRef<HTMLDivElement>(null);
   const loadingRef = useRef<HTMLDivElement>(null); // 무한 스크롤 감지를 위한 ref
 
+  // 추가된 상태
+  const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false);
+
+  // 현재 필터링된 상품을 저장하는 상태 추가
+  const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
+
+  // 필터 적용 함수 - 카테고리와 가격대 필터를 모두 적용
+  const applyFilters = (allProducts: Product[]) => {
+    let result = [...allProducts];
+    
+    // 카테고리 필터 적용
+    if (selectedCategory && selectedCategory !== 'all') {
+      result = result.filter(product => product.category === selectedCategory);
+    }
+    
+    // 가격대 필터 적용
+    if (selectedPriceRange !== null && selectedPriceRange !== 1) {
+      const selectedRange = PRICE_RANGES.find(range => range.id === selectedPriceRange);
+      if (selectedRange) {
+        result = result.filter(product => {
+          if (selectedRange.min !== null && selectedRange.max !== null) {
+            return product.price >= selectedRange.min && product.price < selectedRange.max;
+          } else if (selectedRange.min !== null) {
+            return product.price >= selectedRange.min;
+          } else if (selectedRange.max !== null) {
+            return product.price < selectedRange.max;
+          }
+          return true;
+        });
+      }
+    }
+    
+    return result;
+  };
+
   // API에서 상품 목록 가져오기
   const fetchProducts = async () => {
     try {
       setLoading(true);
       setError(null);
       
-      // 카테고리 필터링 파라미터 추가
-      const categoryParam = selectedCategory ? `&category=${selectedCategory}` : '';
-      
-      // API 호출
-      const response = await axios.get(`${API_BASE_URL}/products/list?${categoryParam}`);
-      
-      console.log('API 응답:', response.data);
-      
-      // 데이터 처리
-      const newProducts = response.data; // API 응답 구조에 따라 조정
-      
-      // 모든 상품 저장
+      const response = await axios.get(`${API_BASE_URL}/products/list`);
+      const newProducts = response.data;
       setProducts(newProducts);
       
-      // 처음에는 일부만 표시
-      setDisplayedProducts(newProducts.slice(0, itemsPerPage));
+      // 베스트 상품 설정 (별점 순 -> 가격 순)
+      const bestProductsList = [...newProducts].sort((a, b) => {
+        if (a.star !== b.star) {
+          return b.star - a.star; // 별점 높은 순
+        }
+        return b.price - a.price; // 별점이 같으면 가격 높은 순
+      }).slice(0, 8);
+      setBestProducts(bestProductsList);
       
-      // 더 불러올 상품이 있는지 확인
-      setHasMore(newProducts.length > itemsPerPage);
+      // 지금 뜨는 상품 설정 (24시간 내 조회수 기준)
+      const oneDayAgo = new Date();
+      oneDayAgo.setDate(oneDayAgo.getDate() - 1);
       
-      // 페이지 초기화
+      const trendingProductsList = [...newProducts]
+        .filter(product => {
+          const productDate = new Date(product.createdAt);
+          return productDate >= oneDayAgo;
+        })
+        .sort((a, b) => b.views - a.views) // 조회수 높은 순
+        .slice(0, 5);
+      
+      setTrendingProducts(trendingProductsList);
+      
+      // 필터 적용
+      const filtered = applyFilters(newProducts);
+      setFilteredProducts(filtered);
+      
+      // 처음 보여줄 상품만 설정
+      setDisplayedProducts(filtered.slice(0, itemsPerPage));
+      setHasMore(filtered.length > itemsPerPage);
       setPage(1);
-      
-      // 베스트 상품과 인기 상품 설정
-      if (newProducts.length > 0) {
-        // 가격 기준으로 정렬하여 상위 제품 선택
-        const sortedByPrice = [...newProducts].sort((a, b) => b.price - a.price);
-        setBestProducts(sortedByPrice.slice(0, 8));
-        
-        // 임의로 인기 상품 선택
-        setTrendingProducts(newProducts.slice(0, 5));
-      }
       
     } catch (err) {
       console.error('상품을 불러오는 중 오류가 발생했습니다:', err);
@@ -114,37 +200,78 @@ const MainShopping = () => {
     }
   };
 
-  // 더 많은 상품 로드하기
+  // 카테고리 선택 핸들러
+  const handleCategorySelect = (categoryValue: string | null) => {
+    setSelectedCategory(categoryValue);
+    
+    // 필터 적용
+    if (products.length > 0) {
+      const filtered = applyFilters(products);
+      setFilteredProducts(filtered);
+      setDisplayedProducts(filtered.slice(0, itemsPerPage));
+      setHasMore(filtered.length > itemsPerPage);
+      setPage(1);
+    }
+    
+    // 스크롤을 상품 목록 위치로 이동
+    allProductsRef.current?.scrollIntoView({ behavior: 'smooth' });
+  };
+  
+  // 가격대 선택 핸들러
+  const handlePriceRangeSelect = (priceRangeId: number | null) => {
+    setSelectedPriceRange(priceRangeId);
+    
+    // 필터 적용
+    if (products.length > 0) {
+      const filtered = applyFilters(products);
+      setFilteredProducts(filtered);
+      setDisplayedProducts(filtered.slice(0, itemsPerPage));
+      setHasMore(filtered.length > itemsPerPage);
+      setPage(1);
+    }
+    
+    // 스크롤을 상품 목록 위치로 이동
+    allProductsRef.current?.scrollIntoView({ behavior: 'smooth' });
+  };
+  
+  // 모든 필터 초기화
+  const resetAllFilters = () => {
+    setSelectedCategory(null);
+    setSelectedPriceRange(null);
+    
+    setFilteredProducts(products);
+    setDisplayedProducts(products.slice(0, itemsPerPage));
+    setHasMore(products.length > itemsPerPage);
+    setPage(1);
+  };
+  
+  // 더 많은 상품 로드하기 - 수정
   const loadMoreProducts = () => {
     if (!hasMore || loading) return;
     
-    // 다음 페이지 계산
     const nextPage = page + 1;
     const startIndex = page * itemsPerPage;
     const endIndex = startIndex + itemsPerPage;
     
-    // 표시할 추가 상품이 있는지 확인
-    if (startIndex >= products.length) {
+    // 이미 필터링된 상품 목록 사용
+    if (startIndex >= filteredProducts.length) {
       setHasMore(false);
       return;
     }
     
-    // 로딩 표시
     setLoading(true);
     
-    // 로딩 효과를 위한 지연 (실제 API 호출 시에는 필요 없음)
     setTimeout(() => {
-      // 새로운 상품 추가
       const newDisplayedProducts = [
         ...displayedProducts,
-        ...products.slice(startIndex, endIndex)
+        ...filteredProducts.slice(startIndex, endIndex)
       ];
       
       setDisplayedProducts(newDisplayedProducts);
       setPage(nextPage);
       
-      // 더 로드할 상품이 있는지 확인
-      setHasMore(endIndex < products.length);
+      // 더 불러올 상품이 있는지 확인
+      setHasMore(endIndex < filteredProducts.length);
       setLoading(false);
     }, 500);
   };
@@ -180,15 +307,16 @@ const MainShopping = () => {
     fetchProducts();
   }, []);
   
-  // 카테고리 변경 시 상품 다시 가져오기
+  // 카테고리나 가격대 필터 변경 시 필터링된 상품 갱신
   useEffect(() => {
-    fetchProducts();
-  }, [selectedCategory]);
-
-  // 카테고리 선택 핸들러
-  const handleCategorySelect = (categoryValue: string | null) => {
-    setSelectedCategory(categoryValue);
-  };
+    if (products.length > 0) {
+      const filtered = applyFilters(products);
+      setFilteredProducts(filtered);
+      setDisplayedProducts(filtered.slice(0, itemsPerPage));
+      setHasMore(filtered.length > itemsPerPage);
+      setPage(1);
+    }
+  }, [selectedCategory, selectedPriceRange]);
 
   // 가로 스크롤 함수
   const scrollHorizontally = (ref: any, direction: 'left' | 'right') => {
@@ -226,12 +354,6 @@ const MainShopping = () => {
     return category ? category.name : categoryValue;
   };
   
-  // 카테고리 아이콘 가져오기 유틸 함수
-  const getCategoryIcon = (categoryValue: string) => {
-    const category = CATEGORIES.find(cat => cat.value === categoryValue);
-    return category ? category.icon : "🏷️";
-  };
-
   // 필터 상태 텍스트 가져오기
   const getFilterStatusText = () => {
     if (selectedCategory && selectedPriceRange) {
@@ -370,27 +492,51 @@ const MainShopping = () => {
                   style={{ width: '250px' }}
                 >
                   <div className="h-48 bg-gray-100 relative">
-                    {product.image ? (
-                      <img 
-                        src={product.image} 
-                        alt={product.productName} 
-                        className="w-full h-full object-cover"
-                      />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center bg-gray-200">
-                        <span className="text-3xl">{getCategoryIcon(product.category)}</span>
-                      </div>
-                    )}
+                    <ProductImage 
+                      image={product.image} 
+                      productName={product.productName} 
+                      category={product.category} 
+                    />
                     <div className="absolute top-2 right-2 bg-blue-500 text-white text-xs px-2 py-1 rounded-full">
                       {getCategoryName(product.category)}
                     </div>
+                    
+                    {/* 찜하기 버튼 */}
+                    <button 
+                      onClick={(e: React.MouseEvent) => {
+                        e.preventDefault();
+                        if (!isLoggedIn) {
+                          alert('로그인이 필요한 서비스입니다.');
+                          return;
+                        }
+                        // 찜하기 API 호출 로직
+                      }}
+                      className="absolute top-2 left-2 p-2 bg-white rounded-full shadow-md"
+                    >
+                      {product.favorite ? (
+                        <svg className="w-5 h-5 text-rose-500" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" />
+                        </svg>
+                      ) : (
+                        <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                        </svg>
+                      )}
+                    </button>
                   </div>
                   <div className="p-3">
                     <h4 className="font-medium text-sm">{product.productName}</h4>
-                    <div className="flex items-center gap-2 mt-1">
+                    <div className="flex items-center justify-between mt-1">
                       <span className="text-black font-bold text-sm">
                         {product.price ? Number(product.price).toLocaleString() + '원' : '가격 정보 없음'}
                       </span>
+                      {/* 별점 표시 */}
+                      <div className="flex items-center">
+                        <svg className="w-4 h-4 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
+                          <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                        </svg>
+                        <span className="ml-1 text-sm text-gray-600">{product.star.toFixed(1)}</span>
+                      </div>
                     </div>
                   </div>
                 </Link>
@@ -407,7 +553,12 @@ const MainShopping = () => {
             {PRICE_RANGES.map(range => (
               <button 
                 key={range.id}
-                className="px-4 py-1 bg-white border border-gray-200 rounded-md text-sm"
+                className={`px-4 py-1 border rounded-md text-sm transition-colors ${
+                  selectedPriceRange === range.id 
+                    ? 'bg-pink-100 text-pink-600 border-pink-300 font-medium shadow-sm' 
+                    : 'bg-white border-gray-200 hover:bg-gray-50'
+                }`}
+                onClick={() => handlePriceRangeSelect(range.id === 1 ? null : range.id)}
               >
                 {range.name}
               </button>
@@ -459,22 +610,40 @@ const MainShopping = () => {
                   className="border border-gray-200 rounded-lg overflow-hidden flex-shrink-0 transition-transform hover:scale-[1.02] hover:shadow-md bg-white relative"
                   style={{ width: '300px' }}
                 >
-                  {/* 인기 순위 배지 */}
-                  <div className="absolute top-3 left-3 bg-orange-500 text-white rounded-full w-8 h-8 flex items-center justify-center text-lg font-bold">
-                    {index + 1}
-                  </div>
-                  <div className="h-48 bg-gray-100">
-                    {product.image ? (
-                      <img 
-                        src={product.image} 
-                        alt={product.productName} 
-                        className="w-full h-full object-cover"
-                      />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center bg-gray-200">
-                        <span className="text-3xl">{getCategoryIcon(product.category)}</span>
-                      </div>
-                    )}
+                  <div className="h-48 bg-gray-100 relative">
+                    <ProductImage 
+                      image={product.image} 
+                      productName={product.productName} 
+                      category={product.category} 
+                    />
+                    
+                    {/* 순위 배지는 오른쪽으로 이동 */}
+                    <div className="absolute top-3 right-3 bg-orange-500 text-white rounded-full w-8 h-8 flex items-center justify-center text-lg font-bold">
+                      {index + 1}
+                    </div>
+
+                    {/* 찜하기 버튼 왼쪽으로 이동 */}
+                    <button 
+                      onClick={(e: React.MouseEvent) => {
+                        e.preventDefault();
+                        if (!isLoggedIn) {
+                          alert('로그인이 필요한 서비스입니다.');
+                          return;
+                        }
+                        // 찜하기 API 호출 로직
+                      }}
+                      className="absolute top-2 left-2 p-2 bg-white rounded-full shadow-md"
+                    >
+                      {product.favorite ? (
+                        <svg className="w-5 h-5 text-rose-500" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" />
+                        </svg>
+                      ) : (
+                        <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                        </svg>
+                      )}
+                    </button>
                   </div>
                   <div className="p-4">
                     <h4 className="font-bold text-base">{product.productName}</h4>
@@ -508,10 +677,7 @@ const MainShopping = () => {
                 <div className="mt-2 text-sm text-gray-600 flex items-center">
                   <span>현재 필터: {getFilterStatusText()}</span>
                   <button 
-                    onClick={() => {
-                      setSelectedCategory(null);
-                      setSelectedPriceRange(null);
-                    }}
+                    onClick={resetAllFilters}
                     className="ml-2 text-pink-500 hover:text-pink-700"
                   >
                     초기화
@@ -542,27 +708,51 @@ const MainShopping = () => {
                     className="border border-gray-200 rounded-lg overflow-hidden bg-white transition-transform hover:scale-[1.02] hover:shadow-md"
                   >
                     <div className="relative h-48 md:h-64 bg-gray-100">
-                      {product.image ? (
-                        <img 
-                          src={product.image} 
-                          alt={product.productName} 
-                          className="w-full h-full object-cover"
-                        />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center bg-gray-200">
-                          <span className="text-4xl">{getCategoryIcon(product.category)}</span>
-                        </div>
-                      )}
+                      <ProductImage 
+                        image={product.image} 
+                        productName={product.productName} 
+                        category={product.category} 
+                      />
                       <div className="absolute top-2 right-2 bg-blue-500 text-white text-xs px-2 py-1 rounded-full">
                         {getCategoryName(product.category)}
                       </div>
+                      
+                      {/* 찜하기 버튼 */}
+                      <button 
+                        onClick={(e: React.MouseEvent) => {
+                          e.preventDefault();
+                          if (!isLoggedIn) {
+                            alert('로그인이 필요한 서비스입니다.');
+                            return;
+                          }
+                          // 찜하기 API 호출 로직
+                        }}
+                        className="absolute top-2 left-2 p-2 bg-white rounded-full shadow-md"
+                      >
+                        {product.favorite ? (
+                          <svg className="w-5 h-5 text-rose-500" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" />
+                          </svg>
+                        ) : (
+                          <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                          </svg>
+                        )}
+                      </button>
                     </div>
                     <div className="p-4">
                       <h3 className="font-medium mb-2 text-sm md:text-base">{product.productName}</h3>
-                      <div className="flex items-center gap-2 mb-4">
+                      <div className="flex items-center justify-between mb-4">
                         <span className="text-black font-bold text-sm md:text-base">
                           {product.price ? Number(product.price).toLocaleString() + '원' : '가격 정보 없음'}
                         </span>
+                        {/* 별점 표시 */}
+                        <div className="flex items-center">
+                          <svg className="w-4 h-4 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
+                            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                          </svg>
+                          <span className="ml-1 text-sm text-gray-600">{product.star.toFixed(1)}</span>
+                        </div>
                       </div>
                     </div>
                   </Link>
@@ -586,10 +776,7 @@ const MainShopping = () => {
               <p className="text-lg">선택한 필터에 맞는 상품이 없습니다.</p>
               <p className="mt-2">다른 카테고리를 선택하거나 필터를 해제해보세요.</p>
               <button 
-                onClick={() => {
-                  setSelectedCategory(null);
-                  setSelectedPriceRange(null);
-                }}
+                onClick={resetAllFilters}
                 className="mt-4 px-4 py-2 bg-pink-500 text-white rounded-md hover:bg-pink-600 transition-colors"
               >
                 필터 초기화

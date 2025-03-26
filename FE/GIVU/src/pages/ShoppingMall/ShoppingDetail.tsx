@@ -1,5 +1,36 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
+import axios from 'axios';
+
+// 옵션 관련 인터페이스 추가
+interface ProductOption {
+  name: string;
+  choices: string[];
+}
+
+// Product 인터페이스 수정
+interface Product {
+  id: number;
+  productName: string;
+  category: string;
+  price: number;
+  image: string | null;
+  favorite: number;
+  star: number;
+  createdAt: string;
+  description: string;
+  options?: ProductOption[];  // 옵션 추가 (선택적)
+}
+
+// Review 인터페이스 추가
+interface Review {
+  id: number;
+  userId: number;
+  userName: string;
+  rating: number;
+  content: string;
+  createdAt: string;
+}
 
 // 임시 데이터 - 나중에 API로 대체
 const PRODUCT_DETAILS = {
@@ -60,49 +91,87 @@ const PRODUCT_DETAILS = {
 const ShoppingProductDetail = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const [product, setProduct] = useState<Product | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false);
   const [quantity, setQuantity] = useState(1);
+  
+  // 기존 상태들
   const [selectedOptions, setSelectedOptions] = useState<Record<string, string>>({});
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
+  const [reviews, setReviews] = useState<Review[]>([]);
+  const [averageRating, setAverageRating] = useState<number>(0);
   
   // 페이지 로드 시 스크롤을 맨 위로 이동
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
   
-  // 실제 구현에서는 id를 사용하여 API에서 데이터를 가져와야 함
-  const product = PRODUCT_DETAILS;
+  // API에서 상품 상세 정보 가져오기
+  useEffect(() => {
+    const fetchProductDetail = async () => {
+      try {
+        setLoading(true);
+        const response = await axios.get(`${import.meta.env.VITE_BASE_URL}/products/${id}`);
+        setProduct(response.data);
+      } catch (err) {
+        console.error('상품 상세 정보를 불러오는 중 오류가 발생했습니다:', err);
+        setError('상품 정보를 불러오는데 실패했습니다.');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (id) {
+      fetchProductDetail();
+    }
+  }, [id]);
+
+  // 리뷰 데이터 가져오기 (API 준비되면 사용)
+  const fetchReviews = async () => {
+    try {
+      const response = await axios.get(`${import.meta.env.VITE_BASE_URL}/products/${id}/reviews`);
+      setReviews(response.data);
+    } catch (err) {
+      console.error('리뷰를 불러오는 중 오류가 발생했습니다:', err);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center h-screen">
+        <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-pink-500"></div>
+      </div>
+    );
+  }
+
+  if (error || !product) {
+    return (
+      <div className="text-center py-12">
+        <p className="text-red-500">{error || '상품을 찾을 수 없습니다.'}</p>
+      </div>
+    );
+  }
+
+  // 총 금액 계산
+  const totalPrice = product.price * quantity;
   
   // 옵션 선택 핸들러
   const handleOptionChange = (optionName: string, value: string) => {
-    setSelectedOptions({
-      ...selectedOptions,
+    setSelectedOptions(prev => ({
+      ...prev,
       [optionName]: value
-    });
+    }));
   };
-  
-  // 수량 변경 핸들러
-  const handleQuantityChange = (newQuantity: number) => {
-    if (newQuantity < 1) return;
-    if (newQuantity > product.stock) return;
-    setQuantity(newQuantity);
-  };
-  
-  // 할인가 계산
-  const discountedPrice = 
-    product.discount > 0 
-      ? Math.floor(product.price * (100 - product.discount) / 100) 
-      : product.price;
-  
-  // 총 금액 계산
-  const totalPrice = discountedPrice * quantity;
   
   // 구매 버튼 클릭 핸들러
   const handlePurchase = () => {
-    // 옵션이 모두 선택되었는지 확인
-    const isAllOptionsSelected = product.options.every(
-      option => selectedOptions[option.name]
-    );
+    // options가 있을 경우에만 체크
+    const isAllOptionsSelected = product?.options 
+      ? product.options.every(option => selectedOptions[option.name])
+      : true;
     
     if (!isAllOptionsSelected) {
       alert('모든 옵션을 선택해주세요.');
@@ -119,84 +188,143 @@ const ShoppingProductDetail = () => {
     });
   };
   
+  // JSX에 추가할 리뷰 섹션
+  const ReviewSection = () => (
+    <div className="mb-12">
+      <div className="flex items-center justify-between mb-6">
+        <h3 className="text-lg font-bold">상품 리뷰</h3>
+        <div className="flex items-center gap-2">
+          <div className="flex text-yellow-400">
+            {[1, 2, 3, 4, 5].map((star) => (
+              <svg 
+                key={star}
+                className={`w-5 h-5 ${averageRating >= star ? 'text-yellow-400' : 'text-gray-300'}`}
+                fill="currentColor"
+                viewBox="0 0 20 20"
+              >
+                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+              </svg>
+            ))}
+          </div>
+          <span className="text-lg font-bold">{averageRating.toFixed(1)}</span>
+          <span className="text-gray-500">({reviews.length}개 리뷰)</span>
+        </div>
+      </div>
+
+      {/* 리뷰 목록 */}
+      <div className="space-y-4">
+        {reviews.map((review) => (
+          <div key={review.id} className="border rounded-lg p-4">
+            <div className="flex justify-between items-start mb-2">
+              <div>
+                <div className="flex text-yellow-400 mb-1">
+                  {[1, 2, 3, 4, 5].map((star) => (
+                    <svg 
+                      key={star}
+                      className={`w-4 h-4 ${review.rating >= star ? 'text-yellow-400' : 'text-gray-300'}`}
+                      fill="currentColor"
+                      viewBox="0 0 20 20"
+                    >
+                      <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                    </svg>
+                  ))}
+                </div>
+                <span className="font-medium">{review.userName}</span>
+              </div>
+              <span className="text-sm text-gray-500">
+                {new Date(review.createdAt).toLocaleDateString()}
+              </span>
+            </div>
+            <p className="text-gray-700">{review.content}</p>
+          </div>
+        ))}
+      </div>
+
+      {/* 리뷰 작성 버튼 (구매자만 보이도록) */}
+      <div className="text-center mt-6">
+        <button 
+          onClick={() => {
+            if (!isLoggedIn) {
+              alert('로그인이 필요한 서비스입니다.');
+              return;
+            }
+            // 리뷰 작성 페이지로 이동 또는 모달 표시
+          }}
+          className="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50"
+        >
+          리뷰 작성하기
+        </button>
+      </div>
+    </div>
+  );
+
   return (
     <div className="max-w-7xl mx-auto px-4 py-8">
       {/* 상품 기본 정보 영역 */}
       <div className="flex flex-col md:flex-row gap-8 mb-12">
         {/* 상품 이미지 영역 */}
-        <div className="w-full md:w-1/2">
-          <div className="mb-4 relative">
+        <div className="w-full md:w-1/2 relative">
             <img 
-              src={currentImageIndex === 0 ? product.imageUrl : product.detailImages[currentImageIndex - 1]} 
-              alt={product.name} 
+            src={product.image || 'https://via.placeholder.com/400x400?text=No+Image'} 
+            alt={product.productName} 
               className="w-full h-auto rounded-lg"
             />
-            {product.discount > 0 && (
-              <div className="absolute top-4 left-4 bg-orange-500 text-white px-3 py-1 rounded-full font-bold">
-                {product.discount}% 할인
-              </div>
-            )}
-          </div>
-          <div className="grid grid-cols-5 gap-2">
+          {/* 찜하기 버튼 */}
             <button 
-              className={`border-2 rounded-md overflow-hidden ${currentImageIndex === 0 ? 'border-black' : 'border-gray-200'}`}
-              onClick={() => setCurrentImageIndex(0)}
-            >
-              <img src={product.imageUrl} alt="썸네일" className="w-full h-16 object-cover" />
-            </button>
-            {product.detailImages.map((img, idx) => (
-              <button 
-                key={idx}
-                className={`border-2 rounded-md overflow-hidden ${currentImageIndex === idx + 1 ? 'border-black' : 'border-gray-200'}`}
-                onClick={() => setCurrentImageIndex(idx + 1)}
-              >
-                <img src={img} alt={`썸네일 ${idx + 1}`} className="w-full h-16 object-cover" />
+            onClick={(e) => {
+              e.preventDefault();
+              if (!isLoggedIn) {
+                alert('로그인이 필요한 서비스입니다.');
+                return;
+              }
+              // 찜하기 API 호출 로직
+            }}
+            className="absolute top-4 left-4 p-2 bg-white rounded-full shadow-md"
+          >
+            {product.favorite > 0 ? (
+              <svg className="w-6 h-6 text-rose-500" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" />
+              </svg>
+            ) : (
+              <svg className="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+              </svg>
+            )}
               </button>
-            ))}
-          </div>
         </div>
         
         {/* 상품 정보 및 구매 옵션 */}
         <div className="w-full md:w-1/2">
           <div className="mb-4">
             <span className="text-sm text-gray-500">{product.category}</span>
-            <h1 className="text-2xl font-bold mb-2">{product.name}</h1>
+            <h1 className="text-2xl font-bold mb-2">{product.productName}</h1>
             <div className="flex items-center gap-2 mb-4">
-              {product.discount > 0 && (
-                <span className="text-gray-400 line-through text-lg">{product.price.toLocaleString()}원</span>
-              )}
-              <span className="text-black font-bold text-2xl">{discountedPrice.toLocaleString()}원</span>
-              {product.discount > 0 && (
-                <span className="bg-orange-100 text-orange-700 text-sm px-2 py-1 rounded">
-                  {product.discount}% 할인
+              <span className="text-black font-bold text-2xl">
+                {product.price.toLocaleString()}원
                 </span>
-              )}
-            </div>
-            <div className="text-sm text-gray-600 mb-6">
-              <p>배송비: {product.deliveryInfo.fee === 0 ? '무료' : `${product.deliveryInfo.fee.toLocaleString()}원`}</p>
-              {product.deliveryInfo.fee > 0 && (
-                <p>{product.deliveryInfo.freeFeeOver.toLocaleString()}원 이상 구매 시 무료배송</p>
-              )}
-              <p>배송 예정: {product.deliveryInfo.estimatedDays}</p>
             </div>
           </div>
           
           {/* 옵션 선택 */}
-          {product.options.map((option, idx) => (
-            <div key={idx} className="mb-4">
-              <label className="block text-sm font-medium mb-2">{option.name}</label>
-              <select 
-                className="w-full p-2 border border-gray-300 rounded-md"
-                value={selectedOptions[option.name] || ''}
-                onChange={(e) => handleOptionChange(option.name, e.target.value)}
-              >
-                <option value="">선택해주세요</option>
-                {option.choices.map((choice, choiceIdx) => (
-                  <option key={choiceIdx} value={choice}>{choice}</option>
-                ))}
-              </select>
+          {product.options && product.options.length > 0 && (
+            <div className="mb-6">
+              {product.options.map((option: ProductOption, idx: number) => (
+                <div key={idx} className="mb-4">
+                  <label className="block text-sm font-medium mb-2">{option.name}</label>
+                  <select 
+                    className="w-full p-2 border border-gray-300 rounded-md"
+                    value={selectedOptions[option.name] || ''}
+                    onChange={(e) => handleOptionChange(option.name, e.target.value)}
+                  >
+                    <option value="">선택해주세요</option>
+                    {option.choices.map((choice: string, choiceIdx: number) => (
+                      <option key={choiceIdx} value={choice}>{choice}</option>
+                    ))}
+                  </select>
+                </div>
+              ))}
             </div>
-          ))}
+          )}
           
           {/* 수량 선택 */}
           <div className="mb-6">
@@ -204,21 +332,20 @@ const ShoppingProductDetail = () => {
             <div className="flex border border-gray-300 rounded-md w-32">
               <button 
                 className="px-3 py-1 border-r border-gray-300 hover:bg-gray-100"
-                onClick={() => handleQuantityChange(quantity - 1)}
+                onClick={() => quantity > 1 && setQuantity(quantity - 1)}
               >
                 -
               </button>
               <input 
                 type="number" 
                 min="1" 
-                max={product.stock}
                 value={quantity}
-                onChange={(e) => handleQuantityChange(parseInt(e.target.value) || 1)}
+                onChange={(e) => setQuantity(Math.max(1, parseInt(e.target.value) || 1))}
                 className="w-full text-center"
               />
               <button 
                 className="px-3 py-1 border-l border-gray-300 hover:bg-gray-100"
-                onClick={() => handleQuantityChange(quantity + 1)}
+                onClick={() => setQuantity(quantity + 1)}
               >
                 +
               </button>
@@ -229,11 +356,11 @@ const ShoppingProductDetail = () => {
           <div className="p-4 bg-gray-50 rounded-md mb-6">
             <div className="flex justify-between items-center">
               <span className="font-medium">총 상품 금액</span>
-              <span className="font-bold text-xl">{totalPrice.toLocaleString()}원</span>
+              <span className="font-bold text-xl">{(product.price * quantity).toLocaleString()}원</span>
             </div>
           </div>
           
-          {/* 구매 버튼을 펀딩 만들기 버튼으로 변경 - 가로 길이 동일하게 */}
+          {/* 버튼 그룹 */}
           <div className="grid grid-cols-3 gap-2">
             <button className="py-3 border border-black rounded-md hover:bg-gray-100 transition-colors">
               장바구니
@@ -254,152 +381,16 @@ const ShoppingProductDetail = () => {
         </div>
       </div>
       
-      {/* 상세 정보 탭 */}
+      {/* 상품 설명 */}
       <div className="mb-12">
-        <div className="border-b border-gray-200 mb-6">
-          <div className="flex">
-            <button className="py-3 px-4 border-b-2 border-black font-medium text-sm">
-              상품 상세정보
-            </button>
-            <button className="py-3 px-4 text-gray-500 text-sm">
-              리뷰 ({product.reviews.length})
-            </button>
-            <button className="py-3 px-4 text-gray-500 text-sm">
-              배송/교환/반품 안내
-            </button>
-          </div>
-        </div>
-        
-        <div>
-          <div className={`whitespace-pre-line ${!isDescriptionExpanded && 'max-h-96 overflow-hidden relative'}`}>
+        <h3 className="text-lg font-bold mb-4">상품 상세정보</h3>
+        <div className="whitespace-pre-line">
             {product.description}
-            
-            {/* 상세 이미지들 */}
-            <div className="mt-8 space-y-4">
-              {product.detailImages.map((img, idx) => (
-                <img 
-                  key={idx}
-                  src={img}
-                  alt={`${product.name} 상세 이미지 ${idx + 1}`}
-                  className="w-full h-auto rounded-md"
-                />
-              ))}
-            </div>
-            
-            {!isDescriptionExpanded && (
-              <div className="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-white to-transparent"></div>
-            )}
-          </div>
-          
-          {!isDescriptionExpanded && (
-            <div className="text-center mt-4">
-              <button 
-                onClick={() => setIsDescriptionExpanded(true)}
-                className="px-4 py-2 border border-gray-300 rounded-md text-sm hover:bg-gray-50"
-              >
-                상세정보 더보기
-              </button>
-            </div>
-          )}
         </div>
       </div>
-      
-      {/* 리뷰 섹션 */}
-      <div className="mb-12">
-        <h3 className="text-lg font-bold mb-4">상품 리뷰</h3>
-        <div className="space-y-4">
-          {product.reviews.map(review => (
-            <div key={review.id} className="border border-gray-200 rounded-md p-4">
-              <div className="flex justify-between mb-2">
-                <div>
-                  <span className="font-medium">{review.author}</span>
-                  <div className="flex text-yellow-400">
-                    {Array.from({ length: 5 }).map((_, idx) => (
-                      <svg 
-                        key={idx} 
-                        xmlns="http://www.w3.org/2000/svg" 
-                        className="h-4 w-4" 
-                        viewBox="0 0 20 20" 
-                        fill={idx < review.rating ? 'currentColor' : 'none'}
-                        stroke="currentColor"
-                      >
-                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                      </svg>
-                    ))}
-                  </div>
-                </div>
-                <span className="text-sm text-gray-500">{review.date}</span>
-              </div>
-              <p className="text-sm text-gray-700">{review.content}</p>
-            </div>
-          ))}
-        </div>
-        <div className="text-center mt-6">
-          <Link to="/shopping/review/write" className="px-4 py-2 border border-gray-300 rounded-md text-sm hover:bg-gray-50">
-            리뷰 작성하기
-          </Link>
-        </div>
-      </div>
-      
-      {/* 배송/교환/반품 안내 */}
-      <div className="mb-12">
-        <h3 className="text-lg font-bold mb-4">배송/교환/반품 안내</h3>
-        <div className="border border-gray-200 rounded-md p-6">
-          <div className="mb-6">
-            <h4 className="font-bold mb-2">배송 안내</h4>
-            <ul className="text-sm text-gray-700 space-y-1 list-disc pl-5">
-              <li>배송 방법: 택배</li>
-              <li>배송 지역: 전국</li>
-              <li>배송 비용: {product.deliveryInfo.fee === 0 ? '무료' : `${product.deliveryInfo.fee.toLocaleString()}원`}</li>
-              <li>제주 및 도서산간 지역은 추가 배송비가 발생할 수 있습니다.</li>
-              <li>배송 기간: {product.deliveryInfo.estimatedDays} (주문 완료 후)</li>
-            </ul>
-          </div>
-          
-          <div className="mb-6">
-            <h4 className="font-bold mb-2">교환/반품 안내</h4>
-            <ul className="text-sm text-gray-700 space-y-1 list-disc pl-5">
-              <li>상품 수령일로부터 7일 이내에 교환/반품이 가능합니다.</li>
-              <li>단순 변심에 의한 교환/반품은 고객님께서 왕복 배송비를 부담하셔야 합니다.</li>
-              <li>상품 하자, 오배송의 경우 판매자가 배송비를 부담합니다.</li>
-            </ul>
-          </div>
-          
-          <div>
-            <h4 className="font-bold mb-2">교환/반품이 불가능한 경우</h4>
-            <ul className="text-sm text-gray-700 space-y-1 list-disc pl-5">
-              <li>고객님의 책임 있는 사유로 상품이 훼손된 경우</li>
-              <li>상품 사용 또는 일부 소비로 인해 상품 가치가 현저히 감소한 경우</li>
-              <li>시간 경과에 의해 재판매가 어려운 경우</li>
-              <li>복제가 가능한 상품의 포장을 훼손한 경우</li>
-            </ul>
-          </div>
-        </div>
-      </div>
-      
-      {/* 추천 상품 */}
-      <div>
-        <h3 className="text-lg font-bold mb-4">함께 보면 좋은 상품</h3>
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-          {[1, 2, 3, 4].map(idx => (
-            <div key={idx} className="border border-gray-200 rounded-lg overflow-hidden">
-              <div className="h-48 bg-gray-100">
-                <img 
-                  src={`https://via.placeholder.com/200x200?text=추천상품${idx}`}
-                  alt={`추천상품 ${idx}`}
-                  className="w-full h-full object-cover"
-                />
-              </div>
-              <div className="p-3">
-                <h4 className="font-medium text-sm">추천 상품 {idx}</h4>
-                <div className="mt-1 font-bold">
-                  {Math.floor(Math.random() * 200000 + 50000).toLocaleString()}원
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
+
+      {/* 리뷰 섹션 추가 */}
+      <ReviewSection />
     </div>
   );
 };
