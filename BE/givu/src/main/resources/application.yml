@@ -25,3 +25,13 @@ kakao:
   redirect-uri: http://localhost:5173/auth/kakao/callback
   token-uri: https://kauth.kakao.com/oauth/token
   user-info-uri: https://kapi.kakao.com/v2/user/me
+
+cloud:
+  aws:
+    credentials:
+      accessKey: AKIAYHJANKNOWONE5GUE
+      secretKey: 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
+    region:
+      static: ap-northeast-2
+    s3:
+      bucket: givuproject-images
