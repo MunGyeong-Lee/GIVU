@@ -48,7 +48,12 @@ fun WriteLetterScreen(
     val writeLetter by fundingViewModel.writeLetter.collectAsState()
 
     Scaffold(
-        topBar = { CommonTopBar(stringResource(R.string.title_write_letter)) },
+        topBar = {
+            CommonTopBar(
+                stringResource(R.string.title_write_letter),
+                onBackClick = {},
+                onHomeClick = {})
+        },
         containerColor = Color.White
     ) { innerPadding ->
         funding?.let {
@@ -64,7 +69,8 @@ fun WriteLetterScreen(
                     value = writeLetter,
                     onValueChange = { fundingViewModel.writeLetter.value = it },
                     placeholder = { Text(stringResource(R.string.text_hint_write_letter)) },
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier
+                        .fillMaxWidth()
                         .heightIn(min = 196.dp, max = 196.dp),
                     textStyle = TextStyle(
                         fontSize = 16.sp,
@@ -114,7 +120,9 @@ fun WriteLetterScreen(
 
                 Button(
                     onClick = { navController.navigate(R.id.action_write_letter_to_complete_funding) },
-                    modifier = Modifier.fillMaxSize().height(56.dp),
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .height(56.dp),
                     enabled = true,
                     shape = RoundedCornerShape(10.dp),
                     border = BorderStroke(1.dp, Color(0xFFECECEC)),

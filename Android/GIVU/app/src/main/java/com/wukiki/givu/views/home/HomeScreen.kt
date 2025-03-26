@@ -223,6 +223,9 @@ fun HomeScreen(homeViewModel: HomeViewModel = hiltViewModel(), navController: Na
                 FloatingActionButton(
                     onClick = {
 
+                        // 펀딩 생성 화면으로 이동
+                        navController.navigate(R.id.action_home_to_register_funding)
+
                     },
                     backgroundColor = colorResource(id = R.color.main_primary),
                     modifier = Modifier

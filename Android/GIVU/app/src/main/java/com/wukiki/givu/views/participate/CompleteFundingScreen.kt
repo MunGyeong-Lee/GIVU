@@ -45,7 +45,13 @@ fun CompleteFundingScreen(
     val funding by fundingViewModel.selectedFunding.collectAsState()
 
     Scaffold(
-        topBar = { CommonTopBar(stringResource(R.string.title_complete_funding)) },
+        topBar = {
+            CommonTopBar(
+                stringResource(R.string.title_complete_funding),
+                onBackClick = {},
+                onHomeClick = {}
+            )
+        },
         containerColor = Color.White
     ) { innerPadding ->
         funding?.let {
@@ -97,7 +103,9 @@ fun CompleteFundingScreen(
 
                 Button(
                     onClick = { navController.navigate(R.id.action_participate_funding_to_write_letter) },
-                    modifier = Modifier.fillMaxSize().height(56.dp),
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .height(56.dp),
                     enabled = true,
                     shape = RoundedCornerShape(10.dp),
                     border = BorderStroke(1.dp, Color(0xFFECECEC)),
