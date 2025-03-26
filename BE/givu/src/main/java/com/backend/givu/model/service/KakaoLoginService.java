@@ -1,6 +1,9 @@
 package com.backend.givu.model.service;
 
+import com.backend.givu.model.entity.User;
 import com.backend.givu.model.responseDTO.KakaoProfileDTO;
+import com.backend.givu.model.responseDTO.TokenDTO;
+import com.backend.givu.security.JwtProvider;
 import lombok.RequiredArgsConstructor;
 
 import org.springframework.beans.factory.annotation.Value;
@@ -28,6 +31,9 @@ public class KakaoLoginService {
     @Value("${kakao.user-info-uri}")
     private String userInfoUri;
 
+    private final JwtProvider jwtProvider;
+
+
     private final RestTemplate restTemplate = new RestTemplate();
 
 //    public String getAccessToken(String code) {
@@ -46,6 +52,7 @@ public class KakaoLoginService {
 //        return (String) response.getBody().get("access_token");
 //    }
 
+    // 카카오 유저정보 가져오기
     public KakaoProfileDTO getUserInfo(String accessToken) {
         HttpHeaders headers = new HttpHeaders();
         headers.setBearerAuth(accessToken);
@@ -61,4 +68,25 @@ public class KakaoLoginService {
 
         return response.getBody();
     }
+
+    /**
+     * JWT 토큰 발급
+     * user: 현재 로그인한 user
+     * type: signup / login
+     */
+    public TokenDTO createTokens(User user, String type){
+        //Access Token 생성
+        String accessToken = delegateAccessToken(user.getId(), user.getEmail());
+        //Refresh Token 생성
+        String refreshToken = jwtProvider.generateRefreshToken(user.getId());
+        return new TokenDTO (type, accessToken, refreshToken);
+    }
+
+
+    private String delegateAccessToken(Long id, String email){
+        return jwtProvider.generateAccessToken(id, email);
+    }
+
+
+
 }
