@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 
 // 임시 데이터 - 후에 API 연동으로 대체 예정
@@ -58,20 +58,25 @@ const GIFT_OPTIONS = [
 
 const FundingDetailPage = () => {
   const { id } = useParams();
-  
+
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [selectedAmount, setSelectedAmount] = useState<number | null>(null);
   const [showAllParticipants, setShowAllParticipants] = useState(false);
 
+  // 컴포넌트가 마운트될 때 스크롤을 맨 위로 이동
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
   // 이미지 슬라이더 제어 함수
   const nextImage = () => {
-    setCurrentImageIndex((prev) => 
+    setCurrentImageIndex((prev) =>
       prev === FUNDING_DATA.images.length - 1 ? 0 : prev + 1
     );
   };
 
   const prevImage = () => {
-    setCurrentImageIndex((prev) => 
+    setCurrentImageIndex((prev) =>
       prev === 0 ? FUNDING_DATA.images.length - 1 : prev - 1
     );
   };
@@ -87,8 +92,8 @@ const FundingDetailPage = () => {
   };
 
   // 참여자 표시 개수
-  const displayedParticipants = showAllParticipants 
-    ? FUNDING_DATA.participants 
+  const displayedParticipants = showAllParticipants
+    ? FUNDING_DATA.participants
     : FUNDING_DATA.participants.slice(0, 3);
 
   return (
@@ -96,15 +101,15 @@ const FundingDetailPage = () => {
       {/* 이미지 슬라이더 섹션 */}
       <div className="relative mb-6 bg-gray-100 rounded-lg overflow-hidden">
         <div className="h-[400px] flex items-center justify-center">
-          <img 
-            src={FUNDING_DATA.images[currentImageIndex]} 
-            alt={`펀딩 이미지 ${currentImageIndex + 1}`} 
+          <img
+            src={FUNDING_DATA.images[currentImageIndex]}
+            alt={`펀딩 이미지 ${currentImageIndex + 1}`}
             className="max-h-full object-contain"
           />
         </div>
-        
+
         {/* 좌우 화살표 버튼 */}
-        <button 
+        <button
           onClick={prevImage}
           className="absolute left-4 top-1/2 transform -translate-y-1/2 bg-white/50 hover:bg-white/80 rounded-full p-2"
           aria-label="이전 이미지"
@@ -113,7 +118,7 @@ const FundingDetailPage = () => {
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
           </svg>
         </button>
-        <button 
+        <button
           onClick={nextImage}
           className="absolute right-4 top-1/2 transform -translate-y-1/2 bg-white/50 hover:bg-white/80 rounded-full p-2"
           aria-label="다음 이미지"
@@ -122,7 +127,7 @@ const FundingDetailPage = () => {
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
           </svg>
         </button>
-        
+
         {/* 이미지 인디케이터 */}
         <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-black/70 text-white px-3 py-1 rounded-full text-sm">
           {currentImageIndex + 1}/{FUNDING_DATA.images.length}
@@ -135,7 +140,7 @@ const FundingDetailPage = () => {
           <h1 className="text-xl font-bold">{FUNDING_DATA.title}</h1>
           <span className="text-gray-600">{FUNDING_DATA.category}</span>
         </div>
-        
+
         <div className="flex flex-col md:flex-row justify-between mb-4">
           <div>
             <span className="text-gray-600">참여자: {FUNDING_DATA.participantCount}명</span>
@@ -149,15 +154,15 @@ const FundingDetailPage = () => {
             </div>
           </div>
         </div>
-        
+
         {/* 진행 바 */}
         <div className="w-full bg-gray-200 rounded-full h-2.5 mb-6">
-          <div 
-            className="bg-black h-2.5 rounded-full" 
+          <div
+            className="bg-black h-2.5 rounded-full"
             style={{ width: `${FUNDING_DATA.percentage}%` }}
           ></div>
         </div>
-        
+
         {/* 선물하기 버튼 */}
         <button className="w-full py-3 bg-black text-white font-bold rounded-lg hover:bg-gray-800 transition">
           선물하기
@@ -178,7 +183,7 @@ const FundingDetailPage = () => {
               <div className="mt-2">{FUNDING_DATA.creator.introduction}</div>
             </div>
           </div>
-          
+
           <div className="border border-gray-200 rounded-lg p-6 md:w-1/2">
             <h3 className="font-bold mb-4">펀딩 소개글 (편지 형식?)</h3>
             <p className="text-gray-600">{FUNDING_DATA.description}</p>
@@ -193,7 +198,7 @@ const FundingDetailPage = () => {
           <div className="mb-6">
             <h3 className="font-bold mb-4">함께하는 사람들 ({FUNDING_DATA.participantCount}명)</h3>
           </div>
-          
+
           <div className="mb-8">
             <h3 className="font-bold mb-4">참여자 통계 시각화 (차트)</h3>
             <div className="flex flex-col md:flex-row gap-6">
@@ -205,7 +210,7 @@ const FundingDetailPage = () => {
               </div>
             </div>
           </div>
-          
+
           <div>
             <h3 className="font-bold mb-4">참여자 목록</h3>
             <div className="space-y-6">
@@ -223,9 +228,9 @@ const FundingDetailPage = () => {
                 </div>
               ))}
             </div>
-            
+
             {FUNDING_DATA.participants.length > 3 && (
-              <button 
+              <button
                 onClick={toggleParticipantsList}
                 className="w-full py-2 border border-gray-200 rounded-md mt-4 text-gray-600 hover:bg-gray-50"
               >
@@ -250,14 +255,14 @@ const FundingDetailPage = () => {
               위시 펀딩 동참하기
             </h2>
           </div>
-          
+
           <div className="bg-white rounded-lg p-4 mb-6">
             <div className="text-purple-600 font-bold">
               목표까지 {(FUNDING_DATA.targetAmount - FUNDING_DATA.currentAmount).toLocaleString()}원 남았어요
             </div>
             <div className="w-full bg-purple-100 rounded-full h-2 my-2">
-              <div 
-                className="bg-purple-500 h-2 rounded-full" 
+              <div
+                className="bg-purple-500 h-2 rounded-full"
                 style={{ width: `${FUNDING_DATA.percentage}%` }}
               ></div>
             </div>
@@ -265,22 +270,21 @@ const FundingDetailPage = () => {
               목표금액 {FUNDING_DATA.targetAmount.toLocaleString()}원
             </div>
           </div>
-          
+
           <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-6">
             {GIFT_OPTIONS.map((option) => (
               <button
                 key={option.amount}
                 onClick={() => selectAmount(option.amount)}
-                className={`p-4 rounded-lg text-white flex flex-col items-start ${
-                  selectedAmount === option.amount ? 'bg-gray-800' : 'bg-black'
-                }`}
+                className={`p-4 rounded-lg text-white flex flex-col items-start ${selectedAmount === option.amount ? 'bg-gray-800' : 'bg-black'
+                  }`}
               >
                 <span className="font-bold text-lg mb-2">{option.label}</span>
                 <span className="text-sm">{option.description}</span>
               </button>
             ))}
           </div>
-          
+
           <button className="w-full py-3 bg-black text-white font-bold rounded-lg hover:bg-gray-800 transition">
             선물하기
           </button>
@@ -300,7 +304,7 @@ const FundingDetailPage = () => {
               <li>펀딩 참여 내역은 마이페이지에서 확인하실 수 있습니다</li>
             </ul>
           </div>
-          
+
           <div>
             <h3 className="font-bold flex items-center">
               <span className="text-yellow-500 mr-1">💰</span> GIVU 페이 안내
@@ -311,7 +315,7 @@ const FundingDetailPage = () => {
               <li>GIVU 페이 충전 금액의 환불은 고객센터를 통해 가능합니다</li>
             </ul>
           </div>
-          
+
           <div>
             <h3 className="font-bold flex items-center">
               <span className="text-orange-500 mr-1">🎁</span> 선물 관련 안내
@@ -323,7 +327,7 @@ const FundingDetailPage = () => {
               <li>단순 변심에 의한 교환/반품은 불가합니다</li>
             </ul>
           </div>
-          
+
           <div>
             <h3 className="font-bold flex items-center">
               <span className="text-red-500 mr-1">❌</span> 펀딩 취소 안내
@@ -334,7 +338,7 @@ const FundingDetailPage = () => {
               <li>목표 금액 달성 후에는 취소가 불가합니다</li>
             </ul>
           </div>
-          
+
           <div>
             <h3 className="font-bold flex items-center">
               <span className="text-yellow-500 mr-1">⚠</span> 교환/반품이 불가능한 경우
@@ -345,7 +349,7 @@ const FundingDetailPage = () => {
               <li>시간 경과로 재판매가 어려울 정도로 상품 가치가 하락한 경우</li>
             </ul>
           </div>
-          
+
           <div>
             <h3 className="font-bold flex items-center">
               <span className="text-gray-500 mr-1">📞</span> 고객 지원

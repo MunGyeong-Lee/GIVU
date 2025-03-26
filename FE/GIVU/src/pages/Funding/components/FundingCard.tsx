@@ -14,6 +14,8 @@ interface FundingCardProps {
   progressPercentage?: number;
   imageUrl?: string;
   creatorName: string; // 카카오 유저 닉네임 추가
+  onClick?: () => void;
+  status?: string; // 펀딩 상태 추가 (PENDING, COMPLETED 등)
 }
 
 const FundingCard: React.FC<FundingCardProps> = ({
@@ -24,7 +26,9 @@ const FundingCard: React.FC<FundingCardProps> = ({
   currentAmount,
   progressPercentage,
   imageUrl,
-  creatorName
+  creatorName,
+  onClick,
+  status
 }) => {
   // 찜하기 상태 관리
   const [isLiked, setIsLiked] = useState(false);
@@ -33,6 +37,9 @@ const FundingCard: React.FC<FundingCardProps> = ({
   // 애니메이션 상태 관리
   const [isAnimating, setIsAnimating] = useState(false);
   const [heartScale, setHeartScale] = useState(1);
+
+  // 펀딩 완료 상태 확인
+  const isCompleted = status === 'COMPLETED';
 
   // 백엔드에서 주지 않을 경우 프론트에서 계산 (안전장치)
   const getProgressPercentage = () => {
@@ -70,35 +77,48 @@ const FundingCard: React.FC<FundingCardProps> = ({
   };
 
   return (
-    <div className="border border-gray-200 rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-200 cursor-pointer">
-      {/* 이미지 영역 */}
-      <div className="relative">
-        <div className="aspect-w-16 aspect-h-9 bg-gray-100">
-          {imageError ? (
-            // 이미지 로드 실패 시 로컬 기본 이미지 표시
-            <img
-              src={defaultImage}
-              alt={title}
-              className="object-cover w-full h-full"
-              draggable="false"
-            />
-          ) : (
-            // 실제 이미지 또는 로컬 기본 이미지
-            <img
-              src={imageUrl || defaultImage}
-              alt={title}
-              className="object-cover w-full h-full"
-              onError={handleImageError}
-              draggable="false"
-            />
-          )}
+    <div
+      className="rounded-lg overflow-hidden transition-all duration-200 cursor-pointer flex flex-col hover:shadow-md active:shadow-inner"
+      style={{ height: '320px' }}
+      onClick={onClick}
+    >
+      {/* 이미지 영역 - 고정 비율로 변경 + 호버 효과 */}
+      <div className="relative w-full overflow-hidden" style={{ height: '180px' }}>
+        <div className="w-full h-full flex items-center justify-center bg-gray-100 overflow-hidden">
+          <img
+            src={imageError ? defaultImage : (imageUrl || defaultImage)}
+            alt={title}
+            className={`w-full h-full object-cover transition-transform duration-300 hover-zoom ${isCompleted ? 'opacity-80' : ''}`}
+            style={{
+              objectPosition: 'center',
+              transformOrigin: 'center'
+            }}
+            onMouseOver={(e) => {
+              if (!isCompleted) {
+                e.currentTarget.style.transform = 'scale(1.1)';
+              }
+            }}
+            onMouseOut={(e) => {
+              e.currentTarget.style.transform = 'scale(1)';
+            }}
+            onError={handleImageError}
+            draggable="false"
+          />
         </div>
 
-        {/* 찜하기 버튼 - 와디즈 스타일 적용(흰색 테두리, 투명 검정 채움), 크기 증가, 애니메이션 추가 */}
+        {/* 완료된 펀딩 오버레이 */}
+        {isCompleted && (
+          <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+            <div className="bg-white bg-opacity-90 py-1.5 px-4 rounded-md text-gray-900 font-medium text-sm shadow-md">
+              완료된 펀딩입니다
+            </div>
+          </div>
+        )}
+
+        {/* 찜하기 버튼 - 백그라운드 제거 및 아웃라인 유지 */}
         <div
           onClick={handleLikeToggle}
-          className="absolute top-3 right-3 z-10 cursor-pointer"
-          style={{ outline: 'none' }}
+          className="absolute top-2 right-2 z-10 cursor-pointer transition-all"
         >
           <div
             className="relative transition-transform duration-200"
@@ -106,48 +126,73 @@ const FundingCard: React.FC<FundingCardProps> = ({
           >
             {isLiked ? (
               <>
-                <AiFillHeart size={32} className="text-red-500" />
-                <AiOutlineHeart size={32} className="text-white absolute top-0 left-0" />
+                <AiFillHeart size={24} className="text-red-500" />
+                <AiOutlineHeart size={24} className="text-white absolute top-0 left-0" />
               </>
             ) : (
-              <>
-                <AiFillHeart size={32} className="text-black opacity-40" />
-                <AiOutlineHeart size={32} className="text-white absolute top-0 left-0" />
-              </>
+              <AiOutlineHeart size={24} className="text-white" />
             )}
           </div>
         </div>
       </div>
 
-      {/* 콘텐츠 영역 */}
-      <div className="p-4">
-        {/* 달성률과 모금액을 한 줄에 배치 - 달성률 텍스트 크기 증가 */}
-        <div className="flex justify-between items-center mb-1">
-          <div className="font-extrabold text-xl" style={{ color: '#FF5B61' }}>
-            {getProgressPercentage().toLocaleString()}% 달성
-          </div>
-          <div className="text-sm font-semibold text-gray-700">
-            {currentAmount.toLocaleString()}원
-          </div>
+      {/* 콘텐츠 영역 - 패딩 축소 */}
+      <div className="p-3 flex-1 flex flex-col justify-between">
+        {/* 상단 정보 - 제목 고정 높이 */}
+        <div>
+          {/* 제목 - 정확히 2줄 높이로 고정 */}
+          <h2 className="font-medium text-sm leading-tight mb-1 line-clamp-2 h-[32px] overflow-hidden">{title}</h2>
+
+          {/* 카카오 유저 닉네임 */}
+          <p className="text-gray-500 text-xs">{creatorName}</p>
         </div>
 
-        {/* 프로그레스 바 */}
-        <div className="w-full bg-gray-200 rounded-full h-1 mb-3">
-          <div
-            className="h-1 rounded-full"
-            style={{
-              width: `${getProgressPercentage()}%`,
-              backgroundColor: '#FF5B61'
-            }}
-          ></div>
+        {/* 하단 정보 - 카드 하단에 고정 */}
+        <div>
+          {/* 프로그레스 바 */}
+          <div className="w-full bg-gray-200 rounded-full h-1 mb-1.5">
+            <div
+              className="h-1 rounded-full"
+              style={{
+                width: `${getProgressPercentage()}%`,
+                backgroundColor: isCompleted ? '#9CA3AF' : '#FF5B61'
+              }}
+            ></div>
+          </div>
+
+          {/* 달성률과 모금액을 한 줄에 배치 - 텍스트 크기 축소 */}
+          <div className="flex justify-between items-center">
+            <div className="font-bold text-sm" style={{ color: isCompleted ? '#9CA3AF' : '#FF5B61' }}>
+              {getProgressPercentage().toLocaleString()}% 달성
+            </div>
+            <div className="text-xs text-gray-700">
+              {currentAmount.toLocaleString()}원
+            </div>
+          </div>
         </div>
-
-        {/* 제목 - 볼드 감소 */}
-        <h2 className="font-semibold text-lg mb-1">{title}</h2>
-
-        {/* 카카오 유저 닉네임 */}
-        <p className="text-gray-500 text-sm">{creatorName}</p>
       </div>
+
+      <style>
+        {`
+          .hover-zoom {
+            transition: transform 300ms;
+          }
+          .hover-zoom:hover {
+            transform: scale(1.08);
+          }
+          
+          /* 카드 hover 및 active 상태 효과 */
+          .cursor-pointer {
+            transition: all 0.2s ease-in-out;
+          }
+          .cursor-pointer:hover {
+            transform: translateY(-2px);
+          }
+          .cursor-pointer:active {
+            transform: translateY(0px);
+          }
+        `}
+      </style>
     </div>
   );
 };
