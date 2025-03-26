@@ -31,4 +31,14 @@ public class ProductService {
                 .orElseThrow(() -> new EntityNotFoundException("상품을 찾을 수 없습니다."));
         return new ProductsDTO(product);
     }
+
+    public Product findProductEntity(int productId){
+        Product product = productRepository.findById(productId)
+                .orElseThrow(() -> new EntityNotFoundException("상품을 찾을 수 없습니다."));
+        return product;
+    }
+
+    public void saveProductEntity(Product product){
+        productRepository.save(product);
+    }
 }
