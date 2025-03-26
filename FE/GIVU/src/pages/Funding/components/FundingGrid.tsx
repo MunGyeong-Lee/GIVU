@@ -11,6 +11,14 @@ export interface FundingItem {
   progressPercentage?: number;
   imageUrl?: string;
   creatorName: string;
+  isPopular?: boolean;
+  isAchievement?: boolean;
+  category?: string;
+  status?: string;
+  createdAt?: string;
+  parcitipantsNumber?: number;
+  progress?: number;
+  onClick?: () => void;
 }
 
 interface FundingGridProps {
@@ -34,19 +42,37 @@ const FundingGrid: React.FC<FundingGridProps> = ({
   // 로딩 중 스켈레톤 UI
   if (isLoading) {
     return (
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
         {[1, 2, 3, 4, 5, 6, 7, 8].map((item) => (
-          <div key={item} className="border border-gray-200 rounded-lg overflow-hidden shadow-sm">
-            <div className="aspect-w-16 aspect-h-9 bg-gray-200 animate-pulse"></div>
-            <div className="p-4">
-              <div className="h-6 bg-gray-200 rounded animate-pulse mb-2"></div>
-              <div className="h-4 bg-gray-200 rounded animate-pulse mb-2"></div>
-              <div className="h-4 bg-gray-200 rounded animate-pulse mb-4 w-2/3"></div>
-              <div className="flex justify-between mb-2">
-                <div className="h-4 bg-gray-200 rounded animate-pulse w-1/3"></div>
-                <div className="h-4 bg-gray-200 rounded animate-pulse w-1/4"></div>
+          <div
+            key={item}
+            className="rounded-lg overflow-hidden bg-white shadow-sm flex flex-col"
+            style={{ height: '320px' }}
+          >
+            {/* 이미지 영역 스켈레톤 */}
+            <div className="relative w-full" style={{ height: '180px' }}>
+              <div className="w-full h-full bg-gray-200 animate-pulse"></div>
+            </div>
+
+            {/* 콘텐츠 영역 스켈레톤 */}
+            <div className="p-3 flex-1 flex flex-col justify-between">
+              {/* 상단 정보 스켈레톤 */}
+              <div>
+                <div className="h-[32px]">
+                  <div className="h-3 bg-gray-200 rounded animate-pulse mb-1"></div>
+                  <div className="h-3 bg-gray-200 rounded animate-pulse w-2/3"></div>
+                </div>
+                <div className="h-3 bg-gray-200 rounded animate-pulse w-1/3 mt-1"></div>
               </div>
-              <div className="h-2 bg-gray-200 rounded animate-pulse mb-4"></div>
+
+              {/* 하단 정보 스켈레톤 - 카드 하단에 고정 */}
+              <div>
+                <div className="h-1 bg-gray-200 rounded animate-pulse mb-1.5"></div>
+                <div className="flex justify-between items-center">
+                  <div className="h-3 bg-gray-200 rounded animate-pulse w-1/3"></div>
+                  <div className="h-2 bg-gray-200 rounded animate-pulse w-1/4"></div>
+                </div>
+              </div>
             </div>
           </div>
         ))}
@@ -55,20 +81,21 @@ const FundingGrid: React.FC<FundingGridProps> = ({
   }
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
       {fundings.map((funding) => (
-        <div key={funding.id} onClick={() => handleCardClick(funding.id)}>
-          <FundingCard
-            id={funding.id}
-            title={funding.title}
-            description={funding.description}
-            targetAmount={funding.targetAmount}
-            currentAmount={funding.currentAmount}
-            progressPercentage={funding.progressPercentage}
-            imageUrl={funding.imageUrl}
-            creatorName={funding.creatorName}
-          />
-        </div>
+        <FundingCard
+          key={funding.id}
+          id={funding.id}
+          title={funding.title}
+          description={funding.description}
+          targetAmount={funding.targetAmount}
+          currentAmount={funding.currentAmount}
+          progressPercentage={funding.progressPercentage}
+          imageUrl={funding.imageUrl}
+          creatorName={funding.creatorName}
+          status={funding.status}
+          onClick={() => handleCardClick(funding.id)}
+        />
       ))}
 
       {/* 데이터가 없을 때 보여줄 메시지 */}

@@ -1,232 +1,158 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import FundingGrid, { FundingItem } from './components/FundingGrid';
 import CategoryTabs, { CategoryItem } from './components/CategoryTabs';
 import SortOptions, { SortOption } from './components/SortOptions';
 import FundingHighlights, { HighlightItem } from './components/FundingHighlights';
 import LoadingSpinner from './components/LoadingSpinner';
+import StatusFilter, { FundingStatus } from './components/StatusFilter';
+import {
+  getPopularFundings,
+  getAchievementFundings,
+  getFundingsByCategory,
+  getFundingsByStatus,
+  sortFundings
+} from './data/dataUtils';
 
 function FundingListPage() {
+  // 추가: useNavigate 훅 사용
+  const navigate = useNavigate();
+
   // 선택된 카테고리 상태 관리
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   // 선택된 정렬 옵션 상태 관리
   const [selectedSort, setSelectedSort] = useState<string>('latest');
   // 로딩 상태 관리
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  // 선택된 상태 필터 (전체/진행중/완료)
+  const [selectedStatus, setSelectedStatus] = useState<'all' | 'pending' | 'completed'>('pending');
 
-  // 하이라이트 인기 펀딩 더미 데이터
-  const popularHighlightItems: HighlightItem[] = [
-    {
-      id: 101,
-      title: '맨손 설거지 가능한',
-      description: '100% 천연 설거지바',
-      targetAmount: 1000000,
-      currentAmount: 700000,
-      progressPercentage: 70,
-      badgeText: '인기 TOP',
-      badgeColor: '#FF5B61',
-      imageUrl: 'https://images.unsplash.com/photo-1580757468214-c73f7062a5cb?w=800'
-    },
-    {
-      id: 102,
-      title: '미끌림 없는 욕실 바닥',
-      description: '2만원으로 완성 뽀송하게',
-      targetAmount: 1500000,
-      currentAmount: 900000,
-      progressPercentage: 60,
-      badgeText: '인기 TOP',
-      badgeColor: '#FF5B61',
-      imageUrl: 'https://images.unsplash.com/photo-1584622650111-993a426fbf0a?w=800'
-    },
-    {
-      id: 103,
-      title: '미니멀리스트를 위한',
-      description: '심플한 데일리 백팩',
-      targetAmount: 2000000,
-      currentAmount: 1800000,
-      progressPercentage: 90,
-      badgeText: '인기 TOP',
-      badgeColor: '#FF5B61',
-      imageUrl: 'https://images.unsplash.com/photo-1491637639811-60e2756cc1c7?w=800'
-    },
-    {
-      id: 104,
-      title: '디자이너 협업 컬렉션',
-      description: '한정판 아트워크 티셔츠',
-      targetAmount: 3000000,
-      currentAmount: 1500000,
-      progressPercentage: 50,
-      badgeText: '인기 TOP',
-      badgeColor: '#FF5B61',
-      imageUrl: 'https://images.unsplash.com/photo-1503342217505-b0a15ec3261c?w=800'
-    },
-    {
-      id: 105,
-      title: '어디서나 완벽한 커피',
-      description: '휴대용 에스프레소 메이커',
-      targetAmount: 5000000,
-      currentAmount: 3000000,
-      progressPercentage: 60,
-      badgeText: '인기 TOP',
-      badgeColor: '#FF5B61',
-      imageUrl: 'https://images.unsplash.com/photo-1559496417-e7f25cb247f3?w=800'
-    }
-  ];
+  // 무한 스크롤 관련 상태
+  const [visibleCount, setVisibleCount] = useState<number>(12); // 초기에 12개 아이템
+  const [hasMore, setHasMore] = useState<boolean>(true); // 더 로드할 항목이 있는지
+  const observerRef = useRef<IntersectionObserver | null>(null);
+  const loadingRef = useRef<HTMLDivElement>(null); // 관찰할 요소 참조
 
-  // 하이라이트 달성 임박 더미 데이터
-  const achievementHighlightItems: HighlightItem[] = [
-    {
-      id: 201,
-      title: '목표 달성 임박 프로젝트',
-      description: '목표 금액 달성이 임박한 프로젝트입니다.',
-      targetAmount: 800000,
-      currentAmount: 760000,
-      progressPercentage: 95,
-      badgeText: '달성 임박',
-      badgeColor: '#4CAF50',
-      imageUrl: 'https://images.unsplash.com/photo-1581622558663-b2e33377dfb2?w=800'
-    },
-    {
-      id: 202,
-      title: '당신의 건강을 위한 모닝 그래놀라 키트',
-      description: '마지막 기회를 놓치지 마세요!',
-      targetAmount: 3000000,
-      currentAmount: 2900000,
-      progressPercentage: 96,
-      badgeText: '달성 임박',
-      badgeColor: '#4CAF50',
-      imageUrl: 'https://images.unsplash.com/photo-1556761223-4c4282c73f77?w=800'
-    },
-    {
-      id: 203,
-      title: '환경을 생각한 대나무 칫솔',
-      description: '플라스틱 없는 욕실을 위한 첫걸음',
-      targetAmount: 1000000,
-      currentAmount: 950000,
-      progressPercentage: 95,
-      badgeText: '달성 임박',
-      badgeColor: '#4CAF50',
-      imageUrl: 'https://images.unsplash.com/photo-1607613009820-a29f7bb81c04?w=800'
-    },
-    {
-      id: 204,
-      title: '초고속 무선 충전기',
-      description: '30분 만에 100% 충전 완료',
-      targetAmount: 2500000,
-      currentAmount: 2250000,
-      progressPercentage: 90,
-      badgeText: '달성 임박',
-      badgeColor: '#4CAF50',
-      imageUrl: 'https://images.unsplash.com/photo-1618478594486-c65b899c4936?w=800'
-    },
-    {
-      id: 205,
-      title: '신개념 스마트 플랜터',
-      description: '식물 키우기가 처음인 당신을 위한',
-      targetAmount: 1500000,
-      currentAmount: 1425000,
-      progressPercentage: 95,
-      badgeText: '달성 임박',
-      badgeColor: '#4CAF50',
-      imageUrl: 'https://images.unsplash.com/photo-1462530260150-362f94a9ab66?w=800'
-    }
-  ];
-
-  // 카테고리 더미 데이터
-  const categories: CategoryItem[] = [
-    { id: 'all', name: '전체' },
-    { id: 'birthday', name: '생일' },
-    { id: 'wedding', name: '결혼' },
-    { id: 'job', name: '취직' },
-    { id: 'anniversary', name: '기념일' }
-  ];
+  // 인기 펀딩과 달성 임박 펀딩 데이터 가져오기 (하이라이트용)
+  const popularHighlightItems = getPopularFundings();
+  const achievementHighlightItems = getAchievementFundings();
 
   // 정렬 옵션 더미 데이터
-  const sortOptions: SortOption[] = [
+  const sortOptions = [
     { id: 'latest', name: '최신순' },
     { id: 'deadline', name: '마감임박순' },
     { id: 'achievement', name: '달성률순' }
-  ];
+  ] as any;
 
   // 카테고리 변경 핸들러
   const handleCategoryChange = (categoryId: string) => {
     setSelectedCategory(categoryId);
-    // 여기에 카테고리 필터링 로직 추가 예정
+    // 카테고리 변경 시 필터링 초기화
+    resetPagination();
   };
 
   // 정렬 옵션 변경 핸들러
   const handleSortChange = (sortId: string) => {
     setSelectedSort(sortId);
-    // 여기에 정렬 로직 추가 예정
+    // 정렬 변경 시 필터링 초기화
+    resetPagination();
   };
 
-  // 컴포넌트 내부에 더미 데이터 추가
-  const dummyFundings: FundingItem[] = [
-    {
-      id: 1,
-      title: '돌비오디오 장착! 20만원대 초격차 풀스펙 귀멍 빔프로젝터',
-      description: '이 펀딩 프로젝트는 여러분의 도움이 필요합니다.',
-      targetAmount: 500000,
-      currentAmount: 500000,
-      progressPercentage: 100,
-      imageUrl: 'https://images.unsplash.com/photo-1594909122845-11baa439b7bf?w=800',
-      creatorName: 'UVISION'
-    },
-    {
-      id: 2,
-      title: '고품격 향수 브랜드가 만들면 다른 "1초컷" 냄새 지우개!',
-      description: '목표 달성이 얼마 남지 않았습니다!',
-      targetAmount: 500000,
-      currentAmount: 450000,
-      progressPercentage: 90,
-      imageUrl: 'https://images.unsplash.com/photo-1563170423-1765d525ecf1?w=800',
-      creatorName: '먼슬리121'
-    },
-    {
-      id: 3,
-      title: '아이폰 최고의 파트너! 터치할 때마다 만족스러운 15 케이스',
-      description: '새로운 프로젝트가 시작되었습니다.',
-      targetAmount: 800000,
-      currentAmount: 1200000,
-      progressPercentage: 50,
-      imageUrl: 'https://images.unsplash.com/photo-1592750475358-e33914b17f02?w=800',
-      creatorName: '애플친구들'
-    },
-    {
-      id: 4,
-      title: '매일 아침 5분이면 충분한 완벽 구강케어 시스템',
-      description: '특별한 이벤트를 위한 펀딩입니다.',
-      targetAmount: 1500000,
-      currentAmount: 3000000,
-      progressPercentage: 20,
-      imageUrl: 'https://images.unsplash.com/photo-1588528402605-1f9d0eb3a3cd?w=800',
-      creatorName: '덴탈케어'
-    },
-    {
-      id: 5,
-      title: '안녕, 여름! 올여름 필수템 쿨링 에코백',
-      description: '작은 도움이 모여 큰 기쁨이 됩니다.',
-      targetAmount: 2000000,
-      currentAmount: 1200000,
-      progressPercentage: 60,
-      imageUrl: 'https://images.unsplash.com/photo-1587467512961-120760940315?w=800',
-      creatorName: '여름상점'
-    },
-    {
-      id: 6,
-      title: '당신의 건강을 위한 모닝 그래놀라 키트',
-      description: '마지막 기회를 놓치지 마세요!',
-      targetAmount: 3000000,
-      currentAmount: 2900000,
-      progressPercentage: 96,
-      imageUrl: 'https://images.unsplash.com/photo-1517093157656-b9facb6f8676?w=800',
-      creatorName: '건강한아침'
+  // 상태 필터 변경 핸들러
+  const handleStatusChange = (status: 'all' | 'pending' | 'completed') => {
+    setSelectedStatus(status);
+    // 상태 필터 변경 시 필터링 초기화
+    resetPagination();
+  };
+
+  // 페이지네이션 초기화
+  const resetPagination = () => {
+    setVisibleCount(12);
+    setHasMore(true);
+  };
+
+  // 필터링 및 정렬된 펀딩 목록
+  const filteredByCategory = getFundingsByCategory(selectedCategory);
+  const filteredByStatus = getFundingsByStatus(selectedStatus);
+
+  // 카테고리와 상태 모두로 필터링된 결과
+  const filteredItems = filteredByStatus.filter(item =>
+    selectedCategory === 'all' || item.category === selectedCategory
+  );
+
+  // 최종 정렬된 데이터
+  const processedFundings = sortFundings(filteredItems, selectedSort as any);
+
+  // 현재 보여줄 데이터
+  const visibleFundings = processedFundings.slice(0, visibleCount);
+
+  // 더 로드할 데이터 확인
+  useEffect(() => {
+    if (visibleCount >= processedFundings.length) {
+      setHasMore(false);
+    } else {
+      setHasMore(true);
     }
-  ];
+  }, [visibleCount, processedFundings.length]);
+
+  // 추가 데이터 로드 함수
+  const loadMoreItems = useCallback(() => {
+    if (isLoading || !hasMore) return;
+
+    setIsLoading(true);
+
+    // 로딩 딜레이 시뮬레이션 (실제 API 호출 시에는 이 부분이 API 호출로 대체됨)
+    setTimeout(() => {
+      setVisibleCount(prevCount => prevCount + 8); // 8개씩 추가 로드
+      setIsLoading(false);
+    }, 800);
+  }, [isLoading, hasMore]);
+
+  // Intersection Observer 설정
+  useEffect(() => {
+    // Observer 콜백 함수
+    const handleObserver = (entries: IntersectionObserverEntry[]) => {
+      const [entry] = entries;
+      if (entry.isIntersecting && hasMore && !isLoading) {
+        loadMoreItems();
+      }
+    };
+
+    // Observer 인스턴스 생성
+    const observer = new IntersectionObserver(handleObserver, {
+      root: null, // 뷰포트를 root로 사용
+      rootMargin: '0px',
+      threshold: 0.1 // 10% 정도 보이면 콜백 실행
+    });
+
+    // Observer 연결
+    if (loadingRef.current) {
+      observer.observe(loadingRef.current);
+    }
+
+    // 정리 함수
+    return () => {
+      if (observerRef.current) {
+        observerRef.current.disconnect();
+      }
+    };
+  }, [hasMore, isLoading, loadMoreItems]);
 
   // 컴포넌트 로드 시 디버깅 로그
   useEffect(() => {
     console.log("FundingListPage 컴포넌트 마운트됨");
+
+    // 초기 로딩 상태 시뮬레이션
+    setIsLoading(true);
+    setTimeout(() => {
+      setIsLoading(false);
+    }, 1000);
   }, []);
+
+  // 펀딩 아이템 클릭 핸들러
+  const handleItemClick = (id: number) => {
+    navigate(`/funding/${id}`);
+  };
 
   return (
     <div className="w-full p-0 m-0 overflow-hidden relative">
@@ -252,17 +178,19 @@ function FundingListPage() {
         {/* 카테고리 탭 */}
         <div className="mb-8">
           <CategoryTabs
-            categories={categories}
             selectedCategory={selectedCategory}
             onCategoryChange={handleCategoryChange}
           />
         </div>
 
-        {/* 정렬 옵션 */}
-        <div className="mb-8">
+        {/* 필터 및 정렬 영역 */}
+        <div className="flex justify-between items-center mb-6">
+          <StatusFilter
+            selectedStatus={selectedStatus}
+            onStatusChange={handleStatusChange}
+          />
           <SortOptions
-            options={sortOptions}
-            selectedOption={selectedSort}
+            selectedSort={selectedSort}
             onSortChange={handleSortChange}
           />
         </div>
@@ -270,14 +198,26 @@ function FundingListPage() {
         {/* 펀딩 목록 */}
         <div className="mb-12">
           <FundingGrid
-            fundings={dummyFundings}
-            isLoading={isLoading}
-            onItemClick={(id) => console.log(`펀딩 ${id} 클릭됨`)}
+            fundings={visibleFundings}
+            isLoading={visibleFundings.length === 0 && isLoading}
+            onItemClick={handleItemClick}
           />
         </div>
 
-        {/* 무한 스크롤 로딩 표시 */}
-        {isLoading && <LoadingSpinner className="my-10" />}
+        {/* 무한 스크롤 로딩 표시 - 이 요소가 화면에 보이면 추가 로딩 시작 */}
+        <div ref={loadingRef} className="w-full flex justify-center my-8 pb-4">
+          {isLoading && <LoadingSpinner className="my-10" />}
+          {!isLoading && !hasMore && visibleFundings.length > 0 && (
+            <div className="text-gray-500 text-sm my-3">
+              모든 펀딩을 불러왔습니다.
+            </div>
+          )}
+          {!isLoading && !hasMore && visibleFundings.length === 0 && (
+            <div className="text-gray-500 text-sm my-3 p-8 text-center w-full">
+              해당 조건에 맞는 펀딩이 없습니다.
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import Slider from 'react-slick';
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
@@ -35,6 +36,9 @@ const FundingHighlights: React.FC<FundingHighlightsProps> = ({
   achievementItems = [],
   title = '펀딩 하이라이트'
 }) => {
+  // Navigation 훅 추가
+  const navigate = useNavigate();
+
   // 탭 상태 관리
   const [activeTab, setActiveTab] = useState<'popular' | 'achievement'>('popular');
   // 슬라이더 레퍼런스
@@ -42,8 +46,8 @@ const FundingHighlights: React.FC<FundingHighlightsProps> = ({
 
   // 현재 활성화된 아이템 배열
   const items = activeTab === 'popular'
-    ? (popularItems.length > 0 ? popularItems : getDummyPopular())
-    : (achievementItems.length > 0 ? achievementItems : getDummyAchievement());
+    ? popularItems
+    : achievementItems;
 
   // slick 설정
   const settings = {
@@ -82,6 +86,11 @@ const FundingHighlights: React.FC<FundingHighlightsProps> = ({
     if (sliderRef.current) {
       sliderRef.current.slickPrev();
     }
+  };
+
+  // 펀딩 아이템 클릭 핸들러
+  const handleItemClick = (id: number) => {
+    navigate(`/funding/${id}`);
   };
 
   // 아이템이 없는 경우
@@ -220,7 +229,7 @@ const FundingHighlights: React.FC<FundingHighlightsProps> = ({
             }
             
             /* 탭 버튼 스타일 강화 */
-            button {
+            .custom-slider-container button {
               -webkit-appearance: none !important;
               appearance: none !important;
               text-decoration: none !important;
@@ -253,16 +262,19 @@ const FundingHighlights: React.FC<FundingHighlightsProps> = ({
         <Slider {...settings} ref={sliderRef}>
           {items.map((item, index) => (
             <div key={item.id} style={{ backgroundColor: 'transparent' }}>
-              <div style={{
-                position: 'relative',
-                height: '340px',
-                margin: '0 10px',
-                borderRadius: '12px',
-                overflow: 'hidden',
-                boxShadow: 'none', // 그림자 제거
-                cursor: 'pointer',
-                backgroundColor: 'transparent'
-              }}>
+              <div
+                style={{
+                  position: 'relative',
+                  height: '340px',
+                  margin: '0 10px',
+                  borderRadius: '12px',
+                  overflow: 'hidden',
+                  boxShadow: 'none', // 그림자 제거
+                  cursor: 'pointer',
+                  backgroundColor: 'transparent'
+                }}
+                onClick={() => handleItemClick(item.id)}
+              >
                 <img
                   src={item.imageUrl || defaultImage}
                   alt={item.title}
@@ -423,126 +435,5 @@ const FundingHighlights: React.FC<FundingHighlightsProps> = ({
     </div>
   );
 };
-
-// 기본 더미 데이터 함수 (5개로 확장)
-function getDummyPopular(): HighlightItem[] {
-  return [
-    {
-      id: 101,
-      title: '맨손 설거지 가능한',
-      description: '100% 천연 설거지바',
-      targetAmount: 1000000,
-      currentAmount: 700000,
-      progressPercentage: 70,
-      badgeText: '인기 TOP',
-      badgeColor: '#FF5B61',
-      imageUrl: 'https://images.unsplash.com/photo-1581622558667-3419a8dc5f83?w=800'
-    },
-    {
-      id: 102,
-      title: '미끌림 없는 욕실 바닥',
-      description: '2만원으로 완성 뽀송하게',
-      targetAmount: 1500000,
-      currentAmount: 900000,
-      progressPercentage: 60,
-      badgeText: '인기 TOP',
-      badgeColor: '#FF5B61',
-      imageUrl: 'https://images.unsplash.com/photo-1584622650111-993a426fbf0a?w=800'
-    },
-    {
-      id: 103,
-      title: '미니멀리스트를 위한',
-      description: '심플한 데일리 백팩',
-      targetAmount: 2000000,
-      currentAmount: 1800000,
-      progressPercentage: 90,
-      badgeText: '인기 TOP',
-      badgeColor: '#FF5B61',
-      imageUrl: 'https://images.unsplash.com/photo-1491637639811-60e2756cc1c7?w=800'
-    },
-    {
-      id: 104,
-      title: '디자이너 협업 컬렉션',
-      description: '한정판 아트워크 티셔츠',
-      targetAmount: 3000000,
-      currentAmount: 1500000,
-      progressPercentage: 50,
-      badgeText: '인기 TOP',
-      badgeColor: '#FF5B61',
-      imageUrl: 'https://images.unsplash.com/photo-1503342217505-b0a15ec3261c?w=800'
-    },
-    {
-      id: 105,
-      title: '어디서나 완벽한 커피',
-      description: '휴대용 에스프레소 메이커',
-      targetAmount: 5000000,
-      currentAmount: 3000000,
-      progressPercentage: 60,
-      badgeText: '인기 TOP',
-      badgeColor: '#FF5B61',
-      imageUrl: 'https://images.unsplash.com/photo-1559496417-e7f25cb247f3?w=800'
-    }
-  ];
-}
-
-function getDummyAchievement(): HighlightItem[] {
-  return [
-    {
-      id: 201,
-      title: '목표 달성 임박 프로젝트',
-      description: '목표 금액 달성이 임박한 프로젝트입니다.',
-      targetAmount: 800000,
-      currentAmount: 760000,
-      progressPercentage: 95,
-      badgeText: '달성 임박',
-      badgeColor: '#4CAF50',
-      imageUrl: 'https://images.unsplash.com/photo-1581622558663-b2e33377dfb2?w=800'
-    },
-    {
-      id: 202,
-      title: '당신의 건강을 위한 모닝 그래놀라 키트',
-      description: '마지막 기회를 놓치지 마세요!',
-      targetAmount: 3000000,
-      currentAmount: 2900000,
-      progressPercentage: 96,
-      badgeText: '달성 임박',
-      badgeColor: '#4CAF50',
-      imageUrl: 'https://images.unsplash.com/photo-1556761223-4c4282c73f77?w=800'
-    },
-    {
-      id: 203,
-      title: '환경을 생각한 대나무 칫솔',
-      description: '플라스틱 없는 욕실을 위한 첫걸음',
-      targetAmount: 1000000,
-      currentAmount: 950000,
-      progressPercentage: 95,
-      badgeText: '달성 임박',
-      badgeColor: '#4CAF50',
-      imageUrl: 'https://images.unsplash.com/photo-1607613009820-a29f7bb81c04?w=800'
-    },
-    {
-      id: 204,
-      title: '초고속 무선 충전기',
-      description: '30분 만에 100% 충전 완료',
-      targetAmount: 2500000,
-      currentAmount: 2250000,
-      progressPercentage: 90,
-      badgeText: '달성 임박',
-      badgeColor: '#4CAF50',
-      imageUrl: 'https://images.unsplash.com/photo-1618478594486-c65b899c4936?w=800'
-    },
-    {
-      id: 205,
-      title: '신개념 스마트 플랜터',
-      description: '식물 키우기가 처음인 당신을 위한',
-      targetAmount: 1500000,
-      currentAmount: 1425000,
-      progressPercentage: 95,
-      badgeText: '달성 임박',
-      badgeColor: '#4CAF50',
-      imageUrl: 'https://images.unsplash.com/photo-1462530260150-362f94a9ab66?w=800'
-    }
-  ];
-}
 
 export default FundingHighlights; 
