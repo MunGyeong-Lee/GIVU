@@ -1,13 +1,15 @@
 package com.backend.givu.model.responseDTO;
 
-
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
 
-@Getter
 @Setter
+@Getter
 @AllArgsConstructor
-public class UserIdResponseDTO {
-    private Long userId;
+public class ProductReviewSimpleDTO {
+    private int reviewId;
+    private String title;
+    private int star;
+    private long userId;
 }

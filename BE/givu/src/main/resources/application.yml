@@ -37,6 +37,7 @@ kakao:
   token-uri: https://kauth.kakao.com/oauth/token
   user-info-uri: https://kapi.kakao.com/v2/user/me
 
+
 jwt:
   # 액세스 토큰 만료시간 (임시: 한 달)
   access:
@@ -52,4 +53,15 @@ jwt:
   token:
     secret:
       key: "dZMdmygCoWc3zqF76CZ/bv6EPVdc11Cd4DS/NhTaN7g=" # 32 바이트
+
+
+cloud:
+  aws:
+    credentials:
+      accessKey: AKIAYHJANKNOWONE5GUE
+      secretKey: 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
+    region:
+      static: ap-northeast-2
+    s3:
+      bucket: givuproject-images
 
