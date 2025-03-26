@@ -21,6 +21,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import com.wukiki.givu.R
 import com.wukiki.givu.util.CommonTopBar
 import com.wukiki.givu.util.StoreItemCategoryComponent
 import com.wukiki.givu.views.home.component.SearchBarItem
@@ -28,13 +29,17 @@ import com.wukiki.givu.views.mall.GiftListItem
 
 
 @Composable
-fun SelectPresentScreen(navController: NavController) {
+fun SelectPresentScreen(navController: NavController, xmlNavController: NavController) {
     val tabs = listOf("전체", "화장품", "생활 가전", "전자기기", "디저트", "인테리어")
     var selectedCategory by remember { mutableStateOf("전체") }
 
 
     Column(Modifier.fillMaxSize()) {
-        CommonTopBar("선물 선택하기")
+        CommonTopBar(
+            "선물 선택하기",
+            onBackClick = { navController.popBackStack() },
+            onHomeClick = { xmlNavController.navigate(R.id.fragment_home) }
+        )
 
         Box(
             Modifier

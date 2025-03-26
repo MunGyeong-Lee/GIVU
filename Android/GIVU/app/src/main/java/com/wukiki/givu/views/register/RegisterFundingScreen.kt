@@ -4,6 +4,8 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -13,9 +15,14 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.Button
+import androidx.compose.material.ButtonDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -34,6 +41,8 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
 import com.wukiki.givu.R
 import com.wukiki.givu.ui.pretendard
 import com.wukiki.givu.ui.suit
@@ -41,16 +50,23 @@ import com.wukiki.givu.util.CommonBottomButton
 import com.wukiki.givu.util.CommonTopBar
 
 @Composable
-fun RegisterFundingScreen() {
+fun RegisterFundingScreen(navController: NavController, xmlNavController: NavController) {
 
     val stroke = Stroke(
         width = 1f,
         pathEffect = PathEffect.dashPathEffect(floatArrayOf(10f, 10f), 0f)
     )
 
-    Box(modifier = Modifier.fillMaxSize()) {
+
+    Box(modifier = Modifier
+        .fillMaxSize()
+        .padding(bottom = 16.dp)) {
         Column(Modifier.fillMaxSize()) {
-            CommonTopBar("펀딩 생성하기")
+            CommonTopBar(
+                "펀딩 생성하기",
+                onBackClick = { xmlNavController.popBackStack() },
+                onHomeClick = { xmlNavController.navigate(R.id.fragment_home) }
+            )
 
             Column(
                 modifier = Modifier
@@ -88,7 +104,15 @@ fun RegisterFundingScreen() {
                         .fillMaxWidth()
                 ) {
                     Column(
-                        modifier = Modifier.fillMaxSize(),
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .clickable(
+                                interactionSource = remember { MutableInteractionSource() },
+                                indication = null,
+                                onClick = {
+                                    navController.navigate("SelectPresent")
+                                }
+                            ),
                         verticalArrangement = Arrangement.Center,
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
@@ -128,30 +152,53 @@ fun RegisterFundingScreen() {
                     )
 
                     // 선택한 상품 이미지
-                    Image(
-                        painter = painterResource(R.drawable.test_img_doll),
-                        contentDescription = null,
-                        contentScale = ContentScale.FillWidth,
-                        modifier = Modifier.clip(shape = RoundedCornerShape(10.dp))
-                    )
+//                    Image(
+//                        painter = painterResource(R.drawable.test_img_doll),
+//                        contentDescription = null,
+//                        contentScale = ContentScale.FillWidth,
+//                        modifier = Modifier.clip(shape = RoundedCornerShape(10.dp))
+//                    )
                 }
 
                 Spacer(Modifier.height(16.dp))
 
-                SelectInfoText()
+//                SelectInfoText()
 
 
             }
 
         }
 
-        CommonBottomButton(
-            Modifier
+
+        Box(
+            modifier = Modifier
                 .fillMaxWidth()
                 .height(68.dp)
                 .align(Alignment.BottomCenter),
-            text = "선물 선택하기"
-        )
+        ) {
+            Button(
+                onClick = {
+                    navController.navigate("RegisterInputStep2")
+                },
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(8.dp),
+                enabled = true,
+                shape = RoundedCornerShape(5.dp),
+                border = BorderStroke(1.dp, Color(0xFFECECEC)),
+                colors = ButtonDefaults.buttonColors(colorResource(R.color.main_primary)),
+                elevation = ButtonDefaults.elevation(0.dp)
+            ) {
+                Text(
+                    text = "선물 선택하기",
+                    fontFamily = suit,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 18.sp,
+                    color = Color.White
+                )
+            }
+        }
+
     }
 }
 
@@ -173,10 +220,4 @@ private fun SelectInfoText() {
         fontSize = 19.sp,
         color = colorResource(R.color.main_secondary)
     )
-}
-
-@Preview(showBackground = true)
-@Composable
-private fun Register() {
-    RegisterFundingScreen()
 }
