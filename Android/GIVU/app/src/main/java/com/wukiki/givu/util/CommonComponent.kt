@@ -39,12 +39,19 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
+import androidx.navigation.fragment.NavHostFragment.Companion.findNavController
+import androidx.navigation.fragment.findNavController
 import com.wukiki.givu.R
 import com.wukiki.givu.ui.pretendard
 import com.wukiki.givu.ui.suit
 
 @Composable
-fun CommonTopBar(title: String) {
+fun CommonTopBar(
+    title: String,
+    onBackClick: () -> Unit,
+    onHomeClick: () -> Unit
+) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -53,11 +60,11 @@ fun CommonTopBar(title: String) {
         verticalAlignment = Alignment.CenterVertically
     ) {
 
-        IconButton(onClick = {}) {
+        IconButton(onClick = onBackClick) {
             Icon(
                 painter = painterResource(R.drawable.ic_arrow_back),
                 contentDescription = null,
-                modifier = Modifier.size(28.dp)
+                modifier = Modifier.size(24.dp)
             )
         }
         Spacer(Modifier.weight(1f))
@@ -69,7 +76,7 @@ fun CommonTopBar(title: String) {
         )
         Spacer(Modifier.weight(1f))
         IconButton(
-            onClick = {},
+            onClick = onHomeClick,
         ) {
             Icon(painter = painterResource(R.drawable.ic_topbar_home), null)
         }
@@ -144,7 +151,6 @@ fun StoreDetailTopBar() {
     ) {
 
         IconButton(
-            modifier = Modifier.padding(start = 8.dp),
             onClick = {
 
             }
@@ -152,8 +158,9 @@ fun StoreDetailTopBar() {
             Icon(
                 painter = painterResource(R.drawable.ic_arrow_back),
                 contentDescription = null,
-                modifier = Modifier.size(24.dp)
+                modifier = Modifier.size(28.dp)
             )
+
         }
         Spacer(Modifier.weight(1f))
         Text(
@@ -179,7 +186,12 @@ fun StoreDetailTopBar() {
 }
 
 @Composable
-fun StoreDetailBottomButton(modifier: Modifier, text: String, navController: NavController, actionId: Int) {
+fun StoreDetailBottomButton(
+    modifier: Modifier,
+    text: String,
+    navController: NavController,
+    actionId: Int
+) {
     Box(
         modifier = modifier
     ) {
@@ -199,7 +211,7 @@ fun StoreDetailBottomButton(modifier: Modifier, text: String, navController: Nav
                 IconButton(
                     onClick = {},
                     modifier = Modifier.size(24.dp)
-                    ) {
+                ) {
                     Icon(
                         painter = painterResource(R.drawable.ic_heart_outline), null,
                         modifier = Modifier.fillMaxSize()

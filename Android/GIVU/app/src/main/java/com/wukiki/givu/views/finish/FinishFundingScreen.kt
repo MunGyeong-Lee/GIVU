@@ -37,7 +37,13 @@ fun FinishFundingScreen(
     val participants by fundingViewModel.fundingParticipants.collectAsState()
 
     Scaffold(
-        topBar = { CommonTopBar(stringResource(R.string.title_finish_funding)) },
+        topBar = {
+            CommonTopBar(
+                stringResource(R.string.title_finish_funding),
+                onBackClick = {},
+                onHomeClick = {}
+            )
+        },
         containerColor = Color.White
     ) { innerPadding ->
         funding?.let {

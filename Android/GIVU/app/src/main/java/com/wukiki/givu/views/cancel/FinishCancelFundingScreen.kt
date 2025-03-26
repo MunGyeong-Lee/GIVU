@@ -36,7 +36,13 @@ fun FinishCancelFundingScreen(
     navController: NavController
 ) {
     Scaffold(
-        topBar = { CommonTopBar(stringResource(R.string.title_finish_cancel_funding)) },
+        topBar = {
+            CommonTopBar(
+                stringResource(R.string.title_finish_cancel_funding),
+                onBackClick = {},
+                onHomeClick = {}
+            )
+        },
         containerColor = Color.White
     ) { innerPadding ->
         Column(
@@ -65,7 +71,7 @@ fun FinishCancelFundingScreen(
             Spacer(modifier = Modifier.height(24.dp))
 
             Button(
-                onClick = {  },
+                onClick = { },
                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFF6B6B)),
                 shape = RoundedCornerShape(12.dp),
                 modifier = Modifier

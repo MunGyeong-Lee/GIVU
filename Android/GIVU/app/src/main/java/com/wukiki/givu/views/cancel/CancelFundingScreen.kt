@@ -53,7 +53,11 @@ fun CancelFundingScreen(
     var showDialog by remember { mutableStateOf(false) }
 
     Scaffold(
-        topBar = { CommonTopBar(stringResource(R.string.title_cancel_funding)) },
+        topBar = {
+            CommonTopBar(stringResource(R.string.title_cancel_funding),
+                onBackClick = {},
+                onHomeClick = {})
+        },
         containerColor = Color.White
     ) { innerPadding ->
         funding?.let {

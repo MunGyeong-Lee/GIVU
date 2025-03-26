@@ -24,8 +24,8 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Divider
-import androidx.compose.material.Icon
-import androidx.compose.material.Scaffold
+import androidx.compose.material3.Icon
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
@@ -54,6 +54,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
 import com.wukiki.givu.R
 import com.wukiki.givu.ui.pretendard
 import com.wukiki.givu.ui.suit
@@ -65,7 +66,7 @@ import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun RegisterInputScreen() {
+fun RegisterInputScreen(navController: NavController, xmlNavController: NavController) {
 
     data class CategoryItem(val iconId: Int, val label: String)
 
@@ -90,10 +91,12 @@ fun RegisterInputScreen() {
     val scrollState = rememberScrollState()
 
 
-    androidx.compose.material3.Scaffold(
+    Scaffold(
         bottomBar = {
             Surface(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 16.dp),
                 shadowElevation = 16.dp,
                 color = Color.White
             ) {
@@ -107,13 +110,16 @@ fun RegisterInputScreen() {
         },
         topBar = {
             CommonTopBar(
-                title = "펀딩 생성하기"
+                title = "펀딩 생성하기",
+                onBackClick = { navController.popBackStack() },
+                onHomeClick = { xmlNavController.navigate(R.id.fragment_home) }
             )
         }
     ) { paddingValues ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
+                .padding(bottom = 8.dp)
                 .verticalScroll(scrollState)
                 .background(Color.White)
                 .padding(paddingValues)
@@ -231,7 +237,9 @@ fun RegisterInputScreen() {
                         .border(
                             width = 1.dp,
                             shape = RoundedCornerShape(5.dp),
-                            color = if (categorySelect == "카테고리 선택") Color(0xFFBCBCBC) else colorResource(R.color.main_secondary)
+                            color = if (categorySelect == "카테고리 선택") Color(0xFFBCBCBC) else colorResource(
+                                R.color.main_secondary
+                            )
                         )
                         .clickable(
                             interactionSource = remember { MutableInteractionSource() },
@@ -519,10 +527,4 @@ private fun PublicOpenButton() {
 @Composable
 private fun PrivateOpenButton() {
 
-}
-
-@Preview(showBackground = true)
-@Composable
-private fun Register22() {
-    RegisterInputScreen()
 }

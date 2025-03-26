@@ -29,6 +29,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
 import com.wukiki.givu.R
 import com.wukiki.givu.ui.pretendard
 import com.wukiki.givu.ui.suit
@@ -37,7 +38,7 @@ import com.wukiki.givu.util.StoreDetailBottomButton
 import com.wukiki.givu.util.StoreDetailTopBar
 
 @Composable
-fun DetailPresentScreen() {
+fun DetailPresentScreen(navController: NavController, xmlNavController: NavController) {
 
     Box(modifier = Modifier.fillMaxSize()) {
 
@@ -91,8 +92,8 @@ fun DetailPresentScreen() {
 
 }
 
-@Preview(showBackground = true)
-@Composable
-private fun TestPreview() {
-    DetailPresentScreen()
-}
+//@Preview(showBackground = true)
+//@Composable
+//private fun TestPreview() {
+//    DetailPresentScreen()
+//}

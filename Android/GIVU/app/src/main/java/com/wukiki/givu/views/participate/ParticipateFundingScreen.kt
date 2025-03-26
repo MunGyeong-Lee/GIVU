@@ -34,7 +34,13 @@ fun ParticipateFundingScreen(
     val funding by fundingViewModel.selectedFunding.collectAsState()
 
     Scaffold(
-        topBar = { CommonTopBar(stringResource(R.string.title_participate_funding)) },
+        topBar = {
+            CommonTopBar(
+                stringResource(R.string.title_participate_funding),
+                onBackClick = {},
+                onHomeClick = {}
+            )
+        },
         containerColor = Color.White
     ) { paddingValues ->
         Column(

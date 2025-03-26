@@ -71,6 +71,7 @@ dependencies {
     implementation("androidx.navigation:navigation-compose:2.8.6")
     implementation("androidx.navigation:navigation-dynamic-features-fragment:2.8.6")
     implementation("com.google.android.material:material:1.9.0")
+    implementation("com.google.accompanist:accompanist-navigation-animation:0.31.1-alpha")
 
     // Jetpack Compose
     implementation("androidx.compose.ui:ui")
