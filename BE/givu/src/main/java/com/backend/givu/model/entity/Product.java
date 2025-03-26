@@ -44,9 +44,12 @@ public class Product {
     @Column(name = "star")
     private Double star;
 
+    @Column(name = "description")
+    private String description;
+
     @Column(name = "created_at")
     private Instant createdAt;
-    @OneToMany(mappedBy = "relatedProduct")
+    @OneToMany(mappedBy = "relatedProduct", fetch = FetchType.LAZY)
     private Set<Payment> payments = new LinkedHashSet<>();
 
     @Enumerated(EnumType.STRING)
