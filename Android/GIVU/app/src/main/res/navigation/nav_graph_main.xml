@@ -35,6 +35,10 @@
         android:label="@string/menu_title_community"
         tools:layout="@layout/fragment_community">
 
+        <action
+            android:id="@+id/action_community_to_detail_funding"
+            app:destination="@id/fragment_detail_funding" />
+
     </fragment>
 
     <fragment
