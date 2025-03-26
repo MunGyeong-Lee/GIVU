@@ -26,6 +26,11 @@
 
     <!-- Community -->
     <string name="label_community">Community</string>
+    <string name="title_community">커뮤니티</string>
+    <string name="title_friend_list">내 친구 목록</string>
+    <string name="title_recently_funding">최근 활동이 이루어진 펀딩</string>
+    <string name="title_friend_participate_funding">친구들이 참여한 펀딩</string>
+    <string name="title_friend_register_funding">친구들이 생성한 펀딩</string>
 
     <!-- Mall -->
     <string name="label_mall">Mall</string>
@@ -54,7 +59,6 @@
     <string name="label_complete_funding">Complete Funding</string>
     <string name="title_complete_funding">펀딩 참여 완료</string>
     <string name="text_complete_funding">펀딩에 참여했습니다.</string>
-    <string name="text_return">돌아가기</string>
 
     <!-- Cancel Funding -->
     <string name="label_cancel_funding">Cancel Funding</string>
