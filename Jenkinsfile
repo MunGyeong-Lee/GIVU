@@ -78,12 +78,13 @@ pipeline {
                     sleep time: 5, unit: 'SECONDS'
 
                     // nginx.conf 생성
-                   sh """
-                        sed -e 's|\\$\\{BACKEND\\}|${backendNew}|g' \\
-                            -e 's|\\$\\{FRONTEND\\}|${frontendNew}|g' \\
+                    def sedCommand = """
+                        sed -e 's|\\\${BACKEND}|${backendNew}|g' \\
+                            -e 's|\\\${FRONTEND}|${frontendNew}|g' \\
                             ${nginxTemplatePath} > ${nginxConfPath}
                     """
-
+                    sh script: sedCommand
+                    
                     def nginxExists = sh(script: "docker ps -a --format '{{.Names}}' | grep nginx || true", returnStdout: true).trim()
 
                     def restartScript = """
