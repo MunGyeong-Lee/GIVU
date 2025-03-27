@@ -29,10 +29,11 @@ pipeline {
         stage('Build Spring Boot') {
             steps {
 
-                sh 'chmod +x gradlew'
+                
                 
                 // 1. 먼저 Spring Boot 빌드 시도
                 dir('BE/givu') {
+                    sh 'chmod +x gradlew'
                     sh './gradlew build --no-daemon'
                 }
                 // 2. 빌드 성공했을 때만 Docker 이미지 빌드
