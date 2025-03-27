@@ -43,7 +43,7 @@ fun HomeAppBarPager(navController: NavController, user: User?) {
                 painter = painterResource(id = R.drawable.ic_logo),
                 contentDescription = "GIVU Logo",
                 modifier = Modifier
-                    .height(16.dp)
+                    .height(20.dp)
             )
 
             when (user == null) {
