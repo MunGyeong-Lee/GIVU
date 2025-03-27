@@ -37,6 +37,7 @@ public class SecurityConfig {
 
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
+                                "/api-docs", 
                                 "/v3/api-docs/**",              // OpenAPI JSON
                                 "/swagger-ui/**",               // Swagger UI 관련 경로
                                 "/swagger-resources/**",        // Swagger 리소스 허용
