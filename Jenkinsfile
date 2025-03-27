@@ -63,55 +63,67 @@ pipeline {
 //        }
 				
             
-
-            stage('Deploy Backend (Blue-Green)') {
+            stage('Deploy App (Blue-Green)') {
                 steps {
                     script {
+                        def nginxTemplatePath = "/home/ubuntu/nginx/nginx.template.conf"
                         def nginxConfPath = "/home/ubuntu/nginx/nginx.conf"
-                        def active = sh(script: "docker ps -a --format '{{.Names}}' | grep backend-v1 || true", returnStdout: true).trim()
-                        def newContainer = (active == 'backend-v1') ? 'backend-v2' : 'backend-v1'
-                        def newPort = (newContainer == 'backend-v1') ? '1115' : '1116'
 
+                        // ✅ 현재 살아있는 컨테이너 이름 확인
+                        def backendActive = sh(script: "docker ps -a --format '{{.Names}}' | grep backend-v1 || true", returnStdout: true).trim()
+                        def frontendActive = sh(script: "docker ps -a --format '{{.Names}}' | grep frontend-v1 || true", returnStdout: true).trim()
+
+                        def backendNew = (backendActive == 'backend-v1') ? 'backend-v2' : 'backend-v1'
+                        def frontendNew = (frontendActive == 'frontend-v1') ? 'frontend-v2' : 'frontend-v1'
+
+                        def backendPort = (backendNew == 'backend-v1') ? '1115' : '1116'
+                        def frontendPort = (frontendNew == 'frontend-v1') ? '3000' : '3001'
+
+                        // ✅ 기존 컨테이너 제거 & 새 컨테이너 실행
                         sh """
-                            docker rm -f ${newContainer} || true
-                            docker run -d --name ${newContainer} \
+                            docker rm -f ${backendNew} || true
+                            docker run -d --name ${backendNew} \
                                 --network ${NETWORK} \
                                 -e PORT=8080 \
-                                -p ${newPort}:8080 \
+                                -p ${backendPort}:8080 \
                                 ${SPRING_IMAGE}
 
-                            sleep 5
-                            sed -i 's/${active}/${newContainer}/g' ${nginxConfPath} || true
-                            docker restart nginx
-
-                            docker stop ${active} || true
-                            docker rm ${active} || true
-                        """
-                    }
-                }
-            }
-
-            stage('Deploy Frontend (Blue-Green)') {
-                steps {
-                    script {
-                        def nginxConfPath = "/home/ubuntu/nginx/nginx.conf"
-                        def active = sh(script: "docker ps -a --format '{{.Names}}' | grep frontend-v1 || true", returnStdout: true).trim()
-                        def newContainer = (active == 'frontend-v1') ? 'frontend-v2' : 'frontend-v1'
-                        def newPort = (newContainer == 'frontend-v1') ? '3000' : '3001'
-
-                        sh """
-                            docker rm -f ${newContainer} || true
-                            docker run -d --name ${newContainer} \
+                            docker rm -f ${frontendNew} || true
+                            docker run -d --name ${frontendNew} \
                                 --network ${NETWORK} \
-                                -p ${newPort}:80 \
+                                -p ${frontendPort}:80 \
                                 ${REACT_IMAGE}
+                        """
 
-                            sleep 3
-                            sed -i 's/${active}/${newContainer}/g' ${nginxConfPath} || true
-                            docker restart nginx
+                        sleep(5)
 
-                            docker stop ${active} || true
-                            docker rm ${active} || true
+                        // ✅ nginx.conf 생성 (템플릿 -> 실제 conf)
+                        sh """
+                            sed -e 's|\\$\\{BACKEND\\}|${backendNew}|g' \
+                                -e 's|\\$\\{FRONTEND\\}|${frontendNew}|g' \
+                                ${nginxTemplatePath} > ${nginxConfPath}
+                        """
+
+                        // ✅ nginx가 없다면 run, 있으면 restart
+                        def nginxExists = sh(script: "docker ps -a --format '{{.Names}}' | grep nginx || true", returnStdout: true).trim()
+                        if (nginxExists == 'nginx') {
+                            sh "docker restart nginx"
+                        } else {
+                            sh """
+                                docker run -d --name nginx \
+                                    --network ${NETWORK} \
+                                    -p 80:80 \
+                                    -v ${nginxConfPath}:/etc/nginx/nginx.conf:ro \
+                                    nginx
+                            """
+                        }
+
+                        // ✅ 이전 컨테이너 제거
+                        sh """
+                            docker stop ${backendActive} || true
+                            docker rm ${backendActive} || true
+                            docker stop ${frontendActive} || true
+                            docker rm ${frontendActive} || true
                         """
                     }
                 }
