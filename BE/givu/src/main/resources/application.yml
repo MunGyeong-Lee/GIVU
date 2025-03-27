@@ -13,14 +13,14 @@ spring:
 
   # postgres
   datasource:
-#    url: jdbc:postgresql://localhost:5432/givudb
-#    username: postgres
-#    password: d107password
-#    driver-class-name: org.postgresql.Driver
-    url: jdbc:postgresql://postgres:5432/givudb
-    username: d107
+    url: jdbc:postgresql://localhost:5432/givudb
+    username: postgres
     password: d107password
     driver-class-name: org.postgresql.Driver
+#    url: jdbc:postgresql://postgres:5432/givudb
+#    username: d107
+#    password: d107password
+#    driver-class-name: org.postgresql.Driver
 #    url: jdbc:postgresql://postgres:5432/givudb
 #    username: postgres
 #    password: d107password
