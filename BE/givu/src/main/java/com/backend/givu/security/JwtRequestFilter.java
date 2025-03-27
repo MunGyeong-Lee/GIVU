@@ -48,7 +48,7 @@ public class JwtRequestFilter  extends OncePerRequestFilter {
                 // token 검사
                 try{
                     // jwtProvider.validateToken(jwt): accessToken 유효성 검사
-                    if (jwtProvider.validateToken(jwt)){
+                    if (jwt != null && jwtProvider.validateToken(jwt)){
                         // jwtProvider.getAuthentication(jwt): 이 토큰 안에 들어 있는 유저 정보를 꺼내서, 인증된 사용자로 인식시켜야 함
                         log.info("✅ 토큰 유효함. 인증 객체 설정 진행");
                         Authentication authentication = jwtProvider.getAuthentication(jwt);
