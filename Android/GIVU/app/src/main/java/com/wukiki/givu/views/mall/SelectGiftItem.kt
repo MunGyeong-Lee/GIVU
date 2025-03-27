@@ -41,7 +41,9 @@ fun GiftListItem(
         modifier = Modifier
             .fillMaxWidth()
             .height(106.dp)
-            .padding(vertical = 8.dp)
+            .padding(vertical = 4.dp)
+        ,
+        verticalAlignment = Alignment.CenterVertically
     ) {
         Image(
             painter = painterResource(R.drawable.test_img_doll), null,
@@ -57,8 +59,8 @@ fun GiftListItem(
             modifier = Modifier
                 .fillMaxHeight()
                 .padding(start = 16.dp)
-                .padding(vertical = 4.dp),
-//            verticalArrangement = Arrangement.Center
+                .padding(vertical = 8.dp),
+            verticalArrangement = Arrangement.Center
         ) {
             Text(
                 text = "브랜드 이름: ${product.category}",

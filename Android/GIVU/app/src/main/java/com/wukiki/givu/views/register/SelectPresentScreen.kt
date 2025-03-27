@@ -70,7 +70,7 @@ fun SelectPresentScreen(navController: NavController, xmlNavController: NavContr
             }
 
         }
-
+        Spacer(Modifier.height(4.dp))
         FilteredProductList(selectedCategory)
 
 
@@ -94,8 +94,8 @@ fun FilteredProductList(selectedCategory: String) {
     // 필터링된 상품 목록 표시
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
-        contentPadding = PaddingValues(16.dp),
-        verticalArrangement = Arrangement.spacedBy(8.dp)
+        contentPadding = PaddingValues(horizontal = 16.dp),
+//        verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         items(filteredProducts) { product ->
             GiftListItem(product,
