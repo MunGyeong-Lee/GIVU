@@ -10,9 +10,9 @@ spring:
 #      host: redis       # Docker 컨테이너 이름
 #      port: 6379
 #      password: d107password
-      host: redis       # Docker 컨테이너 이름
-      port: 6379
-      password: d107password
+#      host: redis       # Docker 컨테이너 이름
+#      port: 6379
+#      password: d107password
 
   # postgres
   datasource:
