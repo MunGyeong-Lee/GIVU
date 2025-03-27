@@ -13,8 +13,11 @@ import com.backend.givu.util.mapper.AgeRangeMapper;
 import com.backend.givu.util.mapper.GenderMapper;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -35,9 +38,27 @@ public class UserController {
     private final KakaoLoginService kakaoLoginService;
     private final JwtProvider jwtProvider;
 
+
+
+    @Autowired
+    private RedisConnectionFactory connectionFactory;
+
+    @PostConstruct
+    public void testRedisConnection() {
+        try {
+            connectionFactory.getConnection().ping();
+            System.out.println("✅ Redis 연결 성공!");
+        } catch (Exception e) {
+            System.err.println("❌ Redis 연결 실패: " + e.getMessage());
+            e.printStackTrace();
+        }
+    }
+
+
     @Operation(summary = "카카오 로그인/회원가입", description = "카카오 Access 코드를 받아 사용자 정보를 확인하고, 존재하면 로그인, 없으면 회원가입을 처리합니다.")
     @PostMapping("/kakao")
     public ResponseEntity<TokenDTO> kakaoLogin(@RequestParam String accessToken) {
+        System.out.println("요청받음" + " "+ accessToken);
 //        // 1. access token 요청
 //        String accessToken = kakaoLoginService.getAccessToken(code);
 
@@ -51,6 +72,7 @@ public class UserController {
         // 4. 존재하면 그대로 반환
         if (existingUser.isPresent()) {
            TokenDTO tokenDTO = kakaoLoginService.createTokens(existingUser.get(), "Login");
+           log.info("TokenDTO: {}", tokenDTO);
            return ResponseEntity.ok(tokenDTO);
         }
 
