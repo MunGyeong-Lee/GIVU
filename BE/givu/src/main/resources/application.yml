@@ -4,7 +4,10 @@ spring:
   # redis
   data:
     redis:
-#      host: localhost  #127.0.0.1
+      host: localhost  #127.0.0.1
+      port: 6379
+      password: d107password
+#      host: redis       # Docker 컨테이너 이름
 #      port: 6379
 #      password: d107password
       host: redis       # Docker 컨테이너 이름
@@ -21,6 +24,11 @@ spring:
     username: postgres
     password: d107password
     driver-class-name: org.postgresql.Driver
+#    url: jdbc:postgresql://postgres:5432/givudb
+#    username: postgres
+#    password: d107password
+#    driver-class-name: org.postgresql.Driver
+
 
 
   jpa:
