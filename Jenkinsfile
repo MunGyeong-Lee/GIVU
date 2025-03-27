@@ -16,15 +16,16 @@ pipeline {
 
     stages {
 
-        stage('Start Infra Services') {
-            steps {
-                sh "docker-compose -f ${COMPOSE_FILE} up -d postgres redis"
-            }
-        }
 
         stage('Checkout') {
             steps {
                 checkout scm
+            }
+        }
+
+                stage('Start Infra Services') {
+            steps {
+                sh "docker-compose -f ${COMPOSE_FILE} up -d postgres redis"
             }
         }
 
