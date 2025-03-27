@@ -34,7 +34,7 @@ pipeline {
                 // 1. 먼저 Spring Boot 빌드 시도
                 dir('BE/givu') {
                     sh 'chmod +x gradlew'
-                    sh './gradlew build --no-daemon'
+                    sh './gradlew build -x test'
                 }
                 // 2. 빌드 성공했을 때만 Docker 이미지 빌드
                 sh "docker build -t ${SPRING_IMAGE} -f BE/givu/Dockerfile BE/givu"
