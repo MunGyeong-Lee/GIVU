@@ -2,6 +2,7 @@ package com.backend.givu.controller;
 
 import com.backend.givu.model.entity.Product;
 import com.backend.givu.model.responseDTO.ImageUploadResponseDTO;
+import com.backend.givu.model.responseDTO.ProductDetailDTO;
 import com.backend.givu.model.responseDTO.ProductsDTO;
 import com.backend.givu.model.service.ProductService;
 import com.backend.givu.model.service.S3UploadService;
@@ -35,8 +36,8 @@ public class ProductController {
 
     @Operation(summary = "상품 상세 조회", description = "상품 상세 정보를 조회합니다.")
     @GetMapping("/{productId}")
-    public ResponseEntity<ProductsDTO> findProduct(@PathVariable int productId){
-        ProductsDTO product = productService.findProduct(productId);
+    public ResponseEntity<ProductDetailDTO> findProduct(@PathVariable int productId){
+        ProductDetailDTO product = productService.findProductDetailByProductId(productId);
         return ResponseEntity.ok(product);
     }
 
