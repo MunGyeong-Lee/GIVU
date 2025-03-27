@@ -12,7 +12,7 @@ pipeline {
         SPRING_IMAGE = "my-spring-app"
         REACT_IMAGE = "my-react-app"
         ANDROID_IMAGE = "my-android-app"
-        NETWORK = "nginx-network"
+        NETWORK = "givu_nginx-network"
         KAFKA_NETWORK = "kafka-network"
         COMPOSE_FILE = "/var/jenkins_home/workspace/givu/docker-compose.yml"
     }
