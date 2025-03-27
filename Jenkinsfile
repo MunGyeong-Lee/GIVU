@@ -28,6 +28,12 @@ pipeline {
 		// 스프링 부트 서버 코드를 도커 이미지로 빌드(repo에 있는 스프링부트 dockerfile 가지고!)
         stage('Build Spring Boot') {
             steps {
+                
+                // 1. 먼저 Spring Boot 빌드 시도
+                dir('BE/givu') {
+                    sh './gradlew build --no-daemon'
+                }
+                // 2. 빌드 성공했을 때만 Docker 이미지 빌드
                 sh "docker build -t ${SPRING_IMAGE} -f BE/givu/Dockerfile BE/givu"
             }
         }
