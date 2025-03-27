@@ -38,7 +38,7 @@ spring:
     database-platform: org.hibernate.dialect.PostgreSQLDialect
 
 server:
-    port: ${PORT:1115}
+    port: ${PORT}
 
 kakao:
   client-id: 08cd78d237da6ad8828d168ac223e313
