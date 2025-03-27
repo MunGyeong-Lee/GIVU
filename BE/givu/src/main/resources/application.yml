@@ -18,7 +18,7 @@ spring:
 #    password: d107password
 #    driver-class-name: org.postgresql.Driver
     url: jdbc:postgresql://postgres:5432/givudb
-    username: postgres
+    username: d107
     password: d107password
     driver-class-name: org.postgresql.Driver
 
