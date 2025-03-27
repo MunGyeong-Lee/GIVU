@@ -78,26 +78,27 @@ pipeline {
                     sleep time: 5, unit: 'SECONDS'
 
                     // nginx.conf 생성
-                    sh """
+                   sh """
                         sed -e 's|\\$\\{BACKEND\\}|${backendNew}|g' \\
                             -e 's|\\$\\{FRONTEND\\}|${frontendNew}|g' \\
                             ${nginxTemplatePath} > ${nginxConfPath}
                     """
 
-                    // nginx 상태 확인 및 run/restart
                     def nginxExists = sh(script: "docker ps -a --format '{{.Names}}' | grep nginx || true", returnStdout: true).trim()
 
-                    sh """
-                        if [ "${nginxExists}" = "nginx" ]; then
-                            docker restart nginx
-                        else
-                            docker run -d --name nginx \\
-                                --network ${NETWORK} \\
-                                -p 80:80 \\
-                                -v ${nginxConfPath}:/etc/nginx/nginx.conf:ro \\
-                                nginx
-                        fi
+                    def restartScript = """
+                    if [ "${nginxExists}" = "nginx" ]; then
+                        docker restart nginx
+                    else
+                        docker run -d --name nginx \\
+                            --network ${NETWORK} \\
+                            -p 80:80 \\
+                            -v ${nginxConfPath}:/etc/nginx/nginx.conf:ro \\
+                            nginx
+                    fi
                     """
+
+                    sh script: restartScript
 
                     // 이전 컨테이너 제거
                     sh """
