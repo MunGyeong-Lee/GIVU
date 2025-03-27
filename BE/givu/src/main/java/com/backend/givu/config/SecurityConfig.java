@@ -2,7 +2,6 @@ package com.backend.givu.config;
 
 import com.backend.givu.security.JwtExceptionFilter;
 import com.backend.givu.security.JwtRequestFilter;
-import io.jsonwebtoken.JwtException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -38,8 +37,10 @@ public class SecurityConfig {
 
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
+                                "/v3/api-docs/**",              // OpenAPI JSON
                                 "/swagger-ui/**",               // Swagger UI 관련 경로
                                 "/swagger-resources/**",        // Swagger 리소스 허용
+                                "/swagger-ui.html",
                                 "/webjars/**",                  // Swagger UI에서 사용하는 WebJars 리소스 허용
                                 "/error",                       // 에러 핸들링 경로
                                 "/users/kakao",                 // 로그인, 회원가입
@@ -76,6 +77,7 @@ public class SecurityConfig {
         config.addAllowedOriginPattern("*"); // 필요 시 FE 도메인으로 제한 가능
         config.addAllowedHeader("*");
         config.addAllowedMethod("*");
+        config.addExposedHeader("*");
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", config);
