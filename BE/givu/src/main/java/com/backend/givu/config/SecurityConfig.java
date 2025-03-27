@@ -41,7 +41,6 @@ public class SecurityConfig {
                                 "/v3/api-docs/**",              // OpenAPI JSON
                                 "/swagger-ui/**",               // Swagger UI 관련 경로
                                 "/swagger-resources/**",        // Swagger 리소스 허용
-                                "/swagger-ui.html",
                                 "/webjars/**",                  // Swagger UI에서 사용하는 WebJars 리소스 허용
                                 "/error",                       // 에러 핸들링 경로
                                 "/users/kakao",                 // 로그인, 회원가입
