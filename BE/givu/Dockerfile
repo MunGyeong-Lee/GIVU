@@ -26,8 +26,6 @@ COPY --from=build /home/gradle/project/build/libs/*.jar app.jar
 # 업로드 디렉토리를 도커 볼륨으로 지정
 VOLUME ["/app/uploads"]
 
-# 환경 변수 설정 (포트 변경)
-ENV SERVER_PORT=1115
 
 # 애플리케이션이 사용하는 포트를 EXPOSE (1115)
 ENV PORT=8080
