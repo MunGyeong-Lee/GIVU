@@ -31,3 +31,8 @@ val suit = FontFamily(
     Font(R.font.suit_light, FontWeight.Light, FontStyle.Normal),
     Font(R.font.suit_extralight, FontWeight.ExtraLight, FontStyle.Normal),
 )
+
+val lusitana = FontFamily(
+    Font(R.font.lusitana_regular, FontWeight.Normal, FontStyle.Normal),
+    Font(R.font.lusitana_bold, FontWeight.Bold, FontStyle.Normal),
+)
