@@ -30,7 +30,8 @@ VOLUME ["/app/uploads"]
 ENV SERVER_PORT=1115
 
 # 애플리케이션이 사용하는 포트를 EXPOSE (1115)
-EXPOSE 1115
+ENV PORT=8080
+EXPOSE 8080
 
 # 컨테이너 시작 시 애플리케이션 실행
 ENTRYPOINT ["java", "-jar", "app.jar"]
