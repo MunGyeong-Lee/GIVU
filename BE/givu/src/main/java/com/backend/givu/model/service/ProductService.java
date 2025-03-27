@@ -2,6 +2,8 @@ package com.backend.givu.model.service;
 
 import com.backend.givu.model.entity.Product;
 import com.backend.givu.model.repository.ProductRepository;
+import com.backend.givu.model.responseDTO.ProductDetailDTO;
+import com.backend.givu.model.responseDTO.ProductReviewDTO;
 import com.backend.givu.model.responseDTO.ProductsDTO;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -26,10 +28,12 @@ public class ProductService {
         return dtoList;
     }
 
-    public ProductsDTO findProduct(int productId){
+    public ProductDetailDTO findProductDetailByProductId(int productId){
         Product product = productRepository.findById(productId)
                 .orElseThrow(() -> new EntityNotFoundException("상품을 찾을 수 없습니다."));
-        return new ProductsDTO(product);
+        ProductsDTO productsDTO = new ProductsDTO(product);
+        List<ProductReviewDTO> reviews = productRepository.findReviewsByProductId(productId);
+        return new ProductDetailDTO(productsDTO, reviews);
     }
 
     public Product findProductEntity(int productId){
