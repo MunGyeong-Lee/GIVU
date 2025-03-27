@@ -12,6 +12,7 @@ pipeline {
         NETWORK = "givu_nginx-network"
         KAFKA_NETWORK = "kafka-network"
         COMPOSE_FILE = "/var/jenkins_home/workspace/givu/docker-compose.yml"
+        SPRINGBOOT_PORT = credentials('Springboot-Port')
     }
 
     stages {
@@ -65,7 +66,7 @@ pipeline {
                         docker rm -f ${backendNew} || true
                         docker run -d --name ${backendNew} \
                             --network ${NETWORK} \
-                            -e PORT=8080 \
+                            -e PORT=${SPRINGBOOT_PORT} \
                             -p ${backendPort}:8080 \
                             ${SPRING_IMAGE}
 
