@@ -37,7 +37,7 @@ spring:
     database-platform: org.hibernate.dialect.PostgreSQLDialect
 
 server:
-    port: ${PORT}  # 로컬에서 돌릴땐 임의의 포트 넘버로 바꿔주세요.
+    port: ${PORT:1115}
 
 kakao:
   client-id: 08cd78d237da6ad8828d168ac223e313
