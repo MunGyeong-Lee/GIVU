@@ -10,7 +10,6 @@ import lombok.*;
 @AllArgsConstructor
 public class FundingCreateDTO {
     private String title;
-    private int userId;
     private int productId;
     private String body;
     private String description;
