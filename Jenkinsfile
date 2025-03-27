@@ -79,8 +79,8 @@ pipeline {
 
                     // nginx.conf 생성
                     sh """
-                        sed -e 's|\\$\\{BACKEND\\}|${backendNew}|g' \
-                            -e 's|\\$\\{FRONTEND\\}|${frontendNew}|g' \
+                        sed -e 's|\\$\\{BACKEND\\}|${backendNew}|g' \\
+                            -e 's|\\$\\{FRONTEND\\}|${frontendNew}|g' \\
                             ${nginxTemplatePath} > ${nginxConfPath}
                     """
 
@@ -91,10 +91,10 @@ pipeline {
                         if [ "${nginxExists}" = "nginx" ]; then
                             docker restart nginx
                         else
-                            docker run -d --name nginx \
-                                --network ${NETWORK} \
-                                -p 80:80 \
-                                -v ${nginxConfPath}:/etc/nginx/nginx.conf:ro \
+                            docker run -d --name nginx \\
+                                --network ${NETWORK} \\
+                                -p 80:80 \\
+                                -v ${nginxConfPath}:/etc/nginx/nginx.conf:ro \\
                                 nginx
                         fi
                     """
