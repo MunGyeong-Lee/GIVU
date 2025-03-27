@@ -12,7 +12,7 @@ pipeline {
         NETWORK = "givu_nginx-network"
         KAFKA_NETWORK = "kafka-network"
         COMPOSE_FILE = "/var/jenkins_home/workspace/givu/docker-compose.yml"
-        SPRINGBOOT_PORT = credentials('Springboot-Port')
+        SPRINGBOOT_PORT = credentials('Springboot-Port')as Integer
     }
 
     stages {
