@@ -4,23 +4,23 @@ spring:
   # redis
   data:
     redis:
-#      host: localhost  #127.0.0.1
-#      port: 6379
-#      password: d107password
-      host: redis       # Docker 컨테이너 이름
+      host: localhost  #127.0.0.1
       port: 6379
       password: d107password
+#      host: redis       # Docker 컨테이너 이름
+#      port: 6379
+#      password: d107password
 
   # postgres
   datasource:
-#    url: jdbc:postgresql://localhost:5432/givudb
-#    username: postgres
-#    password: d107password
-#    driver-class-name: org.postgresql.Driver
-    url: jdbc:postgresql://postgres:5432/givudb
+    url: jdbc:postgresql://localhost:5432/givudb
     username: postgres
     password: d107password
     driver-class-name: org.postgresql.Driver
+#    url: jdbc:postgresql://postgres:5432/givudb
+#    username: postgres
+#    password: d107password
+#    driver-class-name: org.postgresql.Driver
 
 
   jpa:
@@ -69,3 +69,18 @@ cloud:
     s3:
       bucket: givuproject-images
 
+#springdoc:
+#  api-docs:
+#    path: /api-docs
+#  swagger-ui:
+#    path: /swagger-ui
+#    enabled: true
+springdoc:
+  api-docs:
+    path: /api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    tags-sorter: alpha
+    operations-sorter: alpha
+  default-consumes-media-type: application/json;charset=UTF-8
+  default-produces-media-type: application/json;charset=UTF-8
