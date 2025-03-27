@@ -1,12 +1,12 @@
 package com.backend.givu.model.responseDTO;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import com.backend.givu.model.entity.Product;
+import com.backend.givu.model.entity.ProductReview;
+import lombok.*;
 
 @Getter
 @Setter
+@Builder
 @AllArgsConstructor
 @NoArgsConstructor
 public class ProductReviewDTO {

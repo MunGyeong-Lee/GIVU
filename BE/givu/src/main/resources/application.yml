@@ -4,28 +4,28 @@ spring:
   # redis
   data:
     redis:
-#      host: localhost  #127.0.0.1
-#      port: 6379
-#      password: d107password
-      host: redis       # Docker 컨테이너 이름
+      host: localhost  #127.0.0.1
       port: 6379
       password: d107password
+#      host: redis       # Docker 컨테이너 이름
+#      port: 6379
+#      password: d107password
 
   # postgres
   datasource:
-#    url: jdbc:postgresql://localhost:5432/givudb
-#    username: postgres
-#    password: d107password
-#    driver-class-name: org.postgresql.Driver
-    url: jdbc:postgresql://postgres:5432/givudb
+    url: jdbc:postgresql://localhost:5432/givudb
     username: postgres
     password: d107password
     driver-class-name: org.postgresql.Driver
+#    url: jdbc:postgresql://postgres:5432/givudb
+#    username: postgres
+#    password: d107password
+#    driver-class-name: org.postgresql.Driver
 
 
   jpa:
     hibernate:
-      ddl-auto: create  # create, create-drop, validate ??? ??? ?? ??
+      ddl-auto: validate  # create, create-drop, validate ??? ??? ?? ??
     show-sql: true
     properties:
       hibernate:

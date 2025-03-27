@@ -1,8 +1,10 @@
 package com.backend.givu.controller;
 
 import com.backend.givu.model.entity.Product;
+import com.backend.givu.model.requestDTO.ProductReviewCreateDTO;
 import com.backend.givu.model.responseDTO.ImageUploadResponseDTO;
 import com.backend.givu.model.responseDTO.ProductDetailDTO;
+import com.backend.givu.model.responseDTO.ProductReviewDTO;
 import com.backend.givu.model.responseDTO.ProductsDTO;
 import com.backend.givu.model.service.ProductService;
 import com.backend.givu.model.service.S3UploadService;
@@ -63,5 +65,12 @@ public class ProductController {
                     .status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(new ImageUploadResponseDTO(null, "이미지 업로드에 실패했습니다."));
         }
+    }
+
+    public ResponseEntity<ProductReviewDTO> saveProductReview(@PathVariable int productId,
+                                                              @RequestBody ProductReviewCreateDTO dto){
+
+        return ResponseEntity.ok(productService.saveProductReview(1L,productId,dto));
+
     }
 }
