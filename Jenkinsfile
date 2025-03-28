@@ -52,9 +52,11 @@ pipeline {
                     def nginxTemplatePath = "/home/ubuntu/nginx/nginx.template.conf"
                     def nginxConfPath = "/home/ubuntu/nginx/nginx.conf"
 
-                    def backendActive = sh(script: "docker ps -a --format '{{.Names}}' | grep backend-v1 || true", returnStdout: true).trim()
-                    def frontendActive = sh(script: "docker ps -a --format '{{.Names}}' | grep frontend-v1 || true", returnStdout: true).trim()
+                    // 현재 살아있는 컨테이너 (실행 중인 것만 체크)
+                    def backendActive = sh(script: "docker ps --format '{{.Names}}' | grep backend-v1 || true", returnStdout: true).trim()
+                    def frontendActive = sh(script: "docker ps --format '{{.Names}}' | grep frontend-v1 || true", returnStdout: true).trim()
 
+                    // 새로 실행할 컨테이너 이름
                     def backendNew = (backendActive == 'backend-v1') ? 'backend-v2' : 'backend-v1'
                     def frontendNew = (frontendActive == 'frontend-v1') ? 'frontend-v2' : 'frontend-v1'
 
