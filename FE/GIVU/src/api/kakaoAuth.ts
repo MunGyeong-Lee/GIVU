@@ -138,7 +138,7 @@ export const sendAccessTokenToBackend = async (accessToken: string): Promise<voi
     // axios 기본 헤더에 토큰 설정
     axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
     
-    // 사용자 정보 가져오기
+    // 사용자 정보 가져오기!!
     try {
       const userInfo = await getUserInfoAfterLogin(token);
       
