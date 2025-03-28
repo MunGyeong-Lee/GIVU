@@ -9,11 +9,13 @@ import com.backend.givu.model.service.KakaoLoginService;
 import com.backend.givu.model.service.UserService;
 import com.backend.givu.security.JwtProvider;
 import com.backend.givu.util.DateTimeUtil;
+import com.backend.givu.util.JwtUtil;
 import com.backend.givu.util.mapper.AgeRangeMapper;
 import com.backend.givu.util.mapper.GenderMapper;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.annotation.PostConstruct;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,8 +39,7 @@ public class UserController {
     private final UserService userService;
     private final KakaoLoginService kakaoLoginService;
     private final JwtProvider jwtProvider;
-
-
+    private final JwtUtil jwtUtil;
 
     @Autowired
     private RedisConnectionFactory connectionFactory;
@@ -108,8 +109,13 @@ public class UserController {
     }
 
 
-    @GetMapping("/{userId}")
-    public ResponseEntity<UserInfoDTO> findUser(@PathVariable long userId){
+    @Operation(summary = "사용자 정보 조회(자기 자신)", description = "accessToken 으로 해당 user의 정보를 조회합니다.")
+    @GetMapping("/info")
+    public ResponseEntity<UserInfoDTO> findUser(HttpServletRequest request){
+
+        String token = request.getHeader("Authorization");
+        Long userId = jwtUtil.getUserId(token);
+
         User user = userService.getUserById(userId);
 
         UserInfoDTO dto = UserInfoDTO.builder()
@@ -126,6 +132,14 @@ public class UserController {
 
         return ResponseEntity.ok(dto);
     }
+
+//    @Operation(summary = "사용자 정보 조회(다른 유저)", description = "해당 유저의 간단한 정보 (이름, 사진, 이미지) 조회")
+//    @GetMapping("/{userId}")
+//    public ResponseEntity<UserSimpleInfoDTO> findUserSimpleInfo(@PathVariable long userId){
+//        UserSimpleInfoDTO user = userService.getUserSimpleInfoById(userId);
+//        return ResponseEntity.ok(user);
+//    }
+
 
 
     /**
