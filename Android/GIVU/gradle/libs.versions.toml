@@ -10,6 +10,8 @@ material = "1.12.0"
 activity = "1.10.0"
 constraintlayout = "2.2.0"
 jetbrainsKotlinJvm = "1.9.24"
+coreKtxVersion = "1.13.1"
+v2User = "2.20.6"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -20,6 +22,8 @@ androidx-appcompat = { group = "androidx.appcompat", name = "appcompat", version
 material = { group = "com.google.android.material", name = "material", version.ref = "material" }
 androidx-activity = { group = "androidx.activity", name = "activity", version.ref = "activity" }
 androidx-constraintlayout = { group = "androidx.constraintlayout", name = "constraintlayout", version.ref = "constraintlayout" }
+core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtxVersion" }
+v2-user = { module = "com.kakao.sdk:v2-user", version.ref = "v2User" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

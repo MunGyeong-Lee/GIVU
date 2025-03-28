@@ -19,6 +19,9 @@ android {
         versionName = "0.1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+        buildConfigField("String", "KAKAO_NATIVE_APP_KEY", "\"${project.properties["kakao.native.app.key"]}\"")
+        resValue("string", "KAKAO_REDIRECT_URI", "\"${project.properties["kakao.redirect.uri"]}\"")
     }
 
     buildTypes {
@@ -37,9 +40,13 @@ android {
     kotlinOptions {
         jvmTarget = "11"
     }
+    composeOptions {
+        kotlinCompilerExtensionVersion = "1.5.14"
+    }
     buildFeatures {
         dataBinding = true
         buildConfig = true
+        compose = true
     }
 }
 
@@ -50,7 +57,6 @@ dependencies {
 
     implementation("androidx.appcompat:appcompat:1.6.1")
     implementation("androidx.core:core-ktx:1.12.0")
-    implementation("com.google.android.material:material:1.10.0")
     implementation("androidx.work:work-runtime-ktx:2.9.0")
 
     // UI
@@ -65,18 +71,29 @@ dependencies {
     implementation("androidx.navigation:navigation-compose:2.8.6")
     implementation("androidx.navigation:navigation-dynamic-features-fragment:2.8.6")
     implementation("com.google.android.material:material:1.9.0")
+    implementation("com.google.accompanist:accompanist-navigation-animation:0.31.1-alpha")
 
-    // Jeypack Compose
+    // Jetpack Compose
     implementation("androidx.compose.ui:ui")
     implementation("androidx.compose.foundation:foundation")
     implementation("androidx.compose.foundation:foundation-layout")
-    implementation("androidx.compose.material:material")
+    implementation("androidx.compose.material:material:1.1.1")
+    implementation("androidx.compose.material3:material3:1.3.1")
     implementation("androidx.compose.ui:ui-tooling-preview")
+    implementation("androidx.hilt:hilt-navigation-compose:1.1.0")
+    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.6.2")
     debugImplementation("androidx.compose.ui:ui-tooling")
 
     // Compose View
     implementation("androidx.activity:activity-compose")
     implementation("androidx.compose.ui:ui-viewbinding")
+
+    // Accompanist Pager
+    implementation("com.google.accompanist:accompanist-pager:0.32.0")
+    implementation("com.google.accompanist:accompanist-pager-indicators:0.32.0")
+
+    // Kakao SDK
+    implementation("com.kakao.sdk:v2-user:2.20.6")
 
     // Swipe Refresh Layout
     implementation("androidx.swiperefreshlayout:swiperefreshlayout:1.1.0")
@@ -107,6 +124,7 @@ dependencies {
 
     // Coil
     implementation("io.coil-kt:coil:2.0.0-rc03")
+    implementation ("io.coil-kt:coil-compose:2.4.0")
 
     // Glide
     implementation("com.github.bumptech.glide:glide:4.12.0")
