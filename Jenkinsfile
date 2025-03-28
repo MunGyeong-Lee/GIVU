@@ -106,12 +106,18 @@ pipeline {
                     sh script: restartScript
 
                     // 이전 컨테이너 제거
-                    sh """
-                        docker stop ${backendActive} || true
-                        docker rm ${backendActive} || true
-                        docker stop ${frontendActive} || true
-                        docker rm ${frontendActive} || true
-                    """
+                    if (backendActive) {
+                        sh """
+                            docker stop ${backendActive} || true
+                            docker rm ${backendActive} || true
+                        """
+                    }
+                    if (frontendActive) {
+                        sh """
+                            docker stop ${frontendActive} || true
+                            docker rm ${frontendActive} || true
+                        """
+                    }
                 }
             }
         }
