@@ -1,16 +1,77 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import NavItem from './NavItem';
+import { getUserInfo, UserInfo } from '../../api/user';
+import { useAppSelector } from '../../hooks/reduxHooks';
+import { logoutUser } from '../../api/kakaoAuth';
 
 function Navbar() {
   const location = useLocation();
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
-  const [isLoggedIn, setIsLoggedIn] = useState(false); // 초기값은 로그아웃 상태
+  const [userInfo, setUserInfo] = useState<UserInfo | null>(null);
+  const [loading, setLoading] = useState(false);
+  const { isAuthenticated, token, user } = useAppSelector(state => state.auth);
 
-  // 테스트용 토글 함수
-  const toggleLogin = () => {
-    setIsLoggedIn(!isLoggedIn);
+  // 디버깅용 로그
+  useEffect(() => {
+    console.log('인증 상태:', isAuthenticated);
+    console.log('토큰:', token);
+    console.log('Redux 사용자 정보:', user);
+    console.log('로컬 스토리지 토큰:', localStorage.getItem('auth_token'));
+    console.log('로컬 스토리지 사용자 정보:', localStorage.getItem('user_info'));
+  }, [isAuthenticated, token, user]);
+
+  // 사용자 정보 가져오기
+  useEffect(() => {
+    const fetchUserInfo = async () => {
+      if (isAuthenticated) {
+        try {
+          console.log('사용자 정보 요청 시작...');
+          setLoading(true);
+
+          // 로컬 스토리지에서 user_info를 먼저 확인
+          const storedUserInfo = localStorage.getItem('user_info');
+          if (storedUserInfo) {
+            try {
+              const parsedInfo = JSON.parse(storedUserInfo);
+              console.log('로컬 스토리지에서 가져온 사용자 정보:', parsedInfo);
+              setUserInfo(parsedInfo);
+              setLoading(false);
+              return;
+            } catch (err) {
+              console.error('로컬 스토리지 사용자 정보 파싱 오류:', err);
+            }
+          }
+
+          // API 호출로 사용자 정보 가져오기
+          const info = await getUserInfo();
+          console.log('API에서 받아온 사용자 정보:', info);
+          setUserInfo(info);
+          // 로컬 스토리지에 저장
+          localStorage.setItem('user_info', JSON.stringify(info));
+        } catch (error) {
+          console.error('사용자 정보 조회 실패:', error);
+        } finally {
+          setLoading(false);
+        }
+      } else {
+        console.log('인증되지 않음: 사용자 정보 요청 건너뜀');
+      }
+    };
+
+    fetchUserInfo();
+  }, [isAuthenticated]);
+
+  // 로그아웃 처리
+  const handleLogout = async () => {
+    try {
+      await logoutUser();
+      setUserInfo(null);
+      navigate('/');
+    } catch (error) {
+      console.error('로그아웃 실패:', error);
+    }
   };
 
   const isActive = (path: string) => {
@@ -90,16 +151,25 @@ function Navbar() {
               펀딩 생성하기
             </Link>
 
-            {isLoggedIn ? (
+            {isAuthenticated ? (
               <div className="flex items-center">
-                <img
-                  src="https://via.placeholder.com/32"
-                  alt="프로필"
-                  className="w-8 h-8 rounded-full mr-2"
-                />
-                <div className="text-gray-700 font-medium mr-4">사용자님</div>
+                {loading ? (
+                  <div className="w-8 h-8 rounded-full bg-gray-200 animate-pulse mr-2"></div>
+                ) : (
+                  <img
+                    src={userInfo?.profileImage || user?.profileImage || "https://via.placeholder.com/32"}
+                    alt="프로필"
+                    className="w-8 h-8 rounded-full mr-2 object-cover"
+                    onError={(e) => {
+                      e.currentTarget.src = "https://via.placeholder.com/32";
+                    }}
+                  />
+                )}
+                <div className="text-gray-700 font-medium mr-4">
+                  {loading ? "로딩 중..." : userInfo?.nickName || user?.nickname || "사용자"}
+                </div>
                 <button
-                  onClick={toggleLogin}
+                  onClick={handleLogout}
                   className="text-gray-500 hover:text-gray-700"
                 >
                   로그아웃
@@ -108,7 +178,6 @@ function Navbar() {
             ) : (
               <Link
                 to='/login'
-                onClick={toggleLogin} // 테스트용
                 className='text-gray-700 hover:text-primary-color font-medium'
               >
                 로그인
