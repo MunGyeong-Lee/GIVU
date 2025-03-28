@@ -3,6 +3,7 @@ package com.wukiki.givu.views.home.viewmodel
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import com.wukiki.domain.model.ApiStatus
 import com.wukiki.domain.model.User
 import com.wukiki.domain.usecase.GetAuthUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -31,9 +32,7 @@ class HomeViewModel @Inject constructor(
     val user = _user.asStateFlow()
 
     init {
-        viewModelScope.launch {
-            _user.value = fetchUserInfo().first()
-        }
+        initUserInfo()
     }
 
     override fun onClickFunding() {
@@ -45,5 +44,27 @@ class HomeViewModel @Inject constructor(
     private fun fetchUserInfo(): Flow<User?> = flow {
         val user = getAuthUseCase.getUserInfo().first()
         emit(user)
+    }
+
+    private fun initUserInfo() {
+        viewModelScope.launch {
+            val response = getAuthUseCase.fetchUserInfo()
+
+            when (response.status) {
+                ApiStatus.SUCCESS -> {
+                    _user.value = response.data
+                }
+
+                else -> {
+                    _homeUiEvent.emit(HomeUiEvent.AutoLoginFail)
+                }
+            }
+        }
+    }
+
+    fun updateUserInfo() {
+        viewModelScope.launch {
+            _user.value = fetchUserInfo().first()
+        }
     }
 }

@@ -25,7 +25,10 @@ import com.wukiki.givu.R
 import com.wukiki.givu.ui.suit
 
 @Composable
-fun HomeAppBarPager(navController: NavController, user: User?) {
+fun HomeAppBarPager(
+    navController: NavController,
+    user: User?
+) {
     TopAppBar(
         backgroundColor = Color.White,
         contentColor = Color.Black,
