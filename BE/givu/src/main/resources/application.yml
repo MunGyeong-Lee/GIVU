@@ -4,10 +4,6 @@ spring:
   # redis
   data:
     redis:
-      ## 로컬
-#      host: localhost  #127.0.0.1
-#      port: 6379
-#      password: d107password
       ## EC2
       host: redis       # Docker 컨테이너 이름
       port: 6379
@@ -15,19 +11,11 @@ spring:
 
   # postgres
   datasource:
-    ## 로컬
-#    url: jdbc:postgresql://localhost:5432/givudb
-#    username: postgres
-#    password: d107password
-#    driver-class-name: org.postgresql.Driver
     ## EC2
     url: jdbc:postgresql://postgres:5432/givudb
     username: d107
     password: d107password
     driver-class-name: org.postgresql.Driver
-
-
-
 
 
   jpa:
@@ -41,6 +29,8 @@ spring:
 
 server:
     port: 8080
+    servlet:
+      context-path: /api
 
 kakao:
   client-id: 08cd78d237da6ad8828d168ac223e313
