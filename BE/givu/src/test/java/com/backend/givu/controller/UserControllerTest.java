@@ -19,6 +19,7 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.HttpHeaders;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
 import static org.mockito.ArgumentMatchers.anyString;
@@ -37,7 +38,7 @@ import java.util.Optional;
 
 @SpringBootTest
 @AutoConfigureMockMvc
-
+@ActiveProfiles("test")
 public class UserControllerTest {
 
     @Autowired
@@ -94,7 +95,7 @@ public class UserControllerTest {
 
         // when & then
         //`POST /users/kakao` 요청 시 정상 응답이 오는지 확인
-        mockMvc.perform(post("/api/users/kakao")
+        mockMvc.perform(post("/users/kakao")
                         .param("accessToken", accessToken)  // 요청 파라미터로 accessToken 전달
                         .contentType(MediaType.APPLICATION_JSON)) // Content-Type 지정 >>> 여기까지가 컨트롤러에 HTTP 요청을 보내는 것
                 .andExpect(status().isOk()) // 응답 상태 코드가 200인지 확인
@@ -124,7 +125,7 @@ public class UserControllerTest {
         Mockito.when(jwtProvider.reAccessToken(anyString())).thenReturn(expectedAccessToken);
 
         // when & then
-        mockMvc.perform(get("/api/users/newToken")
+        mockMvc.perform(get("/users/newToken")
                     .header(HttpHeaders.AUTHORIZATION, "Bearer " + fakeRefreshToken)
                     .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
@@ -147,7 +148,7 @@ public class UserControllerTest {
                 ));
 
         // when & then
-        mockMvc.perform(get("/api/users/newToken")
+        mockMvc.perform(get("/users/newToken")
                     .header(HttpHeaders.AUTHORIZATION, "Bearer " + fakeRefreshToken)
                     .accept(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk()) // HTTP 상태는 200 OK지만
@@ -172,7 +173,7 @@ public class UserControllerTest {
                         List.of(new SimpleGrantedAuthority("ROLE_USER")) // ✅ 권한 필수!
                 ));
 
-        mockMvc.perform(get("/api/users/test") // JWT 인증 필요한 API
+        mockMvc.perform(get("/users/test") // JWT 인증 필요한 API
                         .header(HttpHeaders.AUTHORIZATION, "Bearer " + validAccessToken))
                 .andExpect(status().isOk());
     }
@@ -186,7 +187,7 @@ public class UserControllerTest {
         Mockito.when(jwtProvider.validateToken(expiredToken))
                 .thenThrow(new AuthErrorException(AuthErrorStatus.EXPIRED_TOKEN));
 
-        mockMvc.perform(get("/api/users/test")
+        mockMvc.perform(get("/users/test")
                         .header(HttpHeaders.AUTHORIZATION, "Bearer " + expiredToken))
                 .andExpect(status().isUnauthorized());
     }
@@ -200,7 +201,7 @@ public class UserControllerTest {
         Mockito.when(jwtProvider.validateToken(invalidToken))
                 .thenThrow(new AuthErrorException(AuthErrorStatus.INVALID_TOKEN));
 
-        mockMvc.perform(get("/api/users/test")
+        mockMvc.perform(get("/users/test")
                         .header(HttpHeaders.AUTHORIZATION, "Bearer " + invalidToken))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.code").value(400))
