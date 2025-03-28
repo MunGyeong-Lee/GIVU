@@ -3,12 +3,19 @@ package com.wukiki.givu.views.detail.viewmodel
 import android.app.Application
 import android.net.Uri
 import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.viewModelScope
+import com.wukiki.domain.model.ApiStatus
 import com.wukiki.domain.model.Funding
 import com.wukiki.domain.model.Letter
+import com.wukiki.domain.model.Product
 import com.wukiki.domain.model.User
+import com.wukiki.domain.usecase.GetProductUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.launch
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.MultipartBody
 import okhttp3.RequestBody.Companion.toRequestBody
@@ -16,9 +23,15 @@ import javax.inject.Inject
 
 @HiltViewModel
 class FundingViewModel @Inject constructor(
-    private val application: Application
+    private val application: Application,
+    private val getProductUseCase: GetProductUseCase
 ) : AndroidViewModel(application) {
 
+    /*** Ui Event ***/
+    private val _fundingUiEvent = MutableSharedFlow<FundingUiEvent>()
+    val fundingUiEvent = _fundingUiEvent.asSharedFlow()
+
+    /*** Datas ***/
     private val _selectedFunding = MutableStateFlow<Funding?>(null)
     val selectedFunding = _selectedFunding.asStateFlow()
 
@@ -42,6 +55,9 @@ class FundingViewModel @Inject constructor(
 
     private val _fundingReviewMultiparts = MutableStateFlow<List<MultipartBody.Part>>(emptyList())
     val fundingReviewMultiparts = _fundingReviewMultiparts.asStateFlow()
+
+    private val _products = MutableStateFlow<List<Product>>(emptyList())
+    val products = _products.asStateFlow()
 
     init {
         val newFunding = Funding(
@@ -99,6 +115,25 @@ class FundingViewModel @Inject constructor(
         )
 
         _fundingParticipants.value = newParticipants
+
+        initProducts()
+    }
+
+    private fun initProducts() {
+        viewModelScope.launch {
+            val response = getProductUseCase.getProducts()
+
+            when (response.status) {
+                ApiStatus.SUCCESS -> {
+                    val newProducts = response.data ?: emptyList()
+                    _products.value = newProducts
+                }
+
+                else -> {
+                    _fundingUiEvent.emit(FundingUiEvent.GetProductsFail)
+                }
+            }
+        }
     }
 
     private fun uriToMultipart(uri: Uri): MultipartBody.Part? {

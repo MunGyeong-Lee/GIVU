@@ -1,7 +1,6 @@
 package com.wukiki.givu.views.mall
 
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -26,11 +25,12 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import coil.compose.AsyncImage
+import com.wukiki.domain.model.Product
 import com.wukiki.givu.R
 import com.wukiki.givu.ui.pretendard
 import com.wukiki.givu.ui.suit
 import com.wukiki.givu.util.CommonUtils
-import com.wukiki.givu.views.register.Product
 
 @Composable
 fun GiftListItem(
@@ -45,14 +45,14 @@ fun GiftListItem(
         ,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Image(
-            painter = painterResource(R.drawable.test_img_doll), null,
+        AsyncImage(
+            model = product.image,
+            contentDescription = null,
             modifier = Modifier
                 .width(120.dp)
                 .height(90.dp)
-                .clip(shape = RoundedCornerShape(5.dp)),
+                .clip(RoundedCornerShape(5.dp)),
             contentScale = ContentScale.FillWidth
-
         )
 
         Column(
@@ -70,7 +70,7 @@ fun GiftListItem(
             )
             Spacer(Modifier.height(6.dp))
             Text(
-                text = "${product.name}",
+                text = product.productName,
                 fontFamily = suit,
                 fontWeight = FontWeight.Medium,
                 fontSize = 14.sp
@@ -81,7 +81,7 @@ fun GiftListItem(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = CommonUtils.makeCommaPrice(product.price),
+                    text = CommonUtils.makeCommaPrice(product.price.toInt()),
                     fontFamily = pretendard,
                     fontWeight = FontWeight.Black,
                     fontSize = 16.sp,
@@ -95,7 +95,7 @@ fun GiftListItem(
 
                 Spacer(Modifier.width(4.dp))
                 Text(
-                    text = "999+",
+                    text = product.favorite,
                     fontFamily = pretendard,
                     fontWeight = FontWeight.Normal,
                     fontSize = 14.sp
