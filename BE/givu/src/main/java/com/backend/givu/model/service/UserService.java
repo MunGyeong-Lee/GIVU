@@ -1,5 +1,6 @@
 package com.backend.givu.model.service;
 
+import com.backend.givu.model.responseDTO.UserSimpleInfoDTO;
 import com.backend.givu.model.responseDTO.UsersDTO;
 import com.backend.givu.model.entity.User;
 import com.backend.givu.model.repository.UserRepository;
@@ -40,6 +41,12 @@ public class UserService {
     public User getUserById(Long userId) {
         return userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("해당 사용자가 존재하지 않습니다."));
+    }
+
+    public UserSimpleInfoDTO getUserSimpleInfoById(Long userId){
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("해당 사용자가 존재하지 않습니다."));
+        return new UserSimpleInfoDTO(user);
     }
 
     public Optional<User> getUserByKakaoId(Long kakaoId){
