@@ -1,17 +1,22 @@
 package com.backend.givu.model.entity;
 
+import com.backend.givu.model.requestDTO.ProductReviewCreateDTO;
+import com.backend.givu.model.responseDTO.ProductReviewDTO;
+import com.backend.givu.model.responseDTO.UserSimpleInfoDTO;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
 @Getter
 @Setter
 @Entity
+@Builder
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 @Table(name = "product_review")
+@AllArgsConstructor
 public class ProductReview {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -45,4 +50,28 @@ public class ProductReview {
     @Column(name = "image", length = 1024)
     private String image;
 
+    public static ProductReview from(User user, Product product, ProductReviewCreateDTO dto){
+        return new ProductReview(user,product,dto);
+    }
+
+    private ProductReview(User user , Product product, ProductReviewCreateDTO reviewdto){
+        this.body = reviewdto.getBody();
+        this.image = reviewdto.getImage();
+        this.star = reviewdto.getStar();
+        this.title = reviewdto.getTitle();
+        this.user = user;
+        this.product = product;
+    }
+
+    public static ProductReviewDTO toDTO(ProductReview productReview){
+        return ProductReviewDTO.builder()
+                .reviewId(productReview.getId())
+                .title(productReview.getTitle())
+                .body(productReview.getBody())
+                .image(productReview.getImage())
+                .star(productReview.getStar())
+                .user(new UserSimpleInfoDTO(productReview.getUser()))
+                .build();
+
+    }
 }

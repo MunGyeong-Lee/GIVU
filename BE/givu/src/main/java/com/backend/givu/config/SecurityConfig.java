@@ -46,14 +46,16 @@ public class SecurityConfig {
                                 "/users/kakao",                 // 로그인, 회원가입
                                 "/users/newToken",              // 토큰 재발급
                                 "/images/**",
-                                "/fundinds/**"
+                                "/fundinds/**",
+                                "/products/**"
                         ).permitAll()
                         .requestMatchers(
                                 "/users/info",
                                 "/users/givupay/**",    // 기뷰페이 관련
                                 "/users/payment",       // 유저 거래 내역 조회
                                 "/users",               // 로그아웃, 회원 탈퇴
-                                "/users/test"        // 테스트
+                                "/users/test",        // 테스트
+                                "/products-review/**"
                         ).authenticated())
 
                 /**
