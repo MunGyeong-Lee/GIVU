@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <data>
+
+        <variable
+            name="vm"
+            type="com.wukiki.givu.views.detail.viewmodel.FundingViewModel" />
+        
+    </data>
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/fragment_finish_cancel_funding"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@color/neutral_white"
+        tools:context=".views.cancel.FinishCancelFundingFragment">
+
+        <androidx.constraintlayout.widget.Guideline
+            android:id="@+id/gl_start_finish_cancel_funding"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            app:layout_constraintGuide_begin="@dimen/dp_medium" />
+
+        <androidx.constraintlayout.widget.Guideline
+            android:id="@+id/gl_top_finish_cancel_funding"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            app:layout_constraintGuide_begin="@dimen/dp_medium" />
+
+        <androidx.compose.ui.platform.ComposeView
+            android:id="@+id/compose_finish_cancel_funding"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <androidx.constraintlayout.widget.Guideline
+            android:id="@+id/gl_end_finish_cancel_funding"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            app:layout_constraintGuide_end="@dimen/dp_medium" />
+
+        <androidx.constraintlayout.widget.Guideline
+            android:id="@+id/gl_bottom_finish_cancel_funding"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            app:layout_constraintGuide_end="@dimen/dp_medium" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+    
+</layout>
