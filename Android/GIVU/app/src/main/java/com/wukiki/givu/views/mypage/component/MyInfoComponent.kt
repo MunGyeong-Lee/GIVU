@@ -29,7 +29,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.wukiki.givu.R
 import com.wukiki.givu.ui.suit
-import com.wukiki.givu.views.mypage.MyPageScreen
 
 @Composable
 fun MyInfoComponent() {
@@ -56,7 +55,7 @@ fun MyInfoComponent() {
                 text = "나의 활동",
                 fontFamily = suit,
                 fontWeight = FontWeight.ExtraBold,
-                fontSize = 16.sp,
+                fontSize = 18.sp,
                 modifier = Modifier.padding(top = 16.dp)
             )
             Spacer(Modifier.height(8.dp))
@@ -75,7 +74,7 @@ fun MyInfoComponent() {
                     text = "관심 펀딩 목록",
                     fontFamily = suit,
                     fontWeight = FontWeight.SemiBold,
-                    fontSize = 18.sp,
+                    fontSize = 20.sp,
                     modifier = Modifier.padding(start = 4.dp)
                 )
 
@@ -85,7 +84,9 @@ fun MyInfoComponent() {
                     painter = painterResource(R.drawable.ic_arrow_forward),
                     contentDescription = null,
                     tint = Color(0xFF8D8686),
-                    modifier = Modifier.size(18.dp)
+                    modifier = Modifier
+                        .padding(end = 4.dp)
+                        .size(18.dp)
                 )
 
             }
@@ -105,7 +106,7 @@ fun MyInfoComponent() {
                     text = "내가 만든 펀딩 조회",
                     fontFamily = suit,
                     fontWeight = FontWeight.SemiBold,
-                    fontSize = 18.sp,
+                    fontSize = 20.sp,
                     modifier = Modifier.padding(start = 4.dp)
 
                 )
@@ -116,7 +117,9 @@ fun MyInfoComponent() {
                     painter = painterResource(R.drawable.ic_arrow_forward),
                     contentDescription = null,
                     tint = Color(0xFF8D8686),
-                    modifier = Modifier.size(18.dp)
+                    modifier = Modifier
+                        .padding(end = 4.dp)
+                        .size(18.dp)
                 )
 
             }
@@ -136,7 +139,7 @@ fun MyInfoComponent() {
                     text = "후원 내역",
                     fontFamily = suit,
                     fontWeight = FontWeight.SemiBold,
-                    fontSize = 18.sp,
+                    fontSize = 20.sp,
                     modifier = Modifier.padding(start = 4.dp)
 
                 )
@@ -147,7 +150,9 @@ fun MyInfoComponent() {
                     painter = painterResource(R.drawable.ic_arrow_forward),
                     contentDescription = null,
                     tint = Color(0xFF8D8686),
-                    modifier = Modifier.size(18.dp)
+                    modifier = Modifier
+                        .padding(end = 4.dp)
+                        .size(18.dp)
                 )
 
             }
@@ -168,7 +173,7 @@ fun MyInfoComponent() {
                     text = "후기",
                     fontFamily = suit,
                     fontWeight = FontWeight.SemiBold,
-                    fontSize = 18.sp,
+                    fontSize = 20.sp,
                     modifier = Modifier.padding(start = 4.dp)
 
                 )
@@ -179,7 +184,9 @@ fun MyInfoComponent() {
                     painter = painterResource(R.drawable.ic_arrow_forward),
                     contentDescription = null,
                     tint = Color(0xFF8D8686),
-                    modifier = Modifier.size(18.dp)
+                    modifier = Modifier
+                        .padding(end = 4.dp)
+                        .size(18.dp)
                 )
 
             }

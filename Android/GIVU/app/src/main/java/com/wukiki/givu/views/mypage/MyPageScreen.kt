@@ -36,6 +36,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
 import com.wukiki.givu.R
 import com.wukiki.givu.ui.lusitana
 import com.wukiki.givu.ui.pretendard
@@ -45,7 +46,7 @@ import com.wukiki.givu.views.mypage.component.MyInfoComponent
 import com.wukiki.givu.views.mypage.component.PayComponent
 
 @Composable
-fun MyPageScreen() {
+fun MyPageScreen(navController: NavController) {
 
     Box(
         modifier = Modifier
@@ -60,9 +61,10 @@ fun MyPageScreen() {
                 .verticalScroll(rememberScrollState())
         ) {
 
-            PayComponent()
+            PayComponent(navController)
 
             MyInfoComponent()
+
         }
 
 
@@ -92,10 +94,4 @@ private fun MyPageTopBar() {
             contentDescription = null
         )
     }
-}
-
-@Preview(showBackground = true)
-@Composable
-private fun MypagePreview() {
-    MyPageScreen()
 }
