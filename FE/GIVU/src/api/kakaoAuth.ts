@@ -135,7 +135,7 @@ export const sendAccessTokenToBackend = async (accessToken: string): Promise<voi
     // 로컬 스토리지에 토큰만 저장 (Redux 상태 업데이트는 아직 하지 않음)
     localStorage.setItem('auth_token', token);
     
-    // axios 기본 헤더에 토큰 설정
+    // axios 기본 헤더에 토큰 설정!!
     axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
     
     // 사용자 정보 가져오기!!
