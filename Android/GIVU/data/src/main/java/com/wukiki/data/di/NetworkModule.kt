@@ -3,6 +3,8 @@ package com.wukiki.data.di
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import com.wukiki.data.api.AuthApi
+import com.wukiki.data.api.ProductApi
+import com.wukiki.data.util.JwtInterceptor
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -17,7 +19,7 @@ import javax.inject.Singleton
 @InstallIn(SingletonComponent::class)
 object NetworkModule {
 
-    private const val BASE_URL = "http://43.202.51.112:8081/"
+    private const val BASE_URL = "https://j12d107.p.ssafy.io/api/"
 
     @Provides
     @Singleton
@@ -31,17 +33,19 @@ object NetworkModule {
 
     @Provides
     @Singleton
-    fun provideOkHttpClient(): OkHttpClient {
-        return OkHttpClient.Builder().build()
+    fun provideOkHttpClient(jwtInterceptor: JwtInterceptor): OkHttpClient {
+        return OkHttpClient.Builder()
+            .addInterceptor(jwtInterceptor)
+            .build()
     }
 
     @Provides
     @Singleton
     @Named("Givu")
-    fun provideGivuRetrofit(): Retrofit {
+    fun provideGivuRetrofit(okHttpClient: OkHttpClient): Retrofit {
         return Retrofit.Builder()
             .baseUrl(BASE_URL)
-            .client(provideOkHttpClient())
+            .client(okHttpClient)
             .addConverterFactory(provideMoshiConverterFactory())
             .build()
     }
@@ -50,5 +54,11 @@ object NetworkModule {
     @Singleton
     fun provideAuthApiService(@Named("Givu") retrofit: Retrofit): AuthApi {
         return retrofit.create(AuthApi::class.java)
+    }
+
+    @Provides
+    @Singleton
+    fun provideProductApiService(@Named("Givu") retrofit: Retrofit): ProductApi {
+        return retrofit.create(ProductApi::class.java)
     }
 }
