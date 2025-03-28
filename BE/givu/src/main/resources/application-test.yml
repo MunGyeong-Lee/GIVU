@@ -1,0 +1,84 @@
+spring:
+  application:
+    name: givu
+  # redis
+  data:
+    redis:
+      ## 로컬
+      host: localhost  #127.0.0.1
+      port: 6379
+      password: d107password
+
+
+  # postgres
+  datasource:
+    ## 로컬
+    url: jdbc:postgresql://localhost:5432/givudb
+    username: postgres
+    password: d107password
+    driver-class-name: org.postgresql.Driver
+
+
+  jpa:
+    hibernate:
+      ddl-auto: validate  # create, create-drop, validate ??? ??? ?? ??
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+
+server:
+    port: 8080
+    servlet:
+      context-path: /api
+
+kakao:
+  client-id: 08cd78d237da6ad8828d168ac223e313
+  redirect-uri: http://localhost:5173/auth/kakao/callback
+  token-uri: https://kauth.kakao.com/oauth/token
+  user-info-uri: https://kapi.kakao.com/v2/user/me
+
+
+jwt:
+  # 액세스 토큰 만료시간 (임시: 한 달)
+  access:
+    token:
+      expiration:
+        seconds: 2592000
+  # 리프레시 토큰 만료시간 (임시: 한 달)
+  refresh:
+    token:
+      expiration:
+        seconds: 2592000
+  # JWT 서명 시크릿 키
+  token:
+    secret:
+      key: "dZMdmygCoWc3zqF76CZ/bv6EPVdc11Cd4DS/NhTaN7g=" # 32 바이트
+
+
+cloud:
+  aws:
+    credentials:
+      accessKey: AKIAYHJANKNOWONE5GUE
+      secretKey: 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
+    region:
+      static: ap-northeast-2
+    s3:
+      bucket: givuproject-images
+
+#springdoc:
+#  api-docs:
+#    path: /api-docs
+#  swagger-ui:
+#    path: /swagger-ui
+#    enabled: true
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui/index.html
+    tags-sorter: alpha
+    operations-sorter: alpha
+  default-consumes-media-type: application/json;charset=UTF-8
+  default-produces-media-type: application/json;charset=UTF-8
