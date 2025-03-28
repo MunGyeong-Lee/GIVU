@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.view.View
 import androidx.fragment.app.activityViewModels
 import androidx.fragment.app.viewModels
+import androidx.navigation.fragment.findNavController
 import com.wukiki.givu.R
 import com.wukiki.givu.config.BaseFragment
 import com.wukiki.givu.databinding.FragmentLoginBinding
@@ -22,8 +23,10 @@ class LoginFragment : BaseFragment<FragmentLoginBinding>(R.layout.fragment_login
 
         binding.vm = viewModel
 
+        // Timber.d(getKeyHash(requireContext()))
+
         binding.composeLogin.setContent {
-            LoginScreen()
+            LoginScreen(navController = findNavController())
         }
     }
 
@@ -32,4 +35,19 @@ class LoginFragment : BaseFragment<FragmentLoginBinding>(R.layout.fragment_login
 
         mainViewModel.setBnvState(false)
     }
+
+//    private fun getKeyHash(context: Context): String? {
+//        return try {
+//            val info = context.packageManager.getPackageInfo(
+//                context.packageName,
+//                PackageManager.GET_SIGNING_CERTIFICATES
+//            )
+//            val signatures = info.signingInfo.apkContentsSigners
+//            val md = MessageDigest.getInstance("SHA")
+//            md.update(signatures[0].toByteArray())
+//            Base64.encodeToString(md.digest(), Base64.NO_WRAP)
+//        } catch (e: Exception) {
+//            null
+//        }
+//    }
 }
