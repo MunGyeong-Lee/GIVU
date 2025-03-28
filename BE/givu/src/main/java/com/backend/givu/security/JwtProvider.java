@@ -149,7 +149,7 @@ public class JwtProvider {
      * JWT claims 꺼내기
      *  - Claim  = JWT 안에 담긴 정보 [Header].[Payload].[Signature]의 payload에 해당하는 부분
      */
-    private Claims getTokenBody(String jwtToken){
+    public Claims getTokenBody(String jwtToken){
         return Jwts.parserBuilder()
                 .setSigningKey(secretKey)   // 1. 서명 검증용 secretKey 설정
                 .build()                    // 2. 파서(parser) 빌드  : 파서 객체 생성
