@@ -17,7 +17,6 @@ class MallFragment : BaseFragment<FragmentMallBinding>(R.layout.fragment_mall) {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-
         binding.composeMall.setContent {
             MallScreen()
         }
