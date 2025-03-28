@@ -101,19 +101,19 @@ const ShoppingProductDetail = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [quantity, setQuantity] = useState(1);
-  
+
   // 기존 상태들
   const [selectedOptions, setSelectedOptions] = useState<Record<string, string>>({});
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
   const [reviews, setReviews] = useState<Review[]>([]);
   const [averageRating, setAverageRating] = useState<number>(0);
-  
+
   // 페이지 로드 시 스크롤을 맨 위로 이동
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
-  
+
   // API에서 상품 상세 정보 가져오기
   useEffect(() => {
     const fetchProductDetail = async () => {
@@ -122,7 +122,7 @@ const ShoppingProductDetail = () => {
         const response = await axios.get(`${import.meta.env.VITE_BASE_URL}/products/${id}`);
         setProduct(response.data.product);
         setReviews(response.data.reviews);
-        
+
         // 평균 별점 계산 (리뷰가 있는 경우에만)
         if (response.data.reviews.length > 0) {
           const avgRating = response.data.reviews.reduce((acc: number, review: Review) => acc + review.star, 0) / response.data.reviews.length;
@@ -159,7 +159,7 @@ const ShoppingProductDetail = () => {
 
   // 총 금액 계산
   const totalPrice = product.price * quantity;
-  
+
   // 옵션 선택 핸들러
   const handleOptionChange = (optionName: string, value: string) => {
     setSelectedOptions(prev => ({
@@ -167,29 +167,29 @@ const ShoppingProductDetail = () => {
       [optionName]: value
     }));
   };
-  
+
   // 구매 버튼 클릭 핸들러
   const handlePurchase = () => {
     // options가 있을 경우에만 체크
-    const isAllOptionsSelected = product?.options 
+    const isAllOptionsSelected = product?.options
       ? product.options.every(option => selectedOptions[option.name])
       : true;
-    
+
     if (!isAllOptionsSelected) {
       alert('모든 옵션을 선택해주세요.');
       return;
     }
-    
+
     // 주문 페이지로 이동하면서 상품 정보, 수량, 선택한 옵션 전달
-    navigate('/shopping/order', { 
-      state: { 
+    navigate('/shopping/order', {
+      state: {
         product,
         quantity,
         options: selectedOptions
-      } 
+      }
     });
   };
-  
+
   // JSX에 추가할 리뷰 섹션
   const ReviewSection = () => (
     <div className="mb-12">
@@ -198,7 +198,7 @@ const ShoppingProductDetail = () => {
         <div className="flex items-center gap-2">
           <div className="flex text-yellow-400">
             {[1, 2, 3, 4, 5].map((star) => (
-              <svg 
+              <svg
                 key={star}
                 className={`w-5 h-5 ${averageRating >= star ? 'text-yellow-400' : 'text-gray-300'}`}
                 fill="currentColor"
@@ -220,15 +220,15 @@ const ShoppingProductDetail = () => {
             <div className="flex justify-between items-start mb-2">
               <div className="flex items-center gap-3">
                 {/* 사용자 프로필 이미지 */}
-                <img 
-                  src={review.user.image} 
+                <img
+                  src={review.user.image}
                   alt={review.user.nickName}
                   className="w-10 h-10 rounded-full object-cover"
                 />
                 <div>
                   <div className="flex text-yellow-400 mb-1">
                     {[1, 2, 3, 4, 5].map((star) => (
-                      <svg 
+                      <svg
                         key={star}
                         className={`w-4 h-4 ${review.star >= star ? 'text-yellow-400' : 'text-gray-300'}`}
                         fill="currentColor"
@@ -248,9 +248,9 @@ const ShoppingProductDetail = () => {
             <p className="text-gray-700 mb-3">{review.body}</p>
             {/* 리뷰 이미지 */}
             {review.image && (
-              <img 
-                src={review.image} 
-                alt="리뷰 이미지" 
+              <img
+                src={review.image}
+                alt="리뷰 이미지"
                 className="w-full max-w-md rounded-lg"
               />
             )}
@@ -260,7 +260,7 @@ const ShoppingProductDetail = () => {
 
       {/* 리뷰 작성 버튼 - 경로 수정 */}
       <div className="text-center mt-6">
-        <Link 
+        <Link
           to={`/shopping/product/${id}/review`}
           className="inline-block px-6 py-3 bg-pink-500 text-white rounded-md hover:bg-pink-600 transition-colors"
         >
@@ -269,20 +269,20 @@ const ShoppingProductDetail = () => {
       </div>
     </div>
   );
-  
+
   return (
     <div className="max-w-7xl mx-auto px-4 py-8">
       {/* 상품 기본 정보 영역 */}
       <div className="flex flex-col md:flex-row gap-8 mb-12">
         {/* 상품 이미지 영역 */}
         <div className="w-full md:w-1/2 relative">
-            <img 
-            src={product.image || 'https://via.placeholder.com/400x400?text=No+Image'} 
-            alt={product.productName} 
-              className="w-full h-auto rounded-lg"
-            />
+          <img
+            src={product.image || 'https://via.placeholder.com/400x400?text=No+Image'}
+            alt={product.productName}
+            className="w-full h-auto rounded-lg"
+          />
           {/* 찜하기 버튼 */}
-            <button 
+          <button
             onClick={(e) => {
               e.preventDefault();
               // 찜하기 API 호출 로직
@@ -298,9 +298,9 @@ const ShoppingProductDetail = () => {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
               </svg>
             )}
-              </button>
+          </button>
         </div>
-        
+
         {/* 상품 정보 및 구매 옵션 */}
         <div className="w-full md:w-1/2">
           <div className="mb-4">
@@ -309,49 +309,49 @@ const ShoppingProductDetail = () => {
             <div className="flex items-center gap-2 mb-4">
               <span className="text-black font-bold text-2xl">
                 {product.price.toLocaleString()}원
-                </span>
+              </span>
             </div>
           </div>
-          
+
           {/* 옵션 선택 */}
           {product.options && product.options.length > 0 && (
             <div className="mb-6">
               {product.options.map((option: ProductOption, idx: number) => (
-            <div key={idx} className="mb-4">
-              <label className="block text-sm font-medium mb-2">{option.name}</label>
-              <select 
-                className="w-full p-2 border border-gray-300 rounded-md"
-                value={selectedOptions[option.name] || ''}
-                onChange={(e) => handleOptionChange(option.name, e.target.value)}
-              >
-                <option value="">선택해주세요</option>
+                <div key={idx} className="mb-4">
+                  <label className="block text-sm font-medium mb-2">{option.name}</label>
+                  <select
+                    className="w-full p-2 border border-gray-300 rounded-md"
+                    value={selectedOptions[option.name] || ''}
+                    onChange={(e) => handleOptionChange(option.name, e.target.value)}
+                  >
+                    <option value="">선택해주세요</option>
                     {option.choices.map((choice: string, choiceIdx: number) => (
-                  <option key={choiceIdx} value={choice}>{choice}</option>
-                ))}
-              </select>
-            </div>
-          ))}
+                      <option key={choiceIdx} value={choice}>{choice}</option>
+                    ))}
+                  </select>
+                </div>
+              ))}
             </div>
           )}
-          
+
           {/* 수량 선택 */}
           <div className="mb-6">
             <label className="block text-sm font-medium mb-2">수량</label>
             <div className="flex border border-gray-300 rounded-md w-32">
-              <button 
+              <button
                 className="px-3 py-1 border-r border-gray-300 hover:bg-gray-100"
                 onClick={() => quantity > 1 && setQuantity(quantity - 1)}
               >
                 -
               </button>
-              <input 
-                type="number" 
-                min="1" 
+              <input
+                type="number"
+                min="1"
                 value={quantity}
                 onChange={(e) => setQuantity(Math.max(1, parseInt(e.target.value) || 1))}
                 className="w-full text-center"
               />
-              <button 
+              <button
                 className="px-3 py-1 border-l border-gray-300 hover:bg-gray-100"
                 onClick={() => setQuantity(quantity + 1)}
               >
@@ -359,7 +359,7 @@ const ShoppingProductDetail = () => {
               </button>
             </div>
           </div>
-          
+
           {/* 총 금액 */}
           <div className="p-4 bg-gray-50 rounded-md mb-6">
             <div className="flex justify-between items-center">
@@ -367,20 +367,20 @@ const ShoppingProductDetail = () => {
               <span className="font-bold text-xl">{(product.price * quantity).toLocaleString()}원</span>
             </div>
           </div>
-          
+
           {/* 버튼 그룹 */}
           <div className="grid grid-cols-3 gap-2">
             <button className="py-3 border border-black rounded-md hover:bg-gray-100 transition-colors">
               장바구니
             </button>
-            <button 
+            <button
               className="py-3 border border-black rounded-md hover:bg-gray-100 transition-colors"
               onClick={handlePurchase}
             >
               상품 구매하기
             </button>
-            <Link 
-              to="/funding/create" 
+            <Link
+              to="/funding/create"
               className="py-3 bg-pink-500 text-white rounded-md hover:bg-pink-600 transition-colors text-center"
             >
               이 상품으로 펀딩 만들기
@@ -388,15 +388,15 @@ const ShoppingProductDetail = () => {
           </div>
         </div>
       </div>
-      
+
       {/* 상품 설명 */}
       <div className="mb-12">
         <h3 className="text-lg font-bold mb-4">상품 상세정보</h3>
         <div className="whitespace-pre-line">
-            {product.description}
+          {product.description}
         </div>
       </div>
-      
+
       {/* 리뷰 섹션 추가 */}
       <ReviewSection />
     </div>

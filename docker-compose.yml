@@ -1,0 +1,96 @@
+version: '3.8'
+
+services:
+  zookeeper:
+    image: bitnami/zookeeper
+    container_name: zookeeper
+    ports: ["2181:2181"]
+    environment:
+      - ALLOW_ANONYMOUS_LOGIN=yes
+    networks: [kafka-network]
+
+  kafka:
+    image: bitnami/kafka
+    container_name: kafka
+    ports: ["9092:9092"]
+    environment:
+      - KAFKA_CFG_ZOOKEEPER_CONNECT=zookeeper:2181
+      - ALLOW_PLAINTEXT_LISTENER=yes
+    networks: [kafka-network]
+
+  kafka-ui:
+    image: provectuslabs/kafka-ui
+    container_name: kafka-ui
+    ports: ["8081:8080"]
+    environment:
+      - KAFKA_CLUSTERS_0_NAME=local
+      - KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS=kafka:9092
+    networks: [kafka-network]
+
+  backend-v1:
+    image: my-spring-app
+    container_name: backend-v1
+    ports: ["1115:8080"]
+    environment:
+      - PORT=8080
+    networks: [nginx-network]
+
+  backend-v2:
+    image: my-spring-app
+    container_name: backend-v2
+    ports: ["1116:8080"]
+    environment:
+      - PORT=8080
+    networks: [nginx-network]
+
+  frontend-v1:
+    image: my-react-app
+    container_name: frontend-v1
+    ports: ["3000:80"]
+    networks: [nginx-network]
+
+  frontend-v2:
+    image: my-react-app
+    container_name: frontend-v2
+    ports: ["3001:80"]
+    networks: [nginx-network]
+
+  postgres:
+    image: postgres:17
+    container_name: postgres
+    ports: ["5432:5432"]
+    environment:
+      - POSTGRES_DB=givudb
+      - POSTGRES_USER=d107
+      - POSTGRES_PASSWORD=d107password
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    networks: [nginx-network]
+
+  redis:
+    image: redis
+    container_name: redis
+    ports: ["6379:6379"]
+    command: redis-server --requirepass d107password
+    volumes:
+      - redis-data:/data
+    networks: [nginx-network]
+  # 확인5
+  nginx:
+    image: nginx
+    container_name: nginx
+    ports: ["80:80"]
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+    networks: [nginx-network]
+
+networks:
+  nginx-network:
+    driver: bridge
+  kafka-network:
+    driver: bridge
+
+volumes:
+  pgdata:
+  redis-data:
+# 확인2

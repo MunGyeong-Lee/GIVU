@@ -77,11 +77,11 @@ function FundingReviewDetailPage() {
     try {
       setLoading(true);
       setError(null);
-      
+
       // 실제 API 연동 시 사용할 코드
       // const response = await axios.get(`${import.meta.env.VITE_BASE_URL}/api/funding/reviews/${reviewId}`);
       // setReview(response.data);
-      
+
       // 임시로 더미 데이터 사용
       setReview(REVIEW_DETAILS);
     } catch (err) {
@@ -127,7 +127,7 @@ function FundingReviewDetailPage() {
           후기 목록으로 돌아가기
         </Link>
       </div>
-      
+
       {/* 후기 제목 및 메타 정보 */}
       <div className="border-b border-gray-200 pb-4 mb-6">
         <div className="flex items-center justify-between mb-2">
@@ -137,7 +137,7 @@ function FundingReviewDetailPage() {
         <div className="flex items-center space-x-3 text-sm text-gray-500">
           <span className="inline-flex items-center">
             <svg className="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
-              <path d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z"/>
+              <path d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" />
             </svg>
             {review.author}
           </span>
@@ -156,24 +156,24 @@ function FundingReviewDetailPage() {
           </span>
         </div>
       </div>
-      
+
       {/* 후기 내용 */}
       <div className="mb-8">
         {review.images.map((image, index) => (
           <div key={index} className="mb-6">
-            <img 
-              src={image} 
-              alt={`후기 이미지 ${index + 1}`} 
+            <img
+              src={image}
+              alt={`후기 이미지 ${index + 1}`}
               className="w-full h-auto rounded-lg"
             />
           </div>
         ))}
-        
+
         <div className="whitespace-pre-line text-gray-800 leading-relaxed mt-6">
           {review.content}
         </div>
       </div>
-      
+
       {/* 관련 펀딩 정보 */}
       <div className="bg-gray-50 p-6 rounded-lg">
         <h3 className="text-lg font-bold mb-4">관련 펀딩</h3>
@@ -189,13 +189,13 @@ function FundingReviewDetailPage() {
               </div>
             </div>
             <div className="w-full bg-gray-200 rounded-full h-2 mt-2">
-              <div 
-                className="bg-black h-2 rounded-full" 
+              <div
+                className="bg-black h-2 rounded-full"
                 style={{ width: `${review.relatedFunding.percentage}%` }}
               ></div>
             </div>
           </div>
-          <Link 
+          <Link
             to={`/funding/${review.relatedFunding.id}`}
             className="px-4 py-2 bg-black text-white rounded-md hover:bg-gray-800 transition"
           >
@@ -203,13 +203,13 @@ function FundingReviewDetailPage() {
           </Link>
         </div>
       </div>
-      
+
       {/* 코멘트 섹션 */}
       <div className="mt-10">
         <h3 className="text-lg font-bold mb-4">댓글</h3>
         <div className="border border-gray-200 rounded-lg p-4">
-          <textarea 
-            className="w-full p-2 border border-gray-300 rounded mb-2" 
+          <textarea
+            className="w-full p-2 border border-gray-300 rounded mb-2"
             rows={3}
             placeholder="댓글을 남겨주세요"
           ></textarea>
@@ -219,7 +219,7 @@ function FundingReviewDetailPage() {
             </button>
           </div>
         </div>
-        
+
         <div className="mt-6">
           <p className="text-gray-500 text-center py-4">아직 댓글이 없습니다.</p>
         </div>

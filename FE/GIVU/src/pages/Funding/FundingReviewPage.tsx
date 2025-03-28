@@ -94,13 +94,12 @@ const StarRating = ({ rating }: { rating?: number }) => {
         {[1, 2, 3, 4, 5].map((star) => (
           <svg
             key={star}
-            className={`w-4 h-4 ${
-              star <= rating
+            className={`w-4 h-4 ${star <= rating
                 ? 'text-yellow-400'
                 : star - 0.5 <= rating
-                ? 'text-yellow-400'
-                : 'text-gray-300'
-            }`}
+                  ? 'text-yellow-400'
+                  : 'text-gray-300'
+              }`}
             fill="currentColor"
             viewBox="0 0 20 20"
           >
@@ -129,7 +128,7 @@ function FundingReviewPage() {
     try {
       setLoading(true);
       setError(null);
-      
+
       const response = await axios.get<ReviewResponse>(
         `${import.meta.env.VITE_BASE_URL}/api/funding/reviews`,
         {
@@ -170,7 +169,7 @@ function FundingReviewPage() {
   };
 
   // 필터링된 리뷰 목록 계산
-  const filteredReviews = reviews.filter(review => 
+  const filteredReviews = reviews.filter(review =>
     selectedType === '전체' || review.type === selectedType
   );
 
@@ -232,26 +231,26 @@ function FundingReviewPage() {
 
         <div className="space-y-6">
           {filteredReviews.map((item) => (
-            <Link 
-              to={`/funding/review/${item.id}`} 
-              key={item.id} 
+            <Link
+              to={`/funding/review/${item.id}`}
+              key={item.id}
               className="block bg-white rounded-lg overflow-hidden shadow-sm 
                 hover:shadow-md transition-shadow duration-200 border border-gray-100"
             >
               <div className="flex p-6 gap-6">
                 {/* 후기 이미지 */}
                 <div className="w-48 h-36 flex-shrink-0 overflow-hidden rounded-lg">
-                  <img 
-                    src={item.image} 
-                    alt={item.title} 
+                  <img
+                    src={item.image}
+                    alt={item.title}
                     className="w-full h-full object-cover hover:scale-105 
                       transition-transform duration-200"
                   />
                 </div>
-                
+
                 {/* 후기 내용 */}
                 <div className="flex-1 flex flex-col justify-between">
-              <div>
+                  <div>
                     <div className="flex items-center justify-between mb-2">
                       <div className="flex items-center gap-3">
                         <h2 className="text-xl font-bold text-gray-800 
@@ -265,16 +264,16 @@ function FundingReviewPage() {
                       </div>
                       <StarRating rating={item.rating} />
                     </div>
-                    
+
                     {/* 후기 내용 미리보기 */}
                     <p className="text-gray-600 text-sm mb-4 line-clamp-2">
                       {item.content}
                     </p>
-                    
+
                     <div className="flex items-center space-x-3 text-sm text-gray-500">
                       <span className="inline-flex items-center">
                         <svg className="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
-                          <path d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z"/>
+                          <path d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" />
                         </svg>
                         {item.author}
                       </span>
@@ -287,15 +286,15 @@ function FundingReviewPage() {
                       <span>•</span>
                       <span className="inline-flex items-center">
                         <svg className="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
-                          <path d="M10 12a2 2 0 100-4 2 2 0 000 4z"/>
-                          <path fillRule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clipRule="evenodd"/>
+                          <path d="M10 12a2 2 0 100-4 2 2 0 000 4z" />
+                          <path fillRule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clipRule="evenodd" />
                         </svg>
                         조회 {item.views}
                       </span>
                     </div>
+                  </div>
+                </div>
               </div>
-            </div>
-          </div>
             </Link>
           ))}
         </div>
@@ -303,13 +302,13 @@ function FundingReviewPage() {
         {/* 더보기 버튼 */}
         {reviews.length > 0 && (
           <div className="text-center mt-10">
-            <button 
+            <button
               onClick={handleLoadMore}
               disabled={loading || !hasMore}
               className={`px-6 py-3 border-2 border-gray-300 rounded-md
                 font-medium transition-colors
-                ${loading 
-                  ? 'text-gray-400 cursor-not-allowed' 
+                ${loading
+                  ? 'text-gray-400 cursor-not-allowed'
                   : 'text-gray-600 hover:bg-gray-50'
                 }`}
             >

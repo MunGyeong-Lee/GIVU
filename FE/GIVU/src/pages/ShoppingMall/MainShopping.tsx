@@ -59,22 +59,22 @@ const getCategoryIcon = (categoryValue: string) => {
 };
 
 // 이미지 컴포넌트 - 규격화된 이미지 표시를 위한 공통 컴포넌트
-const ProductImage = ({ 
-  image, 
-  productName, 
-  category 
-}: { 
-  image: string | null, 
-  productName: string, 
-  category: string 
+const ProductImage = ({
+  image,
+  productName,
+  category
+}: {
+  image: string | null,
+  productName: string,
+  category: string
 }) => {
   return (
     <>
       {image ? (
         <div className="w-full h-full overflow-hidden bg-gray-100">
-          <img 
-            src={image} 
-            alt={productName} 
+          <img
+            src={image}
+            alt={productName}
             className="w-full h-full object-cover transform transition-transform duration-300 hover:scale-105"
             onError={(e) => {
               // 이미지 로드 실패 시 기본 이미지로 대체
@@ -97,17 +97,17 @@ const MainShopping = () => {
   const [displayedProducts, setDisplayedProducts] = useState<Product[]>([]);
   const [bestProducts, setBestProducts] = useState<Product[]>([]);
   const [trendingProducts, setTrendingProducts] = useState<Product[]>([]);
-  
+
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [selectedPriceRange, setSelectedPriceRange] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  
+
   // 무한 스크롤을 위한 상태
   const [page, setPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(8); // 한 번에 보여줄 상품 수
   const [hasMore, setHasMore] = useState(true);
-  
+
   // ref 정의
   const bestProductsRef = useRef<HTMLDivElement>(null);
   const productGridRef = useRef<HTMLDivElement>(null);
@@ -125,12 +125,12 @@ const MainShopping = () => {
   // 필터 적용 함수 - 카테고리와 가격대 필터를 모두 적용
   const applyFilters = (allProducts: Product[]) => {
     let result = [...allProducts];
-    
+
     // 카테고리 필터 적용
     if (selectedCategory && selectedCategory !== 'all') {
       result = result.filter(product => product.category === selectedCategory);
     }
-    
+
     // 가격대 필터 적용
     if (selectedPriceRange !== null && selectedPriceRange !== 1) {
       const selectedRange = PRICE_RANGES.find(range => range.id === selectedPriceRange);
@@ -147,7 +147,7 @@ const MainShopping = () => {
         });
       }
     }
-    
+
     return result;
   };
 
@@ -156,7 +156,7 @@ const MainShopping = () => {
     try {
       setLoading(true);
       setError(null);
-      
+
       const response = await axios.get(
         `${import.meta.env.VITE_BASE_URL}/products/list`,
         {
@@ -182,7 +182,7 @@ const MainShopping = () => {
         setFilteredProducts(productsData);
         // 초기 표시할 상품 목록 설정
         setDisplayedProducts(productsData.slice(0, itemsPerPage));
-        
+
         // 베스트 상품 설정 (별점 순 -> 가격 순)
         const bestProductsList = [...productsData]
           .sort((a, b) => {
@@ -193,7 +193,7 @@ const MainShopping = () => {
           })
           .slice(0, 8);
         setBestProducts(bestProductsList);
-        
+
         // 지금 뜨는 상품 설정 (조회수 기준)
         const trendingProductsList = [...productsData]
           .sort((a, b) => b.views - a.views)
@@ -221,32 +221,32 @@ const MainShopping = () => {
   // 카테고리 선택 핸들러 수정
   const handleCategorySelect = (categoryValue: string | null) => {
     setSelectedCategory(categoryValue);
-    
+
     // 필터 적용
     if (products.length > 0) {
       let filtered = [...products];
-      
+
       if (categoryValue) {
         filtered = products.filter(product => {
           // API에서 받은 카테고리 값과 선택된 카테고리 값 비교
           return product.category === categoryValue;
         });
       }
-      
+
       setFilteredProducts(filtered);
       setDisplayedProducts(filtered.slice(0, itemsPerPage));
       setHasMore(filtered.length > itemsPerPage);
       setPage(1);
     }
-    
+
     // 스크롤을 상품 목록 위치로 이동
     allProductsRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
-  
+
   // 가격대 선택 핸들러
   const handlePriceRangeSelect = (priceRangeId: number | null) => {
     setSelectedPriceRange(priceRangeId);
-    
+
     // 필터 적용
     if (products.length > 0) {
       const filtered = applyFilters(products);
@@ -255,47 +255,47 @@ const MainShopping = () => {
       setHasMore(filtered.length > itemsPerPage);
       setPage(1);
     }
-    
+
     // 스크롤을 상품 목록 위치로 이동
     allProductsRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
-  
+
   // 모든 필터 초기화
   const resetAllFilters = () => {
     setSelectedCategory(null);
     setSelectedPriceRange(null);
-    
+
     setFilteredProducts(products);
     setDisplayedProducts(products.slice(0, itemsPerPage));
     setHasMore(products.length > itemsPerPage);
     setPage(1);
   };
-  
+
   // 더 많은 상품 로드하기 - 수정
   const loadMoreProducts = () => {
     if (!hasMore || loading) return;
-    
+
     const nextPage = page + 1;
     const startIndex = page * itemsPerPage;
     const endIndex = startIndex + itemsPerPage;
-    
+
     // 이미 필터링된 상품 목록 사용
     if (startIndex >= filteredProducts.length) {
       setHasMore(false);
       return;
     }
-    
+
     setLoading(true);
-    
+
     setTimeout(() => {
       const newDisplayedProducts = [
         ...displayedProducts,
         ...filteredProducts.slice(startIndex, endIndex)
       ];
-      
+
       setDisplayedProducts(newDisplayedProducts);
       setPage(nextPage);
-      
+
       // 더 불러올 상품이 있는지 확인
       setHasMore(endIndex < filteredProducts.length);
       setLoading(false);
@@ -306,7 +306,7 @@ const MainShopping = () => {
   useEffect(() => {
     // 관찰할 요소가 없으면 리턴
     if (!loadingRef.current) return;
-    
+
     const observer = new IntersectionObserver(
       (entries) => {
         // 관찰 대상이 화면에 보이면 추가 상품 로드
@@ -316,10 +316,10 @@ const MainShopping = () => {
       },
       { threshold: 0.1 } // 10% 정도 보이면 로드 시작
     );
-    
+
     // 관찰 시작
     observer.observe(loadingRef.current);
-    
+
     // 컴포넌트 언마운트 시 관찰 중지
     return () => {
       if (loadingRef.current) {
@@ -332,7 +332,7 @@ const MainShopping = () => {
   useEffect(() => {
     fetchProducts(0);
   }, []);
-  
+
   // 카테고리나 가격대 필터 변경 시 필터링된 상품 갱신
   useEffect(() => {
     if (products.length > 0) {
@@ -348,25 +348,25 @@ const MainShopping = () => {
   const scrollHorizontally = (ref: any, direction: 'left' | 'right') => {
     if (ref.current) {
       const scrollAmount = 300;
-      const scrollLeft = direction === 'left' 
-        ? ref.current.scrollLeft - scrollAmount 
+      const scrollLeft = direction === 'left'
+        ? ref.current.scrollLeft - scrollAmount
         : ref.current.scrollLeft + scrollAmount;
-      
+
       ref.current.scrollTo({
         left: scrollLeft,
         behavior: 'smooth'
       });
     }
   };
-  
+
   // 카테고리 스크롤 함수
   const scrollCategory = (direction: 'left' | 'right') => {
     if (categoryRef.current) {
       const scrollAmount = 200;
-      const scrollLeft = direction === 'left' 
-        ? categoryRef.current.scrollLeft - scrollAmount 
+      const scrollLeft = direction === 'left'
+        ? categoryRef.current.scrollLeft - scrollAmount
         : categoryRef.current.scrollLeft + scrollAmount;
-      
+
       categoryRef.current.scrollTo({
         left: scrollLeft,
         behavior: 'smooth'
@@ -380,7 +380,7 @@ const MainShopping = () => {
     const category = CATEGORIES.find(cat => cat.value === categoryValue);
     return category ? category.name : categoryValue; // 매칭되지 않는 경우 원래 값 반환
   };
-  
+
   // 필터 상태 텍스트 가져오기
   const getFilterStatusText = () => {
     if (selectedCategory && selectedPriceRange) {
@@ -402,7 +402,7 @@ const MainShopping = () => {
           <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-pink-500"></div>
         </div>
       )}
-      
+
       {/* 에러 메시지 */}
       {error && (
         <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4 mx-4" role="alert">
@@ -410,13 +410,13 @@ const MainShopping = () => {
           <span className="block sm:inline"> {error}</span>
         </div>
       )}
-      
+
       {/* 헤더 영역 */}
       <header className="py-4 border-b border-gray-200 bg-white w-full">
         <div className="container mx-auto px-4 flex justify-between items-center">
           <h1 className="text-2xl font-bold text-pink-500">GIVUMALL</h1>
           <div className="relative w-64 md:w-96">
-            <input 
+            <input
               type="text"
               placeholder="상품명 또는 브랜드 입력"
               className="w-full py-2 px-4 border border-gray-300 rounded-md"
@@ -429,13 +429,13 @@ const MainShopping = () => {
           </div>
         </div>
       </header>
-      
+
       {/* 카테고리 영역 - 한 줄 가로 스크롤 */}
       <div className="bg-white py-4 border-b border-gray-200 sticky top-0 z-30 shadow-sm">
         <div className="container mx-auto px-4 relative">
           {/* 왼쪽 스크롤 버튼 */}
-          <button 
-            onClick={() => scrollCategory('left')} 
+          <button
+            onClick={() => scrollCategory('left')}
             className="absolute left-0 top-1/2 transform -translate-y-1/2 z-10 bg-white rounded-full shadow-md p-1 md:hidden"
             aria-label="카테고리 왼쪽으로 스크롤"
           >
@@ -443,21 +443,20 @@ const MainShopping = () => {
               <path fillRule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clipRule="evenodd" />
             </svg>
           </button>
-          
+
           {/* 카테고리 가로 스크롤 */}
-          <div 
+          <div
             ref={categoryRef}
             className="flex overflow-x-auto scrollbar-hide space-x-4 py-1 px-6 md:px-0 md:justify-center"
             style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
           >
             {CATEGORIES.map(category => (
-              <div 
-                key={category.id} 
-                className={`flex items-center flex-shrink-0 cursor-pointer transition-all px-3 py-2 rounded-full ${
-                  selectedCategory === category.value 
-                    ? 'bg-pink-100 text-pink-600 font-medium shadow-sm' 
+              <div
+                key={category.id}
+                className={`flex items-center flex-shrink-0 cursor-pointer transition-all px-3 py-2 rounded-full ${selectedCategory === category.value
+                    ? 'bg-pink-100 text-pink-600 font-medium shadow-sm'
                     : 'hover:bg-gray-100'
-                }`}
+                  }`}
                 onClick={() => handleCategorySelect(category.value)}
               >
                 <span className="mr-1.5">{category.icon}</span>
@@ -465,10 +464,10 @@ const MainShopping = () => {
               </div>
             ))}
           </div>
-          
+
           {/* 오른쪽 스크롤 버튼 */}
-          <button 
-            onClick={() => scrollCategory('right')} 
+          <button
+            onClick={() => scrollCategory('right')}
             className="absolute right-0 top-1/2 transform -translate-y-1/2 z-10 bg-white rounded-full shadow-md p-1 md:hidden"
             aria-label="카테고리 오른쪽으로 스크롤"
           >
@@ -486,7 +485,7 @@ const MainShopping = () => {
             <div className="flex items-center justify-between mb-6">
               <h3 className="text-xl font-bold">베스트 상품</h3>
               <div className="flex gap-2">
-                <button 
+                <button
                   onClick={() => scrollHorizontally(bestProductsRef, 'left')}
                   className="p-2 bg-gray-100 hover:bg-gray-200 rounded-full w-8 h-8 flex items-center justify-center text-gray-600"
                   aria-label="이전 상품"
@@ -495,7 +494,7 @@ const MainShopping = () => {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
                   </svg>
                 </button>
-                <button 
+                <button
                   onClick={() => scrollHorizontally(bestProductsRef, 'right')}
                   className="p-2 bg-gray-100 hover:bg-gray-200 rounded-full w-8 h-8 flex items-center justify-center text-gray-600"
                   aria-label="다음 상품"
@@ -506,30 +505,30 @@ const MainShopping = () => {
                 </button>
               </div>
             </div>
-            <div 
-              ref={bestProductsRef} 
+            <div
+              ref={bestProductsRef}
               className="flex overflow-x-auto scrollbar-hide gap-4 pb-4"
               style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
             >
               {bestProducts.map(product => (
-                <Link 
+                <Link
                   key={product.id}
-                  to={`/shopping/product/${product.id}`} 
+                  to={`/shopping/product/${product.id}`}
                   className="border border-gray-200 rounded-lg overflow-hidden flex-shrink-0 transition-transform hover:scale-[1.02] hover:shadow-md"
                   style={{ width: '250px' }}
                 >
                   <div className="h-48 bg-gray-100 relative">
-                    <ProductImage 
-                      image={product.image} 
-                      productName={product.productName} 
-                      category={product.category} 
+                    <ProductImage
+                      image={product.image}
+                      productName={product.productName}
+                      category={product.category}
                     />
                     <div className="absolute top-2 right-2 bg-blue-500 text-white text-xs px-2 py-1 rounded-full">
                       {getCategoryName(product.category)}
                     </div>
-                    
+
                     {/* 찜하기 버튼 */}
-                    <button 
+                    <button
                       onClick={(e: React.MouseEvent) => {
                         e.preventDefault();
                         if (!isLoggedIn) {
@@ -578,13 +577,12 @@ const MainShopping = () => {
         <div className="container mx-auto px-4">
           <div className="flex flex-wrap gap-4 mb-4">
             {PRICE_RANGES.map(range => (
-              <button 
+              <button
                 key={range.id}
-                className={`px-4 py-1 border rounded-md text-sm transition-colors ${
-                  selectedPriceRange === range.id 
-                    ? 'bg-pink-100 text-pink-600 border-pink-300 font-medium shadow-sm' 
+                className={`px-4 py-1 border rounded-md text-sm transition-colors ${selectedPriceRange === range.id
+                    ? 'bg-pink-100 text-pink-600 border-pink-300 font-medium shadow-sm'
                     : 'bg-white border-gray-200 hover:bg-gray-50'
-                }`}
+                  }`}
                 onClick={() => handlePriceRangeSelect(range.id === 1 ? null : range.id)}
               >
                 {range.name}
@@ -604,7 +602,7 @@ const MainShopping = () => {
                 <p className="text-gray-500 text-sm mt-1">많은 사람들이 지금 이 상품을 찾고 있어요!</p>
               </div>
               <div className="flex gap-2">
-                <button 
+                <button
                   onClick={() => scrollHorizontally(trendingProductsRef, 'left')}
                   className="p-2 bg-gray-100 hover:bg-gray-200 rounded-full w-8 h-8 flex items-center justify-center text-gray-600"
                   aria-label="이전 상품"
@@ -613,7 +611,7 @@ const MainShopping = () => {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
                   </svg>
                 </button>
-                <button 
+                <button
                   onClick={() => scrollHorizontally(trendingProductsRef, 'right')}
                   className="p-2 bg-gray-100 hover:bg-gray-200 rounded-full w-8 h-8 flex items-center justify-center text-gray-600"
                   aria-label="다음 상품"
@@ -624,33 +622,33 @@ const MainShopping = () => {
                 </button>
               </div>
             </div>
-            
-            <div 
+
+            <div
               ref={trendingProductsRef}
               className="flex overflow-x-auto scrollbar-hide gap-4 pb-4"
               style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
             >
               {trendingProducts.map((product, index) => (
-                <Link 
-                  key={product.id} 
+                <Link
+                  key={product.id}
                   to={`/shopping/product/${product.id}`}
                   className="border border-gray-200 rounded-lg overflow-hidden flex-shrink-0 transition-transform hover:scale-[1.02] hover:shadow-md bg-white relative"
                   style={{ width: '300px' }}
                 >
                   <div className="h-48 bg-gray-100 relative">
-                    <ProductImage 
-                      image={product.image} 
-                      productName={product.productName} 
-                      category={product.category} 
+                    <ProductImage
+                      image={product.image}
+                      productName={product.productName}
+                      category={product.category}
                     />
-                    
+
                     {/* 순위 배지는 오른쪽으로 이동 */}
                     <div className="absolute top-3 right-3 bg-orange-500 text-white rounded-full w-8 h-8 flex items-center justify-center text-lg font-bold">
                       {index + 1}
                     </div>
 
                     {/* 찜하기 버튼 왼쪽으로 이동 */}
-                    <button 
+                    <button
                       onClick={(e: React.MouseEvent) => {
                         e.preventDefault();
                         if (!isLoggedIn) {
@@ -703,7 +701,7 @@ const MainShopping = () => {
               {(selectedCategory || selectedPriceRange) && (
                 <div className="mt-2 text-sm text-gray-600 flex items-center">
                   <span>현재 필터: {getFilterStatusText()}</span>
-                  <button 
+                  <button
                     onClick={resetAllFilters}
                     className="ml-2 text-pink-500 hover:text-pink-700"
                   >
@@ -712,7 +710,7 @@ const MainShopping = () => {
                 </div>
               )}
             </div>
-            
+
             {/* 필터링된 상품 개수 표시 */}
             <div className="text-sm text-gray-500">
               총 {products.length}개 상품
@@ -725,27 +723,27 @@ const MainShopping = () => {
             </div>
           ) : displayedProducts.length > 0 ? (
             <>
-              <div 
+              <div
                 className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-8"
               >
                 {displayedProducts.map(product => (
-                  <Link 
-                    key={product.id} 
+                  <Link
+                    key={product.id}
                     to={`/shopping/product/${product.id}`}
                     className="border border-gray-200 rounded-lg overflow-hidden bg-white transition-transform hover:scale-[1.02] hover:shadow-md"
                   >
                     <div className="relative h-48 md:h-64 bg-gray-100">
-                      <ProductImage 
-                        image={product.image} 
-                        productName={product.productName} 
-                        category={product.category} 
+                      <ProductImage
+                        image={product.image}
+                        productName={product.productName}
+                        category={product.category}
                       />
                       <div className="absolute top-2 right-2 bg-blue-500 text-white text-xs px-2 py-1 rounded-full">
                         {getCategoryName(product.category)}
                       </div>
-                      
+
                       {/* 찜하기 버튼 */}
-                      <button 
+                      <button
                         onClick={(e: React.MouseEvent) => {
                           e.preventDefault();
                           if (!isLoggedIn) {
@@ -785,7 +783,7 @@ const MainShopping = () => {
                   </Link>
                 ))}
               </div>
-              
+
               {/* 무한 스크롤 로딩 인디케이터 */}
               <div ref={loadingRef} className="py-4 flex justify-center">
                 {loading && hasMore && (
@@ -802,7 +800,7 @@ const MainShopping = () => {
             <div className="text-center text-gray-500 my-8 py-12 bg-white rounded-lg shadow-sm">
               <p className="text-lg">선택한 필터에 맞는 상품이 없습니다.</p>
               <p className="mt-2">다른 카테고리를 선택하거나 필터를 해제해보세요.</p>
-              <button 
+              <button
                 onClick={resetAllFilters}
                 className="mt-4 px-4 py-2 bg-pink-500 text-white rounded-md hover:bg-pink-600 transition-colors"
               >
@@ -812,7 +810,7 @@ const MainShopping = () => {
           )}
         </div>
       </div>
-      
+
       {/* 맨 위로 가기 버튼 */}
       <button
         onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
