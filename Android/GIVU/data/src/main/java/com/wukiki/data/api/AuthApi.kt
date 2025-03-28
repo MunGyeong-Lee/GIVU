@@ -1,17 +1,23 @@
 package com.wukiki.data.api
 
+import com.wukiki.data.entity.KakaoUserEntity
+import com.wukiki.data.entity.NewTokenEntity
 import com.wukiki.data.entity.UserEntity
-import okhttp3.RequestBody
 import retrofit2.Response
-import retrofit2.http.Body
-import retrofit2.http.Header
+import retrofit2.http.GET
 import retrofit2.http.POST
+import retrofit2.http.Query
 
 interface AuthApi {
 
-    @POST("auth/kakao")
+    @POST("users/kakao")
     suspend fun loginWithKakao(
-        @Header("Authorization") accessToken: String,
-        @Body user: RequestBody
-    ): Response<UserEntity>
+        @Query("accessToken") accessToken: String
+    ): Response<KakaoUserEntity>
+
+    @GET("users/info")
+    suspend fun getUserInfo(): Response<UserEntity>
+
+    @GET("users/newToken")
+    suspend fun getNewToken(): Response<NewTokenEntity>
 }

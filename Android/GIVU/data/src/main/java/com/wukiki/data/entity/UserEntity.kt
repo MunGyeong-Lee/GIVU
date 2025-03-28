@@ -5,13 +5,10 @@ import com.squareup.moshi.JsonClass
 
 @JsonClass(generateAdapter = true)
 data class UserEntity(
-    @Json(name = "id")
-    val id: Int,
+    @Json(name = "kakaoId")
+    val kakaoid: Long,
 
-    @Json(name = "kakaoid")
-    val kakaoid: Int,
-
-    @Json(name = "nickname")
+    @Json(name = "nickName")
     val nickname: String,
 
     @Json(name = "email")
@@ -20,24 +17,18 @@ data class UserEntity(
     @Json(name = "birth")
     val birth: String?,
 
-    @Json(name = "profile_image")
+    @Json(name = "profileImage")
     val profileImage: String?,
 
     @Json(name = "address")
     val address: String?,
 
     @Json(name = "gender")
-    val gender: String,
+    val gender: String?,
 
-    @Json(name = "age_range")
-    val ageRange: String,
+    @Json(name = "ageRange")
+    val ageRange: String?,
 
     @Json(name = "balance")
-    val balance: Int,
-
-    @Json(name = "created_at")
-    val createdAt: String?,
-
-    @Json(name = "updated_at")
-    val updatedAt: String?
+    val balance: Int
 )

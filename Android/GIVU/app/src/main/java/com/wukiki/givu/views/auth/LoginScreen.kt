@@ -1,5 +1,6 @@
 package com.wukiki.givu.views.auth
 
+import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -13,8 +14,10 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -22,12 +25,38 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavController
 import com.wukiki.givu.R
 import com.wukiki.givu.ui.suit
+import com.wukiki.givu.views.auth.viewmodel.AuthUiEvent
 import com.wukiki.givu.views.auth.viewmodel.AuthViewModel
 
 @Composable
-fun LoginScreen(authViewModel: AuthViewModel = hiltViewModel()) {
+fun LoginScreen(
+    authViewModel: AuthViewModel = hiltViewModel(),
+    navController: NavController
+) {
+    val context = LocalContext.current
+    val authUiEvent = authViewModel.authUiEvent
+
+    LaunchedEffect(Unit) {
+        authUiEvent.collect { event ->
+            when (event) {
+                is AuthUiEvent.LoginSuccess -> {
+                    navController.popBackStack()
+                }
+
+                is AuthUiEvent.LoginFail -> {
+                    Toast.makeText(context, "로그인 실패!", Toast.LENGTH_SHORT).show()
+                }
+
+                else -> {
+                    Toast.makeText(context, "로그아웃 완료!", Toast.LENGTH_SHORT).show()
+                }
+            }
+        }
+    }
+
     Column(
         modifier = Modifier
             .fillMaxHeight()
@@ -76,7 +105,7 @@ fun LoginScreen(authViewModel: AuthViewModel = hiltViewModel()) {
                 contentDescription = "카카오 로그인",
                 modifier = Modifier.fillMaxWidth()
                     .height(64.dp)
-                    .clickable { authViewModel.loginWithKakao() }
+                    .clickable { authViewModel.loginWithKakao(context) }
             )
         }
     }

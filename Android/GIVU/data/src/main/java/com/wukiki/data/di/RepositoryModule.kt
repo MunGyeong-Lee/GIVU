@@ -5,8 +5,14 @@ import androidx.datastore.preferences.core.Preferences
 import com.wukiki.data.repository.auth.AuthRemoteDataSource
 import com.wukiki.data.repository.auth.AuthRepositoryImpl
 import com.wukiki.data.repository.datastore.DataStoreRepositoryImpl
+import com.wukiki.data.repository.product.ProductRemoteDataSource
+import com.wukiki.data.repository.product.ProductRepositoryImpl
+import com.wukiki.data.repository.review.ProductReviewRemoteDataSource
+import com.wukiki.data.repository.review.ProductReviewRepositoryImpl
 import com.wukiki.domain.repository.AuthRepository
 import com.wukiki.domain.repository.DataStoreRepository
+import com.wukiki.domain.repository.ProductRepository
+import com.wukiki.domain.repository.ProductReviewRepository
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -21,6 +27,18 @@ object RepositoryModule {
     @Singleton
     fun provideAuthRepository(authRemoteDataSource: AuthRemoteDataSource): AuthRepository {
         return AuthRepositoryImpl(authRemoteDataSource)
+    }
+
+    @Provides
+    @Singleton
+    fun provideProductRepository(productRemoteDataSource: ProductRemoteDataSource): ProductRepository {
+        return ProductRepositoryImpl(productRemoteDataSource)
+    }
+
+    @Provides
+    @Singleton
+    fun provideProductReviewRepository(productReviewRemoteDataSource: ProductReviewRemoteDataSource): ProductReviewRepository {
+        return ProductReviewRepositoryImpl(productReviewRemoteDataSource)
     }
 
     @Provides

@@ -1,7 +1,7 @@
 package com.wukiki.domain.model
 
 data class Review(
-    val reviewId: String,
+    val reviewId: Int,
     val fundingId: String,
     val userId: String,
     val comment: String,
