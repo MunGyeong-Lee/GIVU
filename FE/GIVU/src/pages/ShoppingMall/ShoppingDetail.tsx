@@ -22,14 +22,20 @@ interface Product {
   options?: ProductOption[];  // 옵션 추가 (선택적)
 }
 
-// Review 인터페이스 추가
-interface Review {
-  id: number;
+// Review 인터페이스 수정
+interface ReviewUser {
   userId: number;
-  userName: string;
-  rating: number;
-  content: string;
-  createdAt: string;
+  nickName: string;
+  image: string;
+}
+
+interface Review {
+  reviewId: number;
+  title: string;
+  body: string;
+  image: string;
+  star: number;
+  user: ReviewUser;
 }
 
 // 임시 데이터 - 나중에 API로 대체
@@ -94,7 +100,6 @@ const ShoppingProductDetail = () => {
   const [product, setProduct] = useState<Product | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false);
   const [quantity, setQuantity] = useState(1);
   
   // 기존 상태들
@@ -115,7 +120,14 @@ const ShoppingProductDetail = () => {
       try {
         setLoading(true);
         const response = await axios.get(`${import.meta.env.VITE_BASE_URL}/products/${id}`);
-        setProduct(response.data);
+        setProduct(response.data.product);
+        setReviews(response.data.reviews);
+        
+        // 평균 별점 계산 (리뷰가 있는 경우에만)
+        if (response.data.reviews.length > 0) {
+          const avgRating = response.data.reviews.reduce((acc: number, review: Review) => acc + review.star, 0) / response.data.reviews.length;
+          setAverageRating(avgRating);
+        }
       } catch (err) {
         console.error('상품 상세 정보를 불러오는 중 오류가 발생했습니다:', err);
         setError('상품 정보를 불러오는데 실패했습니다.');
@@ -128,16 +140,6 @@ const ShoppingProductDetail = () => {
       fetchProductDetail();
     }
   }, [id]);
-
-  // 리뷰 데이터 가져오기 (API 준비되면 사용)
-  const fetchReviews = async () => {
-    try {
-      const response = await axios.get(`${import.meta.env.VITE_BASE_URL}/products/${id}/reviews`);
-      setReviews(response.data);
-    } catch (err) {
-      console.error('리뷰를 불러오는 중 오류가 발생했습니다:', err);
-    }
-  };
 
   if (loading) {
     return (
@@ -214,50 +216,60 @@ const ShoppingProductDetail = () => {
       {/* 리뷰 목록 */}
       <div className="space-y-4">
         {reviews.map((review) => (
-          <div key={review.id} className="border rounded-lg p-4">
+          <div key={review.reviewId} className="border rounded-lg p-4">
             <div className="flex justify-between items-start mb-2">
-              <div>
-                <div className="flex text-yellow-400 mb-1">
-                  {[1, 2, 3, 4, 5].map((star) => (
-                    <svg 
-                      key={star}
-                      className={`w-4 h-4 ${review.rating >= star ? 'text-yellow-400' : 'text-gray-300'}`}
-                      fill="currentColor"
-                      viewBox="0 0 20 20"
-                    >
-                      <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                    </svg>
-                  ))}
+              <div className="flex items-center gap-3">
+                {/* 사용자 프로필 이미지 */}
+                <img 
+                  src={review.user.image} 
+                  alt={review.user.nickName}
+                  className="w-10 h-10 rounded-full object-cover"
+                />
+                <div>
+                  <div className="flex text-yellow-400 mb-1">
+                    {[1, 2, 3, 4, 5].map((star) => (
+                      <svg 
+                        key={star}
+                        className={`w-4 h-4 ${review.star >= star ? 'text-yellow-400' : 'text-gray-300'}`}
+                        fill="currentColor"
+                        viewBox="0 0 20 20"
+                      >
+                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                      </svg>
+                    ))}
+                  </div>
+                  <span className="font-medium">{review.user.nickName}</span>
                 </div>
-                <span className="font-medium">{review.userName}</span>
               </div>
-              <span className="text-sm text-gray-500">
-                {new Date(review.createdAt).toLocaleDateString()}
-              </span>
             </div>
-            <p className="text-gray-700">{review.content}</p>
+            {/* 리뷰 제목 */}
+            <h4 className="font-medium mb-2">{review.title}</h4>
+            {/* 리뷰 내용 */}
+            <p className="text-gray-700 mb-3">{review.body}</p>
+            {/* 리뷰 이미지 */}
+            {review.image && (
+              <img 
+                src={review.image} 
+                alt="리뷰 이미지" 
+                className="w-full max-w-md rounded-lg"
+              />
+            )}
           </div>
         ))}
       </div>
 
-      {/* 리뷰 작성 버튼 (구매자만 보이도록) */}
+      {/* 리뷰 작성 버튼 - 경로 수정 */}
       <div className="text-center mt-6">
-        <button 
-          onClick={() => {
-            if (!isLoggedIn) {
-              alert('로그인이 필요한 서비스입니다.');
-              return;
-            }
-            // 리뷰 작성 페이지로 이동 또는 모달 표시
-          }}
-          className="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50"
+        <Link 
+          to={`/shopping/product/${id}/review`}
+          className="inline-block px-6 py-3 bg-pink-500 text-white rounded-md hover:bg-pink-600 transition-colors"
         >
           리뷰 작성하기
-        </button>
+        </Link>
       </div>
     </div>
   );
-
+  
   return (
     <div className="max-w-7xl mx-auto px-4 py-8">
       {/* 상품 기본 정보 영역 */}
@@ -273,10 +285,6 @@ const ShoppingProductDetail = () => {
             <button 
             onClick={(e) => {
               e.preventDefault();
-              if (!isLoggedIn) {
-                alert('로그인이 필요한 서비스입니다.');
-                return;
-              }
               // 찜하기 API 호출 로직
             }}
             className="absolute top-4 left-4 p-2 bg-white rounded-full shadow-md"
@@ -309,20 +317,20 @@ const ShoppingProductDetail = () => {
           {product.options && product.options.length > 0 && (
             <div className="mb-6">
               {product.options.map((option: ProductOption, idx: number) => (
-                <div key={idx} className="mb-4">
-                  <label className="block text-sm font-medium mb-2">{option.name}</label>
-                  <select 
-                    className="w-full p-2 border border-gray-300 rounded-md"
-                    value={selectedOptions[option.name] || ''}
-                    onChange={(e) => handleOptionChange(option.name, e.target.value)}
-                  >
-                    <option value="">선택해주세요</option>
+            <div key={idx} className="mb-4">
+              <label className="block text-sm font-medium mb-2">{option.name}</label>
+              <select 
+                className="w-full p-2 border border-gray-300 rounded-md"
+                value={selectedOptions[option.name] || ''}
+                onChange={(e) => handleOptionChange(option.name, e.target.value)}
+              >
+                <option value="">선택해주세요</option>
                     {option.choices.map((choice: string, choiceIdx: number) => (
-                      <option key={choiceIdx} value={choice}>{choice}</option>
-                    ))}
-                  </select>
-                </div>
-              ))}
+                  <option key={choiceIdx} value={choice}>{choice}</option>
+                ))}
+              </select>
+            </div>
+          ))}
             </div>
           )}
           
@@ -388,7 +396,7 @@ const ShoppingProductDetail = () => {
             {product.description}
         </div>
       </div>
-
+      
       {/* 리뷰 섹션 추가 */}
       <ReviewSection />
     </div>

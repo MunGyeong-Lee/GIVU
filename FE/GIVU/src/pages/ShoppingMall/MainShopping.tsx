@@ -20,17 +20,18 @@ interface Product {
   category: string;
 }
 
-// 카테고리 정의 (API에서 받아온 카테고리 종류에 맞게 정의)
+// 카테고리 정의 수정
 const CATEGORIES = [
   { id: 1, name: "전체", icon: "🏠", value: null },
   { id: 2, name: "전자기기", icon: "📱", value: "ELECTRONICS" },
-  { id: 3, name: "패션/의류", icon: "👕", value: "FASHION" },
+  { id: 3, name: "패션/의류", icon: "👕", value: "CLOTHING" },
   { id: 4, name: "식품/음료", icon: "🍎", value: "FOOD" },
-  { id: 5, name: "가정용품", icon: "🧹", value: "HOME" },
-  { id: 6, name: "건강/뷰티", icon: "💄", value: "BEAUTY" },
-  { id: 7, name: "스포츠/레저", icon: "⚽", value: "SPORTS" },
-  { id: 8, name: "도서/문구", icon: "📚", value: "BOOKS" },
-  { id: 9, name: "기타", icon: "🎁", value: "OTHER" }
+  { id: 5, name: "가정용품", icon: "🧹", value: "HOMEAPPLIANCES" },
+  { id: 6, name: "가구/인테리어", icon: "🪑", value: "FURNITURE" },
+  { id: 7, name: "건강/뷰티", icon: "💄", value: "BEAUTY" },
+  { id: 8, name: "스포츠/레저", icon: "⚽", value: "SPORTS" },
+  { id: 9, name: "도서/문구", icon: "📚", value: "BOOKS" },
+  { id: 10, name: "기타", icon: "🎁", value: "OTHER" }
 ];
 
 // 가격대 필터 인터페이스 추가
@@ -151,47 +152,64 @@ const MainShopping = () => {
   };
 
   // API에서 상품 목록 가져오기
-  const fetchProducts = async () => {
+  const fetchProducts = async (pageNum: number) => {
     try {
       setLoading(true);
       setError(null);
       
-      const response = await axios.get(`${API_BASE_URL}/products/list`);
-      const newProducts = response.data;
-      setProducts(newProducts);
-      
-      // 베스트 상품 설정 (별점 순 -> 가격 순)
-      const bestProductsList = [...newProducts].sort((a, b) => {
-        if (a.star !== b.star) {
-          return b.star - a.star; // 별점 높은 순
+      const response = await axios.get(
+        `${import.meta.env.VITE_BASE_URL}/products/list`,
+        {
+          params: {
+            page: pageNum,
+            size: 10,
+            sort: 'createdAt,desc'
+          }
         }
-        return b.price - a.price; // 별점이 같으면 가격 높은 순
-      }).slice(0, 8);
-      setBestProducts(bestProductsList);
-      
-      // 지금 뜨는 상품 설정 (24시간 내 조회수 기준)
-      const oneDayAgo = new Date();
-      oneDayAgo.setDate(oneDayAgo.getDate() - 1);
-      
-      const trendingProductsList = [...newProducts]
-        .filter(product => {
-          const productDate = new Date(product.createdAt);
-          return productDate >= oneDayAgo;
-        })
-        .sort((a, b) => b.views - a.views) // 조회수 높은 순
-        .slice(0, 5);
-      
-      setTrendingProducts(trendingProductsList);
-      
-      // 필터 적용
-      const filtered = applyFilters(newProducts);
-      setFilteredProducts(filtered);
-      
-      // 처음 보여줄 상품만 설정
-      setDisplayedProducts(filtered.slice(0, itemsPerPage));
-      setHasMore(filtered.length > itemsPerPage);
-      setPage(1);
-      
+      );
+
+      // API 응답 데이터 확인 및 안전한 처리
+      const productsData = response.data;
+      console.log('API 응답:', productsData); // 디버깅용
+
+      if (!productsData || !Array.isArray(productsData)) {
+        throw new Error('올바르지 않은 데이터 형식입니다.');
+      }
+
+      if (pageNum === 0) {
+        setProducts(productsData);
+        // 초기 필터링된 상품 목록 설정
+        setFilteredProducts(productsData);
+        // 초기 표시할 상품 목록 설정
+        setDisplayedProducts(productsData.slice(0, itemsPerPage));
+        
+        // 베스트 상품 설정 (별점 순 -> 가격 순)
+        const bestProductsList = [...productsData]
+          .sort((a, b) => {
+            if (a.star !== b.star) {
+              return b.star - a.star;
+            }
+            return b.price - a.price;
+          })
+          .slice(0, 8);
+        setBestProducts(bestProductsList);
+        
+        // 지금 뜨는 상품 설정 (조회수 기준)
+        const trendingProductsList = [...productsData]
+          .sort((a, b) => b.views - a.views)
+          .slice(0, 5);
+        setTrendingProducts(trendingProductsList);
+      } else {
+        // 추가 페이지 로드 시
+        const newProducts = [...products, ...productsData];
+        setProducts(newProducts);
+        setFilteredProducts(newProducts);
+        setDisplayedProducts(prev => [...prev, ...productsData.slice(0, itemsPerPage)]);
+      }
+
+      // 페이지네이션 처리 수정
+      setHasMore(productsData.length === 10); // 10개가 있으면 다음 페이지가 있다고 가정
+      setPage(pageNum);
     } catch (err) {
       console.error('상품을 불러오는 중 오류가 발생했습니다:', err);
       setError('상품을 불러오는데 실패했습니다. 다시 시도해주세요.');
@@ -200,13 +218,21 @@ const MainShopping = () => {
     }
   };
 
-  // 카테고리 선택 핸들러
+  // 카테고리 선택 핸들러 수정
   const handleCategorySelect = (categoryValue: string | null) => {
     setSelectedCategory(categoryValue);
     
     // 필터 적용
     if (products.length > 0) {
-      const filtered = applyFilters(products);
+      let filtered = [...products];
+      
+      if (categoryValue) {
+        filtered = products.filter(product => {
+          // API에서 받은 카테고리 값과 선택된 카테고리 값 비교
+          return product.category === categoryValue;
+        });
+      }
+      
       setFilteredProducts(filtered);
       setDisplayedProducts(filtered.slice(0, itemsPerPage));
       setHasMore(filtered.length > itemsPerPage);
@@ -304,7 +330,7 @@ const MainShopping = () => {
 
   // 첫 로드 시 상품 가져오기
   useEffect(() => {
-    fetchProducts();
+    fetchProducts(0);
   }, []);
   
   // 카테고리나 가격대 필터 변경 시 필터링된 상품 갱신
@@ -348,10 +374,11 @@ const MainShopping = () => {
     }
   };
 
-  // 카테고리 이름 가져오기 유틸 함수
+  // getCategoryName 함수 수정
   const getCategoryName = (categoryValue: string) => {
+    console.log('카테고리 값:', categoryValue); // 디버깅용
     const category = CATEGORIES.find(cat => cat.value === categoryValue);
-    return category ? category.name : categoryValue;
+    return category ? category.name : categoryValue; // 매칭되지 않는 경우 원래 값 반환
   };
   
   // 필터 상태 텍스트 가져오기
