@@ -1,5 +1,6 @@
 package com.backend.givu.model.service;
 
+import com.amazonaws.services.kms.model.NotFoundException;
 import com.backend.givu.model.entity.Product;
 import com.backend.givu.model.entity.ProductReview;
 import com.backend.givu.model.entity.User;
@@ -15,6 +16,7 @@ import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.nio.file.AccessDeniedException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -62,4 +64,34 @@ public class ProductService {
         return ProductReview.toDTO(savedReview);
     }
 
+    public ProductReviewDTO updateProductReview(Long userId, int reviewId, ProductReviewCreateDTO dto) throws AccessDeniedException {
+        ProductReview review = productReviewRepository.findById(reviewId)
+                .orElseThrow(() -> new NotFoundException("리뷰를 찾을 수 없습니다."));
+
+        // 본인 리뷰인지 검증
+        if (!review.getUser().getId().equals(userId)) {
+            throw new AccessDeniedException("리뷰 수정 권한이 없습니다.");
+        }
+
+        review.setTitle(dto.getTitle());
+        review.setBody(dto.getBody());
+        review.setStar(dto.getStar());
+
+        if (dto.getImage() != null) {
+            review.setImage(dto.getImage());
+        }
+
+        return ProductReview.toDTO(productReviewRepository.save(review));
+    }
+
+    public void deleteReview(long userId, int reviewId) throws AccessDeniedException {
+        ProductReview review = productReviewRepository.findById(reviewId)
+                .orElseThrow(() -> new NotFoundException("리뷰를 찾을 수 없습니다."));
+        // 본인 리뷰인지 검증
+        if (!review.getUser().getId().equals(userId)) {
+            throw new AccessDeniedException("리뷰 삭제 권한이 없습니다.");
+        }
+
+        productReviewRepository.deleteById(reviewId);
+    }
 }
