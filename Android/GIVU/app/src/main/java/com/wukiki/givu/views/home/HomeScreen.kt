@@ -1,5 +1,6 @@
 package com.wukiki.givu.views.home
 
+import android.widget.Toast
 import androidx.compose.foundation.border
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Column
@@ -15,12 +16,14 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -37,11 +40,29 @@ import com.wukiki.givu.views.home.component.FundingAllPager
 import com.wukiki.givu.views.home.component.HomeAppBarPager
 import com.wukiki.givu.views.home.component.PopularFundingListPager
 import com.wukiki.givu.views.home.component.SearchBarItem
+import com.wukiki.givu.views.home.viewmodel.HomeUiEvent
 import com.wukiki.givu.views.home.viewmodel.HomeViewModel
 
 @Composable
-fun HomeScreen(homeViewModel: HomeViewModel = hiltViewModel(), navController: NavController) {
+fun HomeScreen(
+    homeViewModel: HomeViewModel = hiltViewModel(),
+    navController: NavController
+) {
+    val context = LocalContext.current
     val user by homeViewModel.user.collectAsState()
+    val homeUiEvent = homeViewModel.homeUiEvent
+
+    LaunchedEffect(Unit) {
+        homeUiEvent.collect { event ->
+            when (event) {
+                is HomeUiEvent.AutoLoginFail -> {
+                    Toast.makeText(context, "자동 로그인에 실패하였습니다.", Toast.LENGTH_SHORT).show()
+                }
+
+                else -> {}
+            }
+        }
+    }
 
     val sampleFundings = listOf(
         Funding(
