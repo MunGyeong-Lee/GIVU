@@ -29,7 +29,7 @@ import java.util.Optional;
 
 @Tag(name = "User", description = "사용자 관련 API")
 @RestController
-@RequestMapping("/api/users")
+@RequestMapping("/users")
 @RequiredArgsConstructor
 @Slf4j
 public class UserController {
