@@ -52,21 +52,6 @@ class AuthViewModel @Inject constructor(
             if (error != null) {
                 Timber.e("KakaoLogin", "사용자 정보 가져오기 실패", error)
             } else if (user != null) {
-//                _user.value = User(
-//                    id = user.id.toString(),
-//                    kakaoid = user.id.toString(),
-//                    nickname = user.kakaoAccount?.profile?.nickname ?: "Unknown",
-//                    email = user.kakaoAccount?.email ?: "No Email",
-//                    birth = user.kakaoAccount?.birthyear ?: "",
-//                    profileImage = user.kakaoAccount?.profile?.profileImageUrl ?: "",
-//                    address = "",
-//                    gender = user.kakaoAccount?.gender?.name ?: "Unknown",
-//                    ageRange = user.kakaoAccount?.ageRange?.name ?: "Unknown",
-//                    balance = "0",
-//                    createdAt = "",
-//                    updatedAt = ""
-//                )
-
                 sendKakaoUserInfo(kakaoAccessToken)
             }
         }
@@ -79,7 +64,6 @@ class AuthViewModel @Inject constructor(
 
             when (response.status) {
                 ApiStatus.SUCCESS -> {
-                    Timber.d("Jwt Token: ${response.data?.jwtToken ?: "Null"}")
                     saveJwt(response.data?.jwtToken)
                 }
 
@@ -96,8 +80,6 @@ class AuthViewModel @Inject constructor(
         viewModelScope.launch {
             getAuthUseCase.setJwt(jwtToken)
             val response = getAuthUseCase.fetchUserInfo()
-
-            Timber.d("getUserInfo(): ${response.status}")
 
             when (response.status) {
                 ApiStatus.SUCCESS -> {
