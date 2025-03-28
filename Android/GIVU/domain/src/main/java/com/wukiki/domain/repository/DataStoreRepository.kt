@@ -5,6 +5,10 @@ import kotlinx.coroutines.flow.Flow
 
 interface DataStoreRepository {
 
+    suspend fun setJwt(jwt: String)
+
+    fun getJwt(): Flow<String?>
+
     suspend fun setUserId(id: String)
 
     fun getUserId(): Flow<String?>

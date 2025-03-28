@@ -35,6 +35,24 @@ class DataStoreRepositoryImpl @Inject constructor(
             preferences[USER_ID]
         }
 
+    override suspend fun setJwt(jwt: String) {
+        dataStore.edit { preferences ->
+            preferences[JWT_TOKEN] = jwt
+        }
+    }
+
+    override fun getJwt(): Flow<String?> =
+        dataStore.data.catch {
+            if (it is IOException) {
+                it.printStackTrace()
+                emit(emptyPreferences())
+            } else {
+                throw it
+            }
+        }.map { preferences ->
+            preferences[JWT_TOKEN]
+        }
+
     override suspend fun setUserInfo(userInfo: User) {
         dataStore.edit { preferences ->
             preferences[USER_ID] = userInfo.id
@@ -98,12 +116,25 @@ class DataStoreRepositoryImpl @Inject constructor(
 
     override suspend fun logout() {
         dataStore.edit { preferences ->
+            preferences.remove(JWT_TOKEN)
             preferences.remove(USER_ID)
+            preferences.remove(KAKAO_ID)
+            preferences.remove(NICKNAME)
+            preferences.remove(USER_EMAIL)
+            preferences.remove(BIRTH)
+            preferences.remove(PROFILE_IMAGE)
+            preferences.remove(ADDRESS)
+            preferences.remove(GENDER)
+            preferences.remove(AGE_RANGE)
+            preferences.remove(BALANCE)
+            preferences.remove(CREATED_AT)
+            preferences.remove(UPDATED_AT)
         }
     }
 
     companion object {
 
+        private val JWT_TOKEN = stringPreferencesKey("jwt_token")
         private val USER_ID = stringPreferencesKey("user_id")
         private val KAKAO_ID = stringPreferencesKey("kakao_id")
         private val NICKNAME = stringPreferencesKey("nickname")
