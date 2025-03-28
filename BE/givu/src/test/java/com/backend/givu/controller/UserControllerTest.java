@@ -19,6 +19,7 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.HttpHeaders;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
 import static org.mockito.ArgumentMatchers.anyString;
@@ -37,7 +38,7 @@ import java.util.Optional;
 
 @SpringBootTest
 @AutoConfigureMockMvc
-
+@ActiveProfiles("test")
 public class UserControllerTest {
 
     @Autowired
