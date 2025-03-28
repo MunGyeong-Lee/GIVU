@@ -1,10 +1,15 @@
 package com.wukiki.data.repository.auth
 
+import com.wukiki.data.entity.KakaoUserEntity
+import com.wukiki.data.entity.NewTokenEntity
 import com.wukiki.data.entity.UserEntity
-import okhttp3.RequestBody
 import retrofit2.Response
 
 interface AuthRemoteDataSource {
 
-    suspend fun loginWithKakao(accessToken: String, body: RequestBody): Response<UserEntity>
+    suspend fun loginWithKakao(accessToken: String): Response<KakaoUserEntity>
+
+    suspend fun getUserInfo(): Response<UserEntity>
+
+    suspend fun getNewToken(): Response<NewTokenEntity>
 }
