@@ -1,5 +1,6 @@
 import React, { useState, useRef, MutableRefObject } from "react";
 import { Link } from "react-router-dom";
+import axios from "axios";
 
 // 임시 데이터 - 나중에 API에서 가져오도록 수정 예정
 const USER_DATA = {
@@ -107,6 +108,138 @@ type Funding = {
 interface FundingProps {
   funding: Funding;
 }
+
+// 거래 타입 정의
+type TransactionType = 'deposit' | 'withdrawal';
+
+// 거래 인터페이스 정의
+interface Transaction {
+  transactionBalance: number;
+  accountNo: string;
+}
+
+// 모달 컴포넌트 추가
+const TransactionModal: React.FC<{
+  isOpen: boolean;
+  onClose: () => void;
+  type: TransactionType;
+}> = ({ isOpen, onClose, type }) => {
+  const [amount, setAmount] = useState<string>('');
+  const [accountNo, setAccountNo] = useState<string>('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError(null);
+    setLoading(true);
+
+    try {
+      // 입력값 검증
+      if (!amount || !accountNo) {
+        throw new Error('모든 필드를 입력해주세요.');
+      }
+
+      if (accountNo.length !== 16) {
+        throw new Error('올바른 계좌번호를 입력해주세요. (16자리)');
+      }
+
+      const transaction: Transaction = {
+        transactionBalance: Number(amount),
+        accountNo: accountNo
+      };
+
+      const response = await axios.post(
+        `${import.meta.env.VITE_BASE_URL}/api/transaction/${type}`,
+        transaction
+      );
+
+      if (response.data === true) {
+        alert(type === 'deposit' ? '충전이 완료되었습니다.' : '출금이 완료되었습니다.');
+        onClose();
+      } else {
+        throw new Error('거래에 실패했습니다.');
+      }
+    } catch (err: any) {
+      setError(err.message || '거래 중 오류가 발생했습니다.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div className="bg-white rounded-2xl p-6 w-full max-w-md">
+        <h2 className="text-2xl font-bold mb-6 text-cusBlack">
+          {type === 'deposit' ? '충전하기' : '출금하기'}
+        </h2>
+        
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-cusBlack-light mb-1">
+              계좌번호
+            </label>
+            <input
+              type="text"
+              value={accountNo}
+              onChange={(e) => setAccountNo(e.target.value.replace(/[^0-9]/g, ''))}
+              maxLength={16}
+              placeholder="SSAFY 계좌번호 16자리"
+              className="w-full px-4 py-2 border border-cusGray rounded-lg focus:outline-none focus:ring-2 focus:ring-cusBlue"
+            />
+          </div>
+          
+          <div>
+            <label className="block text-sm font-medium text-cusBlack-light mb-1">
+              금액
+            </label>
+            <div className="relative">
+              <input
+                type="text"
+                value={amount}
+                onChange={(e) => setAmount(e.target.value.replace(/[^0-9]/g, ''))}
+                placeholder="금액을 입력하세요"
+                className="w-full px-4 py-2 border border-cusGray rounded-lg focus:outline-none focus:ring-2 focus:ring-cusBlue"
+              />
+              <span className="absolute right-4 top-1/2 transform -translate-y-1/2 text-cusBlack-light">
+                원
+              </span>
+            </div>
+          </div>
+
+          {error && (
+            <div className="text-cusRed text-sm py-2">
+              {error}
+            </div>
+          )}
+
+          <div className="flex gap-3 mt-6">
+            <button
+              type="button"
+              onClick={onClose}
+              className="flex-1 px-4 py-2 border border-cusGray rounded-lg text-cusBlack-light hover:bg-cusGray-light transition-colors"
+            >
+              취소
+            </button>
+            <button
+              type="submit"
+              disabled={loading}
+              className={`flex-1 px-4 py-2 rounded-lg text-white ${
+                loading 
+                  ? 'bg-cusBlue-light cursor-not-allowed' 
+                  : 'bg-cusBlue hover:bg-cusBlue-dark'
+              } transition-colors`}
+            >
+              {loading ? '처리중...' : type === 'deposit' ? '충전하기' : '출금하기'}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+};
 
 const MyPage = () => {
   const [activeTab, setActiveTab] = useState<TabType>("created");
@@ -490,6 +623,14 @@ const MyPage = () => {
     setCurrentPage(1);
   }, [activeTab]);
 
+  const [isTransactionModalOpen, setIsTransactionModalOpen] = useState(false);
+  const [transactionType, setTransactionType] = useState<TransactionType>('deposit');
+
+  const handleTransactionClick = (type: TransactionType) => {
+    setTransactionType(type);
+    setIsTransactionModalOpen(true);
+  };
+
   return (
     <div className="max-w-7xl mx-auto px-5 py-8 font-pretendard">
       {/* 상단 프로필 영역 */}
@@ -514,15 +655,18 @@ const MyPage = () => {
             <div className="flex flex-col md:flex-row md:justify-between md:items-center border-b border-cusGray pb-4 mb-4">
               <h1 className="text-2xl font-bold mb-3 md:mb-0 text-cusBlack">{USER_DATA.name}</h1>
               <div className="flex gap-3">
-                <Link to="/donations" className="px-5 py-2 border border-cusBlue rounded-full text-sm bg-btnLightBlue text-cusBlue hover:bg-btnLightBlue-hover hover:text-white transition-colors shadow-sm">
-                  총전
-                </Link>
-                <Link to="/account" className="px-5 py-2 border border-cusYellow rounded-full text-sm bg-btnYellow text-cusBlack hover:bg-btnYellow-hover transition-colors shadow-sm">
-                  내 계좌 송금
-                </Link>
-                <Link to="/settings" className="px-5 py-2 border border-cusPink rounded-full text-sm bg-btnPink text-cusBlack hover:bg-btnPink-hover hover:text-white transition-colors shadow-sm">
-                  결제 수단 관리
-                </Link>
+                <button
+                  onClick={() => handleTransactionClick('deposit')}
+                  className="px-5 py-2 border border-cusBlue rounded-full text-sm bg-btnLightBlue text-cusBlue hover:bg-btnLightBlue-hover hover:text-white transition-colors shadow-sm"
+                >
+                  충전하기
+                </button>
+                <button
+                  onClick={() => handleTransactionClick('withdrawal')}
+                  className="px-5 py-2 border border-cusYellow rounded-full text-sm bg-btnYellow text-cusBlack hover:bg-btnYellow-hover transition-colors shadow-sm"
+                >
+                  출금하기
+                </button>
               </div>
             </div>
             
@@ -592,6 +736,13 @@ const MyPage = () => {
         {/* 탭 컨텐츠 */}
         {renderTabContent()}
       </div>
+      
+      {/* 모달 추가 */}
+      <TransactionModal
+        isOpen={isTransactionModalOpen}
+        onClose={() => setIsTransactionModalOpen(false)}
+        type={transactionType}
+      />
     </div>
   );
 };

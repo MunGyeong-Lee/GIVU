@@ -61,6 +61,8 @@ const FundingDetailPage = () => {
 
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [selectedAmount, setSelectedAmount] = useState<number | null>(null);
+  const [customAmount, setCustomAmount] = useState<string>('');
+  const [isCustomInput, setIsCustomInput] = useState(false);
   const [showAllParticipants, setShowAllParticipants] = useState(false);
 
   // 컴포넌트가 마운트될 때 스크롤을 맨 위로 이동
@@ -81,9 +83,27 @@ const FundingDetailPage = () => {
     );
   };
 
-  // 금액 옵션 선택 함수
+  // 금액 옵션 선택 함수 수정
   const selectAmount = (amount: number) => {
-    setSelectedAmount(amount);
+    if (amount === 0) {
+      setIsCustomInput(true);
+      setSelectedAmount(null);
+    } else {
+      setIsCustomInput(false);
+      setSelectedAmount(amount);
+      setCustomAmount('');
+    }
+  };
+
+  // 직접 입력 금액 처리 함수
+  const handleCustomAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value.replace(/[^0-9]/g, '');
+    setCustomAmount(value);
+    if (value) {
+      setSelectedAmount(parseInt(value));
+    } else {
+      setSelectedAmount(null);
+    }
   };
 
   // 참여자 목록 토글 함수
@@ -134,7 +154,7 @@ const FundingDetailPage = () => {
         </div>
       </div>
 
-      {/* 펀딩 요약 정보 */}
+      {/* 펀딩 요약 정보 수정 */}
       <div className="border border-gray-200 rounded-lg p-6 mb-8">
         <div className="flex justify-between items-center mb-2">
           <h1 className="text-xl font-bold">{FUNDING_DATA.title}</h1>
@@ -156,17 +176,12 @@ const FundingDetailPage = () => {
         </div>
 
         {/* 진행 바 */}
-        <div className="w-full bg-gray-200 rounded-full h-2.5 mb-6">
+        <div className="w-full bg-gray-200 rounded-full h-2.5">
           <div
             className="bg-black h-2.5 rounded-full"
             style={{ width: `${FUNDING_DATA.percentage}%` }}
           ></div>
         </div>
-
-        {/* 선물하기 버튼 */}
-        <button className="w-full py-3 bg-black text-white font-bold rounded-lg hover:bg-gray-800 transition">
-          선물하기
-        </button>
       </div>
 
       {/* 대상자 소개 섹션 */}
@@ -241,7 +256,7 @@ const FundingDetailPage = () => {
         </div>
       </section>
 
-      {/* 선물하기 섹션 */}
+      {/* 선물하기 섹션 수정 */}
       <section className="mb-10">
         <div className="bg-gray-50 rounded-lg p-6">
           <div className="text-center mb-6">
@@ -276,8 +291,11 @@ const FundingDetailPage = () => {
               <button
                 key={option.amount}
                 onClick={() => selectAmount(option.amount)}
-                className={`p-4 rounded-lg text-white flex flex-col items-start ${selectedAmount === option.amount ? 'bg-gray-800' : 'bg-black'
-                  }`}
+                className={`p-4 rounded-lg text-white flex flex-col items-start ${
+                  selectedAmount === option.amount && !isCustomInput 
+                    ? 'bg-gray-800' 
+                    : 'bg-black'
+                }`}
               >
                 <span className="font-bold text-lg mb-2">{option.label}</span>
                 <span className="text-sm">{option.description}</span>
@@ -285,8 +303,46 @@ const FundingDetailPage = () => {
             ))}
           </div>
 
-          <button className="w-full py-3 bg-black text-white font-bold rounded-lg hover:bg-gray-800 transition">
-            선물하기
+          {/* 직접 입력 필드 추가 */}
+          {isCustomInput && (
+            <div className="mb-6">
+              <div className="bg-white rounded-lg p-4 border border-gray-200">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  금액을 직접 입력해주세요
+                </label>
+                <div className="relative">
+                  <input
+                    type="text"
+                    value={customAmount}
+                    onChange={handleCustomAmountChange}
+                    placeholder="금액을 입력하세요"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black"
+                  />
+                  <span className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-500">
+                    원
+                  </span>
+                </div>
+                {customAmount && (
+                  <p className="mt-2 text-sm text-gray-600">
+                    {parseInt(customAmount).toLocaleString()}원을 선물합니다
+                  </p>
+                )}
+              </div>
+            </div>
+          )}
+
+          <button 
+            className={`w-full py-3 text-white font-bold rounded-lg transition ${
+              (selectedAmount || (isCustomInput && customAmount)) 
+                ? 'bg-black hover:bg-gray-800' 
+                : 'bg-gray-400 cursor-not-allowed'
+            }`}
+            disabled={!selectedAmount && (!isCustomInput || !customAmount)}
+          >
+            {selectedAmount ? 
+              `${selectedAmount.toLocaleString()}원 선물하기` : 
+              '선물하기'
+            }
           </button>
         </div>
       </section>
