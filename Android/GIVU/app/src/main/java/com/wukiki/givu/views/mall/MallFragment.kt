@@ -3,24 +3,28 @@ package com.wukiki.givu.views.mall
 import android.os.Bundle
 import android.view.View
 import androidx.fragment.app.activityViewModels
+import androidx.navigation.fragment.findNavController
 import com.wukiki.givu.R
 import com.wukiki.givu.config.BaseFragment
 import com.wukiki.givu.databinding.FragmentMallBinding
 import com.wukiki.givu.views.MainViewModel
+import com.wukiki.givu.views.mall.viewmodel.MallViewModel
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
 class MallFragment : BaseFragment<FragmentMallBinding>(R.layout.fragment_mall) {
 
+    private val viewModel: MallViewModel by activityViewModels()
     private val mainViewModel: MainViewModel by activityViewModels()
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        binding.composeMall.setContent {
-            MallScreen()
-        }
+        binding.vm = viewModel
 
+        binding.composeMall.setContent {
+            MallScreen(navController = findNavController())
+        }
     }
 
     override fun onResume() {

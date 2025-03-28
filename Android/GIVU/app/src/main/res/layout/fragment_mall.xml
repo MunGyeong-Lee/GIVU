@@ -5,7 +5,9 @@
 
     <data>
 
-
+        <variable
+            name="vm"
+            type="com.wukiki.givu.views.mall.viewmodel.MallViewModel" />
 
     </data>
 
