@@ -4,36 +4,35 @@ spring:
   # redis
   data:
     redis:
-      host: localhost  #127.0.0.1
-      port: 6379
-      password: d107password
-#      host: redis       # Docker 컨테이너 이름
+      ## 로컬
+#      host: localhost  #127.0.0.1
 #      port: 6379
 #      password: d107password
+      ## EC2
       host: redis       # Docker 컨테이너 이름
       port: 6379
       password: d107password
 
   # postgres
   datasource:
+    ## 로컬
 #    url: jdbc:postgresql://localhost:5432/givudb
 #    username: postgres
 #    password: d107password
 #    driver-class-name: org.postgresql.Driver
+    ## EC2
     url: jdbc:postgresql://postgres:5432/givudb
-    username: postgres
+    username: d107
     password: d107password
     driver-class-name: org.postgresql.Driver
-#    url: jdbc:postgresql://postgres:5432/givudb
-#    username: postgres
-#    password: d107password
-#    driver-class-name: org.postgresql.Driver
+
+
 
 
 
   jpa:
     hibernate:
-      ddl-auto: create  # create, create-drop, validate ??? ??? ?? ??
+      ddl-auto: validate  # create, create-drop, validate ??? ??? ?? ??
     show-sql: true
     properties:
       hibernate:
@@ -41,7 +40,7 @@ spring:
     database-platform: org.hibernate.dialect.PostgreSQLDialect
 
 server:
-    port: 1115
+    port: 8080
 
 kakao:
   client-id: 08cd78d237da6ad8828d168ac223e313
@@ -77,3 +76,18 @@ cloud:
     s3:
       bucket: givuproject-images
 
+#springdoc:
+#  api-docs:
+#    path: /api-docs
+#  swagger-ui:
+#    path: /swagger-ui
+#    enabled: true
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui/index.html
+    tags-sorter: alpha
+    operations-sorter: alpha
+  default-consumes-media-type: application/json;charset=UTF-8
+  default-produces-media-type: application/json;charset=UTF-8
