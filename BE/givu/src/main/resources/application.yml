@@ -27,9 +27,6 @@ spring:
     driver-class-name: org.postgresql.Driver
 
 
-
-
-
   jpa:
     hibernate:
       ddl-auto: validate  # create, create-drop, validate ??? ??? ?? ??
@@ -41,6 +38,8 @@ spring:
 
 server:
     port: 8080
+    servlet:
+      context-path: /api
 
 kakao:
   client-id: 08cd78d237da6ad8828d168ac223e313
