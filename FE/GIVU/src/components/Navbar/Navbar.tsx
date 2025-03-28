@@ -13,7 +13,7 @@ function Navbar() {
   const [loading, setLoading] = useState(false);
   const { isAuthenticated, token, user } = useAppSelector(state => state.auth);
 
-  // 디버깅용 로그
+  // 디버깅용 로그!
   useEffect(() => {
     console.log('인증 상태:', isAuthenticated);
     console.log('토큰:', token);
