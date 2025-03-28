@@ -193,7 +193,7 @@ const TransactionModal: React.FC<{
           
           <div>
             <label className="block text-sm font-medium text-cusBlack-light mb-1">
-              금액
+              금액ㅋㅋㅋ
             </label>
             <div className="relative">
               <input
