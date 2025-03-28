@@ -16,14 +16,14 @@ spring:
 
   # postgres
   datasource:
-#    url: jdbc:postgresql://localhost:5432/givudb
-#    username: postgres
-#    password: d107password
-#    driver-class-name: org.postgresql.Driver
-    url: jdbc:postgresql://postgres:5432/givudb
+    url: jdbc:postgresql://localhost:5432/givudb
     username: postgres
     password: d107password
     driver-class-name: org.postgresql.Driver
+#    url: jdbc:postgresql://postgres:5432/givudb
+#    username: postgres
+#    password: d107password
+#    driver-class-name: org.postgresql.Driver
 #    url: jdbc:postgresql://postgres:5432/givudb
 #    username: postgres
 #    password: d107password
@@ -33,7 +33,7 @@ spring:
 
   jpa:
     hibernate:
-      ddl-auto: create  # create, create-drop, validate ??? ??? ?? ??
+      ddl-auto: validate  # create, create-drop, validate ??? ??? ?? ??
     show-sql: true
     properties:
       hibernate:
