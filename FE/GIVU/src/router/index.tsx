@@ -13,6 +13,7 @@ import { authRoutes } from './authRouter';
 import FundingCreate from "../pages/Funding/FundingCreate";
 import OrderPage from '../pages/ShoppingMall/OrderPage';
 import MyFriendPage from '../pages/MyFriend/MyFriendPage';
+import ShoppingReview from '../pages/ShoppingMall/ShoppingReview';
 // import NotFound from "../pages/NotFound/NotFound";
 
 const routes = [
@@ -61,6 +62,10 @@ const routes = [
       {
         path: "shopping/product/:id",
         element: <ShoppingProductDetail />,
+      },
+      {
+        path: "shopping/product/:id/review",
+        element: <ShoppingReview />,
       },
       {
         path: "shopping/order",
