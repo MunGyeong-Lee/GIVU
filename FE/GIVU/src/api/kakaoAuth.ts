@@ -120,50 +120,33 @@ export const sendAccessTokenToBackend = async (accessToken: string): Promise<voi
     console.log('API 요청 URL:', apiUrl);
     
     const response = await axios.post(
-      apiUrl, // 쿼리 파라미터로 전송
-      {}, // 빈 요청 본문
+      apiUrl,
+      {},
       {
-        headers: {
-          'Content-Type': 'application/json',
-        }
+        headers: { 'Content-Type': 'application/json' }
       }
     );
     
     console.log('백엔드 응답:', response.data);
     
-    // 백엔드에서 받은 응답에서 토큰 추출
-    // 응답 형식: { accessToken: "...", refreshToken: "..." }
+    // 백엔드에서 받은 토큰 추출
     const token = response.data.accessToken || response.data.token || accessToken;
     
-    console.log('저장할 토큰:', token.substring(0, 10) + '...');
-    
-    // Redux 스토어 업데이트를 위한 최소한의 사용자 정보
-    const userData = {
-      id: 'temp-id',  // 실제 ID는 사용자 정보 요청에서 받아옴
-      nickname: 'temp-nickname',
-      email: '',
-      profileImage: ''
-    };
-    
-    // Redux 스토어 업데이트
-    store.dispatch(loginSuccess({ token, user: userData }));
-    
-    // 로컬 스토리지에 토큰 저장
+    // 로컬 스토리지에 토큰만 저장 (Redux 상태 업데이트는 아직 하지 않음)
     localStorage.setItem('auth_token', token);
     
     // axios 기본 헤더에 토큰 설정
     axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
     
-    console.log('로그인 처리 완료');
-    
-    // 이 시점에서 사용자 정보를 가져오기
+    // 사용자 정보 가져오기
     try {
       const userInfo = await getUserInfoAfterLogin(token);
-      // 여기서 userInfo가 있다면 localStorage에 저장
+      
       if (userInfo) {
+        // 사용자 정보를 로컬 스토리지에 저장
         localStorage.setItem('user_info', JSON.stringify(userInfo));
         
-        // Redux 사용자 정보 업데이트 (필요하다면)
+        // Redux 상태를 한 번만 업데이트 (여기서만 dispatch)
         store.dispatch(loginSuccess({ 
           token, 
           user: {
@@ -173,10 +156,15 @@ export const sendAccessTokenToBackend = async (accessToken: string): Promise<voi
             profileImage: userInfo.profileImage
           }
         }));
+        
+        console.log('로그인 처리 완료');
+      } else {
+        // 사용자 정보를 가져오지 못했을 때의 처리
+        store.dispatch(loginFailure('사용자 정보를 가져오지 못했습니다.'));
       }
     } catch (userInfoError) {
       console.error('로그인 후 사용자 정보 조회 실패:', userInfoError);
-      // 사용자 정보 가져오기 실패해도 로그인 자체는 성공한 것으로 간주
+      store.dispatch(loginFailure('사용자 정보 조회 실패'));
     }
     
     return;
@@ -185,7 +173,6 @@ export const sendAccessTokenToBackend = async (accessToken: string): Promise<voi
     if (axios.isAxiosError(error)) {
       console.error('오류 상태 코드:', error.response?.status);
       console.error('오류 응답 데이터:', error.response?.data);
-      console.error('API 요청 구성:', error.config);
     }
     store.dispatch(loginFailure(error instanceof Error ? error.message : '로그인 중 오류가 발생했습니다'));
     throw error;
