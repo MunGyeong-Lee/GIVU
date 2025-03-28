@@ -1,13 +1,38 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 
-// 더미 데이터
-const REVIEW_DETAILS = {
+type ReviewType = '배송/포장' | '제품 품질' | '고객 서비스' | '전체';
+
+interface ReviewDetail {
+  id: number;
+  title: string;
+  author: string;
+  date: string;
+  views: number;
+  rating: number;
+  type: ReviewType;  // 후기 유형 추가
+  authorFundingCount: number;  // 작성자의 펀딩 참여 수 추가
+  content: string;
+  images: string[];
+  relatedFunding: {
+    id: number;
+    title: string;
+    amount: number;
+    target: number;
+    percentage: number;
+  };
+}
+
+// 더미 데이터 수정
+const REVIEW_DETAILS: ReviewDetail = {
   id: 1,
   title: "노란색이 된 도현이의 속옷을 사주세요 !!!",
   author: "정도현",
   date: "2025.03.10",
   views: 235,
+  rating: 4.5,  // 별점 추가
+  type: "제품 품질",  // 후기 유형 추가
+  authorFundingCount: 5,  // 펀딩 참여 수 추가
   content: `
     안녕하세요! 저는 이번에 GIVU에서 펀딩에 참여하여 멋진 선물을 받게 되었습니다.
     
@@ -30,12 +55,67 @@ const REVIEW_DETAILS = {
   }
 };
 
+// StarRating 컴포넌트 정의
+const StarRating = ({ rating }: { rating?: number }) => {
+  if (!rating) return null;
+
+  return (
+    <div className="flex items-center">
+      {/* ... StarRating 컴포넌트 내용 ... */}
+    </div>
+  );
+};
+
 function FundingReviewDetailPage() {
   const { id } = useParams<{ id: string }>();
-  
-  // 실제 구현에서는 id를 사용하여 API에서 데이터를 가져와야 함
-  const review = REVIEW_DETAILS;
-  
+  const [review, setReview] = useState<ReviewDetail | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  // API 호출 함수
+  const fetchReviewDetail = async (reviewId: string) => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      // 실제 API 연동 시 사용할 코드
+      // const response = await axios.get(`${import.meta.env.VITE_BASE_URL}/api/funding/reviews/${reviewId}`);
+      // setReview(response.data);
+      
+      // 임시로 더미 데이터 사용
+      setReview(REVIEW_DETAILS);
+    } catch (err) {
+      setError('후기를 불러오는데 실패했습니다. 다시 시도해주세요.');
+      console.error('Error fetching review:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (id) {
+      fetchReviewDetail(id);
+    }
+  }, [id]);
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center h-screen">
+        <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-rose-500"></div>
+      </div>
+    );
+  }
+
+  if (error || !review) {
+    return (
+      <div className="max-w-4xl mx-auto py-8 px-4">
+        <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-md">
+          {error || '후기를 찾을 수 없습니다.'}
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="max-w-4xl mx-auto py-8 px-4">
       {/* 뒤로가기 링크 */}
@@ -50,9 +130,30 @@ function FundingReviewDetailPage() {
       
       {/* 후기 제목 및 메타 정보 */}
       <div className="border-b border-gray-200 pb-4 mb-6">
-        <h1 className="text-2xl font-bold mb-2">{review.title}</h1>
-        <div className="text-sm text-gray-500">
-          작성자: <span className="text-gray-700">{review.author}</span> | {review.date} | 조회 {review.views}
+        <div className="flex items-center justify-between mb-2">
+          <h1 className="text-2xl font-bold">{review.title}</h1>
+          <StarRating rating={review.rating} />
+        </div>
+        <div className="flex items-center space-x-3 text-sm text-gray-500">
+          <span className="inline-flex items-center">
+            <svg className="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+              <path d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z"/>
+            </svg>
+            {review.author}
+          </span>
+          {/* 펀딩 참여 수 표시 */}
+          <span className="text-rose-500 font-medium">
+            {review.authorFundingCount}개의 펀딩 참여
+          </span>
+          <span>•</span>
+          <span>{review.date}</span>
+          <span>•</span>
+          <span>조회 {review.views}</span>
+          <span>•</span>
+          {/* 후기 유형 태그 */}
+          <span className="px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded-full">
+            {review.type}
+          </span>
         </div>
       </div>
       
