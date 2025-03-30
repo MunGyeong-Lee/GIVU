@@ -130,7 +130,7 @@ public class Funding {
     }
 
     // DTO에서 펀딩객체로 변환
-    public static Funding from (User user, FundingCreateDTO dto, String imageUrl){
+    public static Funding from (User user, FundingCreateDTO dto, List<String> imageUrls){
         Funding funding = Funding.builder()
                 .user(user)
                 .productId(dto.getProductId())
@@ -146,8 +146,14 @@ public class Funding {
                 .fundedAmount(0)
                 // 참여자 수 모금액 생성시간 수정시간
                 .build();
-        if(imageUrl != null && !imageUrl.isBlank()){
-            funding.addImage(imageUrl);
+
+        // 이미지 여러개 추가
+        if(imageUrls != null){
+            for(String url : imageUrls){
+                if(url != null && !url.isBlank()){
+                    funding.addImage(url);
+                }
+            }
         }
 
         return funding;
