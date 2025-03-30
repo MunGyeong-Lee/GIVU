@@ -58,15 +58,15 @@ public class FundingController {
         }
     }
 
-//
-//    @Operation(summary = "펀딩 리스트 조회", description = "전체 펀딩 리스트를 조회합니다.")
-//    @GetMapping(value = "/list")
-//    public ResponseEntity<List<FundingsDTO>> findAll(){
-//
-//        List<FundingsDTO> fundingList = fundingService.findAllFunding();
-//        return ResponseEntity.ok(fundingList);
-//    }
-//
+
+    @Operation(summary = "펀딩 리스트 조회", description = "전체 펀딩 리스트를 조회합니다.")
+    @GetMapping(value = "/list")
+    public ResponseEntity<List<FundingsDTO>> findAll(){
+
+        List<FundingsDTO> fundingList = fundingService.findAllFunding();
+        return ResponseEntity.ok(fundingList);
+    }
+
 
 
 
