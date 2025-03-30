@@ -28,6 +28,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.nio.file.AccessDeniedException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -141,6 +142,22 @@ public class FundingController {
         FundingsDTO updateFunding = fundingService.updateFunding(userId, fundingId, dto, imageUrls);
         return ResponseEntity.ok(updateFunding);
     }
+
+    @Operation(summary = "펀딩 삭제", description = "펀딩을 수정 합니다.")
+    @DeleteMapping(value = "/{fundingId}")
+    public ResponseEntity<Void> deleteFunding (
+            @AuthenticationPrincipal CustomUserDetail userDetail,
+            @PathVariable int fundingId,
+            HttpServletRequest request) throws AccessDeniedException {
+
+        // accessToken 유저 ID
+        Long userId = userDetail.getId();
+        log.info("펀딩 삭제 요청: userId={}, fundingId={}", userId, fundingId);
+
+        fundingService.deleteFunding(userId, fundingId);
+        return ResponseEntity.noContent().build(); //204 No Content
+    }
+
 
 
 
