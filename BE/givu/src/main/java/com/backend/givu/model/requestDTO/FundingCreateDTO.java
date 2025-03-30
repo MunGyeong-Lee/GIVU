@@ -15,6 +15,6 @@ public class FundingCreateDTO {
     private String description;
     private String category;
     private String categoryName;
-    private FundingsScope scope;
+    private String scope;
 
 }
