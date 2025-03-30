@@ -1,8 +1,11 @@
 package com.backend.givu.model.service;
 
 import com.backend.givu.model.entity.Funding;
+import com.backend.givu.model.entity.ProductReview;
+import com.backend.givu.model.entity.User;
 import com.backend.givu.model.repository.FundingRepository;
 import com.backend.givu.model.repository.UserRepository;
+import com.backend.givu.model.requestDTO.FundingCreateDTO;
 import com.backend.givu.model.responseDTO.FundingsDTO;
 import com.backend.givu.model.responseDTO.ProductsDTO;
 import jakarta.persistence.EntityNotFoundException;
@@ -11,6 +14,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.NoSuchElementException;
 
 
 @Service
@@ -53,25 +57,15 @@ public class FundingService {
     /**
      * 펀딩 생성
      */
-//    public void createFunding (Long userId, FundingCreateDTO fundingCreateDTO){
-//        User user = userRepository.findById(userId)
-//                .orElseThrow(()-> new NoSuchElementException("우저ID" + userId + "에 해당하는 유저가 없습니다."));
-//        Funding funding = Funding.builder()
-//                .user(user)
-//                .productId(fundingCreateDTO.getProductId())
-//                .body(fundingCreateDTO.getBody())
-//                .description(fundingCreateDTO.getDescription())
-//                .category(CategoryMapper.fromClient(fundingCreateDTO.getCategory()))
-//                .participantsNumber(0)
-//                .fundedAmount(0)
-//                .status()
-//                .scope()
-//                .image()
-//                .image2()
-//                .image3()
+    public FundingsDTO saveFunding (Long userId, FundingCreateDTO fundingDTO, String imageUrl){
 
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new EntityNotFoundException("유저를 찾을 수 없습니다."));
 
-//    }
+        Funding saveFunding = fundingRepository.save(Funding.from(user, fundingDTO, imageUrl));
+        return  Funding.toDTO(saveFunding);
+
+    }
 
 
 
