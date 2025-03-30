@@ -10,8 +10,9 @@ import lombok.*;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
+import org.hibernate.annotations.Type;
 import org.hibernate.type.SqlTypes;
-
+import com.vladmihalcea.hibernate.type.json.JsonBinaryType;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
@@ -62,20 +63,20 @@ public class Funding {
     @Column(name = "funded_amount")
     private Integer fundedAmount;
 
-    @Size(max = 255)
-    @Column(name = "image")
-    private String image;
+    @Type(JsonBinaryType.class)
+    @Column(columnDefinition = "jsonb")
+    private List<String> image;
 
-    @Size(max = 255)
-    @Column(name = "image2")
-    private String image2;
-
-    @Size(max = 255)
-    @Column(name = "image3")
-    private String image3;
+    public void addImage(String url) {
+        if (this.image == null) {
+            this.image = new ArrayList<>();
+        }
+        this.image.add(url);
+    }
 
     @Column(name = "created_at")
     private Instant createdAt;
+
 
     @OneToMany(mappedBy = "funding")
     private Set<Participant> participants = new LinkedHashSet<>();
@@ -110,4 +111,19 @@ public class Funding {
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     @Column(name = "status", columnDefinition = "funding_status")
     private FundingsStatus status;
+
+
+//    @PrePersist
+//    protected void onCreate(){
+//        Instant now = Instant.now() ;
+//        this.createdAt = now;
+//        this.updatedAt = now;
+//    }
+//
+//    @PreUpdate
+//    protected  void onUpdate(){
+//        this.updatedAt = Instant.now();
+//    }
+//
+
 }
