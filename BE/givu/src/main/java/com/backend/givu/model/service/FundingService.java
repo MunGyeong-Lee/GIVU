@@ -35,19 +35,18 @@ public class FundingService {
         fundingRepository.save(fundig);
     }
 
-//    /**
-//     * 펀딩 리스트 조회
-//     */
-//
-//    public List<FundingsDTO> findAllFunding(){
-//        List<Funding> fundingList = fundingRepository.findAll();
-//
-//        List<FundingsDTO> dtoList  = new ArrayList<>();
-//        for(Funding funding: fundingList){
-//            dtoList.add(new FundingsDTO(funding));
-//        }
-//        return dtoList;
-//    }
+    /**
+     * 펀딩 리스트 조회
+     */
+    public List<FundingsDTO> findAllFunding(){
+        List<Funding> fundingList = fundingRepository.findAll();
+
+        List<FundingsDTO> dtoList  = new ArrayList<>();
+        for(Funding funding: fundingList){
+            dtoList.add(new FundingsDTO(funding));
+        }
+        return dtoList;
+    }
 
 
 
