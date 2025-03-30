@@ -3,6 +3,10 @@ package com.backend.givu.model.entity;
 import com.backend.givu.model.Enum.FundingsCategory;
 import com.backend.givu.model.Enum.FundingsScope;
 import com.backend.givu.model.Enum.FundingsStatus;
+import com.backend.givu.model.requestDTO.FundingCreateDTO;
+import com.backend.givu.model.responseDTO.FundingsDTO;
+import com.backend.givu.util.mapper.CategoryMapper;
+import com.backend.givu.util.mapper.ScopeMapper;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -125,5 +129,32 @@ public class Funding {
         this.updatedAt = Instant.now();
     }
 
+    // DTO에서 펀딩객체로 변환
+    public static Funding from (User user, FundingCreateDTO dto, String imageUrl){
+        Funding funding = Funding.builder()
+                .user(user)
+                .productId(dto.getProductId())
+                .title(dto.getTitle())
+                .body(dto.getBody())
+                .description(dto.getDescription())
+                .category(CategoryMapper.fromClient(dto.getCategory())) // 한글 -> 영어로 변환
+                .categoryName(dto.getCategoryName())
+                .scope(ScopeMapper.fromClient(dto.getScope())) // 한글 -> 영어로 변환
+                .status(FundingsStatus.PENDING)
+                .image(new ArrayList<>())
+                .participantsNumber(0)
+                .fundedAmount(0)
+                // 참여자 수 모금액 생성시간 수정시간
+                .build();
+        if(imageUrl != null && !imageUrl.isBlank()){
+            funding.addImage(imageUrl);
+        }
+
+        return funding;
+    }
+
+    public static FundingsDTO toDTO(Funding funding){
+        return new FundingsDTO(funding);
+    }
 
 }
