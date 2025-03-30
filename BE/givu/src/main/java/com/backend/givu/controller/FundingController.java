@@ -127,6 +127,7 @@ public class FundingController {
         ObjectMapper objectMapper = new ObjectMapper();
         FundingUpdateDTO dto = objectMapper.readValue(data, FundingUpdateDTO.class);
         List<String> imageUrls = new ArrayList<>();
+
         // 이미지가 존재하면 업로드하고 URL 전달
         if(imageFiles != null && !imageFiles.isEmpty()){
             for(MultipartFile imageFile : imageFiles) {
@@ -139,8 +140,6 @@ public class FundingController {
 
         FundingsDTO updateFunding = fundingService.updateFunding(userId, fundingId, dto, imageUrls);
         return ResponseEntity.ok(updateFunding);
-
-
     }
 
 
