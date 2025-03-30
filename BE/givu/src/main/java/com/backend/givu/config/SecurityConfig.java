@@ -46,7 +46,7 @@ public class SecurityConfig {
                                 "/users/kakao",                 // 로그인, 회원가입
                                 "/users/newToken",              // 토큰 재발급
                                 "/images/**",
-                                "/fundinds/**",
+                                "/fundings/**",
                                 "/products/**"
                         ).permitAll()
                         .requestMatchers(
