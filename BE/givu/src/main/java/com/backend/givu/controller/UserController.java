@@ -26,6 +26,8 @@ import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -106,6 +108,21 @@ public class UserController {
         } catch (Exception e){
             return ResultDTO.of(HttpStatusCode.INTERNAL_SERVER_ERROR, "서버 에러", null);
         }
+    }
+
+
+    @Operation(summary = "JWT accessToken 수동발급", description = "인증 필요한 코드들 테스트하려면 여기서 accessToken 발급 받으시면 됩니다. userId 11번 거로 발급됨")
+    @GetMapping("/generate")
+    public ResponseEntity<Map<String, String>> generateTestToken() {
+        // ✅ userId = 11인 사용자 가져오기 (DB에 존재해야 함)
+        User user = userService.getUserById(11L); // 없을 경우 예외 처리 필요
+
+        // ✅ 토큰 생성
+        TokenDTO testToken = kakaoLoginService.createTokens(user, "test");
+
+        Map<String, String> response = new HashMap<>();
+        response.put("accessToken", testToken.getAccessToken());
+        return ResponseEntity.ok(response);
     }
 
 

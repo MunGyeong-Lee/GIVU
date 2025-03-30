@@ -5,6 +5,10 @@ import com.backend.givu.model.Enum.FundingsScope;
 import com.backend.givu.model.Enum.FundingsStatus;
 import com.backend.givu.model.entity.Funding;
 import com.backend.givu.util.DateTimeUtil;
+import com.backend.givu.util.mapper.CategoryMapper;
+import com.backend.givu.util.mapper.ScopeMapper;
+import com.backend.givu.util.mapper.StatusMapper;
+import jdk.jfr.Category;
 import lombok.*;
 
 import java.time.LocalDateTime;
@@ -22,12 +26,12 @@ public class FundingsDTO {
     private String title;
     private String body;
     private String description;
-    private FundingsCategory category;
+    private String category;
     private String categoryName;
-    private FundingsScope scope;
+    private String scope;
     private int participantsNumber;
     private int fundedAmount;
-    private FundingsStatus status;
+    private String status;
     private List<String> image;
     private LocalDateTime createdAt;
 
@@ -40,12 +44,12 @@ public class FundingsDTO {
         this.title = funding.getTitle();
         this.body = funding.getBody();
         this.description = funding.getDescription();
-        this.category = funding.getCategory();
+        this.category = CategoryMapper.toClient(funding.getCategory()); // 한글 이름으로 변환해서 넘김
         this.categoryName = funding.getCategoryName();
-        this.scope = funding.getScope();
+        this.scope = ScopeMapper.toClient(funding.getScope());          // 한글 이름으로 변환해서 넘김
         this.participantsNumber = funding.getParticipantsNumber();
         this.fundedAmount = funding.getFundedAmount();
-        this.status = funding.getStatus();
+        this.status = StatusMapper.toClient(funding.getStatus());     // 한글 이름으로 변환해서 넘김
         this.image = funding.getImage();
         this.createdAt = DateTimeUtil.toLocalDateTime(funding.getCreatedAt());
         this.updatedAt = DateTimeUtil.toLocalDateTime(funding.getUpdatedAt());
