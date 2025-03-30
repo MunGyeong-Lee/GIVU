@@ -47,7 +47,6 @@ public class SecurityConfig {
                                 "/users/newToken",              // 토큰 재발급
                                 "/users/generate",              // jwt 수동 발급
                                 "/images/**",
-                                "/fundings/**",
                                 "/products/**"
                         ).permitAll()
                         .requestMatchers(

@@ -44,12 +44,12 @@ public class FundingsDTO {
         this.title = funding.getTitle();
         this.body = funding.getBody();
         this.description = funding.getDescription();
-        this.category = CategoryMapper.toClient(funding.getCategory()); // 한글 이름으로 변환해서 넘김
+        this.category = CategoryMapper.toClient(funding.getCategory()); // 영어 -> 한글
         this.categoryName = funding.getCategoryName();
-        this.scope = ScopeMapper.toClient(funding.getScope());          // 한글 이름으로 변환해서 넘김
+        this.scope = ScopeMapper.toClient(funding.getScope());          // 영어 -> 한글
         this.participantsNumber = funding.getParticipantsNumber();
         this.fundedAmount = funding.getFundedAmount();
-        this.status = StatusMapper.toClient(funding.getStatus());     // 한글 이름으로 변환해서 넘김
+        this.status = StatusMapper.toClient(funding.getStatus());       // 영어 -> 한글
         this.image = funding.getImage();
         this.createdAt = DateTimeUtil.toLocalDateTime(funding.getCreatedAt());
         this.updatedAt = DateTimeUtil.toLocalDateTime(funding.getUpdatedAt());
