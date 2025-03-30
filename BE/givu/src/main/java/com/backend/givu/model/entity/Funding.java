@@ -113,17 +113,17 @@ public class Funding {
     private FundingsStatus status;
 
 
-//    @PrePersist
-//    protected void onCreate(){
-//        Instant now = Instant.now() ;
-//        this.createdAt = now;
-//        this.updatedAt = now;
-//    }
-//
-//    @PreUpdate
-//    protected  void onUpdate(){
-//        this.updatedAt = Instant.now();
-//    }
-//
+    @PrePersist
+    protected void onCreate(){
+        Instant now = Instant.now() ;
+        this.createdAt = now;
+        this.updatedAt = now;
+    }
+
+    @PreUpdate
+    protected  void onUpdate(){
+        this.updatedAt = Instant.now();
+    }
+
 
 }
