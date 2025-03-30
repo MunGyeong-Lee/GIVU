@@ -59,7 +59,6 @@ public class FundingService {
         return dtoList;
     }
 
-
     /**
      * 펀딩 생성
      */
@@ -116,6 +115,28 @@ public class FundingService {
         }
 
         return Funding.toDTO(fundingRepository.save(funding));
+    }
+
+    /**
+     * 펀딩 삭제
+     */
+    public void deleteFunding (Long userId, int fundingId) throws AccessDeniedException{
+        // 존재하는 펀딩인지 확인
+        Funding funding = fundingRepository.findById(fundingId)
+                .orElseThrow(() -> new EntityNotFoundException("펀딩을 찾을 수 없습니다,"));
+
+        // 본인 펀딩인지 확인
+        if(!funding.getUser().getId().equals(userId)){
+            log.warn("펀딩 삭제 권한 없음: 요청자={}, 작성자={}", userId, funding.getUser().getId());
+            throw new AccessDeniedException("펀딩 삭제 권한이 없습니다.");
+        }
+
+        // S3에서 이미지 URL 삭제
+        if(funding.getImage() != null && !funding.getImage().isEmpty()){
+            s3UploadService.deleteFile(funding.getImage());
+        }
+
+        fundingRepository.deleteById(fundingId);
     }
 
 
