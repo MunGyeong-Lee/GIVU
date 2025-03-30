@@ -45,6 +45,7 @@ public class SecurityConfig {
                                 "/error",                       // 에러 핸들링 경로
                                 "/users/kakao",                 // 로그인, 회원가입
                                 "/users/newToken",              // 토큰 재발급
+                                "/users/generate",              // jwt 수동 발급
                                 "/images/**",
                                 "/fundings/**",
                                 "/products/**"
@@ -55,7 +56,8 @@ public class SecurityConfig {
                                 "/users/payment",       // 유저 거래 내역 조회
                                 "/users",               // 로그아웃, 회원 탈퇴
                                 "/users/test",        // 테스트
-                                "/products-review/**"
+                                "/products-review/**",
+                                "/fundings/**"
                         ).authenticated())
 
                 /**

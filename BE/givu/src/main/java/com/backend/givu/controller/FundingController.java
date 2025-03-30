@@ -1,19 +1,28 @@
 package com.backend.givu.controller;
 
+import com.backend.givu.model.entity.CustomUserDetail;
 import com.backend.givu.model.entity.Funding;
 import com.backend.givu.model.entity.Product;
+import com.backend.givu.model.repository.ProductRepository;
+import com.backend.givu.model.requestDTO.FundingCreateDTO;
 import com.backend.givu.model.responseDTO.FundingsDTO;
 import com.backend.givu.model.responseDTO.ImageUploadResponseDTO;
 import com.backend.givu.model.service.FundingService;
 import com.backend.givu.model.service.S3UploadService;
+import com.backend.givu.util.JwtUtil;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -26,9 +35,11 @@ import java.util.List;
 @RequiredArgsConstructor
 @Slf4j
 public class FundingController {
+    private final ProductRepository productRepository;
 
     private final S3UploadService s3UploadService;
     private final FundingService fundingService;
+    private final JwtUtil jwtUtil;
 
 
     @Operation(summary = "펀딩 이미지 업로드", description = "파일과 fundingId를 받아 이미지를 업로드합니다.")
@@ -66,6 +77,35 @@ public class FundingController {
         List<FundingsDTO> fundingList = fundingService.findAllFunding();
         return ResponseEntity.ok(fundingList);
     }
+
+    @Operation(summary = "펀딩 생성", description = "펀딩을 생성 합니다.")
+    @PostMapping(value = "",  consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<FundingsDTO> saveFunding(
+            @AuthenticationPrincipal CustomUserDetail userDetail,
+            @RequestPart("data") String data,
+            @RequestPart(value = "image", required = false) MultipartFile imageFile,
+            HttpServletRequest request) throws IOException{
+
+        Long userId = userDetail.getId();
+
+        // Json 문자열 -> DTO 변환
+        ObjectMapper objectMapper = new ObjectMapper();
+        FundingCreateDTO dto = objectMapper.readValue(data, FundingCreateDTO.class);
+
+        // 이미지가 존재하면 업로드하고 URL 전달
+        if(imageFile != null && !imageFile.isEmpty()){
+            String imageUrl = s3UploadService.uploadFile(imageFile, "fundings");
+            FundingsDTO saveFunding = fundingService.saveFunding(userId, dto, imageUrl);
+            return ResponseEntity.ok(saveFunding);
+        }
+
+        // 이미지가 없으면 imageUrl 없이 저장
+        FundingsDTO saveFunding = fundingService.saveFunding(userId, dto, null);
+        return ResponseEntity.ok(saveFunding);
+
+
+    }
+
 
 
 
