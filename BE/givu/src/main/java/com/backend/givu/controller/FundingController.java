@@ -5,6 +5,7 @@ import com.backend.givu.model.entity.Funding;
 import com.backend.givu.model.entity.Product;
 import com.backend.givu.model.repository.ProductRepository;
 import com.backend.givu.model.requestDTO.FundingCreateDTO;
+import com.backend.givu.model.requestDTO.FundingUpdateDTO;
 import com.backend.givu.model.responseDTO.FundingsDTO;
 import com.backend.givu.model.responseDTO.ImageUploadResponseDTO;
 import com.backend.givu.model.service.FundingService;
@@ -27,6 +28,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 @Tag(name = "Funding", description = "펀딩관련 API")
@@ -83,25 +85,60 @@ public class FundingController {
     public ResponseEntity<FundingsDTO> saveFunding(
             @AuthenticationPrincipal CustomUserDetail userDetail,
             @RequestPart("data") String data,
-            @RequestPart(value = "image", required = false) MultipartFile imageFile,
+            @RequestPart(value = "image", required = false) List<MultipartFile> imageFiles,
             HttpServletRequest request) throws IOException{
 
+        // accessToken 유저 ID
         Long userId = userDetail.getId();
 
         // Json 문자열 -> DTO 변환
         ObjectMapper objectMapper = new ObjectMapper();
         FundingCreateDTO dto = objectMapper.readValue(data, FundingCreateDTO.class);
 
+        List<String> imageUrls  = new ArrayList<>();
         // 이미지가 존재하면 업로드하고 URL 전달
-        if(imageFile != null && !imageFile.isEmpty()){
-            String imageUrl = s3UploadService.uploadFile(imageFile, "fundings");
-            FundingsDTO saveFunding = fundingService.saveFunding(userId, dto, imageUrl);
-            return ResponseEntity.ok(saveFunding);
+        if(imageFiles != null && !imageFiles.isEmpty()){
+            for(MultipartFile file : imageFiles){
+                if(!file.isEmpty()){
+                    String imageUrl = s3UploadService.uploadFile(file, "fundings");
+                    imageUrls.add(imageUrl);
+                }
+            }
         }
 
-        // 이미지가 없으면 imageUrl 없이 저장
-        FundingsDTO saveFunding = fundingService.saveFunding(userId, dto, null);
+        FundingsDTO saveFunding = fundingService.saveFunding(userId, dto, imageUrls);
         return ResponseEntity.ok(saveFunding);
+    }
+
+
+    @Operation(summary = "펀딩 수정", description = "펀딩을 수정 합니다.")
+    @PostMapping(value = "/{fundingId}",  consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<FundingsDTO> updateFunding (
+            @AuthenticationPrincipal CustomUserDetail userDetail,
+            @PathVariable int fundingId,
+            @RequestPart("data") String data,
+            @RequestPart(value = "image", required = false) List<MultipartFile> imageFiles,
+            HttpServletRequest request) throws IOException {
+
+        // accessToken 유저 ID
+        Long userId = userDetail.getId();
+
+        //Json 문자열 ->DTO 변환
+        ObjectMapper objectMapper = new ObjectMapper();
+        FundingUpdateDTO dto = objectMapper.readValue(data, FundingUpdateDTO.class);
+        List<String> imageUrls = new ArrayList<>();
+        // 이미지가 존재하면 업로드하고 URL 전달
+        if(imageFiles != null && !imageFiles.isEmpty()){
+            for(MultipartFile imageFile : imageFiles) {
+                if (imageFile != null && !imageFile.isEmpty()) {
+                    String imageUrl = s3UploadService.uploadFile(imageFile, "fundings");
+                    imageUrls.add(imageUrl);
+                }
+            }
+        }
+
+        FundingsDTO updateFunding = fundingService.updateFunding(userId, fundingId, dto, imageUrls);
+        return ResponseEntity.ok(updateFunding);
 
 
     }
