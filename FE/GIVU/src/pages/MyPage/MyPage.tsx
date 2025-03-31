@@ -120,10 +120,11 @@ interface Transaction {
 
 // 기존 타입 정의들 위에 추가
 interface UserData {
-  userId: string;
+  kakaoId: number;
   nickname: string;
+  email: string;
   profileImage: string;
-  balance: number;
+  balance?: number; // 잔액은 선택적 필드로 변경
 }
 
 // 모달 컴포넌트 추가
@@ -644,18 +645,18 @@ const MyPage = () => {
 
   // 컴포넌트 마운트 시 로그인 체크 및 사용자 정보 가져오기
   useEffect(() => {
-    const userInfo = localStorage.getItem('user_info');
+    const userString = localStorage.getItem('user');
     const token = localStorage.getItem('auth_token');
 
-    if (!userInfo || !token) {
+    if (!userString || !token) {
       alert('로그인이 필요한 서비스입니다.');
       navigate('/login');
       return;
     }
 
     try {
-      const parsedUserInfo = JSON.parse(userInfo);
-      setUserData(parsedUserInfo);
+      const parsedUser = JSON.parse(userString);
+      setUserData(parsedUser);
     } catch (error) {
       console.error('사용자 정보 파싱 오류:', error);
       navigate('/login');
@@ -686,7 +687,9 @@ const MyPage = () => {
             <div className="flex-1 w-full">
               <div className="bg-cusLightBlue-lighter rounded-2xl p-6 mb-6 shadow-md">
                 <div className="flex flex-col md:flex-row md:justify-between md:items-center border-b border-cusGray pb-4 mb-4">
-                  <h1 className="text-2xl font-bold mb-3 md:mb-0 text-cusBlack">{userData.nickname}</h1>
+                  <div className="mr-auto md:ml-4">
+                    <h1 className="text-2xl font-bold text-cusBlack">{userData.nickname}</h1>
+                  </div>
                   <div className="flex gap-3">
                     <button
                       onClick={() => handleTransactionClick('deposit')}
@@ -709,7 +712,7 @@ const MyPage = () => {
                       <span className="text-yellow-500 text-2xl mr-2">👑</span>
                       <h3 className="text-lg font-medium text-cusBlue">내 기뷰페이</h3>
                     </div>
-                    <p className="text-3xl font-bold text-cusBlack">{userData.balance.toLocaleString()}</p>
+                    <p className="text-3xl font-bold text-cusBlack">{userData.balance?.toLocaleString()}</p>
                   </div>
                 </div>
               </div>
