@@ -46,11 +46,15 @@ button {
   cursor: pointer;
   transition: border-color 0.25s;
 }
-button:hover {
+
+/* 기본 버튼 호버 스타일 */
+button:not([class*="bg-"]):hover {
   border-color: #646cff;
 }
-button:focus,
-button:focus-visible {
+
+/* 기본 버튼 포커스 스타일 */
+button:not([class*="focus:"]):focus,
+button:not([class*="focus:"]):focus-visible {
   outline: 4px auto -webkit-focus-ring-color;
 }
 
@@ -65,4 +69,31 @@ button:focus-visible {
   button {
     background-color: #f9f9f9;
   }
+}
+
+/* 커스텀 유틸리티 클래스 */
+@layer utilities {
+  .text-primary-color {
+    color: var(--color-primary);
+  }
+  .bg-primary-color {
+    background-color: var(--color-primary);
+  }
+  .border-primary-color {
+    border-color: var(--color-primary);
+  }
+  .hover\:text-primary-color:hover {
+    color: var(--color-primary);
+  }
+}
+
+/* 카카오 버튼 스타일 */
+.kakao-btn {
+  background-color: #FEE500 !important;
+  color: #191919 !important;
+  border: none !important;
+}
+
+.kakao-btn:hover {
+  background-color: #FEE100 !important;
 }

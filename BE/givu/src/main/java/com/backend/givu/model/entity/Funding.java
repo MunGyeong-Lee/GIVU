@@ -3,6 +3,10 @@ package com.backend.givu.model.entity;
 import com.backend.givu.model.Enum.FundingsCategory;
 import com.backend.givu.model.Enum.FundingsScope;
 import com.backend.givu.model.Enum.FundingsStatus;
+import com.backend.givu.model.requestDTO.FundingCreateDTO;
+import com.backend.givu.model.responseDTO.FundingsDTO;
+import com.backend.givu.util.mapper.CategoryMapper;
+import com.backend.givu.util.mapper.ScopeMapper;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -10,8 +14,9 @@ import lombok.*;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
+import org.hibernate.annotations.Type;
 import org.hibernate.type.SqlTypes;
-
+import com.vladmihalcea.hibernate.type.json.JsonBinaryType;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
@@ -37,8 +42,9 @@ public class Funding {
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
-    @Column(name = "product_id")
-    private Integer productId;
+    @ManyToOne
+    @JoinColumn(name = "product_id", nullable = false)
+    private Product product;
 
     @Size(max = 20)
     @NotNull
@@ -62,20 +68,20 @@ public class Funding {
     @Column(name = "funded_amount")
     private Integer fundedAmount;
 
-    @Size(max = 255)
-    @Column(name = "image")
-    private String image;
+    @Type(JsonBinaryType.class)
+    @Column(columnDefinition = "jsonb")
+    private List<String> image;
 
-    @Size(max = 255)
-    @Column(name = "image2")
-    private String image2;
-
-    @Size(max = 255)
-    @Column(name = "image3")
-    private String image3;
+    public void addImage(String url) {
+        if (this.image == null) {
+            this.image = new ArrayList<>();
+        }
+        this.image.add(url);
+    }
 
     @Column(name = "created_at")
     private Instant createdAt;
+
 
     @OneToMany(mappedBy = "funding")
     private Set<Participant> participants = new LinkedHashSet<>();
@@ -110,4 +116,52 @@ public class Funding {
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     @Column(name = "status", columnDefinition = "funding_status")
     private FundingsStatus status;
+
+
+    @PrePersist
+    protected void onCreate(){
+        Instant now = Instant.now() ;
+        this.createdAt = now;
+        this.updatedAt = now;
+    }
+
+    @PreUpdate
+    protected  void onUpdate(){
+        this.updatedAt = Instant.now();
+    }
+
+
+    // DTO에서 펀딩객체로 변환
+    public static Funding from (User user, Product product, FundingCreateDTO dto, List<String> imageUrls){
+        Funding funding = Funding.builder()
+                .user(user)
+                .product(product)
+                .title(dto.getTitle())
+                .body(dto.getBody())
+                .description(dto.getDescription())
+                .category(CategoryMapper.fromClient(dto.getCategory())) // 한글 -> 영어로 변환
+                .categoryName(dto.getCategoryName())
+                .scope(ScopeMapper.fromClient(dto.getScope())) // 한글 -> 영어로 변환
+                .status(FundingsStatus.PENDING)
+                .image(new ArrayList<>())
+                .participantsNumber(0)
+                .fundedAmount(0)
+                .build();
+
+        // 이미지 여러개 추가
+        if(imageUrls != null){
+            for(String url : imageUrls){
+                if(url != null && !url.isBlank()){
+                    funding.addImage(url);
+                }
+            }
+        }
+
+        return funding;
+    }
+
+    public static FundingsDTO toDTO(Funding funding){
+        return new FundingsDTO(funding);
+    }
+
 }
