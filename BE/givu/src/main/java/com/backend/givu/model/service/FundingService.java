@@ -2,7 +2,6 @@ package com.backend.givu.model.service;
 
 import com.backend.givu.model.entity.Funding;
 import com.backend.givu.model.entity.Product;
-import com.backend.givu.model.entity.ProductReview;
 import com.backend.givu.model.entity.User;
 import com.backend.givu.model.repository.FundingRepository;
 import com.backend.givu.model.repository.ProductRepository;
@@ -18,10 +17,9 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
-import java.nio.file.AccessDeniedException;
+import org.springframework.security.access.AccessDeniedException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.NoSuchElementException;
 
 
 @Service

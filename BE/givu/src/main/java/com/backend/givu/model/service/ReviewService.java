@@ -9,9 +9,13 @@ import com.backend.givu.model.repository.UserRepository;
 import com.backend.givu.model.responseDTO.ReviewsDTO;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 
-import java.nio.file.AccessDeniedException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+
 
 @Service
 @RequiredArgsConstructor
@@ -20,10 +24,11 @@ public class ReviewService {
     private final ReviewRepository reviewRepository;
     private final UserRepository userRepository;
     private final FundingRepository fundingRepository;
+    private final S3UploadService s3UploadService;
 
 
     /**
-     *  리뷰 생성
+     *  후기 생성
      */
     public ReviewsDTO saveReview (Long userId, Integer fundingId, ReviewsDTO reviewsdto) throws AccessDeniedException{
         // 펀딩있는지
@@ -39,6 +44,30 @@ public class ReviewService {
 
         Review saveReview = reviewRepository.save(Review.from(user,funding, reviewsdto));
         return Review.toDTO(saveReview);
+    }
+
+    /**
+     *  후기 삭제
+     */
+    public void deleteReview(Long userId, int reviewId) throws AccessDeniedException {
+
+        // 존재하는 펀딩인지 확인
+        Review review = reviewRepository.findById(reviewId)
+                .orElseThrow(()-> new EntityNotFoundException("펀딩을 찾을 수 없습니다."));
+
+        // 본인 후기인지 확인
+        if(!review.getUser().getId().equals(userId)){
+            throw new AccessDeniedException("후기 삭제 권한이 없습니다.");
+        }
+
+        // 후기에 등록된 이미지가 있다면 S3에서 이미지 삭제
+        if(review.getImage() != null && !review.getImage().isEmpty()){
+            List<String> imageUrl =  new ArrayList<>();
+            imageUrl.add(review.getImage());
+            s3UploadService.deleteFile(imageUrl);
+        }
+
+        reviewRepository.deleteById(reviewId);
     }
 
 
