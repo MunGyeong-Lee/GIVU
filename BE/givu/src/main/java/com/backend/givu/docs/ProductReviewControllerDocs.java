@@ -1,10 +1,12 @@
 package com.backend.givu.docs;
 
+import com.backend.givu.model.entity.CustomUserDetail;
 import com.backend.givu.model.responseDTO.ProductReviewDTO;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import io.swagger.v3.oas.annotations.Operation;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.multipart.MultipartFile;
@@ -31,7 +33,7 @@ public interface ProductReviewControllerDocs {
             @PathVariable int productId,
             @RequestPart("data") String data, // JSON 문자열로 받기
             @RequestPart(value = "image", required = false) MultipartFile imageFile,
-            HttpServletRequest request) throws IOException;
+            @AuthenticationPrincipal CustomUserDetail userDetail) throws IOException;
 
     @Operation(
             summary = "해당 상품 댓글 수정",
@@ -51,5 +53,5 @@ public interface ProductReviewControllerDocs {
             @PathVariable int reviewId,
             @RequestPart("data") String data,
             @RequestPart(value = "image", required = false) MultipartFile imageFile,
-            HttpServletRequest request) throws IOException;
+            @AuthenticationPrincipal CustomUserDetail userDetail) throws IOException;
 }

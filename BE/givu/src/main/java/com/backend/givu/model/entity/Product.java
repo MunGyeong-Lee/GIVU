@@ -56,4 +56,8 @@ public class Product {
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     @Column(name = "category", columnDefinition = "product_category")
     private ProductsCategory category;
+
+    public void increaseLike(){
+        this.favorite++;
+    }
 }

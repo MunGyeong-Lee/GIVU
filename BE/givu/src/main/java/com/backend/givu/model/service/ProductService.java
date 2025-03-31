@@ -15,6 +15,7 @@ import com.backend.givu.model.responseDTO.UserSimpleInfoDTO;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.nio.file.AccessDeniedException;
 import java.util.ArrayList;
@@ -93,5 +94,13 @@ public class ProductService {
         }
 
         productReviewRepository.deleteById(reviewId);
+    }
+
+    @Transactional
+    public void increaseLikeCount(int productId) {
+        Product product = productRepository.findById(productId)
+                .orElseThrow(() -> new RuntimeException("상품을 찾을 수 없습니다"));
+
+        product.increaseLike(); // 도메인 메서드로 처리 추천!
     }
 }
