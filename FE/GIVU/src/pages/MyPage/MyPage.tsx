@@ -74,21 +74,21 @@ const MY_REVIEWS = [
 
 // 임시 찜 목록 데이터
 const WISHLIST_ITEMS = [
-  {
-    id: 5,
-    name: "에어팟 프로 2",
-    price: 359000,
-    category: "가전/디지털",
-    imageUrl: "https://via.placeholder.com/200x200?text=에어팟+프로",
-    discount: 10
+  { 
+    id: 5, 
+    name: "에어팟 프로 2", 
+    price: 359000, 
+    category: "가전/디지털", 
+    imageUrl: "https://via.placeholder.com/200x200?text=에어팟+프로", 
+    discount: 10 
   },
-  {
-    id: 11,
-    name: "애플 맥북 프로",
-    price: 2490000,
-    category: "가전/디지털",
-    imageUrl: "https://via.placeholder.com/200x200?text=맥북+프로",
-    discount: 5
+  { 
+    id: 11, 
+    name: "애플 맥북 프로", 
+    price: 2490000, 
+    category: "가전/디지털", 
+    imageUrl: "https://via.placeholder.com/200x200?text=맥북+프로", 
+    discount: 5 
   }
 ];
 
@@ -175,7 +175,7 @@ const TransactionModal: React.FC<{
         <h2 className="text-2xl font-bold mb-6 text-cusBlack">
           {type === 'deposit' ? '충전하기' : '출금하기'}
         </h2>
-
+        
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-cusBlack-light mb-1">
@@ -190,7 +190,7 @@ const TransactionModal: React.FC<{
               className="w-full px-4 py-2 border border-cusGray rounded-lg focus:outline-none focus:ring-2 focus:ring-cusBlue"
             />
           </div>
-
+          
           <div>
             <label className="block text-sm font-medium text-cusBlack-light mb-1">
               금액ㅋㅋㅋ
@@ -226,10 +226,11 @@ const TransactionModal: React.FC<{
             <button
               type="submit"
               disabled={loading}
-              className={`flex-1 px-4 py-2 rounded-lg text-white ${loading
-                  ? 'bg-cusBlue-light cursor-not-allowed'
+              className={`flex-1 px-4 py-2 rounded-lg text-white ${
+                loading 
+                  ? 'bg-cusBlue-light cursor-not-allowed' 
                   : 'bg-cusBlue hover:bg-cusBlue-dark'
-                } transition-colors`}
+              } transition-colors`}
             >
               {loading ? '처리중...' : type === 'deposit' ? '충전하기' : '출금하기'}
             </button>
@@ -244,22 +245,22 @@ const MyPage = () => {
   const [activeTab, setActiveTab] = useState<TabType>("created");
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
-
+  
   // 방법 1: HTMLDivElement | null 타입으로 명시적 정의
   const createdFundingsRef = useRef<HTMLDivElement | null>(null);
   const participatedFundingsRef = useRef<HTMLDivElement | null>(null);
   const reviewsRef = useRef<HTMLDivElement | null>(null);
   const wishlistRef = useRef<HTMLDivElement | null>(null);
-
-
+  
+  
   // 스크롤 함수 타입 정의 변경
   const scrollHorizontally = (ref: React.RefObject<HTMLDivElement> | any, direction: 'left' | 'right') => {
     if (ref && ref.current) {
       const scrollAmount = 300;
-      const scrollLeft = direction === 'left'
-        ? ref.current.scrollLeft - scrollAmount
+      const scrollLeft = direction === 'left' 
+        ? ref.current.scrollLeft - scrollAmount 
         : ref.current.scrollLeft + scrollAmount;
-
+      
       ref.current.scrollTo({
         left: scrollLeft,
         behavior: 'smooth'
@@ -271,16 +272,16 @@ const MyPage = () => {
   const handlePageChange = (pageNumber: number) => {
     setCurrentPage(pageNumber);
   };
-
+  
   // 스크롤 버튼 클릭 핸들러 분리
   const handleScrollLeft = (refObject: React.RefObject<HTMLDivElement> | any) => {
     scrollHorizontally(refObject, 'left');
   };
-
+  
   const handleScrollRight = (refObject: React.RefObject<HTMLDivElement> | any) => {
     scrollHorizontally(refObject, 'right');
   };
-
+  
   // 페이지네이션 컴포넌트
   const Pagination: React.FC<{
     totalItems: number;
@@ -289,45 +290,46 @@ const MyPage = () => {
     onPageChange: (page: number) => void;
   }> = ({ totalItems, itemsPerPage, currentPage, onPageChange }) => {
     const totalPages = Math.ceil(totalItems / itemsPerPage);
-
+    
     if (totalPages <= 1) return null; // 페이지가 1개 이하면 표시하지 않음
-
+    
     // 페이지 버튼 생성 (최대 5개)
     const pageNumbers = [];
     const maxPageButtons = 5;
-
+    
     let startPage = Math.max(1, currentPage - Math.floor(maxPageButtons / 2));
     let endPage = Math.min(totalPages, startPage + maxPageButtons - 1);
-
+    
     if (endPage - startPage + 1 < maxPageButtons) {
       startPage = Math.max(1, endPage - maxPageButtons + 1);
     }
-
+    
     for (let i = startPage; i <= endPage; i++) {
       pageNumbers.push(i);
     }
-
+    
     return (
       <div className="flex justify-center items-center mt-6 space-x-2">
         {/* 이전 페이지 버튼 */}
-        <button
+        <button 
           onClick={() => onPageChange(Math.max(1, currentPage - 1))}
           disabled={currentPage === 1}
-          className={`w-8 h-8 rounded-full flex items-center justify-center ${currentPage === 1
-              ? 'bg-cusGray text-cusBlack-light cursor-not-allowed'
+          className={`w-8 h-8 rounded-full flex items-center justify-center ${
+            currentPage === 1 
+              ? 'bg-cusGray text-cusBlack-light cursor-not-allowed' 
               : 'bg-cusLightBlue text-cusBlue hover:bg-cusBlue hover:text-white'
-            }`}
+          }`}
         >
           <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
           </svg>
         </button>
-
+        
         {/* 첫 페이지로 이동 버튼 (1페이지가 아닐 때만 표시) */}
         {startPage > 1 && (
           <>
-            <button
-              onClick={() => onPageChange(1)}
+            <button 
+              onClick={() => onPageChange(1)} 
               className="w-8 h-8 rounded-full flex items-center justify-center bg-cusGray-light text-cusBlack-light hover:bg-cusLightBlue hover:text-cusBlue"
             >
               1
@@ -337,44 +339,46 @@ const MyPage = () => {
             )}
           </>
         )}
-
+        
         {/* 페이지 번호 버튼 */}
         {pageNumbers.map(number => (
           <button
             key={number}
             onClick={() => onPageChange(number)}
-            className={`w-8 h-8 rounded-full flex items-center justify-center ${currentPage === number
+            className={`w-8 h-8 rounded-full flex items-center justify-center ${
+              currentPage === number
                 ? 'bg-cusBlue text-white font-bold'
                 : 'bg-cusGray-light text-cusBlack-light hover:bg-cusLightBlue hover:text-cusBlue'
-              }`}
+            }`}
           >
             {number}
           </button>
         ))}
-
+        
         {/* 마지막 페이지로 이동 버튼 (마지막 페이지가 아닐 때만 표시) */}
         {endPage < totalPages && (
           <>
             {endPage < totalPages - 1 && (
               <span className="text-cusBlack-light">...</span>
             )}
-            <button
-              onClick={() => onPageChange(totalPages)}
+            <button 
+              onClick={() => onPageChange(totalPages)} 
               className="w-8 h-8 rounded-full flex items-center justify-center bg-cusGray-light text-cusBlack-light hover:bg-cusLightBlue hover:text-cusBlue"
             >
               {totalPages}
             </button>
           </>
         )}
-
+        
         {/* 다음 페이지 버튼 */}
-        <button
+        <button 
           onClick={() => onPageChange(Math.min(totalPages, currentPage + 1))}
           disabled={currentPage === totalPages}
-          className={`w-8 h-8 rounded-full flex items-center justify-center ${currentPage === totalPages
-              ? 'bg-cusGray text-cusBlack-light cursor-not-allowed'
+          className={`w-8 h-8 rounded-full flex items-center justify-center ${
+            currentPage === totalPages 
+              ? 'bg-cusGray text-cusBlack-light cursor-not-allowed' 
               : 'bg-cusLightBlue text-cusBlue hover:bg-cusBlue hover:text-white'
-            }`}
+          }`}
         >
           <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
@@ -383,13 +387,13 @@ const MyPage = () => {
       </div>
     );
   };
-
+  
   // 페이지네이션에 맞게 아이템 필터링
   const getPaginatedItems = (items: any[], page: number, perPage: number) => {
     const startIndex = (page - 1) * perPage;
     return items.slice(startIndex, startIndex + perPage);
   };
-
+  
   // 탭 내용을 렌더링하는 함수
   const renderTabContent = () => {
     switch (activeTab) {
@@ -397,7 +401,7 @@ const MyPage = () => {
         return (
           <div className="relative">
             <div className="absolute -left-4 top-1/2 transform -translate-y-1/2 z-10">
-              <button
+              <button 
                 onClick={() => handleScrollLeft(createdFundingsRef)}
                 className="p-2 bg-cusBlack text-white rounded-full shadow-md hover:bg-cusBlack-light"
                 aria-label="이전 항목"
@@ -407,16 +411,16 @@ const MyPage = () => {
                 </svg>
               </button>
             </div>
-
-            <div
+            
+            <div 
               ref={createdFundingsRef}
               className="flex overflow-x-auto scrollbar-hide gap-4 py-4 pl-2 pr-6"
               style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
             >
               {MY_FUNDINGS.map((funding) => (
-                <Link
-                  key={funding.id}
-                  to={`/funding/${funding.id}`}
+                <Link 
+                  key={funding.id} 
+                  to={`/funding/${funding.id}`} 
                   className="flex-shrink-0"
                   style={{ width: '300px' }}
                 >
@@ -424,9 +428,9 @@ const MyPage = () => {
                 </Link>
               ))}
             </div>
-
+            
             <div className="absolute -right-4 top-1/2 transform -translate-y-1/2 z-10">
-              <button
+              <button 
                 onClick={() => handleScrollRight(createdFundingsRef)}
                 className="p-2 bg-cusBlack text-white rounded-full shadow-md hover:bg-cusBlack-light"
                 aria-label="다음 항목"
@@ -438,12 +442,12 @@ const MyPage = () => {
             </div>
           </div>
         );
-
+        
       case "participated":
         return (
           <div className="relative">
             <div className="absolute -left-4 top-1/2 transform -translate-y-1/2 z-10">
-              <button
+              <button 
                 onClick={() => handleScrollLeft(participatedFundingsRef)}
                 className="p-2 bg-cusBlack text-white rounded-full shadow-md hover:bg-cusBlack-light"
                 aria-label="이전 항목"
@@ -453,16 +457,16 @@ const MyPage = () => {
                 </svg>
               </button>
             </div>
-
-            <div
+            
+            <div 
               ref={participatedFundingsRef}
               className="flex overflow-x-auto scrollbar-hide gap-4 py-4 pl-2 pr-6"
               style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
             >
               {PARTICIPATED_FUNDINGS.map((funding) => (
-                <Link
-                  key={funding.id}
-                  to={`/funding/${funding.id}`}
+                <Link 
+                  key={funding.id} 
+                  to={`/funding/${funding.id}`} 
                   className="flex-shrink-0"
                   style={{ width: '300px' }}
                 >
@@ -470,9 +474,9 @@ const MyPage = () => {
                 </Link>
               ))}
             </div>
-
+            
             <div className="absolute -right-4 top-1/2 transform -translate-y-1/2 z-10">
-              <button
+              <button 
                 onClick={() => handleScrollRight(participatedFundingsRef)}
                 className="p-2 bg-cusBlack text-white rounded-full shadow-md hover:bg-cusBlack-light"
                 aria-label="다음 항목"
@@ -484,24 +488,24 @@ const MyPage = () => {
             </div>
           </div>
         );
-
+        
       case "liked":
         const paginatedReviews = getPaginatedItems(MY_REVIEWS, currentPage, itemsPerPage);
-
+        
         return MY_REVIEWS.length > 0 ? (
           <div>
             <div className="space-y-4">
               {paginatedReviews.map((review) => (
-                <Link
-                  key={review.id}
+                <Link 
+                  key={review.id} 
                   to={`/funding/review/${review.id}`}
                   className="block hover:bg-cusGray-light transition-colors rounded-xl"
                 >
                   <div className="flex gap-6 p-4 border border-cusGray bg-white rounded-lg">
                     <div className="w-32 h-24 flex-shrink-0 rounded-lg overflow-hidden">
-                      <img
-                        src={review.image}
-                        alt={review.title}
+                      <img 
+                        src={review.image} 
+                        alt={review.title} 
                         className="w-full h-full object-cover"
                       />
                     </div>
@@ -515,9 +519,9 @@ const MyPage = () => {
                 </Link>
               ))}
             </div>
-
+            
             {/* 페이지네이션 컴포넌트 */}
-            <Pagination
+            <Pagination 
               totalItems={MY_REVIEWS.length}
               itemsPerPage={itemsPerPage}
               currentPage={currentPage}
@@ -532,12 +536,12 @@ const MyPage = () => {
             </button>
           </div>
         );
-
+        
       case "wishlist":
         return WISHLIST_ITEMS.length > 0 ? (
           <div className="relative">
             <div className="absolute -left-4 top-1/2 transform -translate-y-1/2 z-10">
-              <button
+              <button 
                 onClick={() => handleScrollLeft(wishlistRef)}
                 className="p-2 bg-cusBlack text-white rounded-full shadow-md hover:bg-cusBlack-light"
                 aria-label="이전 항목"
@@ -547,23 +551,23 @@ const MyPage = () => {
                 </svg>
               </button>
             </div>
-
-            <div
+            
+            <div 
               ref={wishlistRef}
               className="flex overflow-x-auto scrollbar-hide gap-4 py-4 pl-2 pr-6"
               style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
             >
               {WISHLIST_ITEMS.map((product) => (
-                <Link
-                  key={product.id}
+                <Link 
+                  key={product.id} 
                   to={`/shopping/product/${product.id}`}
                   className="bg-white border border-cusGray rounded-xl overflow-hidden hover:shadow-lg transition-all transform hover:-translate-y-1 flex-shrink-0"
                   style={{ width: '250px' }}
                 >
                   <div className="h-48 bg-cusGray-light">
-                    <img
-                      src={product.imageUrl}
-                      alt={product.name}
+                    <img 
+                      src={product.imageUrl} 
+                      alt={product.name} 
                       className="w-full h-full object-cover"
                     />
                   </div>
@@ -588,9 +592,9 @@ const MyPage = () => {
                 </Link>
               ))}
             </div>
-
+            
             <div className="absolute -right-4 top-1/2 transform -translate-y-1/2 z-10">
-              <button
+              <button 
                 onClick={() => handleScrollRight(wishlistRef)}
                 className="p-2 bg-cusBlack text-white rounded-full shadow-md hover:bg-cusBlack-light"
                 aria-label="다음 항목"
@@ -645,7 +649,7 @@ const MyPage = () => {
             </button>
           </div>
         </div>
-
+        
         <div className="flex-1 w-full">
           <div className="bg-cusLightBlue-lighter rounded-2xl p-6 mb-6 shadow-md">
             <div className="flex flex-col md:flex-row md:justify-between md:items-center border-b border-cusGray pb-4 mb-4">
@@ -665,7 +669,7 @@ const MyPage = () => {
                 </button>
               </div>
             </div>
-
+            
             <div className="flex items-center">
               <div className="mr-10">
                 <div className="flex items-center mb-2">
@@ -678,43 +682,47 @@ const MyPage = () => {
           </div>
         </div>
       </div>
-
+      
       {/* 탭 메뉴 - 글자 색상 강조 */}
       <div className="mb-8 mt-10">
         <div className="mb-4">
           <div className="flex flex-wrap justify-center md:justify-start gap-2 md:gap-4" role="group">
             <button
-              className={`px-5 py-3 text-base font-bold rounded-full transition-all ${activeTab === "created"
-                  ? "bg-cusBlack text-cusRed shadow-lg"
+              className={`px-5 py-3 text-base font-bold rounded-full transition-all ${
+                activeTab === "created" 
+                  ? "bg-cusBlack text-cusRed shadow-lg" 
                   : "bg-cusGray-light text-cusBlack-light hover:bg-cusGray"
-                }`}
+              }`}
               onClick={() => setActiveTab("created")}
             >
               내가 만든 펀딩
             </button>
             <button
-              className={`px-5 py-3 text-base font-bold rounded-full transition-all ${activeTab === "participated"
-                  ? "bg-cusBlack text-cusLightBlue shadow-lg"
+              className={`px-5 py-3 text-base font-bold rounded-full transition-all ${
+                activeTab === "participated" 
+                  ? "bg-cusBlack text-cusLightBlue shadow-lg" 
                   : "bg-cusGray-light text-cusBlack-light hover:bg-cusGray"
-                }`}
+              }`}
               onClick={() => setActiveTab("participated")}
             >
               참여한 펀딩
             </button>
             <button
-              className={`px-5 py-3 text-base font-bold rounded-full transition-all ${activeTab === "liked"
-                  ? "bg-cusBlack text-success shadow-lg"
+              className={`px-5 py-3 text-base font-bold rounded-full transition-all ${
+                activeTab === "liked" 
+                  ? "bg-cusBlack text-success shadow-lg" 
                   : "bg-cusGray-light text-cusBlack-light hover:bg-cusGray"
-                }`}
+              }`}
               onClick={() => setActiveTab("liked")}
             >
               내가 쓴 후기
             </button>
             <button
-              className={`px-5 py-3 text-base font-bold rounded-full transition-all ${activeTab === "wishlist"
-                  ? "bg-cusBlack text-cusYellow shadow-lg"
+              className={`px-5 py-3 text-base font-bold rounded-full transition-all ${
+                activeTab === "wishlist" 
+                  ? "bg-cusBlack text-cusYellow shadow-lg" 
                   : "bg-cusGray-light text-cusBlack-light hover:bg-cusGray"
-                }`}
+              }`}
               onClick={() => setActiveTab("wishlist")}
             >
               찜 목록
@@ -722,13 +730,13 @@ const MyPage = () => {
           </div>
         </div>
       </div>
-
+      
       {/* 탭 콘텐츠 - 중복 제목 제거 */}
       <div className="bg-white rounded-xl shadow-sm p-6">
         {/* 탭 컨텐츠 */}
         {renderTabContent()}
       </div>
-
+      
       {/* 모달 추가 */}
       <TransactionModal
         isOpen={isTransactionModalOpen}
@@ -747,7 +755,7 @@ const FundingCard: React.FC<FundingProps> = ({ funding }) => {
     if (progress < 70) return "bg-cusYellow";
     return "bg-success";
   };
-
+  
   return (
     <div className="bg-white border border-cusGray rounded-xl overflow-hidden hover:shadow-lg transition-all transform hover:-translate-y-1">
       <div className="relative h-52">

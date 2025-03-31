@@ -291,10 +291,11 @@ const FundingDetailPage = () => {
               <button
                 key={option.amount}
                 onClick={() => selectAmount(option.amount)}
-                className={`p-4 rounded-lg text-white flex flex-col items-start ${selectedAmount === option.amount && !isCustomInput
-                    ? 'bg-gray-800'
+                className={`p-4 rounded-lg text-white flex flex-col items-start ${
+                  selectedAmount === option.amount && !isCustomInput 
+                    ? 'bg-gray-800' 
                     : 'bg-black'
-                  }`}
+                }`}
               >
                 <span className="font-bold text-lg mb-2">{option.label}</span>
                 <span className="text-sm">{option.description}</span>
@@ -330,15 +331,16 @@ const FundingDetailPage = () => {
             </div>
           )}
 
-          <button
-            className={`w-full py-3 text-white font-bold rounded-lg transition ${(selectedAmount || (isCustomInput && customAmount))
-                ? 'bg-black hover:bg-gray-800'
+          <button 
+            className={`w-full py-3 text-white font-bold rounded-lg transition ${
+              (selectedAmount || (isCustomInput && customAmount)) 
+                ? 'bg-black hover:bg-gray-800' 
                 : 'bg-gray-400 cursor-not-allowed'
-              }`}
+            }`}
             disabled={!selectedAmount && (!isCustomInput || !customAmount)}
           >
-            {selectedAmount ?
-              `${selectedAmount.toLocaleString()}원 선물하기` :
+            {selectedAmount ? 
+              `${selectedAmount.toLocaleString()}원 선물하기` : 
               '선물하기'
             }
           </button>
