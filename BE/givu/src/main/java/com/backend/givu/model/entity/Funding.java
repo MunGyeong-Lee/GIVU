@@ -144,7 +144,6 @@ public class Funding {
                 .image(new ArrayList<>())
                 .participantsNumber(0)
                 .fundedAmount(0)
-                // 참여자 수 모금액 생성시간 수정시간
                 .build();
 
         // 이미지 여러개 추가
