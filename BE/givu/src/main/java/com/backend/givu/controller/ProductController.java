@@ -1,18 +1,14 @@
 package com.backend.givu.controller;
 
 import com.backend.givu.model.entity.Product;
-import com.backend.givu.model.requestDTO.ProductReviewCreateDTO;
 import com.backend.givu.model.responseDTO.ImageUploadResponseDTO;
 import com.backend.givu.model.responseDTO.ProductDetailDTO;
-import com.backend.givu.model.responseDTO.ProductReviewDTO;
 import com.backend.givu.model.responseDTO.ProductsDTO;
 import com.backend.givu.model.service.ProductService;
 import com.backend.givu.model.service.S3UploadService;
-import com.backend.givu.util.JwtUtil;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -30,7 +26,6 @@ import java.util.List;
 public class ProductController {
     private final ProductService productService;
     private final S3UploadService s3UploadService;
-    private final JwtUtil jwtUtil;
 
     @Operation(summary = "상품 전체 리스트 조회", description = "상품 전체 목록을 조회합니다.")
     @GetMapping("/list")
@@ -68,5 +63,12 @@ public class ProductController {
                     .status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(new ImageUploadResponseDTO(null, "이미지 업로드에 실패했습니다."));
         }
+    }
+
+    @Operation(summary = "상품 좋아요", description = "해당 상품의 좋아요를 추가합니다.")
+    @PatchMapping("/{productId}/like")
+    public ResponseEntity<Void> increaseLike(@PathVariable int productId) {
+        productService.increaseLikeCount(productId);
+        return ResponseEntity.ok().build();
     }
 }
