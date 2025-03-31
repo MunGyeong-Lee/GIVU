@@ -95,6 +95,7 @@ public class FundingService {
         funding.setCategory(CategoryMapper.fromClient(fundingDTO.getCategory())); // 한글 -> 영어
         funding.setScope(ScopeMapper.fromClient(fundingDTO.getScope()));          // 한글 -> 영어
 
+
         // 기존 이미지 중 삭제요청된 거만 삭제
         if(fundingDTO.getToDelete() != null){
             // S3에 사진 삭제

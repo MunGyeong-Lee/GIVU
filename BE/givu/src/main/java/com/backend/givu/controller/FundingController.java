@@ -112,7 +112,9 @@ public class FundingController implements FundingControllerDocs {
     }
 
 
-
+    /**
+     * 펀딩 수정
+     */
     @PostMapping(value = "/{fundingId}",  consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<FundingsDTO> updateFunding (
             @AuthenticationPrincipal CustomUserDetail userDetail,
