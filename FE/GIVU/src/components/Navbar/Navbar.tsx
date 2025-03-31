@@ -22,7 +22,7 @@ function Navbar() {
     console.log('로컬 스토리지 사용자 정보:', localStorage.getItem('user_info'));
   }, [isAuthenticated, token, user]);
 
-  // 사용자 정보 가져오기
+  // 사용자 정보 가져오기!!
   useEffect(() => {
     const fetchUserInfo = async () => {
       if (isAuthenticated) {
