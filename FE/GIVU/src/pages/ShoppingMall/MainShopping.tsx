@@ -344,6 +344,66 @@ const MainShopping = () => {
     }
   }, [selectedCategory, selectedPriceRange]);
 
+  // isLoggedIn 상태 설정 로직 수정
+  useEffect(() => {
+    const token = localStorage.getItem('auth_token');
+    setIsLoggedIn(!!token);
+  }, []);
+
+  // 찜하기 버튼 클릭 핸들러 추가
+  const handleWishlistClick = async (e: React.MouseEvent, productId: number) => {
+    e.preventDefault();
+    const token = localStorage.getItem('auth_token');
+    
+    if (!token) {
+      alert('로그인이 필요한 서비스입니다.');
+      return;
+    }
+
+    try {
+      // 찜하기 API 호출 로직
+      const response = await axios.post(
+        `${API_BASE_URL}/products/wishlist/${productId}`,
+        {},
+        {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        }
+      );
+      
+      // 성공 시 상품 목록 업데이트
+      if (response.data) {
+        // 상품 목록에서 해당 상품의 favorite 상태를 토글
+        const updatedProducts = products.map(product => 
+          product.id === productId 
+            ? { ...product, favorite: !product.favorite }
+            : product
+        );
+        setProducts(updatedProducts);
+        
+        // 필터링된 상품 목록도 업데이트
+        const updatedFilteredProducts = filteredProducts.map(product =>
+          product.id === productId
+            ? { ...product, favorite: !product.favorite }
+            : product
+        );
+        setFilteredProducts(updatedFilteredProducts);
+        
+        // 현재 표시된 상품 목록 업데이트
+        const updatedDisplayedProducts = displayedProducts.map(product =>
+          product.id === productId
+            ? { ...product, favorite: !product.favorite }
+            : product
+        );
+        setDisplayedProducts(updatedDisplayedProducts);
+      }
+    } catch (error) {
+      console.error('찜하기 처리 중 오류 발생:', error);
+      alert('찜하기 처리 중 오류가 발생했습니다.');
+    }
+  };
+
   // 가로 스크롤 함수
   const scrollHorizontally = (ref: any, direction: 'left' | 'right') => {
     if (ref.current) {
@@ -536,7 +596,7 @@ const MainShopping = () => {
                           alert('로그인이 필요한 서비스입니다.');
                           return;
                         }
-                        // 찜하기 API 호출 로직
+                        handleWishlistClick(e, product.id);
                       }}
                       className="absolute top-2 left-2 p-2 bg-white rounded-full shadow-md"
                     >
@@ -657,7 +717,7 @@ const MainShopping = () => {
                           alert('로그인이 필요한 서비스입니다.');
                           return;
                         }
-                        // 찜하기 API 호출 로직
+                        handleWishlistClick(e, product.id);
                       }}
                       className="absolute top-2 left-2 p-2 bg-white rounded-full shadow-md"
                     >
@@ -752,7 +812,7 @@ const MainShopping = () => {
                             alert('로그인이 필요한 서비스입니다.');
                             return;
                           }
-                          // 찜하기 API 호출 로직
+                          handleWishlistClick(e, product.id);
                         }}
                         className="absolute top-2 left-2 p-2 bg-white rounded-full shadow-md"
                       >
