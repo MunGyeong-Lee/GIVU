@@ -3,26 +3,28 @@ import { Link, useNavigate } from 'react-router-dom';
 
 function FundingReviewWritePage() {
   const navigate = useNavigate();
-  
+
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
   const [images, setImages] = useState<File[]>([]);
   const [imagePreviewUrls, setImagePreviewUrls] = useState<string[]>([]);
-  
+
   // 이미지 파일 선택 핸들러
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     e.preventDefault();
-    
+
     const files = e.target.files;
-    if (!files) return;
-    
+    if (!files) {
+      return;
+    }
+
     const newImages: File[] = [...images];
     const newImagePreviewUrls: string[] = [...imagePreviewUrls];
-    
+
     for (let i = 0; i < files.length; i++) {
       const file = files[i];
       newImages.push(file);
-      
+
       // 이미지 미리보기 URL 생성
       const reader = new FileReader();
       reader.onloadend = () => {
@@ -33,34 +35,34 @@ function FundingReviewWritePage() {
       };
       reader.readAsDataURL(file);
     }
-    
+
     setImages(newImages);
   };
-  
+
   // 이미지 제거 핸들러
   const removeImage = (index: number) => {
     const newImages = [...images];
     const newImagePreviewUrls = [...imagePreviewUrls];
-    
+
     newImages.splice(index, 1);
     newImagePreviewUrls.splice(index, 1);
-    
+
     setImages(newImages);
     setImagePreviewUrls(newImagePreviewUrls);
   };
-  
+
   // 폼 제출 핸들러
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     // 여기서 실제로는 API 호출하여 서버에 저장
     console.log({ title, content, images });
-    
+
     // 성공 시 목록 페이지로 리다이렉트
     alert('후기가 성공적으로 등록되었습니다.');
     navigate('/funding/review');
   };
-  
+
   return (
     <div className="max-w-4xl mx-auto py-8 px-4">
       {/* 헤더 */}
@@ -70,7 +72,7 @@ function FundingReviewWritePage() {
           받은 선물과 펀딩 경험에 대한 후기를 남겨주세요.
         </p>
       </div>
-      
+
       {/* 후기 작성 폼 */}
       <form onSubmit={handleSubmit}>
         {/* 제목 입력 */}
@@ -88,7 +90,7 @@ function FundingReviewWritePage() {
             required
           />
         </div>
-        
+
         {/* 이미지 업로드 */}
         <div className="mb-6">
           <label className="block mb-2 font-medium">
@@ -113,7 +115,7 @@ function FundingReviewWritePage() {
               </div>
             </label>
           </div>
-          
+
           {/* 이미지 미리보기 */}
           {imagePreviewUrls.length > 0 && (
             <div className="mt-4 grid grid-cols-2 sm:grid-cols-3 gap-4">
@@ -136,7 +138,7 @@ function FundingReviewWritePage() {
             </div>
           )}
         </div>
-        
+
         {/* 내용 입력 */}
         <div className="mb-6">
           <label htmlFor="content" className="block mb-2 font-medium">
@@ -151,7 +153,7 @@ function FundingReviewWritePage() {
             required
           ></textarea>
         </div>
-        
+
         {/* 제출 버튼 */}
         <div className="flex justify-end gap-2">
           <Link
