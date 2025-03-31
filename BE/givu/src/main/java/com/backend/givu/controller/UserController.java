@@ -2,14 +2,13 @@ package com.backend.givu.controller;
 
 import com.backend.givu.exception.AuthErrorException;
 import com.backend.givu.model.Enum.HttpStatusCode;
-import com.backend.givu.model.entity.RefreshToken;
+import com.backend.givu.model.entity.CustomUserDetail;
 import com.backend.givu.model.responseDTO.*;
 import com.backend.givu.model.entity.User;
 import com.backend.givu.model.service.KakaoLoginService;
 import com.backend.givu.model.service.UserService;
 import com.backend.givu.security.JwtProvider;
 import com.backend.givu.util.DateTimeUtil;
-import com.backend.givu.util.JwtUtil;
 import com.backend.givu.util.mapper.AgeRangeMapper;
 import com.backend.givu.util.mapper.GenderMapper;
 import io.swagger.v3.oas.annotations.Operation;
@@ -22,6 +21,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
@@ -41,7 +41,6 @@ public class UserController {
     private final UserService userService;
     private final KakaoLoginService kakaoLoginService;
     private final JwtProvider jwtProvider;
-    private final JwtUtil jwtUtil;
 
     @Autowired
     private RedisConnectionFactory connectionFactory;
@@ -128,12 +127,9 @@ public class UserController {
 
     @Operation(summary = "사용자 정보 조회(자기 자신)", description = "accessToken 으로 해당 user의 정보를 조회합니다.")
     @GetMapping("/info")
-    public ResponseEntity<UserInfoDTO> findUser(HttpServletRequest request){
+    public ResponseEntity<UserInfoDTO> findUser(@AuthenticationPrincipal CustomUserDetail userDetail){
 
-        String token = request.getHeader("Authorization");
-        Long userId = jwtUtil.getUserId(token);
-
-        User user = userService.getUserById(userId);
+        User user = userDetail.getUser();
 
         UserInfoDTO dto = UserInfoDTO.builder()
                 .kakaoId(user.getKakaoId())

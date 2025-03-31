@@ -1,12 +1,11 @@
 package com.backend.givu.controller;
 
 import com.backend.givu.docs.ProductReviewControllerDocs;
+import com.backend.givu.model.entity.CustomUserDetail;
 import com.backend.givu.model.requestDTO.ProductReviewCreateDTO;
 import com.backend.givu.model.responseDTO.ProductReviewDTO;
 import com.backend.givu.model.service.ProductService;
 import com.backend.givu.model.service.S3UploadService;
-import com.backend.givu.util.JwtUtil;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -14,6 +13,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -28,17 +28,15 @@ public class ProductReviewController implements ProductReviewControllerDocs {
 
     private final ProductService productService;
     private final S3UploadService s3UploadService;
-    private final JwtUtil jwtUtil;
 
     @PostMapping(value = "/{productId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<ProductReviewDTO> saveProductReview(
             @PathVariable int productId,
             @RequestPart("data") String data, // JSON 문자열로 받기
             @RequestPart(value = "image", required = false) MultipartFile imageFile,
-            HttpServletRequest request) throws IOException {
+            @AuthenticationPrincipal CustomUserDetail userDetail) throws IOException {
 
-        String token = request.getHeader("Authorization");
-        Long userId = jwtUtil.getUserId(token);
+        Long userId = userDetail.getId();
 
         // JSON 문자열 → DTO 변환
         ObjectMapper objectMapper = new ObjectMapper();
@@ -59,10 +57,9 @@ public class ProductReviewController implements ProductReviewControllerDocs {
             @PathVariable int reviewId,
             @RequestPart("data") String data,
             @RequestPart(value = "image", required = false) MultipartFile imageFile,
-            HttpServletRequest request) throws IOException {
+            @AuthenticationPrincipal CustomUserDetail userDetail) throws IOException {
 
-        String token = request.getHeader("Authorization");
-        Long userId = jwtUtil.getUserId(token);
+        Long userId = userDetail.getId();
 
         ObjectMapper objectMapper = new ObjectMapper();
         ProductReviewCreateDTO dto = objectMapper.readValue(data, ProductReviewCreateDTO.class);
@@ -78,9 +75,9 @@ public class ProductReviewController implements ProductReviewControllerDocs {
 
     @Operation(summary = "상품 리뷰 삭제", description = "해당 상품 리뷰를 삭제합니다.")
     @DeleteMapping("/{reviewId}")
-    public ResponseEntity<Void> deleteReview(@PathVariable int reviewId, HttpServletRequest request) throws AccessDeniedException {
-        String token = request.getHeader("Authorization");
-        Long userId = jwtUtil.getUserId(token);
+    public ResponseEntity<Void> deleteReview(@PathVariable int reviewId, @AuthenticationPrincipal CustomUserDetail userDetail) throws AccessDeniedException {
+
+        Long userId = userDetail.getId();
 
         productService.deleteReview(userId, reviewId);
 
