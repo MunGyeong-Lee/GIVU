@@ -360,46 +360,44 @@ const MainShopping = () => {
       return;
     }
 
+    // 토큰 디버깅
+    console.log('원본 토큰:', token);
+    const finalToken = token.startsWith('Bearer ') ? token : `Bearer ${token}`;
+    console.log('최종 토큰:', finalToken);
+
     try {
-      // 찜하기 API 호출 로직
-      const response = await axios.post(
-        `${API_BASE_URL}/products/wishlist/${productId}`,
-        {},
+      const response = await axios.patch(
+        `${import.meta.env.VITE_API_BASE_URL}/products/${productId}/like`,
+        null,
         {
           headers: {
-            Authorization: `Bearer ${token}`
-          }
+            'Authorization': finalToken,
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+          },
+          withCredentials: true  // CORS 인증 정보 포함
         }
       );
       
-      // 성공 시 상품 목록 업데이트
-      if (response.data) {
-        // 상품 목록에서 해당 상품의 favorite 상태를 토글
+      console.log('API 요청 성공:', response);
+
+      if (response.status === 200 || response.status === 204) {
         const updatedProducts = products.map(product => 
           product.id === productId 
             ? { ...product, favorite: !product.favorite }
             : product
         );
         setProducts(updatedProducts);
-        
-        // 필터링된 상품 목록도 업데이트
-        const updatedFilteredProducts = filteredProducts.map(product =>
-          product.id === productId
-            ? { ...product, favorite: !product.favorite }
-            : product
-        );
-        setFilteredProducts(updatedFilteredProducts);
-        
-        // 현재 표시된 상품 목록 업데이트
-        const updatedDisplayedProducts = displayedProducts.map(product =>
-          product.id === productId
-            ? { ...product, favorite: !product.favorite }
-            : product
-        );
-        setDisplayedProducts(updatedDisplayedProducts);
+        setFilteredProducts(updatedProducts);
+        setDisplayedProducts(updatedProducts);
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('찜하기 처리 중 오류 발생:', error);
+      if (error.response) {
+        console.log('에러 상태:', error.response.status);
+        console.log('에러 데이터:', error.response.data);
+        console.log('요청 헤더:', error.config.headers);
+      }
       alert('찜하기 처리 중 오류가 발생했습니다.');
     }
   };
