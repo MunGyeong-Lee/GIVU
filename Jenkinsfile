@@ -52,14 +52,23 @@ pipeline {
                     def nginxTemplatePath = "/home/ubuntu/nginx/nginx.template.conf"
                     def nginxConfPath = "/home/ubuntu/nginx/nginx.conf"
 
-                    def backendActive = sh(script: "docker ps -a --format '{{.Names}}' | grep backend-v1 || true", returnStdout: true).trim()
-                    def frontendActive = sh(script: "docker ps -a --format '{{.Names}}' | grep frontend-v1 || true", returnStdout: true).trim()
+                    def backendNew = 'backend-v1'
+                    def frontendNew = 'frontend-v1'
 
-                    def backendNew = (backendActive == 'backend-v1') ? 'backend-v2' : 'backend-v1'
-                    def frontendNew = (frontendActive == 'frontend-v1') ? 'frontend-v2' : 'frontend-v1'
+                    // 살아있는 게 v1인지 v2인지 확인해서 교체할 쪽으로 선택
+                    if (sh(script: "docker ps --format '{{.Names}}' | grep backend-v1 || true", returnStdout: true).trim() == 'backend-v1') {
+                        backendNew = 'backend-v2'
+                    }
+                    if (sh(script: "docker ps --format '{{.Names}}' | grep frontend-v1 || true", returnStdout: true).trim() == 'frontend-v1') {
+                        frontendNew = 'frontend-v2'
+                    }
+
 
                     def backendPort = (backendNew == 'backend-v1') ? '1115' : '1116'
                     def frontendPort = (frontendNew == 'frontend-v1') ? '3000' : '3001'
+                    // 이걸 기준으로 구버전 컨테이너 명확히 계산
+                    def backendOld = (backendNew == 'backend-v1') ? 'backend-v2' : 'backend-v1'
+                    def frontendOld = (frontendNew == 'frontend-v1') ? 'frontend-v2' : 'frontend-v1'
 
                     // 새 컨테이너 실행
                     sh """
@@ -104,12 +113,14 @@ pipeline {
                     sh script: restartScript
 
                     // 이전 컨테이너 제거
+                    // nginx 재시작 후 이전 것 제거
                     sh """
-                        docker stop ${backendActive} || true
-                        docker rm ${backendActive} || true
-                        docker stop ${frontendActive} || true
-                        docker rm ${frontendActive} || true
+                        docker stop ${backendOld} || true
+                        docker rm ${backendOld} || true
+                        docker stop ${frontendOld} || true
+                        docker rm ${frontendOld} || true
                     """
+                    
                 }
             }
         }
