@@ -1,5 +1,6 @@
 package com.backend.givu.controller;
 
+import com.backend.givu.docs.ReviewControllerDocs;
 import com.backend.givu.model.entity.CustomUserDetail;
 import com.backend.givu.model.requestDTO.FundingCreateDTO;
 import com.backend.givu.model.responseDTO.FundingsDTO;
@@ -28,16 +29,17 @@ import java.util.List;
 @RestController
 @RequestMapping("/fundings/reviews")
 @RequiredArgsConstructor
-public class ReviewController {
+public class ReviewController implements ReviewControllerDocs {
 
     private final ReviewService reviewService;
     private final S3UploadService s3UploadService;
 
 
-
-    @Operation(summary = "리뷰 생성", description = "펀딩에 해당하는 리뷰를 생성 합니다.")
+    /**
+     *  리뷰 생성
+     */
     @PostMapping(value = "/{fundingId}",  consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<ReviewsDTO> saveFunding(
+    public ResponseEntity<ReviewsDTO> saveReview(
             @AuthenticationPrincipal CustomUserDetail userDetail,
             @PathVariable int fundingId,
             @RequestPart("data") String data,
@@ -62,9 +64,11 @@ public class ReviewController {
 
     }
 
-//    @PostMapping
-//    public ResponseEntity<Review> saveReview(@RequestBody ReviewsDTO dto){
-//        Review savedRievew = reviewService.saveReview(dto);
-//        return ResponseEntity.ok(savedRievew);
-//    }
+
+//    @Operation(summary = "펀딩 후기 조회", description = "해당 펀딩의 후기를 조회합니다.")
+//    @GetMapping(value = "/{fundingId}")
+//    public ResponseEntity<ReviewsDTO>
+
+
+
 }
