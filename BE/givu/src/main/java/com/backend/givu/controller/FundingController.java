@@ -1,8 +1,8 @@
 package com.backend.givu.controller;
 
+import com.backend.givu.docs.FundingControllerDocs;
 import com.backend.givu.model.entity.CustomUserDetail;
 import com.backend.givu.model.entity.Funding;
-import com.backend.givu.model.entity.Product;
 import com.backend.givu.model.repository.ProductRepository;
 import com.backend.givu.model.requestDTO.FundingCreateDTO;
 import com.backend.givu.model.requestDTO.FundingUpdateDTO;
@@ -21,9 +21,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -37,7 +35,7 @@ import java.util.List;
 @RequestMapping("/fundings")
 @RequiredArgsConstructor
 @Slf4j
-public class FundingController {
+public class FundingController implements FundingControllerDocs {
     private final ProductRepository productRepository;
 
     private final S3UploadService s3UploadService;
@@ -81,7 +79,9 @@ public class FundingController {
         return ResponseEntity.ok(fundingList);
     }
 
-    @Operation(summary = "펀딩 생성", description = "펀딩을 생성 합니다.")
+    /**
+     * 펀딩생성
+     */
     @PostMapping(value = "",  consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<FundingsDTO> saveFunding(
             @AuthenticationPrincipal CustomUserDetail userDetail,
@@ -112,7 +112,7 @@ public class FundingController {
     }
 
 
-    @Operation(summary = "펀딩 수정", description = "펀딩을 수정 합니다.")
+
     @PostMapping(value = "/{fundingId}",  consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<FundingsDTO> updateFunding (
             @AuthenticationPrincipal CustomUserDetail userDetail,
