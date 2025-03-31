@@ -1,14 +1,14 @@
 package com.backend.givu.model.requestDTO;
 
-import com.backend.givu.model.Enum.FundingsCategory;
-import com.backend.givu.model.Enum.FundingsScope;
 import lombok.*;
+
+import java.util.List;
 
 @Getter
 @Setter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
-public class FundingCreateDTO {
+public class FundingUpdateDTO {
     private String title;
     private int productId;
     private String body;
@@ -16,5 +16,7 @@ public class FundingCreateDTO {
     private String category;
     private String categoryName;
     private String scope;
+
+    private List<String> toDelete;
 
 }

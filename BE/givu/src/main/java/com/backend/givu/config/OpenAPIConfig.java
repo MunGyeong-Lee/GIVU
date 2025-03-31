@@ -25,7 +25,6 @@ import java.util.List;
 //}
 
 public class OpenAPIConfig {
-
     @Bean
     public OpenAPI openAPI() {
         final String securitySchemeName = "bearerAuth";
@@ -37,8 +36,9 @@ public class OpenAPIConfig {
                         .version("v1.0.0"))
                 .servers(List.of(
                         new Server().url("https://j12d107.p.ssafy.io/api").description("EC2 Server"),
-                        new Server().url("http://192.168.100.203:8080/api").description("Local Server")
-                                .description("Production server (HTTPS)")))
+                        new Server().url("http://192.168.100.203:8080/api").description("Local Server 1"),
+                        new Server().url("http://192.168.100.201:8080/api").description("Local Server 2")
+                ))
                 .addSecurityItem(new SecurityRequirement().addList(securitySchemeName))
                 .components(new io.swagger.v3.oas.models.Components()
                         .addSecuritySchemes(securitySchemeName,
