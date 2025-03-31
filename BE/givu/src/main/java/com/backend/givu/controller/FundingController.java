@@ -10,7 +10,6 @@ import com.backend.givu.model.responseDTO.FundingsDTO;
 import com.backend.givu.model.responseDTO.ImageUploadResponseDTO;
 import com.backend.givu.model.service.FundingService;
 import com.backend.givu.model.service.S3UploadService;
-import com.backend.givu.util.JwtUtil;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -40,7 +39,6 @@ public class FundingController implements FundingControllerDocs {
 
     private final S3UploadService s3UploadService;
     private final FundingService fundingService;
-    private final JwtUtil jwtUtil;
 
 
     @Operation(summary = "펀딩 이미지 업로드", description = "파일과 fundingId를 받아 이미지를 업로드합니다.")
