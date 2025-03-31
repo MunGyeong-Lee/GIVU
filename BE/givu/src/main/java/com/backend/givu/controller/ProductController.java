@@ -1,18 +1,14 @@
 package com.backend.givu.controller;
 
 import com.backend.givu.model.entity.Product;
-import com.backend.givu.model.requestDTO.ProductReviewCreateDTO;
 import com.backend.givu.model.responseDTO.ImageUploadResponseDTO;
 import com.backend.givu.model.responseDTO.ProductDetailDTO;
-import com.backend.givu.model.responseDTO.ProductReviewDTO;
 import com.backend.givu.model.responseDTO.ProductsDTO;
 import com.backend.givu.model.service.ProductService;
 import com.backend.givu.model.service.S3UploadService;
-import com.backend.givu.util.JwtUtil;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
-import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -30,7 +26,6 @@ import java.util.List;
 public class ProductController {
     private final ProductService productService;
     private final S3UploadService s3UploadService;
-    private final JwtUtil jwtUtil;
 
     @Operation(summary = "상품 전체 리스트 조회", description = "상품 전체 목록을 조회합니다.")
     @GetMapping("/list")
