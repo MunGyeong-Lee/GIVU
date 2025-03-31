@@ -1,15 +1,15 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import FundingGrid, { FundingItem } from './components/FundingGrid';
-import CategoryTabs, { CategoryItem } from './components/CategoryTabs';
-import SortOptions, { SortOption } from './components/SortOptions';
-import FundingHighlights, { HighlightItem } from './components/FundingHighlights';
+import FundingGrid from './components/FundingGrid';
+import CategoryTabs from './components/CategoryTabs';
+import SortOptions from './components/SortOptions';
+import FundingHighlights from './components/FundingHighlights';
 import LoadingSpinner from './components/LoadingSpinner';
-import StatusFilter, { FundingStatus } from './components/StatusFilter';
+import StatusFilter from './components/StatusFilter';
 import {
   getPopularFundings,
   getAchievementFundings,
-  getFundingsByCategory,
+  // getFundingsByCategory,
   getFundingsByStatus,
   sortFundings
 } from './data/dataUtils';
@@ -38,11 +38,11 @@ function FundingListPage() {
   const achievementHighlightItems = getAchievementFundings();
 
   // 정렬 옵션 더미 데이터
-  const sortOptions = [
-    { id: 'latest', name: '최신순' },
-    { id: 'deadline', name: '마감임박순' },
-    { id: 'achievement', name: '달성률순' }
-  ] as any;
+  // const sortOptions = [
+  //   { id: 'latest', name: '최신순' },
+  //   { id: 'deadline', name: '마감임박순' },
+  //   { id: 'achievement', name: '달성률순' }
+  // ] as any;
 
   // 카테고리 변경 핸들러
   const handleCategoryChange = (categoryId: string) => {
@@ -72,7 +72,7 @@ function FundingListPage() {
   };
 
   // 필터링 및 정렬된 펀딩 목록
-  const filteredByCategory = getFundingsByCategory(selectedCategory);
+  // const filteredByCategory = getFundingsByCategory(selectedCategory);
   const filteredByStatus = getFundingsByStatus(selectedStatus);
 
   // 카테고리와 상태 모두로 필터링된 결과

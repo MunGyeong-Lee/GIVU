@@ -42,8 +42,8 @@ const OrderPage = () => {
   });
 
   const [isSameAsBuyer, setIsSameAsBuyer] = useState(false);
-  const [paymentMethod, setPaymentMethod] = useState('givupay');
-  const [useGivuPay, setUseGivuPay] = useState(true);
+//   const [paymentMethod, setPaymentMethod] = useState('givupay');
+//   const [useGivuPay, setUseGivuPay] = useState(true);
   const [agreeTerms, setAgreeTerms] = useState(false);
 
   // 배송지 정보가 구매자 정보와 동일한지 설정

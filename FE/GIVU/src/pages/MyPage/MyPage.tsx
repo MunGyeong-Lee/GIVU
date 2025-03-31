@@ -1,13 +1,9 @@
-import React, { useState, useRef, MutableRefObject, useEffect } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 
 // 임시 데이터 - 나중에 API에서 가져오도록 수정 예정
-const USER_DATA = {
-  name: "정도현",
-  profileImage: "https://via.placeholder.com/200x200?text=정도현",
-  totalDonation: 100000,
-};
+
 
 // 임시 펀딩 데이터
 const MY_FUNDINGS = [
@@ -259,7 +255,7 @@ const MyPage = () => {
   // 방법 1: HTMLDivElement | null 타입으로 명시적 정의
   const createdFundingsRef = useRef<HTMLDivElement | null>(null);
   const participatedFundingsRef = useRef<HTMLDivElement | null>(null);
-  const reviewsRef = useRef<HTMLDivElement | null>(null);
+  // const reviewsRef = useRef<HTMLDivElement | null>(null);
   const wishlistRef = useRef<HTMLDivElement | null>(null);
   
   

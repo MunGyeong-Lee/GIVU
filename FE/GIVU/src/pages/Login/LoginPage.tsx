@@ -1,11 +1,11 @@
 import { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import KakaoLoginButton from '../../components/common/KakaoLoginButton';
 import giftImg from '../../assets/images/gift_img.jpg';
 
 const LoginPage = () => {
-  const navigate = useNavigate();
-  const [error, setError] = useState<string | null>(null);
+  // const navigate = useNavigate();
+  const [error] = useState<string | null>(null);
 
   return (
     <div className="h-screen flex overflow-hidden">
