@@ -19,7 +19,8 @@ object ProductsMapper {
                     image = productEntity.image,
                     favorite = productEntity.favorite.toString(),
                     star = productEntity.star.toString(),
-                    createdAt = formatDateTime(productEntity.createdAt)
+                    createdAt = formatDateTime(productEntity.createdAt),
+                    description = productEntity.description
                 )
             )
         }

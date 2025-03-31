@@ -22,6 +22,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -62,19 +63,37 @@ fun GiftListItem(
                 .padding(vertical = 8.dp),
             verticalArrangement = Arrangement.Center
         ) {
+
+            // product name에서 첫단어만 빼면 브랜드 이름
+            // 나머지가 제품 이름
+            val input = product.productName
+            val firstSpaceIndex = input.indexOf(" ")
+
+            val brandName = if (firstSpaceIndex != -1) input.substring(0, firstSpaceIndex) else ""
+            val productName = if (firstSpaceIndex != -1) input.substring(firstSpaceIndex + 1) else input
+
             Text(
-                text = "브랜드 이름: ${product.category}",
+                text = brandName,
                 fontFamily = suit,
                 fontWeight = FontWeight.Bold,
-                fontSize = 14.sp
+                fontSize = 15.sp
             )
             Spacer(Modifier.height(6.dp))
             Text(
-                text = product.productName,
+                text = productName,
                 fontFamily = suit,
                 fontWeight = FontWeight.Medium,
                 fontSize = 14.sp
             )
+//            Text(
+//                text = product.productName,
+//                fontFamily = suit,
+//                fontWeight = FontWeight.Bold,
+//                fontSize = 16.sp,
+//                maxLines = 2,
+//                overflow = TextOverflow.Ellipsis,
+//                modifier = Modifier.fillMaxWidth().padding(end = 20.dp)
+//            )
             Spacer(Modifier.weight(1f))
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -90,7 +109,7 @@ fun GiftListItem(
                 Spacer(Modifier.weight(1f))
                 Image(
                     painter = painterResource(R.drawable.ic_like_on), null,
-                    modifier = Modifier.size(24.dp)
+                    modifier = Modifier.size(20.dp)
                 )
 
                 Spacer(Modifier.width(4.dp))
