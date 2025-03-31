@@ -64,4 +64,11 @@ public class ProductController {
                     .body(new ImageUploadResponseDTO(null, "이미지 업로드에 실패했습니다."));
         }
     }
+
+    @Operation(summary = "상품 좋아요", description = "해당 상품의 좋아요를 추가합니다.")
+    @PatchMapping("/{productId}/like")
+    public ResponseEntity<Void> increaseLike(@PathVariable int productId) {
+        productService.increaseLikeCount(productId);
+        return ResponseEntity.ok().build();
+    }
 }

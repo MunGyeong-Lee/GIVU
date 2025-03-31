@@ -37,6 +37,9 @@ public class SecurityConfig {
 
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
+                                "/products/*/like"  // 이 라인 추가 → 인증 필요하게!
+                        ).authenticated()       // 인증 필요
+                        .requestMatchers(
                                 "/api-docs", 
                                 "/v3/api-docs/**",              // OpenAPI JSON
                                 "/swagger-ui/**",               // Swagger UI 관련 경로
