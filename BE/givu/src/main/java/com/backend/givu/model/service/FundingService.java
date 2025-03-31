@@ -1,9 +1,11 @@
 package com.backend.givu.model.service;
 
 import com.backend.givu.model.entity.Funding;
+import com.backend.givu.model.entity.Product;
 import com.backend.givu.model.entity.ProductReview;
 import com.backend.givu.model.entity.User;
 import com.backend.givu.model.repository.FundingRepository;
+import com.backend.givu.model.repository.ProductRepository;
 import com.backend.givu.model.repository.UserRepository;
 import com.backend.givu.model.requestDTO.FundingCreateDTO;
 import com.backend.givu.model.requestDTO.FundingUpdateDTO;
@@ -28,6 +30,7 @@ import java.util.NoSuchElementException;
 public class FundingService {
 
     private final FundingRepository fundingRepository;
+    private final ProductRepository productRepository;
     private final UserRepository userRepository;
     private final S3UploadService s3UploadService;
 
@@ -50,13 +53,16 @@ public class FundingService {
      * 펀딩 리스트 조회
      */
     public List<FundingsDTO> findAllFunding(){
-        List<Funding> fundingList = fundingRepository.findAll();
+        List<Funding> fundings =  fundingRepository.findAllWithUserAndProduct();
+        return fundings.stream()
+                .map(FundingsDTO::new)
+                .toList();
 
-        List<FundingsDTO> dtoList  = new ArrayList<>();
-        for(Funding funding: fundingList){
-            dtoList.add(new FundingsDTO(funding));
-        }
-        return dtoList;
+//        List<FundingsDTO> dtoList  = new ArrayList<>();
+//        for(Funding funding: fundingList){
+//            dtoList.add(new FundingsDTO(funding));
+//        }
+//        return dtoList;
     }
 
     /**
@@ -66,8 +72,10 @@ public class FundingService {
         // 존재하는 유저인지 확인
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new EntityNotFoundException("유저를 찾을 수 없습니다."));
-
-        Funding saveFunding = fundingRepository.save(Funding.from(user, fundingDTO, imageUrls));
+        // 존재하는 상품인지 확인
+        Product product = productRepository.findById(fundingDTO.getProductId())
+                .orElseThrow(()-> new EntityNotFoundException("상품을 찾을 수 없습니다."));
+        Funding saveFunding = fundingRepository.save(Funding.from(user, product, fundingDTO, imageUrls));
         return  Funding.toDTO(saveFunding);
 
     }
@@ -81,6 +89,10 @@ public class FundingService {
         // 존재하는 펀딩인지 확인
         Funding funding = fundingRepository.findById(fundingId)
                 .orElseThrow(() -> new EntityNotFoundException("펀딩을 찾을 수 없습니다,"));
+
+        // 존재하는 상품인지 확인
+        Product product = productRepository.findById(fundingDTO.getProductId())
+                .orElseThrow(()-> new EntityNotFoundException("상품을 찾을 수 없습니다."));
         // 본인 펀딩인지 확인
         log.info("수정 요청보낸 유저ID: " + userId);
         if(!funding.getUser().getId().equals(userId)){
@@ -89,7 +101,7 @@ public class FundingService {
         }
         // DTO 내용 entity에 넣기
         funding.setTitle(fundingDTO.getTitle());
-        funding.setProductId(fundingDTO.getProductId());
+        funding.setProduct(product);
         funding.setBody(fundingDTO.getBody());
         funding.setDescription(fundingDTO.getDescription());
         funding.setCategory(CategoryMapper.fromClient(fundingDTO.getCategory())); // 한글 -> 영어
