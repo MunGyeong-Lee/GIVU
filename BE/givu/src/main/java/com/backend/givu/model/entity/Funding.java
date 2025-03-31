@@ -42,8 +42,9 @@ public class Funding {
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
-    @Column(name = "product_id")
-    private Integer productId;
+    @ManyToOne
+    @JoinColumn(name = "product_id", nullable = false)
+    private Product product;
 
     @Size(max = 20)
     @NotNull
@@ -129,11 +130,12 @@ public class Funding {
         this.updatedAt = Instant.now();
     }
 
+
     // DTO에서 펀딩객체로 변환
-    public static Funding from (User user, FundingCreateDTO dto, List<String> imageUrls){
+    public static Funding from (User user, Product product, FundingCreateDTO dto, List<String> imageUrls){
         Funding funding = Funding.builder()
                 .user(user)
-                .productId(dto.getProductId())
+                .product(product)
                 .title(dto.getTitle())
                 .body(dto.getBody())
                 .description(dto.getDescription())
