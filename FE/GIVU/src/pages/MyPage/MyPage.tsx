@@ -1,5 +1,5 @@
-import React, { useState, useRef, MutableRefObject } from "react";
-import { Link } from "react-router-dom";
+import React, { useState, useRef, MutableRefObject, useEffect } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 
 // 임시 데이터 - 나중에 API에서 가져오도록 수정 예정
@@ -57,7 +57,7 @@ const MY_REVIEWS = [
     id: 1,
     title: "노란색이 된 도현이의 속옷을 사주세요 !!!",
     date: "2025.03.10",
-    author: "정도현",
+    author: "닉네임",
     views: 235,
     image: "https://via.placeholder.com/150x100?text=속옷이미지"
   },
@@ -116,6 +116,15 @@ type TransactionType = 'deposit' | 'withdrawal';
 interface Transaction {
   transactionBalance: number;
   accountNo: string;
+}
+
+// 기존 타입 정의들 위에 추가
+interface UserData {
+  kakaoId: number;
+  nickname: string;
+  email: string;
+  profileImage: string;
+  balance?: number; // 잔액은 선택적 필드로 변경
 }
 
 // 모달 컴포넌트 추가
@@ -242,6 +251,7 @@ const TransactionModal: React.FC<{
 };
 
 const MyPage = () => {
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<TabType>("created");
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
@@ -631,118 +641,146 @@ const MyPage = () => {
     setIsTransactionModalOpen(true);
   };
 
+  const [userData, setUserData] = useState<UserData | null>(null);
+
+  // 컴포넌트 마운트 시 로그인 체크 및 사용자 정보 가져오기
+  useEffect(() => {
+    const userString = localStorage.getItem('user');
+    const token = localStorage.getItem('auth_token');
+
+    if (!userString || !token) {
+      alert('로그인이 필요한 서비스입니다.');
+      navigate('/login');
+      return;
+    }
+
+    try {
+      const parsedUser = JSON.parse(userString);
+      setUserData(parsedUser);
+    } catch (error) {
+      console.error('사용자 정보 파싱 오류:', error);
+      navigate('/login');
+    }
+  }, [navigate]);
+
   return (
     <div className="max-w-7xl mx-auto px-5 py-8 font-pretendard">
-      {/* 상단 프로필 영역 */}
-      <div className="flex flex-col md:flex-row items-start">
-        <div className="md:mr-8 mb-6 md:mb-0">
-          <div className="w-36 h-36 md:w-40 md:h-40 rounded-full overflow-hidden mb-4 border-4 border-cusPink shadow-lg">
-            <img
-              src={USER_DATA.profileImage}
-              alt={USER_DATA.name}
-              className="w-full h-full object-cover"
-            />
-          </div>
-          <div className="text-center">
-            <button className="px-4 py-2 bg-btnPink hover:bg-btnPink-hover text-black hover:text-white rounded-full text-sm transition-colors shadow-md">
-              프로필 수정
-            </button>
-          </div>
-        </div>
-        
-        <div className="flex-1 w-full">
-          <div className="bg-cusLightBlue-lighter rounded-2xl p-6 mb-6 shadow-md">
-            <div className="flex flex-col md:flex-row md:justify-between md:items-center border-b border-cusGray pb-4 mb-4">
-              <h1 className="text-2xl font-bold mb-3 md:mb-0 text-cusBlack">{USER_DATA.name}</h1>
-              <div className="flex gap-3">
-                <button
-                  onClick={() => handleTransactionClick('deposit')}
-                  className="px-5 py-2 border border-cusBlue rounded-full text-sm bg-btnLightBlue text-cusBlue hover:bg-btnLightBlue-hover hover:text-white transition-colors shadow-sm"
-                >
-                  충전하기
-                </button>
-                <button
-                  onClick={() => handleTransactionClick('withdrawal')}
-                  className="px-5 py-2 border border-cusYellow rounded-full text-sm bg-btnYellow text-cusBlack hover:bg-btnYellow-hover transition-colors shadow-sm"
-                >
-                  출금하기
+      {userData && (
+        <>
+          {/* 상단 프로필 영역 */}
+          <div className="flex flex-col md:flex-row items-start">
+            <div className="md:mr-8 mb-6 md:mb-0">
+              <div className="w-36 h-36 md:w-40 md:h-40 rounded-full overflow-hidden mb-4 border-4 border-cusPink shadow-lg">
+                <img
+                  src={userData.profileImage}
+                  alt={userData.nickname}
+                  className="w-full h-full object-cover"
+                />
+              </div>
+              <div className="text-center">
+                <button className="px-4 py-2 bg-btnPink hover:bg-btnPink-hover text-black hover:text-white rounded-full text-sm transition-colors shadow-md">
+                  프로필 수정
                 </button>
               </div>
             </div>
             
-            <div className="flex items-center">
-              <div className="mr-10">
-                <div className="flex items-center mb-2">
-                  <span className="text-yellow-500 text-2xl mr-2">👑</span>
-                  <h3 className="text-lg font-medium text-cusBlue">내 기뷰페이</h3>
+            <div className="flex-1 w-full">
+              <div className="bg-cusLightBlue-lighter rounded-2xl p-6 mb-6 shadow-md">
+                <div className="flex flex-col md:flex-row md:justify-between md:items-center border-b border-cusGray pb-4 mb-4">
+                  <div className="mr-auto md:ml-4">
+                    <h1 className="text-2xl font-bold text-cusBlack">{userData.nickname}</h1>
+                  </div>
+                  <div className="flex gap-3">
+                    <button
+                      onClick={() => handleTransactionClick('deposit')}
+                      className="px-5 py-2 border border-cusBlue rounded-full text-sm bg-btnLightBlue text-cusBlue hover:bg-btnLightBlue-hover hover:text-white transition-colors shadow-sm"
+                    >
+                      충전하기
+                    </button>
+                    <button
+                      onClick={() => handleTransactionClick('withdrawal')}
+                      className="px-5 py-2 border border-cusYellow rounded-full text-sm bg-btnYellow text-cusBlack hover:bg-btnYellow-hover transition-colors shadow-sm"
+                    >
+                      출금하기
+                    </button>
+                  </div>
                 </div>
-                <p className="text-3xl font-bold text-cusBlack">{USER_DATA.totalDonation.toLocaleString()}</p>
+                
+                <div className="flex items-center">
+                  <div className="mr-10">
+                    <div className="flex items-center mb-2">
+                      <span className="text-yellow-500 text-2xl mr-2">👑</span>
+                      <h3 className="text-lg font-medium text-cusBlue">내 기뷰페이</h3>
+                    </div>
+                    <p className="text-3xl font-bold text-cusBlack">{userData.balance?.toLocaleString()}</p>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
-        </div>
-      </div>
-      
-      {/* 탭 메뉴 - 글자 색상 강조 */}
-      <div className="mb-8 mt-10">
-        <div className="mb-4">
-          <div className="flex flex-wrap justify-center md:justify-start gap-2 md:gap-4" role="group">
-            <button
-              className={`px-5 py-3 text-base font-bold rounded-full transition-all ${
-                activeTab === "created" 
-                  ? "bg-cusBlack text-cusRed shadow-lg" 
-                  : "bg-cusGray-light text-cusBlack-light hover:bg-cusGray"
-              }`}
-              onClick={() => setActiveTab("created")}
-            >
-              내가 만든 펀딩
-            </button>
-            <button
-              className={`px-5 py-3 text-base font-bold rounded-full transition-all ${
-                activeTab === "participated" 
-                  ? "bg-cusBlack text-cusLightBlue shadow-lg" 
-                  : "bg-cusGray-light text-cusBlack-light hover:bg-cusGray"
-              }`}
-              onClick={() => setActiveTab("participated")}
-            >
-              참여한 펀딩
-            </button>
-            <button
-              className={`px-5 py-3 text-base font-bold rounded-full transition-all ${
-                activeTab === "liked" 
-                  ? "bg-cusBlack text-success shadow-lg" 
-                  : "bg-cusGray-light text-cusBlack-light hover:bg-cusGray"
-              }`}
-              onClick={() => setActiveTab("liked")}
-            >
-              내가 쓴 후기
-            </button>
-            <button
-              className={`px-5 py-3 text-base font-bold rounded-full transition-all ${
-                activeTab === "wishlist" 
-                  ? "bg-cusBlack text-cusYellow shadow-lg" 
-                  : "bg-cusGray-light text-cusBlack-light hover:bg-cusGray"
-              }`}
-              onClick={() => setActiveTab("wishlist")}
-            >
-              찜 목록
-            </button>
+          
+          {/* 탭 메뉴 - 글자 색상 강조 */}
+          <div className="mb-8 mt-10">
+            <div className="mb-4">
+              <div className="flex flex-wrap justify-center md:justify-start gap-2 md:gap-4" role="group">
+                <button
+                  className={`px-5 py-3 text-base font-bold rounded-full transition-all ${
+                    activeTab === "created" 
+                      ? "bg-cusBlack text-cusRed shadow-lg" 
+                      : "bg-cusGray-light text-cusBlack-light hover:bg-cusGray"
+                  }`}
+                  onClick={() => setActiveTab("created")}
+                >
+                  내가 만든 펀딩
+                </button>
+                <button
+                  className={`px-5 py-3 text-base font-bold rounded-full transition-all ${
+                    activeTab === "participated" 
+                      ? "bg-cusBlack text-cusLightBlue shadow-lg" 
+                      : "bg-cusGray-light text-cusBlack-light hover:bg-cusGray"
+                  }`}
+                  onClick={() => setActiveTab("participated")}
+                >
+                  참여한 펀딩
+                </button>
+                <button
+                  className={`px-5 py-3 text-base font-bold rounded-full transition-all ${
+                    activeTab === "liked" 
+                      ? "bg-cusBlack text-success shadow-lg" 
+                      : "bg-cusGray-light text-cusBlack-light hover:bg-cusGray"
+                  }`}
+                  onClick={() => setActiveTab("liked")}
+                >
+                  내가 쓴 후기
+                </button>
+                <button
+                  className={`px-5 py-3 text-base font-bold rounded-full transition-all ${
+                    activeTab === "wishlist" 
+                      ? "bg-cusBlack text-cusYellow shadow-lg" 
+                      : "bg-cusGray-light text-cusBlack-light hover:bg-cusGray"
+                  }`}
+                  onClick={() => setActiveTab("wishlist")}
+                >
+                  찜 목록
+                </button>
+              </div>
+            </div>
           </div>
-        </div>
-      </div>
-      
-      {/* 탭 콘텐츠 - 중복 제목 제거 */}
-      <div className="bg-white rounded-xl shadow-sm p-6">
-        {/* 탭 컨텐츠 */}
-        {renderTabContent()}
-      </div>
-      
-      {/* 모달 추가 */}
-      <TransactionModal
-        isOpen={isTransactionModalOpen}
-        onClose={() => setIsTransactionModalOpen(false)}
-        type={transactionType}
-      />
+          
+          {/* 탭 콘텐츠 - 중복 제목 제거 */}
+          <div className="bg-white rounded-xl shadow-sm p-6">
+            {/* 탭 컨텐츠 */}
+            {renderTabContent()}
+          </div>
+          
+          {/* 모달 추가 */}
+          <TransactionModal
+            isOpen={isTransactionModalOpen}
+            onClose={() => setIsTransactionModalOpen(false)}
+            type={transactionType}
+          />
+        </>
+      )}
     </div>
   );
 };
