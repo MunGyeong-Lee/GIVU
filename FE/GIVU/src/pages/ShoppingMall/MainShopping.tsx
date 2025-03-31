@@ -3,7 +3,6 @@ import { Link } from "react-router-dom";
 import axios from 'axios';
 
 // .env 파일에서 기본 URL 가져오기
-const API_BASE_URL = import.meta.env.VITE_BASE_URL;
 
 // API 응답 타입에 맞게 수정된 상품 인터페이스
 interface Product {
@@ -105,12 +104,12 @@ const MainShopping = () => {
   
   // 무한 스크롤을 위한 상태
   const [page, setPage] = useState(1);
-  const [itemsPerPage, setItemsPerPage] = useState(8); // 한 번에 보여줄 상품 수
-  const [hasMore, setHasMore] = useState(true);
+  const [itemsPerPage] = useState(8); // 한 번에 보여줄 상품 수
+  const [hasMore,setHasMore] = useState(true);
   
   // ref 정의
   const bestProductsRef = useRef<HTMLDivElement>(null);
-  const productGridRef = useRef<HTMLDivElement>(null);
+  // const productGridRef = useRef<HTMLDivElement>(null);
   const trendingProductsRef = useRef<HTMLDivElement>(null);
   const allProductsRef = useRef<HTMLDivElement>(null);
   const categoryRef = useRef<HTMLDivElement>(null);

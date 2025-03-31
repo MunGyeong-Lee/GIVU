@@ -9,7 +9,7 @@ interface Friend {
 
 function MyFriendPage() {
   // 친구 목록 상태 (임시 데이터)
-  const [friends, setFriends] = useState<Friend[]>([
+  const [friends] = useState<Friend[]>([
     {
       id: 1,
       name: '김민수',

@@ -19,9 +19,9 @@ interface FundingCardProps {
 }
 
 const FundingCard: React.FC<FundingCardProps> = ({
-  id,
+  // id,
   title,
-  description,
+  // description,
   targetAmount,
   currentAmount,
   progressPercentage,

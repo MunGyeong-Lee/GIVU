@@ -1,5 +1,3 @@
-import React from "react";
-
 const AppDownloadSection = () => {
   return (
     <section className="mb-10">
