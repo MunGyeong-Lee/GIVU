@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Outlet, useLocation } from "react-router-dom";
+import { Outlet } from "react-router-dom";
 import FundingCreateNavbar from "../../pages/FundingCreate/components/FundingCreateNavbar";
 
 // 스텝 타입 정의
@@ -16,7 +16,6 @@ interface FundingCreateContext {
 const FundingCreateLayout: React.FC = () => {
   const [currentStep, setCurrentStep] = useState<StepType>(1);
   const [previewCallback, setPreviewCallback] = useState<(() => void) | null>(null);
-  const location = useLocation();
 
   // 현재 스텝 업데이트 함수
   const updateCurrentStep = (step: StepType) => {
