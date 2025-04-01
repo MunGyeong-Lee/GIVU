@@ -52,13 +52,15 @@ fun PopularFundingCardItem(funding: Funding, navController: NavController) {
                     .fillMaxWidth()
                     .height(180.dp)
             ) {
-                SubcomposeAsyncImage(
-                    model = funding.images[0],
-                    contentDescription = "Funding Image",
-                    contentScale = ContentScale.Crop,
-                    loading = { CircularProgressIndicator() },
-                    modifier = Modifier.fillMaxSize()
-                )
+                if (funding.images.isNotEmpty()) {
+                    SubcomposeAsyncImage(
+                        model = funding.images[0],
+                        contentDescription = "Funding Image",
+                        contentScale = ContentScale.Crop,
+                        loading = { CircularProgressIndicator() },
+                        modifier = Modifier.fillMaxSize()
+                    )
+                }
 
                 Box(
                     modifier = Modifier
@@ -81,7 +83,7 @@ fun PopularFundingCardItem(funding: Funding, navController: NavController) {
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 SubcomposeAsyncImage(
-                    model = funding.images[0],
+                    model = if (funding.images.isNotEmpty()) funding.images[0] else "",
                     contentDescription = "Profile Image",
                     contentScale = ContentScale.Crop,
                     modifier = Modifier
