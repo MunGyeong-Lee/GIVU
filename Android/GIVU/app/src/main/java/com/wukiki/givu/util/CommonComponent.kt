@@ -86,12 +86,16 @@ fun CommonTopBar(
 
 
 @Composable
-fun CommonBottomButton(modifier: Modifier, text: String) {
+fun CommonBottomButton(
+    modifier: Modifier,
+    text: String,
+    onClick: () -> Unit
+) {
     Box(
         modifier = modifier
     ) {
         Button(
-            onClick = { },
+            onClick = { onClick() },
             modifier = Modifier
                 .fillMaxSize()
                 .padding(8.dp),
@@ -190,7 +194,8 @@ fun StoreDetailBottomButton(
     modifier: Modifier,
     text: String,
     navController: NavController,
-    actionId: Int
+    actionId: Int,
+    onClick: () -> Unit
 ) {
     Box(
         modifier = modifier
@@ -229,7 +234,7 @@ fun StoreDetailBottomButton(
 
 
             Button(
-                onClick = { navController.navigate(actionId) },
+                onClick = { if (actionId != -1) navController.navigate(actionId) else onClick() },
                 modifier = Modifier.fillMaxSize(),
                 enabled = true,
                 shape = RoundedCornerShape(5.dp),

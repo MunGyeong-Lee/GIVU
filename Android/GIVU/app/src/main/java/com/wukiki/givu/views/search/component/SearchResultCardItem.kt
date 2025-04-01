@@ -68,7 +68,7 @@ fun SearchResultCardItem(
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Text(
-                        text = funding.userId,
+                        text = funding.userId.toString(),
                         fontSize = 16.sp,
                         fontWeight = FontWeight.SemiBold,
                         fontFamily = suit,

@@ -64,7 +64,7 @@ fun FundingInfoPager(funding: Funding) {
                 Spacer(modifier = Modifier.width(4.dp))
                 Text(
                     modifier = Modifier.weight(1F),
-                    text = funding.userId,
+                    text = funding.userId.toString(),
                     fontWeight = FontWeight.Medium,
                     fontFamily = suit,
                     color = Color.Gray,

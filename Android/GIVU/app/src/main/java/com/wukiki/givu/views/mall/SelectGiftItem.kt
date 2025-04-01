@@ -1,6 +1,7 @@
 package com.wukiki.givu.views.mall
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -42,7 +43,7 @@ fun GiftListItem(
             .fillMaxWidth()
             .height(106.dp)
             .padding(vertical = 4.dp)
-        ,
+            .clickable { onClick() },
         verticalAlignment = Alignment.CenterVertically
     ) {
         AsyncImage(
@@ -109,18 +110,10 @@ fun GiftListItem(
 
 @Preview(showBackground = true)
 @Composable
-private fun previewItem() {
+private fun PreviewItem() {
     Column(
         Modifier
             .fillMaxSize()
             .padding(horizontal = 24.dp)
-    ) {
-
-//        GiftListItem()
-//        GiftListItem()
-//        GiftListItem()
-//        GiftListItem()
-    }
-
-
+    ) {}
 }
