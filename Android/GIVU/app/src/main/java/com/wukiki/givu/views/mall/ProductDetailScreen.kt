@@ -142,13 +142,12 @@ fun ProductDetailScreen(
                         fontFamily = pretendard,
                         fontWeight = FontWeight.SemiBold,
                         fontSize = 20.sp,
-//                        color = colorResource(R.color.main_secondary)
                     )
 
                     Spacer(Modifier.height(24.dp))
                     Divider(
                         modifier = Modifier.fillMaxWidth(),
-                        thickness = 10.dp,
+                        thickness = 15.dp,
                         color = Color(0xFFF2F2F2)
                     )
                     Spacer(Modifier.height(24.dp))
@@ -157,7 +156,6 @@ fun ProductDetailScreen(
                         fontFamily = suit,
                         fontWeight = FontWeight.SemiBold,
                         fontSize = 20.sp,
-//                        color = colorResource(R.color.main_secondary)
                     )
                     Box(
                         modifier = Modifier
@@ -175,8 +173,20 @@ fun ProductDetailScreen(
 //                        color = colorResource(R.color.main_secondary)
                         )
                     }
-
-
+                    Spacer(Modifier.height(24.dp))
+                    Divider(
+                        modifier = Modifier.fillMaxWidth(),
+                        thickness = 15.dp,
+                        color = Color(0xFFF2F2F2)
+                    )
+                    Spacer(Modifier.height(24.dp))
+                    Text(
+                        text = "후기",
+                        fontFamily = suit,
+                        fontWeight = FontWeight.SemiBold,
+                        fontSize = 20.sp,
+                    )
+                    Spacer(Modifier.height(24.dp))
 
 
 
@@ -218,7 +228,7 @@ fun ProductDetailScreen(
                     }
                     Spacer(Modifier.height(4.dp))
                     Text(
-                        text = "123",
+                        text = it.favorite,
                         fontFamily = pretendard,
                         fontWeight = FontWeight.Medium,
                         fontSize = 14.sp
