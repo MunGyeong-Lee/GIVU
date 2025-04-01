@@ -10,6 +10,7 @@ import com.wukiki.givu.config.BaseActivity
 import com.wukiki.givu.databinding.ActivityMainBinding
 import com.wukiki.givu.views.detail.viewmodel.FundingViewModel
 import com.wukiki.givu.views.mall.viewmodel.MallViewModel
+import com.wukiki.givu.views.register.viewmodel.RegisterViewModel
 import com.wukiki.givu.views.search.viewmodel.SearchViewModel
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -18,6 +19,7 @@ class MainActivity : BaseActivity<ActivityMainBinding>(ActivityMainBinding::infl
 
     private val mainViewModel: MainViewModel by viewModels()
     private val fundingViewModel: FundingViewModel by viewModels()
+    private val registerViewModel: RegisterViewModel by viewModels()
     private val searchViewModel: SearchViewModel by viewModels()
     private val mallViewModel: MallViewModel by viewModels()
     private lateinit var navController: NavController

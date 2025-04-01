@@ -21,13 +21,13 @@ data class FundingEntity(
     val description: String,
 
     @Json(name = "category")
-    val category: String,
+    val category: String?,
 
     @Json(name = "categoryName")
     val categoryName: String?,
 
     @Json(name = "scope")
-    val scope: String,
+    val scope: String?,
 
     @Json(name = "participantsNumber")
     val participantsNumber: Int,
@@ -36,7 +36,7 @@ data class FundingEntity(
     val fundedAmount: Int,
 
     @Json(name = "status")
-    val status: String,
+    val status: String?,
 
     @Json(name = "image")
     val images: List<String>?,

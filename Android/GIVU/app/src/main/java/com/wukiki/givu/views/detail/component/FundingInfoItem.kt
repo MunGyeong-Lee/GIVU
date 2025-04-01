@@ -63,7 +63,7 @@ fun FundingInfoItem(funding: Funding) {
         )
 
         Text(
-            text = funding.userId,
+            text = funding.userId.toString(),
             fontSize = 16.sp,
             color = Color.Gray,
             fontFamily = suit,

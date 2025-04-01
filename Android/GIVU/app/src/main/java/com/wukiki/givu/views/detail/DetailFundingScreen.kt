@@ -43,7 +43,7 @@ fun DetailFundingScreen(
                     text = "이 상품 선택하기",
                     navController = navController,
                     actionId = R.id.action_detail_funding_to_participate_funding
-                )
+                ) { }
             }
         }
     ) { paddingValues ->
