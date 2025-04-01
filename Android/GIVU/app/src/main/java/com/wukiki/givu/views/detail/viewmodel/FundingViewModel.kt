@@ -252,7 +252,6 @@ class FundingViewModel @Inject constructor(
 
     fun updateFunding() {
         viewModelScope.launch {
-            Timber.d("New Funding: ${_fundingImageMultiparts.value}")
             val response = getFundingUseCase.updateFundingDetail(
                 fundingId = _selectedFunding.value?.id ?: -1,
                 files = _fundingImageMultiparts.value,
@@ -262,6 +261,24 @@ class FundingViewModel @Inject constructor(
             when (response.status) {
                 ApiStatus.SUCCESS -> {
 
+                }
+
+                else -> {
+
+                }
+            }
+        }
+    }
+
+    fun cancelFunding() {
+        viewModelScope.launch {
+            val response = getFundingUseCase.cancelFunding(
+                fundingId = _selectedFunding.value?.id ?: -1
+            )
+
+            when (response.status) {
+                ApiStatus.SUCCESS -> {
+                    _fundingUiEvent.emit(FundingUiEvent.CancelFundingSuccess)
                 }
 
                 else -> {
