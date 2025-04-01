@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { allFundingItems } from "../../Funding/data/dummyData";
 
 // 선물 상자를 구성하는 개별 펀딩 이미지 컴포넌트

@@ -1,5 +1,3 @@
-import React from "react";
-
 const CategorySection = () => {
   return (
     <div className="flex justify-between gap-2.5 mb-10">

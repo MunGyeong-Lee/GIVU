@@ -3,7 +3,6 @@ import { Link } from "react-router-dom";
 import axios from 'axios';
 
 // .env 파일에서 기본 URL 가져오기
-const API_BASE_URL = import.meta.env.VITE_BASE_URL;
 
 // API 응답 타입에 맞게 수정된 상품 인터페이스
 interface Product {
@@ -105,12 +104,12 @@ const MainShopping = () => {
   
   // 무한 스크롤을 위한 상태
   const [page, setPage] = useState(1);
-  const [itemsPerPage, setItemsPerPage] = useState(8); // 한 번에 보여줄 상품 수
-  const [hasMore, setHasMore] = useState(true);
+  const [itemsPerPage] = useState(8); // 한 번에 보여줄 상품 수
+  const [hasMore,setHasMore] = useState(true);
   
   // ref 정의
   const bestProductsRef = useRef<HTMLDivElement>(null);
-  const productGridRef = useRef<HTMLDivElement>(null);
+  // const productGridRef = useRef<HTMLDivElement>(null);
   const trendingProductsRef = useRef<HTMLDivElement>(null);
   const allProductsRef = useRef<HTMLDivElement>(null);
   const categoryRef = useRef<HTMLDivElement>(null);
@@ -344,6 +343,64 @@ const MainShopping = () => {
     }
   }, [selectedCategory, selectedPriceRange]);
 
+  // isLoggedIn 상태 설정 로직 수정
+  useEffect(() => {
+    const token = localStorage.getItem('auth_token');
+    setIsLoggedIn(!!token);
+  }, []);
+
+  // 찜하기 버튼 클릭 핸들러 추가
+  const handleWishlistClick = async (e: React.MouseEvent, productId: number) => {
+    e.preventDefault();
+    const token = localStorage.getItem('auth_token');
+    
+    if (!token) {
+      alert('로그인이 필요한 서비스입니다.');
+      return;
+    }
+
+    // 토큰 디버깅
+    console.log('원본 토큰:', token);
+    const finalToken = token.startsWith('Bearer ') ? token : `Bearer ${token}`;
+    console.log('최종 토큰:', finalToken);
+
+    try {
+      const response = await axios.patch(
+        `${import.meta.env.VITE_API_BASE_URL}/products/${productId}/like`,
+        null,
+        {
+          headers: {
+            'Authorization': finalToken,
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+          },
+          withCredentials: true  // CORS 인증 정보 포함
+        }
+      );
+      
+      console.log('API 요청 성공:', response);
+
+      if (response.status === 200 || response.status === 204) {
+        const updatedProducts = products.map(product => 
+          product.id === productId 
+            ? { ...product, favorite: !product.favorite }
+            : product
+        );
+        setProducts(updatedProducts);
+        setFilteredProducts(updatedProducts);
+        setDisplayedProducts(updatedProducts);
+      }
+    } catch (error: any) {
+      console.error('찜하기 처리 중 오류 발생:', error);
+      if (error.response) {
+        console.log('에러 상태:', error.response.status);
+        console.log('에러 데이터:', error.response.data);
+        console.log('요청 헤더:', error.config.headers);
+      }
+      alert('찜하기 처리 중 오류가 발생했습니다.');
+    }
+  };
+
   // 가로 스크롤 함수
   const scrollHorizontally = (ref: any, direction: 'left' | 'right') => {
     if (ref.current) {
@@ -536,7 +593,7 @@ const MainShopping = () => {
                           alert('로그인이 필요한 서비스입니다.');
                           return;
                         }
-                        // 찜하기 API 호출 로직
+                        handleWishlistClick(e, product.id);
                       }}
                       className="absolute top-2 left-2 p-2 bg-white rounded-full shadow-md"
                     >
@@ -657,7 +714,7 @@ const MainShopping = () => {
                           alert('로그인이 필요한 서비스입니다.');
                           return;
                         }
-                        // 찜하기 API 호출 로직
+                        handleWishlistClick(e, product.id);
                       }}
                       className="absolute top-2 left-2 p-2 bg-white rounded-full shadow-md"
                     >
@@ -752,7 +809,7 @@ const MainShopping = () => {
                             alert('로그인이 필요한 서비스입니다.');
                             return;
                           }
-                          // 찜하기 API 호출 로직
+                          handleWishlistClick(e, product.id);
                         }}
                         className="absolute top-2 left-2 p-2 bg-white rounded-full shadow-md"
                       >

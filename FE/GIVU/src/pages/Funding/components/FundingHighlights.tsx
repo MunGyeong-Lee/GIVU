@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Slider from 'react-slick';
 import "slick-carousel/slick/slick.css";
@@ -34,7 +34,7 @@ interface CustomSlider extends Slider {
 const FundingHighlights: React.FC<FundingHighlightsProps> = ({
   popularItems = [],
   achievementItems = [],
-  title = '펀딩 하이라이트'
+  // title = '펀딩 하이라이트'
 }) => {
   // Navigation 훅 추가
   const navigate = useNavigate();
@@ -260,7 +260,7 @@ const FundingHighlights: React.FC<FundingHighlightsProps> = ({
           `}
         </style>
         <Slider {...settings} ref={sliderRef}>
-          {items.map((item, index) => (
+          {items.map((item) => (
             <div key={item.id} style={{ backgroundColor: 'transparent' }}>
               <div
                 style={{

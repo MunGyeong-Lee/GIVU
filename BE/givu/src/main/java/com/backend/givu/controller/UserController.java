@@ -2,14 +2,13 @@ package com.backend.givu.controller;
 
 import com.backend.givu.exception.AuthErrorException;
 import com.backend.givu.model.Enum.HttpStatusCode;
-import com.backend.givu.model.entity.RefreshToken;
+import com.backend.givu.model.entity.CustomUserDetail;
 import com.backend.givu.model.responseDTO.*;
 import com.backend.givu.model.entity.User;
 import com.backend.givu.model.service.KakaoLoginService;
 import com.backend.givu.model.service.UserService;
 import com.backend.givu.security.JwtProvider;
 import com.backend.givu.util.DateTimeUtil;
-import com.backend.givu.util.JwtUtil;
 import com.backend.givu.util.mapper.AgeRangeMapper;
 import com.backend.givu.util.mapper.GenderMapper;
 import io.swagger.v3.oas.annotations.Operation;
@@ -22,10 +21,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -39,7 +41,6 @@ public class UserController {
     private final UserService userService;
     private final KakaoLoginService kakaoLoginService;
     private final JwtProvider jwtProvider;
-    private final JwtUtil jwtUtil;
 
     @Autowired
     private RedisConnectionFactory connectionFactory;
@@ -109,14 +110,26 @@ public class UserController {
     }
 
 
+    @Operation(summary = "JWT accessToken 수동발급", description = "인증 필요한 코드들 테스트하려면 여기서 accessToken 발급 받으시면 됩니다. userId 11번 거로 발급됨")
+    @GetMapping("/generate")
+    public ResponseEntity<Map<String, String>> generateTestToken() {
+        // ✅ userId = 11인 사용자 가져오기 (DB에 존재해야 함)
+        User user = userService.getUserById(11L); // 없을 경우 예외 처리 필요
+
+        // ✅ 토큰 생성
+        TokenDTO testToken = kakaoLoginService.createTokens(user, "test");
+
+        Map<String, String> response = new HashMap<>();
+        response.put("accessToken", testToken.getAccessToken());
+        return ResponseEntity.ok(response);
+    }
+
+
     @Operation(summary = "사용자 정보 조회(자기 자신)", description = "accessToken 으로 해당 user의 정보를 조회합니다.")
     @GetMapping("/info")
-    public ResponseEntity<UserInfoDTO> findUser(HttpServletRequest request){
+    public ResponseEntity<UserInfoDTO> findUser(@AuthenticationPrincipal CustomUserDetail userDetail){
 
-        String token = request.getHeader("Authorization");
-        Long userId = jwtUtil.getUserId(token);
-
-        User user = userService.getUserById(userId);
+        User user = userDetail.getUser();
 
         UserInfoDTO dto = UserInfoDTO.builder()
                 .kakaoId(user.getKakaoId())

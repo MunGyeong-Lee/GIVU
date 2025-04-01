@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 
@@ -39,60 +39,60 @@ interface Review {
 }
 
 // 임시 데이터 - 나중에 API로 대체
-const PRODUCT_DETAILS = {
-  id: 6,
-  name: "애플 에어팟 맥스",
-  price: 769000,
-  category: "가전/디지털",
-  imageUrl: "https://via.placeholder.com/800x600?text=에어팟+맥스",
-  discount: 5,
-  description: `
-    고품질 사운드와 액티브 노이즈 캔슬링을 갖춘 프리미엄 헤드폰입니다.
+// const PRODUCT_DETAILS = {
+//   id: 6,
+//   name: "애플 에어팟 맥스",
+//   price: 769000,
+//   category: "가전/디지털",
+//   imageUrl: "https://via.placeholder.com/800x600?text=에어팟+맥스",
+//   discount: 5,
+//   description: `
+//     고품질 사운드와 액티브 노이즈 캔슬링을 갖춘 프리미엄 헤드폰입니다.
     
-    주요 특징:
-    - 액티브 노이즈 캔슬링 기능
-    - 투명성 모드로 주변 소리 확인 가능
-    - 공간 음향으로 몰입감 있는 사운드
-    - 최대 20시간 배터리 사용 가능
-    - 고급스러운 메쉬 캐노피와 편안한 착용감
+//     주요 특징:
+//     - 액티브 노이즈 캔슬링 기능
+//     - 투명성 모드로 주변 소리 확인 가능
+//     - 공간 음향으로 몰입감 있는 사운드
+//     - 최대 20시간 배터리 사용 가능
+//     - 고급스러운 메쉬 캐노피와 편안한 착용감
     
-    패키지 구성: 헤드폰, 스마트 케이스, Lightning to USB-C 케이블
-  `,
-  detailImages: [
-    "https://via.placeholder.com/800x600?text=상세이미지1",
-    "https://via.placeholder.com/800x600?text=상세이미지2",
-    "https://via.placeholder.com/800x600?text=상세이미지3"
-  ],
-  options: [
-    {
-      name: "색상",
-      choices: ["스페이스 그레이", "실버", "스카이 블루", "핑크", "그린"]
-    }
-  ],
-  stock: 50,
-  deliveryInfo: {
-    fee: 3000,
-    freeFeeOver: 50000,
-    estimatedDays: "1~3일 이내"
-  },
-  reviews: [
-    {
-      id: 1,
-      author: "구매자1",
-      rating: 5,
-      content: "정말 좋은 품질입니다. 추천합니다!",
-      date: "2025.02.15"
-    },
-    {
-      id: 2,
-      author: "구매자2",
-      rating: 4,
-      content: "노이즈 캔슬링이 좋아요. 음질도 훌륭합니다.",
-      date: "2025.02.10"
-    }
-  ],
-  relatedProducts: [5, 9, 10, 14]
-};
+//     패키지 구성: 헤드폰, 스마트 케이스, Lightning to USB-C 케이블
+//   `,
+//   detailImages: [
+//     "https://via.placeholder.com/800x600?text=상세이미지1",
+//     "https://via.placeholder.com/800x600?text=상세이미지2",
+//     "https://via.placeholder.com/800x600?text=상세이미지3"
+//   ],
+//   options: [
+//     {
+//       name: "색상",
+//       choices: ["스페이스 그레이", "실버", "스카이 블루", "핑크", "그린"]
+//     }
+//   ],
+//   stock: 50,
+//   deliveryInfo: {
+//     fee: 3000,
+//     freeFeeOver: 50000,
+//     estimatedDays: "1~3일 이내"
+//   },
+//   reviews: [
+//     {
+//       id: 1,
+//       author: "구매자1",
+//       rating: 5,
+//       content: "정말 좋은 품질입니다. 추천합니다!",
+//       date: "2025.02.15"
+//     },
+//     {
+//       id: 2,
+//       author: "구매자2",
+//       rating: 4,
+//       content: "노이즈 캔슬링이 좋아요. 음질도 훌륭합니다.",
+//       date: "2025.02.10"
+//     }
+//   ],
+//   relatedProducts: [5, 9, 10, 14]
+// };
 
 const ShoppingProductDetail = () => {
   const { id } = useParams<{ id: string }>();
@@ -104,8 +104,8 @@ const ShoppingProductDetail = () => {
 
   // 기존 상태들
   const [selectedOptions, setSelectedOptions] = useState<Record<string, string>>({});
-  const [currentImageIndex, setCurrentImageIndex] = useState(0);
-  const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
+  // const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  // const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
   const [reviews, setReviews] = useState<Review[]>([]);
   const [averageRating, setAverageRating] = useState<number>(0);
 
@@ -158,7 +158,7 @@ const ShoppingProductDetail = () => {
   }
 
   // 총 금액 계산
-  const totalPrice = product.price * quantity;
+  // const totalPrice = product.price * quantity;
 
   // 옵션 선택 핸들러
   const handleOptionChange = (optionName: string, value: string) => {

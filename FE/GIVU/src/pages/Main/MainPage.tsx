@@ -1,4 +1,4 @@
-import React from "react";
+
 import HeroSection from "./components/HeroSection";
 import PopularFundingSection from "./components/PopularFundingSection";
 import CategorySection from "./components/CategorySection";
