@@ -1,7 +1,7 @@
-package com.wukiki.data.repository.review
+package com.wukiki.data.repository.productreview
 
 import android.util.Log
-import com.wukiki.data.mapper.ReviewsMapper
+import com.wukiki.data.mapper.ProductReviewsMapper
 import com.wukiki.domain.model.ApiResult
 import com.wukiki.domain.model.Review
 import com.wukiki.domain.repository.ProductReviewRepository
@@ -24,7 +24,7 @@ class ProductReviewRepositoryImpl @Inject constructor(
             Log.d("ProductReviewRepositoryImpl", "Response: $responseBody")
             if (response.isSuccessful && (responseBody != null)) {
                 Log.d("ProductReviewRepositoryImpl", "getProductReviews Success")
-                ApiResult.success(ReviewsMapper(responseBody))
+                ApiResult.success(ProductReviewsMapper(responseBody))
             } else {
                 Log.d("ProductReviewRepositoryImpl", "getProductReviews Fail: ${response.code()}")
                 ApiResult.error(response.errorBody().toString(), null)

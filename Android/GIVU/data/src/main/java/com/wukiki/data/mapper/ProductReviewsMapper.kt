@@ -3,7 +3,7 @@ package com.wukiki.data.mapper
 import com.wukiki.data.entity.ProductReviewEntity
 import com.wukiki.domain.model.Review
 
-object ReviewsMapper {
+object ProductReviewsMapper {
 
     operator fun invoke(productReviewEntities: List<ProductReviewEntity>): List<Review> {
         val newReviews = mutableListOf<Review>()
@@ -12,8 +12,8 @@ object ReviewsMapper {
             newReviews.add(
                 Review(
                     reviewId = productReviewEntity.reviewId,
-                    fundingId = "",
-                    userId = "",
+                    fundingId = -1,
+                    userId = -1,
                     comment = "",
                     image = "",
                     createdAt = "",

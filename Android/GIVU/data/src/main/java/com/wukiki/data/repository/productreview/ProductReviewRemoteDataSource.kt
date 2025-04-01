@@ -1,4 +1,4 @@
-package com.wukiki.data.repository.review
+package com.wukiki.data.repository.productreview
 
 import com.wukiki.data.entity.ProductReviewEntity
 import retrofit2.Response
