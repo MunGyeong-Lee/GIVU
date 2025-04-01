@@ -33,7 +33,7 @@ interface FundingApi {
     @DELETE("fundings/{fundingId}")
     suspend fun deleteFundingDetail(
         @Path("fundingId") fundingId: String
-    ): Response<Void>
+    ): Response<Unit>
 
     @Multipart
     @PUT("fundings/{fundingId}/image")

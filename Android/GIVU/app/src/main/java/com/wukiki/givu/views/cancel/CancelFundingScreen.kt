@@ -18,6 +18,7 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -32,17 +33,17 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.wukiki.givu.R
 import com.wukiki.givu.ui.suit
 import com.wukiki.givu.util.CommonTopBar
 import com.wukiki.givu.views.cancel.component.RecommendGiftPager
+import com.wukiki.givu.views.detail.viewmodel.FundingUiEvent
 import com.wukiki.givu.views.detail.viewmodel.FundingViewModel
 
 @Composable
 fun CancelFundingScreen(
-    fundingViewModel: FundingViewModel = hiltViewModel(),
+    fundingViewModel: FundingViewModel,
     navController: NavController
 ) {
     val funding by fundingViewModel.selectedFunding.collectAsState()
@@ -51,6 +52,19 @@ fun CancelFundingScreen(
         colors = listOf(Color.Gray.copy(alpha = 0.3f), Color.Transparent)
     )
     var showDialog by remember { mutableStateOf(false) }
+    val fundingUiEvent = fundingViewModel.fundingUiEvent
+
+    LaunchedEffect(Unit) {
+        fundingUiEvent.collect { event ->
+            when (event) {
+                is FundingUiEvent.CancelFundingSuccess -> {
+                    navController.navigate(R.id.action_cancel_funding_to_finish_cancel_funding)
+                }
+
+                else -> {}
+            }
+        }
+    }
 
     Scaffold(
         topBar = {
@@ -174,7 +188,7 @@ fun CancelFundingScreen(
         if (showDialog) {
             CancelFundingDialogScreen(
                 onDismiss = { showDialog = false },
-                onConfirm = { navController.navigate(R.id.action_cancel_funding_to_finish_cancel_funding) }
+                onConfirm = { fundingViewModel.cancelFunding() }
             )
         }
     }

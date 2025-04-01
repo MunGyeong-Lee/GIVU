@@ -18,7 +18,7 @@ interface FundingRepository {
         body: RequestBody
     ): ApiResult<Funding>
 
-    suspend fun deleteFundingDetail(fundingId: Int): ApiResult<Void>
+    suspend fun deleteFundingDetail(fundingId: Int): ApiResult<Unit>
 
     suspend fun updateFundingImage(fundingId: Int, file: MultipartBody.Part): ApiResult<String>
 

@@ -23,7 +23,7 @@ class FundingRemoteDataSourceImpl @Inject constructor(
         body: RequestBody
     ): Response<FundingEntity> = fundingApi.postFundingDetail(fundingId, files, body)
 
-    override suspend fun deleteFundingDetail(fundingId: String): Response<Void> =
+    override suspend fun deleteFundingDetail(fundingId: String): Response<Unit> =
         fundingApi.deleteFundingDetail(fundingId)
 
     override suspend fun putFundingImage(

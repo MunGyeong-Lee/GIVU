@@ -19,7 +19,7 @@ interface FundingRemoteDataSource {
         body: RequestBody
     ): Response<FundingEntity>
 
-    suspend fun deleteFundingDetail(fundingId: String): Response<Void>
+    suspend fun deleteFundingDetail(fundingId: String): Response<Unit>
 
     suspend fun putFundingImage(
         fundingId: String,

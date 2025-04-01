@@ -22,6 +22,9 @@ class GetFundingUseCase @Inject constructor(
         body: RequestBody
     ): ApiResult<Funding> = fundingRepository.updateFundingDetail(fundingId, files, body)
 
+    suspend fun cancelFunding(fundingId: Int): ApiResult<Unit> =
+        fundingRepository.deleteFundingDetail(fundingId)
+
     suspend fun fetchFundings(): ApiResult<List<Funding>> =
         fundingRepository.fetchFundings()
 }
