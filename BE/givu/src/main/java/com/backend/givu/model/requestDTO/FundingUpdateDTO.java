@@ -1,7 +1,9 @@
 package com.backend.givu.model.requestDTO;
 
+import com.backend.givu.model.Enum.LettersPrivate;
 import lombok.*;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Getter
