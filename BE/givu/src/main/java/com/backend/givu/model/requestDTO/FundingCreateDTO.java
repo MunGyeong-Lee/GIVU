@@ -11,7 +11,6 @@ import lombok.*;
 public class FundingCreateDTO {
     private String title;
     private int productId;
-    private String body;
     private String description;
     private String category;
     private String categoryName;

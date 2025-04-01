@@ -34,7 +34,7 @@ pipeline {
             steps {
                 dir('BE/givu') {
                     sh 'chmod +x gradlew'
-                    sh './gradlew build --no-daemon'
+                    sh './gradlew build -Dspring.profiles.active=test --no-daemon'
                 }
                 sh "docker build -t ${SPRING_IMAGE} -f BE/givu/Dockerfile BE/givu"
             }
@@ -42,6 +42,10 @@ pipeline {
 
         stage('Build React') {
             steps {
+                    withCredentials([string(credentialsId:'REACT_ENV', variable: 'REACT_ENV_CONTENT')]) {
+                        writeFile file: 'FE/GIVU/.env', text: REACT_ENV_CONTENT
+                }
+
                 sh "docker build -t ${REACT_IMAGE} -f FE/GIVU/Dockerfile FE/GIVU"
             }
         }

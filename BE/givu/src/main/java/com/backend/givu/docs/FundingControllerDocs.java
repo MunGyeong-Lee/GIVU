@@ -25,16 +25,15 @@ public interface FundingControllerDocs {
                             "{\n" +
                             "  \"title\": \"얘들아 펀딩해줘~!\",\n" +
                             "  \"productId\": \"3\",\n" +
-                            "  \"body\": test1\n" +
-                            "  \"description\": test2\n" +
-                            "  \"category\": 집들이\n" +
-                            "  \"categoryName\": null\n" +
-                            "  \"scope\": 공개\n" +
-
+                            "  \"description\": \"test2\",\n" +
+                            "  \"category\": \"집들이\",\n" +
+                            "  \"categoryName\": null,\n" +
+                            "  \"scope\": \"공개\"\n" +
                             "}\n" +
                             "```\n\n" +
                             "이미지는 `image` 파트로 파일 첨부해주세요."
     )
+
     public ResponseEntity<FundingsDTO> saveFunding(
             @AuthenticationPrincipal CustomUserDetail userDetail,
             @RequestPart("data") String data,
@@ -52,14 +51,13 @@ public interface FundingControllerDocs {
                             "```json\n" +
                             "{\n" +
                             "  \"title\": \"얘들아 펀딩해줘~!\",\n" +
-                            "  \"productId\": \"3\",\n" +
-                            "  \"body\": test1\n" +
-                            "  \"description\": test2\n" +
-                            "  \"category\": 집들이\n" +
-                            "  \"categoryName\": null\n" +
-                            "  \"scope\": 공개\n" +
-                            "  \"toDelete\": [  \"https://givuproject-images.s3.ap-northeast-2.a.....\"]\n" +
-
+                            "  \"description\": \"test2\",\n" +
+                            "  \"category\": \"집들이\",\n" +
+                            "  \"categoryName\": null,\n" +
+                            "  \"scope\": \"공개\",\n" +
+                            "  \"toDelete\": [\n" +
+                            "    \"https://givuproject-images.s3.ap-northeast-2.amazonaws.com/...\"\n" +
+                            "  ]\n" +
                             "}\n" +
                             "```\n\n" +
                             "이미지는 `image` 파트로 파일 첨부해주세요."
@@ -74,3 +72,4 @@ public interface FundingControllerDocs {
 
 
 }
+
