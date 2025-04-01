@@ -65,6 +65,11 @@
     <string name="title_complete_funding">펀딩 참여 완료</string>
     <string name="text_complete_funding">펀딩에 참여했습니다.</string>
 
+    <!-- Update Funding -->
+    <string name="label_update_funding">Update Funding</string>
+    <string name="title_update_funding">펀딩 수정하기</string>
+    <string name="text_update_funding">수정하기</string>
+
     <!-- Cancel Funding -->
     <string name="label_cancel_funding">Cancel Funding</string>
     <string name="label_finish_cancel_funding">Finish Cancel Funding</string>
