@@ -44,7 +44,7 @@ fun GiftListItem(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .height(106.dp)
+            .height(124.dp)
             .padding(vertical = 4.dp)
             .clickable(
                 interactionSource = remember { MutableInteractionSource() },

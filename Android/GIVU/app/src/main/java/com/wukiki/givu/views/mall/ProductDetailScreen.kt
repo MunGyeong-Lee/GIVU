@@ -4,6 +4,8 @@ import android.util.Log
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -17,9 +19,13 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentWidth
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Button
 import androidx.compose.material.ButtonDefaults
+import androidx.compose.material.Divider
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -30,6 +36,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.colorResource
@@ -66,12 +73,16 @@ fun ProductDetailScreen(
     }
 
     productInfo?.let {
-        Box(modifier = Modifier.fillMaxSize()) {
+        Box(modifier = Modifier
+            .fillMaxSize()
+//            .padding(bottom = 68.dp)
+        ) {
 
             Column(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(bottom = 68.dp)
+                    .verticalScroll(rememberScrollState())
             ) {
                 StoreDetailTopBar()
 
@@ -86,27 +97,98 @@ fun ProductDetailScreen(
                 )
 
                 Spacer(Modifier.height(16.dp))
-                Column(Modifier.padding(horizontal = 24.dp)) {
+                Column() {
                     Text(
                         text = it.productName,
                         fontFamily = pretendard,
-                        fontWeight = FontWeight.SemiBold,
+                        fontWeight = FontWeight.Bold,
                         fontSize = 22.sp,
                         maxLines = 2,
                         overflow = TextOverflow.Ellipsis
                     )
+
                     Spacer(Modifier.height(12.dp))
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            painter = painterResource(R.drawable.ic_star_best),
+                            contentDescription = null,
+                            tint = Color(0xFFFEBE14),
+//                            modifier = Modifier.size(20.dp)
+                        )
+                        Spacer(Modifier.width(4.dp))
+                        Text(
+                            text = it.star,
+                            fontFamily = pretendard,
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 16.sp,
+                            color = Color(0xFF666666)
+                        )
+                    }
+
+                    Spacer(Modifier.height(16.dp))
+                    Text(
+                        text = "판매가",
+                        fontFamily = suit,
+                        fontWeight = FontWeight.Medium,
+                        fontSize = 16.sp,
+//                        color = colorResource(R.color.main_secondary)
+                    )
+                    Spacer(Modifier.height(4.dp))
                     Text(
                         text = CommonUtils.makeCommaPrice(it.price.toInt()),
                         fontFamily = pretendard,
-                        fontWeight = FontWeight.Medium,
-                        fontSize = 19.sp,
-                        color = colorResource(R.color.main_secondary)
+                        fontWeight = FontWeight.SemiBold,
+                        fontSize = 20.sp,
+//                        color = colorResource(R.color.main_secondary)
                     )
+
+                    Spacer(Modifier.height(24.dp))
+                    Divider(
+                        modifier = Modifier.fillMaxWidth(),
+                        thickness = 10.dp,
+                        color = Color(0xFFF2F2F2)
+                    )
+                    Spacer(Modifier.height(24.dp))
+                    Text(
+                        text = "상품 정보",
+                        fontFamily = suit,
+                        fontWeight = FontWeight.SemiBold,
+                        fontSize = 20.sp,
+//                        color = colorResource(R.color.main_secondary)
+                    )
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(top = 12.dp)
+                            .clip(shape = RoundedCornerShape(5.dp))
+                            .border(1.dp, Color.Black, RoundedCornerShape(5.dp)),
+                    ) {
+                        Text(
+                            text = it.description,
+                            fontFamily = suit,
+                            fontWeight = FontWeight.Medium,
+                            fontSize = 16.sp,
+                            modifier = Modifier.padding(12.dp)
+//                        color = colorResource(R.color.main_secondary)
+                        )
+                    }
+
+
+
+
+
+
+                    Spacer(Modifier.height(16.dp))
                 }
 
             }
 
+
+
+            // 하단 바
             Row(
                 modifier =
                 Modifier
@@ -150,7 +232,9 @@ fun ProductDetailScreen(
                             // 펀딩 생성 화면으로 이동
 
                         },
-                        modifier = Modifier.weight(1f).height(48.dp),
+                        modifier = Modifier
+                            .weight(1f)
+                            .height(48.dp),
                         enabled = true,
                         shape = RoundedCornerShape(5.dp),
                         border = BorderStroke(1.dp, Color(0xFFECECEC)),
@@ -169,9 +253,11 @@ fun ProductDetailScreen(
                     Button(
                         onClick = {
                             // 구매로 이동
-                            
+
                         },
-                        modifier = Modifier.weight(1f).height(48.dp),
+                        modifier = Modifier
+                            .weight(1f)
+                            .height(48.dp),
                         enabled = true,
                         shape = RoundedCornerShape(5.dp),
                         border = BorderStroke(1.dp, colorResource(R.color.main_primary)),
