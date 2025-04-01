@@ -88,9 +88,6 @@ public class FundingService {
         Funding funding = fundingRepository.findById(fundingId)
                 .orElseThrow(() -> new EntityNotFoundException("펀딩을 찾을 수 없습니다,"));
 
-        // 존재하는 상품인지 확인
-        Product product = productRepository.findById(fundingDTO.getProductId())
-                .orElseThrow(()-> new EntityNotFoundException("상품을 찾을 수 없습니다."));
         // 본인 펀딩인지 확인
         log.info("수정 요청보낸 유저ID: " + userId);
         if(!funding.getUser().getId().equals(userId)){
@@ -99,7 +96,6 @@ public class FundingService {
         }
         // DTO 내용 entity에 넣기
         funding.setTitle(fundingDTO.getTitle());
-        funding.setProduct(product);
         funding.setBody(fundingDTO.getBody());
         funding.setDescription(fundingDTO.getDescription());
         funding.setCategory(CategoryMapper.fromClient(fundingDTO.getCategory())); // 한글 -> 영어
