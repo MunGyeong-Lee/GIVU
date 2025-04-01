@@ -96,7 +96,6 @@ public class FundingService {
         }
         // DTO 내용 entity에 넣기
         funding.setTitle(fundingDTO.getTitle());
-        funding.setBody(fundingDTO.getBody());
         funding.setDescription(fundingDTO.getDescription());
         funding.setCategory(CategoryMapper.fromClient(fundingDTO.getCategory())); // 한글 -> 영어
         funding.setScope(ScopeMapper.fromClient(fundingDTO.getScope()));          // 한글 -> 영어

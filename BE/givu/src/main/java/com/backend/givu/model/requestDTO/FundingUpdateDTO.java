@@ -10,7 +10,6 @@ import java.util.List;
 @AllArgsConstructor
 public class FundingUpdateDTO {
     private String title;
-    private String body;
     private String description;
     private String category;
     private String categoryName;
