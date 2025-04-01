@@ -4,14 +4,13 @@ import Step1Products from './Step1Products';
 import Step2BasicInfo from './Step2BasicInfo';
 import Step3PublicSettings from './Step3PublicSettings';
 import Preview from './Preview';
-import Complete from './Complete';
 
 // 펀딩 생성 상태 타입 정의
 export interface FundingCreateState {
   // 1단계: 상품 정보
   selectedProduct: {
     id?: string;
-    name?: string;
+    productName?: string;
     price?: number;
     image?: string;
     category?: string;
@@ -31,9 +30,6 @@ export interface FundingCreateState {
   // 3단계: 공개 설정
   publicSettings: {
     isPublic: boolean;
-    allowComments: boolean;
-    showParticipants: boolean;
-    password?: string;
   };
 }
 
@@ -47,13 +43,11 @@ const initialState: FundingCreateState = {
   },
   publicSettings: {
     isPublic: true,
-    allowComments: true,
-    showParticipants: true,
   }
 };
 
 // 스텝 타입
-type StepType = 1 | 2 | 3 | 'preview' | 'complete';
+type StepType = 1 | 2 | 3 | 'preview';
 
 const FundingCreateContainer: React.FC = () => {
   const [currentStep, setCurrentStep] = useState<StepType>(1);
@@ -74,11 +68,6 @@ const FundingCreateContainer: React.FC = () => {
     if (currentStep === 1) nextStep = 2;
     else if (currentStep === 2) nextStep = 3;
     else if (currentStep === 3) nextStep = 'preview';
-    else if (currentStep === 'preview') nextStep = 'complete';
-    else if (currentStep === 'complete') {
-      navigate('/funding'); // 펀딩 목록으로 이동
-      return;
-    }
     else return;
 
     setCurrentStep(nextStep);
@@ -94,7 +83,15 @@ const FundingCreateContainer: React.FC = () => {
   // 이전 단계로 이동
   const goToPrevStep = () => {
     let prevStep: StepType;
-    if (currentStep === 2) prevStep = 1;
+    if (currentStep === 2) {
+      prevStep = 1;
+      // Step2 -> Step1로 이동 시, 기본 정보 초기화
+      updateState('basicInfo', {
+        title: fundingState.basicInfo.title || '',
+        description: fundingState.basicInfo.description || '',
+        targetAmount: 0,
+      });
+    }
     else if (currentStep === 3) prevStep = 2;
     else if (currentStep === 'preview') prevStep = 3;
     else return;
@@ -151,7 +148,7 @@ const FundingCreateContainer: React.FC = () => {
             onNext={goToNextStep}
             onPrev={goToPrevStep}
             productPrice={fundingState.selectedProduct.price || 0}
-            productImage={fundingState.selectedProduct.image}
+            productImage={fundingState.selectedProduct.image || ""}
           />
         );
       case 3:
@@ -167,14 +164,7 @@ const FundingCreateContainer: React.FC = () => {
         return (
           <Preview
             fundingData={fundingState}
-            onNext={goToNextStep}
             onPrev={goToPrevStep}
-          />
-        );
-      case 'complete':
-        return (
-          <Complete
-            fundingId="123456"
           />
         );
       default:
@@ -195,7 +185,7 @@ const FundingCreateContainer: React.FC = () => {
     <div className="flex flex-col py-8">
       <div className="max-w-4xl mx-auto px-4 w-full">
         {/* 스텝 인디케이터 */}
-        {currentStep !== 'complete' && (
+        {currentStep !== 'preview' && (
           <div className="mb-10 mt-4">
             <div className="flex justify-between items-center relative">
               {/* 프로그레스 바 배경 */}
@@ -205,9 +195,9 @@ const FundingCreateContainer: React.FC = () => {
               <div
                 className="absolute h-1 bg-primary-color top-5 z-[2] transition-all duration-500"
                 style={{
-                  width: typeof currentStep === 'number' ?
-                    currentStep === 1 ? '0%' :
-                      currentStep === 2 ? '50%' : '100%' : '0%'
+                  width: currentStep === 1 ? '0%' :
+                    currentStep === 2 ? '50%' :
+                      currentStep === 3 ? '100%' : '0%'
                 }}
               ></div>
 
@@ -215,7 +205,7 @@ const FundingCreateContainer: React.FC = () => {
               <div className="flex flex-col items-center relative z-[3]">
                 <div
                   className={`w-10 h-10 flex items-center justify-center rounded-full border-2 
-                    ${typeof currentStep === 'number' && currentStep >= 1
+                    ${currentStep >= 1
                       ? 'bg-primary-color border-primary-color text-white'
                       : 'bg-white border-gray-400 text-gray-600'} 
                     text-lg font-bold transition-all duration-300`}
@@ -224,9 +214,9 @@ const FundingCreateContainer: React.FC = () => {
                 </div>
                 <div
                   className={`mt-2 text-sm font-medium 
-                    ${typeof currentStep === 'number' && currentStep === 1
+                    ${currentStep === 1
                       ? 'text-black font-semibold'
-                      : typeof currentStep === 'number' && currentStep > 1
+                      : currentStep > 1
                         ? 'text-gray-700'
                         : 'text-gray-500'}`}
                 >
@@ -238,7 +228,7 @@ const FundingCreateContainer: React.FC = () => {
               <div className="flex flex-col items-center relative z-[3]">
                 <div
                   className={`w-10 h-10 flex items-center justify-center rounded-full border-2
-                    ${typeof currentStep === 'number' && currentStep >= 2
+                    ${currentStep >= 2
                       ? 'bg-primary-color border-primary-color text-white'
                       : 'bg-white border-gray-400 text-gray-600'} 
                     text-lg font-bold transition-all duration-300`}
@@ -247,9 +237,9 @@ const FundingCreateContainer: React.FC = () => {
                 </div>
                 <div
                   className={`mt-2 text-sm font-medium 
-                    ${typeof currentStep === 'number' && currentStep === 2
+                    ${currentStep === 2
                       ? 'text-black font-semibold'
-                      : typeof currentStep === 'number' && currentStep > 2
+                      : currentStep > 2
                         ? 'text-gray-700'
                         : 'text-gray-500'}`}
                 >
@@ -261,7 +251,7 @@ const FundingCreateContainer: React.FC = () => {
               <div className="flex flex-col items-center relative z-[3]">
                 <div
                   className={`w-10 h-10 flex items-center justify-center rounded-full border-2
-                    ${typeof currentStep === 'number' && currentStep >= 3
+                    ${currentStep >= 3
                       ? 'bg-primary-color border-primary-color text-white'
                       : 'bg-white border-gray-400 text-gray-600'} 
                     text-lg font-bold transition-all duration-300`}
@@ -270,9 +260,9 @@ const FundingCreateContainer: React.FC = () => {
                 </div>
                 <div
                   className={`mt-2 text-sm font-medium 
-                    ${typeof currentStep === 'number' && currentStep === 3
+                    ${currentStep === 3
                       ? 'text-black font-semibold'
-                      : typeof currentStep === 'number' && currentStep > 3
+                      : currentStep > 3
                         ? 'text-gray-700'
                         : 'text-gray-500'}`}
                 >

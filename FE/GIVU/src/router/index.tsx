@@ -16,6 +16,7 @@ import MyFriendPage from '../pages/MyFriend/MyFriendPage';
 import ShoppingReview from '../pages/ShoppingMall/ShoppingReview';
 import FundingCreateLayout from "../components/Layout/FundingCreateLayout";
 import PaymentPage from '../pages/Payment/PaymentPage';
+import Complete from "../pages/FundingCreate/Complete";
 // import NotFound from "../pages/NotFound/NotFound";
 
 const routes = [
@@ -50,6 +51,10 @@ const routes = [
           {
             path: ":id",
             element: <FundingDetailPage />,
+          },
+          {
+            path: "complete/:id",
+            element: <Complete />,
           },
         ],
       },
