@@ -1,12 +1,12 @@
 package com.wukiki.data.mapper
 
-import com.wukiki.data.entity.ProductEntity
+import com.wukiki.data.entity.ProductDetailEntity
 import com.wukiki.data.util.CommonUtils.formatDateTime
 import com.wukiki.domain.model.Product
 
 object ProductsMapper {
 
-    operator fun invoke(productEntities: List<ProductEntity>): List<Product> {
+    operator fun invoke(productEntities: List<ProductDetailEntity>): List<Product> {
         val newProducts = mutableListOf<Product>()
 
         productEntities.forEach { productEntity ->

@@ -1,6 +1,7 @@
 package com.wukiki.givu.views.mall.viewmodel
 
 import android.app.Application
+import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.wukiki.domain.model.ApiStatus
@@ -66,6 +67,26 @@ class MallViewModel @Inject constructor(
 
             else -> {
                 _filteredProducts.value = _products.value.filter { it.category == category }
+            }
+        }
+    }
+
+    fun getDetailProductInfo(productId: String) {
+        viewModelScope.launch {
+            Log.d("Mall ViewModel", "아이디: ${productId.toInt()}")
+            val response = getProductUseCase.getProductDetail(productId.toInt())
+
+            when (response.status) {
+                ApiStatus.SUCCESS -> {
+                    val productInfo = response.data
+                    _selectedProduct.value = productInfo
+
+                    Timber.d("Product Info: ${_selectedProduct.value}")
+                }
+
+                else -> {
+                    _mallUiEvent.emit(MallUiEvent.GoToProductDetail)
+                }
             }
         }
     }

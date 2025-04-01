@@ -106,7 +106,7 @@ fun FilteredProductList(allProducts: List<Product>, selectedCategory: String) {
     ) {
         items(filteredProducts) { product ->
             GiftListItem(product,
-                onClick = {
+                onProductClick = {
 //                    누르면 해당 아이템 상세 정보 화면으로 이동
                 }
             )

@@ -1,6 +1,8 @@
 package com.wukiki.givu.views.mall
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -17,6 +19,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.material3.Text
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.colorResource
@@ -36,14 +39,18 @@ import com.wukiki.givu.util.CommonUtils
 @Composable
 fun GiftListItem(
     product: Product,
-    onClick: () -> Unit
+    onProductClick: () -> Unit
 ) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .height(106.dp)
             .padding(vertical = 4.dp)
-        ,
+            .clickable(
+                interactionSource = remember { MutableInteractionSource() },
+                indication = null,
+                onClick = onProductClick
+            ),
         verticalAlignment = Alignment.CenterVertically
     ) {
         AsyncImage(
@@ -85,15 +92,6 @@ fun GiftListItem(
                 fontWeight = FontWeight.Medium,
                 fontSize = 14.sp
             )
-//            Text(
-//                text = product.productName,
-//                fontFamily = suit,
-//                fontWeight = FontWeight.Bold,
-//                fontSize = 16.sp,
-//                maxLines = 2,
-//                overflow = TextOverflow.Ellipsis,
-//                modifier = Modifier.fillMaxWidth().padding(end = 20.dp)
-//            )
             Spacer(Modifier.weight(1f))
             Row(
                 modifier = Modifier.fillMaxWidth(),

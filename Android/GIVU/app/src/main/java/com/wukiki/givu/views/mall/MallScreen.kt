@@ -1,5 +1,6 @@
 package com.wukiki.givu.views.mall
 
+import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
@@ -43,7 +44,7 @@ import com.wukiki.givu.views.mall.viewmodel.MallViewModel
 
 @Composable
 fun MallScreen(
-    mallViewModel: MallViewModel = hiltViewModel(),
+    mallViewModel: MallViewModel,
     navController: NavController
 ) {
 
@@ -175,8 +176,10 @@ fun MallScreen(
             items(products) { product ->
                 GiftListItem(
                     product = product,
-                    onClick = {
+                    onProductClick = {
                         /*** 상품 상세 페이지 이동 ***/
+                        Log.d("Mall Screen", "아이디: ${product.productId}")
+                        navController.navigate("ProductDetailScreen/${product.productId}")
                     }
                 )
             }
@@ -210,7 +213,7 @@ private fun FilterCategoryItemList(
     ) {
         items(filteredProducts) { product ->
             GiftListItem(product,
-                onClick = {
+                onProductClick = {
 //                    누르면 해당 아이템 상세 정보 화면으로 이동
                 }
             )

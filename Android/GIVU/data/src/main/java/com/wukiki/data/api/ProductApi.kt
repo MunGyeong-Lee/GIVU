@@ -1,5 +1,6 @@
 package com.wukiki.data.api
 
+import com.wukiki.data.entity.ProductDetailEntity
 import com.wukiki.data.entity.ProductEntity
 import com.wukiki.data.entity.ProductImageEntity
 import retrofit2.Response
@@ -20,5 +21,5 @@ interface ProductApi {
     ): Response<ProductImageEntity>
 
     @GET("products/list")
-    suspend fun getProducts(): Response<List<ProductEntity>>
+    suspend fun getProducts(): Response<List<ProductDetailEntity>>
 }

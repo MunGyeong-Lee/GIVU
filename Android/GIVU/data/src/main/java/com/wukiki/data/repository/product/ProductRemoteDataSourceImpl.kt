@@ -1,6 +1,7 @@
 package com.wukiki.data.repository.product
 
 import com.wukiki.data.api.ProductApi
+import com.wukiki.data.entity.ProductDetailEntity
 import com.wukiki.data.entity.ProductEntity
 import com.wukiki.data.entity.ProductImageEntity
 import retrofit2.Response
@@ -16,6 +17,6 @@ class ProductRemoteDataSourceImpl @Inject constructor(
     override suspend fun putProductImage(productId: Int): Response<ProductImageEntity> =
         productApi.putProductImage(productId)
 
-    override suspend fun getProducts(): Response<List<ProductEntity>> =
+    override suspend fun getProducts(): Response<List<ProductDetailEntity>> =
         productApi.getProducts()
 }

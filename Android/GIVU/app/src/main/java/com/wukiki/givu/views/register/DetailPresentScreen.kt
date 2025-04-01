@@ -38,7 +38,10 @@ import com.wukiki.givu.util.StoreDetailBottomButton
 import com.wukiki.givu.util.StoreDetailTopBar
 
 @Composable
-fun DetailPresentScreen(navController: NavController, xmlNavController: NavController) {
+fun DetailPresentScreen(
+    navController: NavController,
+    xmlNavController: NavController
+) {
 
     Box(modifier = Modifier.fillMaxSize()) {
 
