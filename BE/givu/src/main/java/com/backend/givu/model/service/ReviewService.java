@@ -6,6 +6,7 @@ import com.backend.givu.model.entity.User;
 import com.backend.givu.model.repository.FundingRepository;
 import com.backend.givu.model.repository.ReviewRepository;
 import com.backend.givu.model.repository.UserRepository;
+import com.backend.givu.model.requestDTO.ReviewCreateDTO;
 import com.backend.givu.model.responseDTO.ReviewsDTO;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -30,7 +31,7 @@ public class ReviewService {
     /**
      *  후기 생성
      */
-    public ReviewsDTO saveReview (Long userId, Integer fundingId, ReviewsDTO reviewsdto) throws AccessDeniedException{
+    public ReviewsDTO saveReview (Long userId, Integer fundingId, ReviewCreateDTO reviewdto) throws AccessDeniedException{
         // 펀딩있는지
         Funding funding = fundingRepository.findById(fundingId)
                 .orElseThrow(() -> new EntityNotFoundException("펀딩을 찾을 수 없습니다."));
@@ -42,7 +43,7 @@ public class ReviewService {
             throw new AccessDeniedException("펀딩 리뷰 작성 권한이 없습니다.");
         }
 
-        Review saveReview = reviewRepository.save(Review.from(user,funding, reviewsdto));
+        Review saveReview = reviewRepository.save(Review.from(user,funding, reviewdto));
         return Review.toDTO(saveReview);
     }
 
