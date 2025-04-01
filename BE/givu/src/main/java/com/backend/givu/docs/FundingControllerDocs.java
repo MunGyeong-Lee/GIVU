@@ -25,7 +25,6 @@ public interface FundingControllerDocs {
                             "{\n" +
                             "  \"title\": \"얘들아 펀딩해줘~!\",\n" +
                             "  \"productId\": \"3\",\n" +
-                            "  \"body\": \"test1\",\n" +
                             "  \"description\": \"test2\",\n" +
                             "  \"category\": \"집들이\",\n" +
                             "  \"categoryName\": null,\n" +
@@ -52,7 +51,6 @@ public interface FundingControllerDocs {
                             "```json\n" +
                             "{\n" +
                             "  \"title\": \"얘들아 펀딩해줘~!\",\n" +
-                            "  \"body\": \"test1\",\n" +
                             "  \"description\": \"test2\",\n" +
                             "  \"category\": \"집들이\",\n" +
                             "  \"categoryName\": null,\n" +
