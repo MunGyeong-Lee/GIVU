@@ -133,7 +133,7 @@ const Step2BasicInfo: React.FC<Step2BasicInfoProps> = ({
 
   // 상품 이미지가 있고 기존 이미지가 없으면 상품 이미지를 기본 이미지로 설정
   useEffect(() => {
-    if (productImage && !basicInfo.mainImage) {
+    if (productImage) {
       updateBasicInfo({
         ...basicInfo,
         mainImage: productImage
@@ -202,19 +202,8 @@ const Step2BasicInfo: React.FC<Step2BasicInfoProps> = ({
 
   // 대표 이미지 업로드 핸들러
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        const result = reader.result as string;
-        setImagePreview(result);
-        updateBasicInfo({
-          ...basicInfo,
-          mainImage: result
-        });
-      };
-      reader.readAsDataURL(file);
-    }
+    // 대표 이미지는 변경 불가능하므로 기능 제거
+    e.preventDefault();
   };
 
   // 추가 이미지 업로드 핸들러
@@ -324,10 +313,9 @@ const Step2BasicInfo: React.FC<Step2BasicInfoProps> = ({
                 대표 이미지 <span className="text-red-500">*</span>
               </label>
               <div
-                onClick={() => document.getElementById('image-upload')?.click()}
-                className={`border-2 border-dashed rounded-xl overflow-hidden relative flex flex-col items-center justify-center cursor-pointer transition-all h-[280px] ${imagePreview
+                className={`border-2 border-dashed rounded-xl overflow-hidden relative flex flex-col items-center justify-center transition-all h-[280px] ${imagePreview
                   ? 'border-primary-color bg-primary-color/5'
-                  : 'border-gray-300 hover:border-primary-color/70 hover:bg-gray-50'
+                  : 'border-gray-300 bg-gray-50'
                   }`}
               >
                 {imagePreview ? (
@@ -337,11 +325,6 @@ const Step2BasicInfo: React.FC<Step2BasicInfoProps> = ({
                       alt="대표 이미지"
                       className="w-full h-full object-contain"
                     />
-                    <div className="absolute inset-0 bg-black/0 hover:bg-black/10 flex items-center justify-center transition-all">
-                      <span className="bg-white/80 text-primary-color text-xs px-3 py-1.5 rounded-full font-medium opacity-0 hover:opacity-100 transition-opacity shadow-sm">
-                        이미지 변경
-                      </span>
-                    </div>
                   </div>
                 ) : (
                   <div className="text-center p-6">
@@ -350,24 +333,15 @@ const Step2BasicInfo: React.FC<Step2BasicInfoProps> = ({
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                       </svg>
                     </div>
-                    <p className="text-gray-600 text-sm font-medium mb-1">이미지 업로드</p>
-                    <p className="text-gray-400 text-xs">이미지를 클릭하여 선택하거나<br />파일을 끌어다 놓으세요</p>
+                    <p className="text-gray-600 text-sm font-medium mb-1">이미지 없음</p>
+                    <p className="text-gray-400 text-xs">단계 1에서 상품을 선택하면<br />대표 이미지가 자동 설정됩니다</p>
                   </div>
                 )}
-                <input
-                  id="image-upload"
-                  type="file"
-                  accept="image/*"
-                  onChange={handleImageChange}
-                  className="hidden"
-                />
               </div>
-              <p className="mt-2 text-xs text-gray-500 text-center">권장 크기: 1200 x 800px, 최대 5MB</p>
-              {productImage && !basicInfo.mainImage && (
-                <p className="mt-2 text-xs text-primary-color text-center">
-                  선택한 상품의 이미지가 기본 대표 이미지로 설정됩니다.
-                </p>
-              )}
+              <p className="mt-2 text-xs text-gray-500 text-center">권장 크기: 1200 x 800px</p>
+              <p className="mt-1 text-xs text-primary-color text-center">
+                상품 이미지가 대표 이미지로 자동 설정됩니다. 변경할 수 없습니다.
+              </p>
             </div>
 
             {/* 추가 이미지 영역 - dnd-kit 사용 */}
