@@ -61,25 +61,26 @@ class FundingViewModel @Inject constructor(
 
     init {
         val newFunding = Funding(
-            id = "1",
-            userId = "1",
-            productId = "1",
-            title = "푸딩 먹고싶다",
-            body = "??",
-            description = "생일이에요 빨리 사주세요",
-            category = "생일",
-            categoryName = "",
-            scope = "전체 공개",
-            participantsNumber = "12",
-            fundedAmount = 1200,
-            status = "진행중",
-            images = listOf(
-                "https://img.tumblbug.com/eyJidWNrZXQiOiJ0dW1ibGJ1Zy1pbWctYXNzZXRzIiwia2V5IjoiY292ZXIvNzMyZWNiODgtMDdhYS00Y2FmLThlNTEtNGIwOTkyMDY1MzJmL2U3N2MwYTEzLTE5NzktNDJlNy1hNDFjLTljN2JmMTIxZGMzNC5wbmciLCJlZGl0cyI6eyJyZXNpemUiOnsid2lkdGgiOjQ2NSwiaGVpZ2h0Ijo0NjUsIndpdGhvdXRFbmxhcmdlbWVudCI6dHJ1ZX19fQ==",
-                "https://img.tumblbug.com/eyJidWNrZXQiOiJ0dW1ibGJ1Zy1pbWctYXNzZXRzIiwia2V5IjoiY292ZXIvNzMyZWNiODgtMDdhYS00Y2FmLThlNTEtNGIwOTkyMDY1MzJmLzE4MTUwMmM1LTcxNTMtNDgxYi1iMDgyLTkwNjEzNDAzNTAwYi5qcGciLCJlZGl0cyI6eyJyZXNpemUiOnsid2lkdGgiOjEyNDAsImhlaWdodCI6MTI0MCwid2l0aG91dEVubGFyZ2VtZW50Ijp0cnVlfX19",
-                "https://img.tumblbug.com/eyJidWNrZXQiOiJ0dW1ibGJ1Zy1pbWctYXNzZXRzIiwia2V5IjoiY292ZXIvNzMyZWNiODgtMDdhYS00Y2FmLThlNTEtNGIwOTkyMDY1MzJmL2UwN2U0NzRjLWM2OTAtNGRmZS1iYmFiLTU1ZWY1ZTRhMDM4Zi5qcGciLCJlZGl0cyI6eyJyZXNpemUiOnsid2lkdGgiOjEyNDAsImhlaWdodCI6MTI0MCwid2l0aG91dEVubGFyZ2VtZW50Ijp0cnVlfX19"
-            ),
-            createdAt = "2025.03.20",
-            updatedAt = "2025.03.20"
+            id = 1,
+            userId = 1,
+            userNickname = "",
+            userProfile = "",
+            productId = 1,
+            productName = "",
+            productPrice = "",
+            productImage = "",
+            title = "마이화장품한테 화장품 사주세요~",
+            body = "펀딩 내용 설명",
+            description = "설명",
+            category = "beauty",
+            categoryName = "뷰티",
+            scope = "public",
+            participantsNumber = "100",
+            fundedAmount = 10000,
+            status = "active",
+            images = listOf("https://images.unsplash.com/photo-1522383225653-ed111181a951"),
+            createdAt = "2024-03-01",
+            updatedAt = "2024-03-10"
         )
 
         _selectedFunding.value = newFunding
