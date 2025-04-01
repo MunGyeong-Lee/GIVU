@@ -1,5 +1,5 @@
 import React from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 
 interface FundingCreateNavbarProps {
   onPreview?: () => void;
@@ -10,7 +10,6 @@ interface FundingCreateNavbarProps {
 const FundingCreateNavbar: React.FC<FundingCreateNavbarProps> = ({
   onPreview,
   showPreviewButton = true,
-  currentStep = 1
 }) => {
   const navigate = useNavigate();
 

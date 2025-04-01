@@ -11,7 +11,7 @@ const Preview: React.FC<PreviewProps> = ({ fundingData, onNext, onPrev }) => {
   const { selectedProduct, basicInfo, publicSettings } = fundingData;
 
   // 날짜 포맷팅
-  const formatDate = (dateString: string) => {
+  const formatDate = (dateString: string | undefined) => {
     if (!dateString) return '';
     const date = new Date(dateString);
     return `${date.getFullYear()}년 ${date.getMonth() + 1}월 ${date.getDate()}일`;

@@ -23,6 +23,9 @@ export interface FundingCreateState {
     description: string;
     mainImage?: string;
     additionalImages?: string[];
+    startDate?: string;
+    endDate?: string;
+    targetAmount: number;
   };
 
   // 3단계: 공개 설정
@@ -40,6 +43,7 @@ const initialState: FundingCreateState = {
   basicInfo: {
     title: '',
     description: '',
+    targetAmount: 0,
   },
   publicSettings: {
     isPublic: true,
