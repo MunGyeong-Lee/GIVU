@@ -15,6 +15,8 @@ import OrderPage from '../pages/ShoppingMall/OrderPage';
 import MyFriendPage from '../pages/MyFriend/MyFriendPage';
 import ShoppingReview from '../pages/ShoppingMall/ShoppingReview';
 import FundingCreateLayout from "../components/Layout/FundingCreateLayout";
+import PaymentPage from '../pages/Payment/PaymentPage';
+import ShoppingReviewEdit from '../pages/ShoppingMall/ShoppingReviewEdit';
 // import NotFound from "../pages/NotFound/NotFound";
 
 const routes = [
@@ -65,6 +67,10 @@ const routes = [
         element: <ShoppingReview />,
       },
       {
+        path: "shopping/product/:id/review/:reviewId",
+        element: <ShoppingReviewEdit />
+      },
+      {
         path: "shopping/order",
         element: <OrderPage />,
       },
@@ -75,6 +81,10 @@ const routes = [
       {
         path: "myfriend",
         element: <MyFriendPage />,
+      },
+      {
+        path: "payment/:id",
+        element: <PaymentPage />,
       },
     ],
   },

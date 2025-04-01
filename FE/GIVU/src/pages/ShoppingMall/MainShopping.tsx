@@ -331,7 +331,39 @@ const MainShopping = () => {
   useEffect(() => {
     fetchProducts(0);
   }, []);
-  
+
+  // 상품 목록 업데이트 이벤트 감지
+  useEffect(() => {
+    const handleProductsUpdate = (event: CustomEvent) => {
+      const updatedProducts = event.detail.products;
+      setProducts(updatedProducts);
+      setFilteredProducts(updatedProducts);
+      setDisplayedProducts(updatedProducts.slice(0, itemsPerPage));
+      
+      // 베스트 상품 업데이트
+      const bestProductsList = [...updatedProducts]
+        .sort((a, b) => {
+          if (a.star !== b.star) {
+            return b.star - a.star;
+          }
+          return b.price - a.price;
+        })
+        .slice(0, 8);
+      setBestProducts(bestProductsList);
+      
+      // 지금 뜨는 상품 업데이트
+      const trendingProductsList = [...updatedProducts]
+        .sort((a, b) => b.views - a.views)
+        .slice(0, 5);
+      setTrendingProducts(trendingProductsList);
+    };
+
+    window.addEventListener('productsUpdated', handleProductsUpdate as EventListener);
+    return () => {
+      window.removeEventListener('productsUpdated', handleProductsUpdate as EventListener);
+    };
+  }, [itemsPerPage]);
+
   // 카테고리나 가격대 필터 변경 시 필터링된 상품 갱신
   useEffect(() => {
     if (products.length > 0) {
@@ -731,10 +763,17 @@ const MainShopping = () => {
                   </div>
                   <div className="p-4">
                     <h4 className="font-bold text-base">{product.productName}</h4>
-                    <div className="flex items-center gap-2 mt-2">
+                    <div className="flex items-center justify-between mt-2">
                       <span className="text-black font-bold text-lg">
                         {product.price ? Number(product.price).toLocaleString() + '원' : '가격 정보 없음'}
                       </span>
+                      {/* 별점 표시 */}
+                      <div className="flex items-center">
+                        <svg className="w-4 h-4 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
+                          <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                        </svg>
+                        <span className="ml-1 text-sm text-gray-600">{product.star.toFixed(1)}</span>
+                      </div>
                     </div>
                     <div className="mt-4 flex items-center text-sm text-gray-500">
                       <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" className="w-4 h-4 mr-1">
@@ -825,9 +864,9 @@ const MainShopping = () => {
                       </button>
                     </div>
                     <div className="p-4">
-                      <h3 className="font-medium mb-2 text-sm md:text-base">{product.productName}</h3>
-                      <div className="flex items-center justify-between mb-4">
-                        <span className="text-black font-bold text-sm md:text-base">
+                      <h4 className="font-bold text-base">{product.productName}</h4>
+                      <div className="flex items-center justify-between mt-2">
+                        <span className="text-black font-bold text-lg">
                           {product.price ? Number(product.price).toLocaleString() + '원' : '가격 정보 없음'}
                         </span>
                         {/* 별점 표시 */}

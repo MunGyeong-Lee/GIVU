@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 
 // 임시 데이터 - 후에 API 연동으로 대체 예정
 const FUNDING_DATA = {
@@ -56,6 +57,7 @@ const GIFT_OPTIONS = [
 ];
 
 const FundingDetailPage = () => {
+  const navigate = useNavigate();
   // const { id } = useParams();
 
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
@@ -114,6 +116,21 @@ const FundingDetailPage = () => {
   const displayedParticipants = showAllParticipants
     ? FUNDING_DATA.participants
     : FUNDING_DATA.participants.slice(0, 3);
+
+  // 결제 페이지로 이동하는 함수 추가
+  const handleGiftClick = () => {
+    if (!selectedAmount && (!isCustomInput || !customAmount)) {
+      return;
+    }
+    const amount = isCustomInput ? parseInt(customAmount) : selectedAmount;
+    navigate(`/payment/${FUNDING_DATA.id}`, { 
+      state: { 
+        amount,
+        title: FUNDING_DATA.title,
+        creatorName: FUNDING_DATA.creator.name
+      }
+    });
+  };
 
   return (
     <div className="max-w-3xl mx-auto px-4 py-6">
@@ -331,6 +348,7 @@ const FundingDetailPage = () => {
           )}
 
           <button 
+            onClick={handleGiftClick}
             className={`w-full py-3 text-white font-bold rounded-lg transition ${
               (selectedAmount || (isCustomInput && customAmount)) 
                 ? 'bg-black hover:bg-gray-800' 

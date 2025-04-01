@@ -36,6 +36,7 @@ interface Review {
   image: string;
   star: number;
   user: ReviewUser;
+  isAuthor?: boolean; // 본인 작성 리뷰 여부
 }
 
 // 임시 데이터 - 나중에 API로 대체
@@ -121,11 +122,37 @@ const ShoppingProductDetail = () => {
         setLoading(true);
         const response = await axios.get(`${import.meta.env.VITE_BASE_URL}/products/${id}`);
         setProduct(response.data.product);
-        setReviews(response.data.reviews);
+        
+        // 현재 사용자 ID 가져오기
+        const token = localStorage.getItem('auth_token');
+        let currentUserId: number | null = null;
+        if (token) {
+          try {
+            const userResponse = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/users/me`, {
+              headers: {
+                'Authorization': `Bearer ${token}`
+              }
+            });
+            currentUserId = userResponse.data.id; // userId를 id로 수정
+          } catch (error) {
+            console.error('사용자 정보를 가져오는 중 오류가 발생했습니다:', error);
+          }
+        }
+
+        // 리뷰 목록에 isAuthor 필드 추가
+        const reviewsWithAuthor = response.data.reviews.map((review: Review) => ({
+          ...review,
+          isAuthor: currentUserId === review.user.userId
+        }));
+        
+        console.log('Current User ID:', currentUserId); // 디버깅용 로그
+        console.log('Reviews with Author:', reviewsWithAuthor); // 디버깅용 로그
+        
+        setReviews(reviewsWithAuthor);
 
         // 평균 별점 계산 (리뷰가 있는 경우에만)
-        if (response.data.reviews.length > 0) {
-          const avgRating = response.data.reviews.reduce((acc: number, review: Review) => acc + review.star, 0) / response.data.reviews.length;
+        if (reviewsWithAuthor.length > 0) {
+          const avgRating = reviewsWithAuthor.reduce((acc: number, review: Review) => acc + review.star, 0) / reviewsWithAuthor.length;
           setAverageRating(avgRating);
         }
       } catch (err) {
@@ -190,6 +217,82 @@ const ShoppingProductDetail = () => {
     });
   };
 
+  // 리뷰 삭제 핸들러 추가
+  const handleDeleteReview = async (reviewId: number) => {
+    if (!window.confirm('리뷰를 삭제하시겠습니까?')) {
+      return;
+    }
+    
+    try {
+      const token = localStorage.getItem('auth_token');
+      if (!token) {
+        alert('로그인이 필요합니다.');
+        return;
+      }
+      
+      await axios.delete(
+        `${import.meta.env.VITE_API_BASE_URL}/products-review/${reviewId}`,
+        {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        }
+      );
+      
+      alert('리뷰가 삭제되었습니다.');
+      
+      // 리뷰 목록에서 삭제된 리뷰 제거
+      const updatedReviews = reviews.filter(review => review.reviewId !== reviewId);
+      setReviews(updatedReviews);
+      
+      // 평균 별점 다시 계산
+      let newAverageRating = 0;
+      if (updatedReviews.length > 0) {
+        newAverageRating = updatedReviews.reduce((acc, review) => acc + review.star, 0) / updatedReviews.length;
+      }
+      setAverageRating(newAverageRating);
+
+      // 상품의 평균 별점 업데이트
+      try {
+        // 상품 정보 다시 가져오기
+        const productResponse = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/products/${id}`);
+        const updatedProduct = productResponse.data.product;
+        
+        // 상품의 평균 별점 업데이트 API 호출
+        await axios.patch(
+          `${import.meta.env.VITE_API_BASE_URL}/products/${id}/star`,
+          { star: newAverageRating },
+          {
+            headers: {
+              'Authorization': `Bearer ${token}`
+            }
+          }
+        );
+
+        // 메인 페이지의 상품 목록도 업데이트
+        const mainResponse = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/products/list`);
+        const updatedProducts = mainResponse.data.map((p: any) => 
+          p.id === updatedProduct.id ? updatedProduct : p
+        );
+        
+        // 전역 상태 업데이트를 위한 이벤트 발생
+        window.dispatchEvent(new CustomEvent('productsUpdated', { 
+          detail: { products: updatedProducts } 
+        }));
+      } catch (error) {
+        console.error('상품 별점 업데이트 중 오류가 발생했습니다:', error);
+      }
+    } catch (error) {
+      console.error('리뷰 삭제 중 오류가 발생했습니다:', error);
+      alert('리뷰 삭제에 실패했습니다. 다시 시도해주세요.');
+    }
+  };
+
+  // 리뷰 수정 핸들러 추가
+  const handleEditReview = async (reviewId: number) => {
+    navigate(`/shopping/product/${id}/review/${reviewId}`);
+  };
+
   // JSX에 추가할 리뷰 섹션
   const ReviewSection = () => (
     <div className="mb-12">
@@ -241,6 +344,24 @@ const ShoppingProductDetail = () => {
                   <span className="font-medium">{review.user.nickName}</span>
                 </div>
               </div>
+              
+              {/* 본인 리뷰일 경우 수정/삭제 버튼 표시 */}
+              {review.isAuthor && (
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => handleEditReview(review.reviewId)}
+                    className="text-blue-500 hover:text-blue-700 px-2 py-1 rounded hover:bg-blue-50"
+                  >
+                    수정
+                  </button>
+                  <button
+                    onClick={() => handleDeleteReview(review.reviewId)}
+                    className="text-red-500 hover:text-red-700 px-2 py-1 rounded hover:bg-red-50"
+                  >
+                    삭제
+                  </button>
+                </div>
+              )}
             </div>
             {/* 리뷰 제목 */}
             <h4 className="font-medium mb-2">{review.title}</h4>
