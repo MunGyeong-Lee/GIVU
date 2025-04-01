@@ -6,7 +6,7 @@ import { useAppSelector } from '../../hooks/reduxHooks';
 const KakaoCallback = () => {
   const navigate = useNavigate();
   const [error, setError] = useState<string | null>(null);
-  const { loading, error: authError } = useAppSelector(state => state.auth);
+  const {error: authError } = useAppSelector(state => state.auth);
 
   useEffect(() => {
     const processKakaoLogin = async () => {

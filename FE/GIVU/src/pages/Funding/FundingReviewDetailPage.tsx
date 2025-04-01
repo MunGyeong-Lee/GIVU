@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
+import axios from 'axios';
 
 type ReviewType = '배송/포장' | '제품 품질' | '고객 서비스' | '전체';
 
@@ -24,36 +25,36 @@ interface ReviewDetail {
 }
 
 // 더미 데이터 수정
-const REVIEW_DETAILS: ReviewDetail = {
-  id: 1,
-  title: "노란색이 된 도현이의 속옷을 사주세요 !!!",
-  author: "정도현",
-  date: "2025.03.10",
-  views: 235,
-  rating: 4.5,  // 별점 추가
-  type: "제품 품질",  // 후기 유형 추가
-  authorFundingCount: 5,  // 펀딩 참여 수 추가
-  content: `
-    안녕하세요! 저는 이번에 GIVU에서 펀딩에 참여하여 멋진 선물을 받게 되었습니다.
+// const REVIEW_DETAILS: ReviewDetail = {
+//   id: 1,
+//   title: "노란색이 된 도현이의 속옷을 사주세요 !!!",
+//   author: "정도현",
+//   date: "2025.03.10",
+//   views: 235,
+//   rating: 4.5,  // 별점 추가
+//   type: "제품 품질",  // 후기 유형 추가
+//   authorFundingCount: 5,  // 펀딩 참여 수 추가
+//   content: `
+//     안녕하세요! 저는 이번에 GIVU에서 펀딩에 참여하여 멋진 선물을 받게 되었습니다.
     
-    이번에 받은 노란색 속옷은 제가 정말 갖고 싶었던 아이템이었는데요, 여러분들 덕분에 목표 금액을 달성하여 구매할 수 있게 되었습니다.
+//     이번에 받은 노란색 속옷은 제가 정말 갖고 싶었던 아이템이었는데요, 여러분들 덕분에 목표 금액을 달성하여 구매할 수 있게 되었습니다.
     
-    생각보다 품질도 좋고 착용감도 너무 편안해서 정말 만족스럽습니다. 펀딩에 참여해주신 모든 분들께 진심으로 감사드립니다.
+//     생각보다 품질도 좋고 착용감도 너무 편안해서 정말 만족스럽습니다. 펀딩에 참여해주신 모든 분들께 진심으로 감사드립니다.
     
-    앞으로도 GIVU를 통해 많은 분들의 소원이 이루어졌으면 좋겠습니다. 정말 감사합니다!
-  `,
-  images: [
-    "https://via.placeholder.com/800x500?text=상세이미지1",
-    "https://via.placeholder.com/800x500?text=상세이미지2"
-  ],
-  relatedFunding: {
-    id: 101,
-    title: "도현이의 생일 선물 펀딩",
-    amount: 150000,
-    target: 300000,
-    percentage: 50
-  }
-};
+//     앞으로도 GIVU를 통해 많은 분들의 소원이 이루어졌으면 좋겠습니다. 정말 감사합니다!
+//   `,
+//   images: [
+//     "https://via.placeholder.com/800x500?text=상세이미지1",
+//     "https://via.placeholder.com/800x500?text=상세이미지2"
+//   ],
+//   relatedFunding: {
+//     id: 101,
+//     title: "도현이의 생일 선물 펀딩",
+//     amount: 150000,
+//     target: 300000,
+//     percentage: 50
+//   }
+// };
 
 // StarRating 컴포넌트 정의
 const StarRating = ({ rating }: { rating?: number }) => {
@@ -79,11 +80,11 @@ function FundingReviewDetailPage() {
       setError(null);
 
       // 실제 API 연동 시 사용할 코드
-      // const response = await axios.get(`${import.meta.env.VITE_BASE_URL}/api/funding/reviews/${reviewId}`);
-      // setReview(response.data);
+      const response = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/funding/reviews/${reviewId}`);
+      setReview(response.data);
 
       // 임시로 더미 데이터 사용
-      setReview(REVIEW_DETAILS);
+      // setReview(REVIEW_DETAILS);
     } catch (err) {
       setError('후기를 불러오는데 실패했습니다. 다시 시도해주세요.');
       console.error('Error fetching review:', err);

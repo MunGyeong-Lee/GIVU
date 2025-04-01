@@ -156,18 +156,20 @@ function Navbar() {
                 {loading ? (
                   <div className="w-8 h-8 rounded-full bg-gray-200 animate-pulse mr-2"></div>
                 ) : (
-                  <img
-                    src={userInfo?.profileImage || user?.profileImage || "https://via.placeholder.com/32"}
-                    alt="프로필"
-                    className="w-8 h-8 rounded-full mr-2 object-cover"
-                    onError={(e) => {
-                      e.currentTarget.src = "https://via.placeholder.com/32";
-                    }}
-                  />
+                  <Link to="/mypage">
+                    <img
+                      src={userInfo?.profileImage || user?.profileImage || "https://via.placeholder.com/32"}
+                      alt="프로필"
+                      className="w-8 h-8 rounded-full mr-2 object-cover cursor-pointer hover:opacity-80 transition-opacity"
+                      onError={(e) => {
+                        e.currentTarget.src = "https://via.placeholder.com/32";
+                      }}
+                    />
+                  </Link>
                 )}
-                <div className="text-gray-700 font-medium mr-4">
+                <Link to="/mypage" className="text-gray-700 font-medium mr-4 hover:text-primary-color">
                   {loading ? "로딩 중..." : userInfo?.nickName || user?.nickname || "사용자"}
-                </div>
+                </Link>
                 <button
                   onClick={handleLogout}
                   className="text-gray-500 hover:text-gray-700"

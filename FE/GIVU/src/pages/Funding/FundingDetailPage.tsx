@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from "react";
-import { useParams } from "react-router-dom";
 
 // 임시 데이터 - 후에 API 연동으로 대체 예정
 const FUNDING_DATA = {
@@ -57,7 +56,7 @@ const GIFT_OPTIONS = [
 ];
 
 const FundingDetailPage = () => {
-  const { id } = useParams();
+  // const { id } = useParams();
 
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [selectedAmount, setSelectedAmount] = useState<number | null>(null);

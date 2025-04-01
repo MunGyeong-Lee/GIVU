@@ -1,5 +1,21 @@
 import React, { useState, useEffect } from 'react';
-import { DragDropContext, Droppable, Draggable, DropResult, DroppableProvided, DraggableProvided } from 'react-beautiful-dnd';
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragEndEvent
+} from '@dnd-kit/core';
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  useSortable,
+  verticalListSortingStrategy
+} from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
 
 interface BasicInfo {
   title: string;
@@ -17,6 +33,73 @@ interface Step2BasicInfoProps {
   productImage?: string;
 }
 
+// 드래그 가능한 이미지 아이템 컴포넌트
+const SortableImageItem = ({
+  id,
+  index,
+  image,
+  onRemove
+}: {
+  id: string;
+  index: number;
+  image: string;
+  onRemove: (index: number) => void
+}) => {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging
+  } = useSortable({ id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    zIndex: isDragging ? 10 : 1,
+    opacity: isDragging ? 0.8 : 1
+  };
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={style}
+      className={`relative bg-white border border-gray-200 rounded-lg overflow-hidden ${isDragging ? 'shadow-md' : ''}`}
+    >
+      <div className="flex items-center p-2">
+        <div
+          className="flex-shrink-0 mr-2 text-gray-400 cursor-grab active:cursor-grabbing p-1"
+          {...attributes}
+          {...listeners}
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 9l4-4 4 4m0 6l-4 4-4-4" />
+          </svg>
+        </div>
+        <div className="flex flex-grow items-center">
+          <div className="h-14 w-14 overflow-hidden rounded flex-shrink-0 bg-gray-50 mr-3">
+            <img src={image} alt={`추가 이미지 ${index + 1}`} className="h-full w-full object-cover" />
+          </div>
+          <div className="flex-grow">
+            <p className="text-sm font-medium truncate">이미지 {index + 1}</p>
+            <p className="text-xs text-gray-500">순서 변경 가능</p>
+          </div>
+        </div>
+        <button
+          type="button"
+          onClick={() => onRemove(index)}
+          className="text-gray-400 hover:text-red-500 ml-2 p-1"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+          </svg>
+        </button>
+      </div>
+    </div>
+  );
+};
+
 const Step2BasicInfo: React.FC<Step2BasicInfoProps> = ({
   basicInfo,
   updateBasicInfo,
@@ -30,6 +113,18 @@ const Step2BasicInfo: React.FC<Step2BasicInfoProps> = ({
     basicInfo.additionalImages || []
   );
   const [errors, setErrors] = useState<Partial<Record<keyof BasicInfo, string>>>({});
+
+  // dnd-kit 센서 설정
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 5, // 5px 이상 이동해야 드래그 시작
+      },
+    }),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
 
   // 상태가 변경되면 미리보기도 업데이트
   useEffect(() => {
@@ -174,30 +269,31 @@ const Step2BasicInfo: React.FC<Step2BasicInfoProps> = ({
   };
 
   // 드래그 앤 드롭으로 이미지 순서 변경 핸들러
-  const handleDragEnd = (result: DropResult) => {
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+
     // 드롭 위치가 없으면 아무것도 하지 않음
-    if (!result.destination) return;
+    if (!over) return;
 
-    const sourceIndex = result.source.index;
-    const destinationIndex = result.destination.index;
+    // ID가 같으면 순서 변경이 없음
+    if (active.id === over.id) return;
 
-    // 순서가 변경되지 않았으면 아무것도 하지 않음
-    if (sourceIndex === destinationIndex) return;
+    // 인덱스 추출 (ID 형식: "image-0", "image-1" 등)
+    const activeIndex = parseInt(active.id.toString().split('-')[1]);
+    const overIndex = parseInt(over.id.toString().split('-')[1]);
 
-    // 미리보기 이미지 순서 변경
-    const newPreviews = [...additionalImagePreviews];
-    const [removed] = newPreviews.splice(sourceIndex, 1);
-    newPreviews.splice(destinationIndex, 0, removed);
-    setAdditionalImagePreviews(newPreviews);
+    // 순서 변경
+    const newAdditionalImages = arrayMove(
+      [...(basicInfo.additionalImages || [])],
+      activeIndex,
+      overIndex
+    );
 
-    // 실제 데이터 업데이트
-    const newAdditionalImages = [...(basicInfo.additionalImages || [])];
-    const [removedImage] = newAdditionalImages.splice(sourceIndex, 1);
-    newAdditionalImages.splice(destinationIndex, 0, removedImage);
+    console.log('Reordered:', active.id, 'to position of', over.id);
+    console.log('New order:', newAdditionalImages);
 
-    // 콘솔에 로그 출력 (확인용)
-    console.log('Source:', sourceIndex, 'Destination:', destinationIndex);
-    console.log('New Images:', newAdditionalImages);
+    // 상태 업데이트
+    setAdditionalImagePreviews(arrayMove(additionalImagePreviews, activeIndex, overIndex));
 
     updateBasicInfo({
       ...basicInfo,
@@ -274,7 +370,7 @@ const Step2BasicInfo: React.FC<Step2BasicInfoProps> = ({
               )}
             </div>
 
-            {/* 추가 이미지 영역 - 텀블벅 스타일 */}
+            {/* 추가 이미지 영역 - dnd-kit 사용 */}
             <div>
               <label className="block text-sm font-medium mb-2 text-gray-700 flex justify-between">
                 <span>추가 이미지 <span className="text-gray-400 text-xs">(선택)</span></span>
@@ -296,91 +392,56 @@ const Step2BasicInfo: React.FC<Step2BasicInfoProps> = ({
                 </div>
               </div>
 
-              {/* 드래그앤드롭으로 순서 변경 가능한 이미지 목록 */}
-              <DragDropContext onDragEnd={handleDragEnd}>
-                <Droppable droppableId="additionalImages">
-                  {(provided: DroppableProvided) => (
-                    <div
-                      {...provided.droppableProps}
-                      ref={provided.innerRef}
-                      className="space-y-2"
-                    >
-                      {additionalImagePreviews.map((image, index) => (
-                        <Draggable
-                          key={`additional-image-${index}`}
-                          draggableId={`additional-image-${index}`}
-                          index={index}
-                        >
-                          {(provided: DraggableProvided) => (
-                            <div
-                              ref={provided.innerRef}
-                              {...provided.draggableProps}
-                              className="relative bg-white border border-gray-200 rounded-lg overflow-hidden"
-                            >
-                              <div className="flex items-center p-2">
-                                <div
-                                  className="flex-shrink-0 mr-2 text-gray-400 cursor-grab active:cursor-grabbing p-1"
-                                  {...provided.dragHandleProps}
-                                >
-                                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 9l4-4 4 4m0 6l-4 4-4-4" />
-                                  </svg>
-                                </div>
-                                <div className="flex flex-grow items-center">
-                                  <div className="h-14 w-14 overflow-hidden rounded flex-shrink-0 bg-gray-50 mr-3">
-                                    <img src={image} alt={`추가 이미지 ${index + 1}`} className="h-full w-full object-cover" />
-                                  </div>
-                                  <div className="flex-grow">
-                                    <p className="text-sm font-medium truncate">이미지 {index + 1}</p>
-                                    <p className="text-xs text-gray-500">순서 변경 가능</p>
-                                  </div>
-                                </div>
-                                <button
-                                  type="button"
-                                  onClick={() => handleRemoveAdditionalImage(index)}
-                                  className="text-gray-400 hover:text-red-500 ml-2 p-1"
-                                >
-                                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                  </svg>
-                                </button>
-                              </div>
-                            </div>
-                          )}
-                        </Draggable>
-                      ))}
-                      {provided.placeholder}
-
-                      {/* 추가 이미지 업로드 버튼 */}
-                      {additionalImagePreviews.length < MAX_ADDITIONAL_IMAGES && (
-                        <div
-                          onClick={() => document.getElementById('additional-image-upload')?.click()}
-                          className="border-2 border-dashed rounded-lg p-4 flex flex-col items-center justify-center cursor-pointer bg-gray-50 hover:bg-gray-100 transition-colors"
-                        >
-                          <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-sm mb-2">
-                            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-primary-color" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                            </svg>
-                          </div>
-                          <p className="text-sm font-medium text-gray-700">이미지 추가하기</p>
-                          <p className="text-xs text-gray-500 mt-1">
-                            {MAX_ADDITIONAL_IMAGES - additionalImagePreviews.length}개 더 추가 가능
-                          </p>
-                        </div>
-                      )}
-
-                      <input
-                        id="additional-image-upload"
-                        type="file"
-                        accept="image/*"
-                        onChange={handleAdditionalImageUpload}
-                        className="hidden"
-                        disabled={additionalImagePreviews.length >= MAX_ADDITIONAL_IMAGES}
+              {/* dnd-kit 구현 */}
+              <DndContext
+                sensors={sensors}
+                collisionDetection={closestCenter}
+                onDragEnd={handleDragEnd}
+              >
+                <div className="space-y-2">
+                  <SortableContext
+                    items={additionalImagePreviews.map((_, i) => `image-${i}`)}
+                    strategy={verticalListSortingStrategy}
+                  >
+                    {additionalImagePreviews.map((image, index) => (
+                      <SortableImageItem
+                        key={`image-${index}`}
+                        id={`image-${index}`}
+                        index={index}
+                        image={image}
+                        onRemove={handleRemoveAdditionalImage}
                       />
+                    ))}
+                  </SortableContext>
+
+                  {/* 추가 이미지 업로드 버튼 */}
+                  {additionalImagePreviews.length < MAX_ADDITIONAL_IMAGES && (
+                    <div
+                      onClick={() => document.getElementById('additional-image-upload')?.click()}
+                      className="border-2 border-dashed rounded-lg p-4 flex flex-col items-center justify-center cursor-pointer bg-gray-50 hover:bg-gray-100 transition-colors"
+                    >
+                      <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-sm mb-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-primary-color" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                        </svg>
+                      </div>
+                      <p className="text-sm font-medium text-gray-700">이미지 추가하기</p>
+                      <p className="text-xs text-gray-500 mt-1">
+                        {MAX_ADDITIONAL_IMAGES - additionalImagePreviews.length}개 더 추가 가능
+                      </p>
                     </div>
                   )}
-                </Droppable>
-              </DragDropContext>
+
+                  <input
+                    id="additional-image-upload"
+                    type="file"
+                    accept="image/*"
+                    onChange={handleAdditionalImageUpload}
+                    className="hidden"
+                    disabled={additionalImagePreviews.length >= MAX_ADDITIONAL_IMAGES}
+                  />
+                </div>
+              </DndContext>
 
               <p className="mt-2 text-xs text-gray-500 text-center">추가 이미지는 최대 3개까지 등록 가능합니다</p>
             </div>

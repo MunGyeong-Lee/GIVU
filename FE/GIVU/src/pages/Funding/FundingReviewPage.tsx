@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
 
@@ -30,56 +30,56 @@ interface ReviewResponse {
 }
 
 // 더미 데이터
-const REVIEW_ITEMS = [
-  {
-    id: 1,
-    title: "노란색이 된 도현이의 속옷을 사주세요 !!!",
-    author: "정도현",
-    date: "2025.03.10",
-    views: 235,
-    rating: 4.5,
-    content: "정말 마음에 들어요! 색상도 예쁘고 착용감도 좋아서 매일 입고 싶네요. 다음에도 이런 좋은 제품 부탁드립니다~",
-    image: "https://via.placeholder.com/150x100?text=속옷이미지",
-    type: '전체',
-    authorFundingCount: 5
-  },
-  {
-    id: 2,
-    title: "제 워너비 복장입니다 사주세요 !!!",
-    author: "정도현",
-    date: "2025.03.01",
-    views: 124,
-    rating: 5.0,
-    content: "드디어 제가 원하던 스타일을 찾았어요! 핏이 너무 좋고 소재도 고급스러워요. 여러분도 꼭 한번 입어보세요!",
-    image: "https://via.placeholder.com/150x100?text=복장이미지",
-    type: '전체',
-    authorFundingCount: 3
-  },
-  {
-    id: 3,
-    title: "노란색이 된 도현이의 속옷을 사주세요 !!!",
-    author: "정도현",
-    date: "2025.03.10",
-    views: 235,
-    rating: 4.8,
-    content: "색상이 너무 예쁘고 착용감도 좋아요! 배송도 빠르고 포장도 꼼꼼하게 해주셔서 감사합니다. 다음에 또 구매할게요!",
-    image: "https://via.placeholder.com/150x100?text=속옷이미지",
-    type: '전체',
-    authorFundingCount: 4
-  },
-  {
-    id: 4,
-    title: "노란색이 된 도현이의 속옷을 사주세요 !!!",
-    author: "정도현",
-    date: "2025.03.10",
-    views: 235,
-    rating: 4.2,
-    content: "품질이 정말 좋네요! 가격대비 만족도가 높아서 주변 친구들에게도 추천했어요. 다음에도 좋은 제품 기대할게요~",
-    image: "https://via.placeholder.com/150x100?text=속옷이미지",
-    type: '전체',
-    authorFundingCount: 2
-  }
-];
+// const REVIEW_ITEMS = [
+//   {
+//     id: 1,
+//     title: "노란색이 된 도현이의 속옷을 사주세요 !!!",
+//     author: "정도현",
+//     date: "2025.03.10",
+//     views: 235,
+//     rating: 4.5,
+//     content: "정말 마음에 들어요! 색상도 예쁘고 착용감도 좋아서 매일 입고 싶네요. 다음에도 이런 좋은 제품 부탁드립니다~",
+//     image: "https://via.placeholder.com/150x100?text=속옷이미지",
+//     type: '전체',
+//     authorFundingCount: 5
+//   },
+//   {
+//     id: 2,
+//     title: "제 워너비 복장입니다 사주세요 !!!",
+//     author: "정도현",
+//     date: "2025.03.01",
+//     views: 124,
+//     rating: 5.0,
+//     content: "드디어 제가 원하던 스타일을 찾았어요! 핏이 너무 좋고 소재도 고급스러워요. 여러분도 꼭 한번 입어보세요!",
+//     image: "https://via.placeholder.com/150x100?text=복장이미지",
+//     type: '전체',
+//     authorFundingCount: 3
+//   },
+//   {
+//     id: 3,
+//     title: "노란색이 된 도현이의 속옷을 사주세요 !!!",
+//     author: "정도현",
+//     date: "2025.03.10",
+//     views: 235,
+//     rating: 4.8,
+//     content: "색상이 너무 예쁘고 착용감도 좋아요! 배송도 빠르고 포장도 꼼꼼하게 해주셔서 감사합니다. 다음에 또 구매할게요!",
+//     image: "https://via.placeholder.com/150x100?text=속옷이미지",
+//     type: '전체',
+//     authorFundingCount: 4
+//   },
+//   {
+//     id: 4,
+//     title: "노란색이 된 도현이의 속옷을 사주세요 !!!",
+//     author: "정도현",
+//     date: "2025.03.10",
+//     views: 235,
+//     rating: 4.2,
+//     content: "품질이 정말 좋네요! 가격대비 만족도가 높아서 주변 친구들에게도 추천했어요. 다음에도 좋은 제품 기대할게요~",
+//     image: "https://via.placeholder.com/150x100?text=속옷이미지",
+//     type: '전체',
+//     authorFundingCount: 2
+//   }
+// ];
 
 // 후기 유형 필터 옵션
 const REVIEW_TYPES: ReviewType[] = ['전체', '배송/포장', '제품 품질', '고객 서비스'];
