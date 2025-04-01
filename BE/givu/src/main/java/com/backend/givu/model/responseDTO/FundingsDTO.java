@@ -26,7 +26,6 @@ public class FundingsDTO {
     private UserSimpleInfoDTO user;
     private ProductsSimpleInfoDTO product;
     private String title;
-    private String body;
     private String description;
     private String category;
     private String categoryName;
@@ -66,7 +65,6 @@ public class FundingsDTO {
     public FundingsDTO(Funding funding){
         this.fundingId = funding.getId();
         this.title = funding.getTitle();
-        this.body = funding.getBody();
         this.description = funding.getDescription();
         this.category = CategoryMapper.toClient(funding.getCategory());
         this.categoryName = funding.getCategoryName();
