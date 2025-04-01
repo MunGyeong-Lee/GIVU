@@ -88,6 +88,10 @@
             app:destination="@id/fragment_participate_funding" />
 
         <action
+            android:id="@+id/action_detail_funding_to_update_funding"
+            app:destination="@id/fragment_update_funding" />
+
+        <action
             android:id="@+id/action_detail_funding_to_cancel_funding"
             app:destination="@id/fragment_cancel_funding" />
 
@@ -134,6 +138,14 @@
         android:name="com.wukiki.givu.views.participate.CompleteFundingFragment"
         android:label="@string/label_complete_funding"
         tools:layout="@layout/fragment_complete_funding">
+
+    </fragment>
+
+    <fragment
+        android:id="@+id/fragment_update_funding"
+        android:name="com.wukiki.givu.views.update.UpdateFundingFragment"
+        android:label="@string/label_update_funding"
+        tools:layout="@layout/fragment_update_funding">
 
     </fragment>
 

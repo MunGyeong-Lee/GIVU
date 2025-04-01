@@ -14,7 +14,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.wukiki.givu.R
 import com.wukiki.givu.util.StoreDetailBottomButton
@@ -23,7 +22,7 @@ import com.wukiki.givu.views.detail.viewmodel.FundingViewModel
 
 @Composable
 fun DetailFundingScreen(
-    fundingViewModel: FundingViewModel = hiltViewModel(),
+    fundingViewModel: FundingViewModel,
     navController: NavController
 ) {
     val funding by fundingViewModel.selectedFunding.collectAsState()
@@ -42,7 +41,7 @@ fun DetailFundingScreen(
                         .height(68.dp),
                     text = "이 상품 선택하기",
                     navController = navController,
-                    actionId = R.id.action_detail_funding_to_participate_funding
+                    actionId = R.id.action_detail_funding_to_update_funding
                 ) { }
             }
         }
