@@ -1,10 +1,12 @@
 package com.backend.givu.model.service;
 
+import com.backend.givu.model.responseDTO.CodeMessageDTO;
 import com.backend.givu.model.responseDTO.UserSimpleInfoDTO;
 import com.backend.givu.model.responseDTO.UsersDTO;
 import com.backend.givu.model.entity.User;
 import com.backend.givu.model.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.aspectj.apache.bcel.classfile.Code;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -52,4 +54,5 @@ public class UserService {
     public Optional<User> getUserByKakaoId(Long kakaoId){
         return userRepository.findByKakaoId(kakaoId);
     }
+
 }
