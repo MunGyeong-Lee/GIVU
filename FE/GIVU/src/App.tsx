@@ -1,4 +1,3 @@
-import { Outlet } from 'react-router-dom'
 import { useEffect } from 'react'
 import './App.css'
 
@@ -33,7 +32,7 @@ function App() {
       {/* 여기에 공통 레이아웃 요소들이 들어갈 수 있습니다 */}
       {/* 예: 네비게이션 바, 헤더, 푸터 등 */}
       <main className="flex-1 w-full">
-        <Outlet />
+        {/* Outlet은 Layout 컴포넌트에서 사용됩니다 */}
       </main>
     </div>
   )
