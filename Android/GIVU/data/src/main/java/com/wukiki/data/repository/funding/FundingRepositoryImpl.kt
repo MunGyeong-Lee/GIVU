@@ -64,7 +64,7 @@ class FundingRepositoryImpl @Inject constructor(
             ApiResult.fail()
         }
 
-    override suspend fun deleteFundingDetail(fundingId: Int): ApiResult<Void> =
+    override suspend fun deleteFundingDetail(fundingId: Int): ApiResult<Unit> =
         try {
             val response = withContext(CoroutineScope(Dispatchers.IO).coroutineContext) {
                 fundingRemoteDataSource.deleteFundingDetail(fundingId.toString())
@@ -72,7 +72,7 @@ class FundingRepositoryImpl @Inject constructor(
 
             val responseBody = response.body()
             Log.d("FundingRepositoryImpl", "Response: $responseBody")
-            if (response.isSuccessful && (responseBody != null)) {
+            if (response.isSuccessful) {
                 Log.d("FundingRepositoryImpl", "deleteFundingDetail Success")
                 ApiResult.success(responseBody)
             } else {
