@@ -51,12 +51,9 @@ public class Funding {
     @Column(name = "title", nullable = false, length = 20)
     private String title;
 
-    @Column(name = "body", length = Integer.MAX_VALUE)
-    private String body;
-
-    @Size(max = 255)
-    @Column(name = "description")
+    @Column(name = "description", length = Integer.MAX_VALUE)
     private String description;
+
 
     @Size(max = 20)
     @Column(name = "category_name", length = 20)
@@ -137,7 +134,6 @@ public class Funding {
                 .user(user)
                 .product(product)
                 .title(dto.getTitle())
-                .body(dto.getBody())
                 .description(dto.getDescription())
                 .category(CategoryMapper.fromClient(dto.getCategory())) // 한글 -> 영어로 변환
                 .categoryName(dto.getCategoryName())

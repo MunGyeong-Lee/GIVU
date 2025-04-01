@@ -10,10 +10,11 @@ import FundingReviewDetailPage from "../pages/Funding/FundingReviewDetailPage";
 import FundingReviewWritePage from "../pages/Funding/FundingReviewWritePage";
 import ShoppingProductDetail from '../pages/ShoppingMall/ShoppingDetail';
 import { authRoutes } from './authRouter';
-import FundingCreate from "../pages/Funding/FundingCreate";
+import FundingCreateContainer from "../pages/FundingCreate";
 import OrderPage from '../pages/ShoppingMall/OrderPage';
 import MyFriendPage from '../pages/MyFriend/MyFriendPage';
 import ShoppingReview from '../pages/ShoppingMall/ShoppingReview';
+import FundingCreateLayout from "../components/Layout/FundingCreateLayout";
 import PaymentPage from '../pages/Payment/PaymentPage';
 // import NotFound from "../pages/NotFound/NotFound";
 
@@ -50,10 +51,6 @@ const routes = [
             path: ":id",
             element: <FundingDetailPage />,
           },
-          {
-            path: "create",
-            element: <FundingCreate />,
-          },
         ],
       },
       {
@@ -85,6 +82,16 @@ const routes = [
         element: <PaymentPage />,
       },
     ],
+  },
+  {
+    path: "/funding/create",
+    element: <FundingCreateLayout />,
+    children: [
+      {
+        index: true,
+        element: <FundingCreateContainer />,
+      }
+    ]
   },
   ...authRoutes
 ];

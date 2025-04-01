@@ -2,7 +2,6 @@ package com.backend.givu.model.service;
 
 import com.backend.givu.model.entity.Funding;
 import com.backend.givu.model.entity.Product;
-import com.backend.givu.model.entity.ProductReview;
 import com.backend.givu.model.entity.User;
 import com.backend.givu.model.repository.FundingRepository;
 import com.backend.givu.model.repository.ProductRepository;
@@ -18,10 +17,9 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
-import java.nio.file.AccessDeniedException;
+import org.springframework.security.access.AccessDeniedException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.NoSuchElementException;
 
 
 @Service
@@ -90,9 +88,6 @@ public class FundingService {
         Funding funding = fundingRepository.findById(fundingId)
                 .orElseThrow(() -> new EntityNotFoundException("펀딩을 찾을 수 없습니다,"));
 
-        // 존재하는 상품인지 확인
-        Product product = productRepository.findById(fundingDTO.getProductId())
-                .orElseThrow(()-> new EntityNotFoundException("상품을 찾을 수 없습니다."));
         // 본인 펀딩인지 확인
         log.info("수정 요청보낸 유저ID: " + userId);
         if(!funding.getUser().getId().equals(userId)){
@@ -101,8 +96,6 @@ public class FundingService {
         }
         // DTO 내용 entity에 넣기
         funding.setTitle(fundingDTO.getTitle());
-        funding.setProduct(product);
-        funding.setBody(fundingDTO.getBody());
         funding.setDescription(fundingDTO.getDescription());
         funding.setCategory(CategoryMapper.fromClient(fundingDTO.getCategory())); // 한글 -> 영어
         funding.setScope(ScopeMapper.fromClient(fundingDTO.getScope()));          // 한글 -> 영어
