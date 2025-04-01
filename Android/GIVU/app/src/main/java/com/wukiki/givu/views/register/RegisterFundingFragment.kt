@@ -11,14 +11,14 @@ import com.wukiki.givu.R
 import com.wukiki.givu.config.BaseFragment
 import com.wukiki.givu.databinding.FragmentRegisterFundingBinding
 import com.wukiki.givu.views.MainViewModel
-import com.wukiki.givu.views.detail.viewmodel.FundingViewModel
+import com.wukiki.givu.views.register.viewmodel.RegisterViewModel
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
 class RegisterFundingFragment :
     BaseFragment<FragmentRegisterFundingBinding>(R.layout.fragment_register_funding) {
 
-    private val viewModel: FundingViewModel by activityViewModels()
+    private val viewModel: RegisterViewModel by activityViewModels()
     private val mainViewModel: MainViewModel by activityViewModels()
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -72,19 +72,19 @@ class RegisterFundingFragment :
             ) {
 
                 composable("RegisterStep1") {
-                    RegisterFundingScreen(navController, xmlNavController = findNavController())
+                    RegisterFundingScreen(viewModel, navController, findNavController())
                 }
 
                 composable("RegisterInputStep2") {
-                    RegisterInputScreen(navController, xmlNavController = findNavController())
+                    RegisterInputScreen(viewModel, navController, findNavController())
                 }
 
                 composable("SelectPresent") {
-                    SelectPresentScreen(navController = navController, xmlNavController = findNavController())
+                    SelectPresentScreen(viewModel, navController, findNavController())
 
                 }
                 composable("DetailPresent") {
-                    DetailPresentScreen(navController, xmlNavController = findNavController())
+                    DetailPresentScreen(viewModel, navController, findNavController())
                 }
             }
         }
