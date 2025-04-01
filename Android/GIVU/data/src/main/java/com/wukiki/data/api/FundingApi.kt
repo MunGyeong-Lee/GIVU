@@ -22,6 +22,7 @@ interface FundingApi {
         @Part("data") body: RequestBody
     ): Response<FundingEntity>
 
+    @Multipart
     @POST("fundings/{fundingId}")
     suspend fun postFundingDetail(
         @Path("fundingId") fundingId: String,
@@ -34,6 +35,7 @@ interface FundingApi {
         @Path("fundingId") fundingId: String
     ): Response<Void>
 
+    @Multipart
     @PUT("fundings/{fundingId}/image")
     suspend fun putFundingImage(
         @Path("fundingId") fundingId: String,
