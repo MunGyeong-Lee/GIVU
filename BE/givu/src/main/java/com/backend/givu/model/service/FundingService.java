@@ -1,5 +1,6 @@
 package com.backend.givu.model.service;
 
+import com.backend.givu.model.Enum.FundingsStatus;
 import com.backend.givu.model.entity.Funding;
 import com.backend.givu.model.entity.Product;
 import com.backend.givu.model.entity.User;
@@ -55,12 +56,6 @@ public class FundingService {
         return fundings.stream()
                 .map(FundingsDTO::new)
                 .toList();
-
-//        List<FundingsDTO> dtoList  = new ArrayList<>();
-//        for(Funding funding: fundingList){
-//            dtoList.add(new FundingsDTO(funding));
-//        }
-//        return dtoList;
     }
 
     /**
@@ -143,6 +138,30 @@ public class FundingService {
         }
 
         fundingRepository.deleteById(fundingId);
+    }
+
+    /**
+     * 펀딩 완료
+     */
+    public FundingsDTO completeFunding(Long userId, int fundingId){
+        // 존재하는 펀딩인지 확인
+        Funding funding = fundingRepository.findById(fundingId)
+                .orElseThrow(() -> new EntityNotFoundException("펀딩을 찾을 수 없습니다,"));
+
+        // 본인 펀딩인지 확인
+        if(!funding.getUser().getId().equals(userId)) {
+            log.warn("펀딩 삭제 권한 없음: 요청자={}, 작성자={}", userId, funding.getUser().getId());
+            throw new AccessDeniedException("펀딩 완료 권한이 없습니다.");
+        }
+
+        // 완료 상태로 변경
+        funding.setStatus(FundingsStatus.COMPLETED);
+
+        // 변경 사항 저장 및 DTO로 변환
+        return Funding.toDTO(fundingRepository.save(funding));
+
+
+
     }
 
 

@@ -158,6 +158,22 @@ public class FundingController implements FundingControllerDocs {
         return ResponseEntity.noContent().build(); //204 No Content
     }
 
+    @Operation(summary = "펀딩 완료", description = "해당 펀딩을 완료시킵니다.")
+    @PutMapping(value = "/{fundingId}/complete")
+    public ResponseEntity<FundingsDTO> completeFunding(
+            @AuthenticationPrincipal CustomUserDetail userDetail,
+            @PathVariable int fundingId,
+            HttpServletRequest request) throws AccessDeniedException{
+
+        Long userId = userDetail.getId();
+        log.info("펀딩 완료 요청: userId={}, fundingId={}", userId, fundingId);
+
+        FundingsDTO completeFunding = fundingService.completeFunding(userId, fundingId);
+        return ResponseEntity.ok(completeFunding);
+
+    }
+
+
 
 
 
