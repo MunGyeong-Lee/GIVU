@@ -133,8 +133,43 @@ function FundingListPage() {
     try {
       console.log('펀딩 데이터 가져오기 시작');
 
-      // apiClient 사용, URL 설정 파일에서 자동으로 가져옴
-      const data = await apiClient.get<FundingItemAPI[]>('/fundings/list');
+      // 토큰 가져오기 - 로컬 스토리지에서 올바른 토큰 가져오기
+      // 로그에서 사용자 정보가 'token'이 아닌 다른 키로 저장된 것으로 보임
+      const accessToken = localStorage.getItem('access_token') ||
+        localStorage.getItem('auth_token') ||
+        localStorage.getItem('jwt_token');
+
+      // Redux 스토어에서 토큰 정보 확인 (디버깅용)
+      console.log('로컬 스토리지 토큰:', accessToken);
+
+      // API 요청 URL 및 옵션 설정
+      const apiUrl = `${import.meta.env.VITE_API_BASE_URL}/fundings/list`;
+      console.log('API 요청 URL:', apiUrl);
+
+      // 인증 헤더 설정 - Bearer 토큰 형식으로 전송
+      const headers: Record<string, string> = {
+        'Content-Type': 'application/json'
+      };
+
+      if (accessToken) {
+        headers['Authorization'] = `Bearer ${accessToken}`;
+      }
+
+      const config = {
+        headers,
+        withCredentials: true // 쿠키 전송 (필요한 경우)
+      };
+
+      console.log('API 요청 설정:', {
+        hasToken: !!accessToken,
+        withCredentials: true,
+        tokenHeader: accessToken ? 'Bearer ' + accessToken.substring(0, 10) + '...' : 'none'
+      });
+
+      // 요청 전송
+      const response = await axios.get(apiUrl, config);
+      const data = response.data;
+
       console.log('API 응답 데이터:', data);
 
       // 응답이 배열인지 확인하고 처리
