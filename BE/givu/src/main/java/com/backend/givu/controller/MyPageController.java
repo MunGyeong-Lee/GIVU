@@ -6,7 +6,6 @@ import com.backend.givu.model.entity.CustomUserDetail;
 import com.backend.givu.model.entity.User;
 import com.backend.givu.model.repository.UserRepository;
 import com.backend.givu.model.responseDTO.ApiResponse;
-import com.backend.givu.model.responseDTO.CodeMessageDTO;
 import com.backend.givu.model.responseDTO.UserAccountDTO;
 import com.backend.givu.model.service.MyPageService;
 import com.backend.givu.model.service.UserService;
