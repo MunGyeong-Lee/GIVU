@@ -1,13 +1,26 @@
-import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
+import axios from 'axios';
 
 function FundingReviewWritePage() {
   const navigate = useNavigate();
+  const location = useLocation();
+  const queryParams = new URLSearchParams(location.search);
+  const fundingId = queryParams.get('fundingId');
 
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
   const [images, setImages] = useState<File[]>([]);
   const [imagePreviewUrls, setImagePreviewUrls] = useState<string[]>([]);
+  const [loading, setLoading] = useState(false);
+
+  // 페이지 로드 시 fundingId 확인
+  useEffect(() => {
+    if (!fundingId) {
+      alert('펀딩 정보가 없습니다. 펀딩 목록 페이지로 이동합니다.');
+      navigate('/funding');
+    }
+  }, [fundingId, navigate]);
 
   // 이미지 파일 선택 핸들러
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -52,15 +65,70 @@ function FundingReviewWritePage() {
   };
 
   // 폼 제출 핸들러
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // 여기서 실제로는 API 호출하여 서버에 저장
-    console.log({ title, content, images });
+    if (!fundingId) {
+      alert('펀딩 정보가 없습니다.');
+      return;
+    }
 
-    // 성공 시 목록 페이지로 리다이렉트
-    alert('후기가 성공적으로 등록되었습니다.');
-    navigate('/funding/review');
+    if (!content.trim()) {
+      alert('내용을 입력해주세요');
+      return;
+    }
+
+    try {
+      setLoading(true);
+
+      // FormData 객체 생성
+      const formData = new FormData();
+      
+      // 댓글 데이터 추가
+      const reviewData = {
+        comment: content
+      };
+      
+      formData.append('data', new Blob([JSON.stringify(reviewData)], { type: 'application/json' }));
+      
+      // 이미지 파일 추가 (첫 번째 이미지만 사용)
+      if (images.length > 0) {
+        formData.append('image', images[0]);
+      }
+
+      // 인증 토큰 가져오기
+      const token = localStorage.getItem('auth_token');
+      if (!token) {
+        alert('로그인이 필요합니다.');
+        navigate('/login');
+        return;
+      }
+      
+      // API 호출
+      await axios.post(
+        `${import.meta.env.VITE_API_BASE_URL}/fundings/reviews/${fundingId}`,
+        formData,
+        {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+            'Authorization': `Bearer ${token}`
+          }
+        }
+      );
+
+      alert('후기가 성공적으로 등록되었습니다.');
+      navigate('/funding/review');
+    } catch (error) {
+      console.error('후기 등록 중 오류가 발생했습니다:', error);
+      if (axios.isAxiosError(error) && error.response?.status === 403) {
+        alert('로그인이 필요합니다. 로그인 페이지로 이동합니다.');
+        navigate('/login');
+      } else {
+        alert('후기 등록에 실패했습니다. 다시 시도해주세요.');
+      }
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -164,9 +232,10 @@ function FundingReviewWritePage() {
           </Link>
           <button
             type="submit"
-            className="px-6 py-2 bg-black text-white rounded-md hover:bg-gray-800 transition"
+            disabled={loading}
+            className="px-6 py-2 bg-black text-white rounded-md hover:bg-gray-800 transition disabled:bg-gray-400"
           >
-            등록하기
+            {loading ? '등록 중...' : '등록하기'}
           </button>
         </div>
       </form>
