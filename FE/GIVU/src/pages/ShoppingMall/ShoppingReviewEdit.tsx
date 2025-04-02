@@ -10,19 +10,18 @@ interface Product {
   category: string;
 }
 
-interface Review {
-  reviewId: number;
-  title: string;
-  body: string;
-  star: number;
-}
+// interface Review {
+//   reviewId: number;
+//   title: string;
+//   body: string;
+//   star: number;
+// }
 
 const ShoppingReviewEdit = () => {
   const { id, reviewId } = useParams<{ id: string; reviewId: string }>();
   const navigate = useNavigate();
   
   const [product, setProduct] = useState<Product | null>(null);
-  const [review, setReview] = useState<Review | null>(null);
   const [title, setTitle] = useState('');
   const [body, setBody] = useState('');
   const [star, setStar] = useState(5);
@@ -44,7 +43,6 @@ const ShoppingReviewEdit = () => {
         // 리뷰 정보 가져오기
         const reviewResponse = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/products-review/${reviewId}`);
         const reviewData = reviewResponse.data;
-        setReview(reviewData);
         setTitle(reviewData.title);
         setBody(reviewData.body);
         setStar(reviewData.star);

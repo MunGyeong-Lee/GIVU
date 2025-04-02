@@ -90,6 +90,370 @@ const ProductImage = ({
   );
 };
 
+// 계좌 생성 모달 컴포넌트
+const AccountCreationModal: React.FC<{
+  isOpen: boolean;
+  onClose: () => void;
+  onSubmit: (password: string) => void;
+}> = ({ isOpen, onClose, onSubmit }) => {
+  const [password, setPassword] = useState<string>('');
+  const [confirmPassword, setConfirmPassword] = useState<string>('');
+  const [error, setError] = useState<string | null>(null);
+  const [step, setStep] = useState<number>(1); // 1: 비밀번호 입력, 2: 비밀번호 확인
+
+  const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value.replace(/[^0-9]/g, '').slice(0, 6);
+    setPassword(value);
+  };
+
+  const handleConfirmPasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value.replace(/[^0-9]/g, '').slice(0, 6);
+    setConfirmPassword(value);
+  };
+
+  const handleNextStep = () => {
+    if (password.length !== 6) {
+      setError('비밀번호는 6자리 숫자여야 합니다.');
+      return;
+    }
+    setError(null);
+    setStep(2);
+  };
+
+  const handleSubmit = () => {
+    if (password !== confirmPassword) {
+      setError('비밀번호가 일치하지 않습니다.');
+      return;
+    }
+    onSubmit(password);
+  };
+
+  const resetModal = () => {
+    setPassword('');
+    setConfirmPassword('');
+    setError(null);
+    setStep(1);
+  };
+
+  useEffect(() => {
+    if (!isOpen) {
+      resetModal();
+    }
+  }, [isOpen]);
+
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div className="bg-white rounded-2xl p-8 w-full max-w-md">
+        <h2 className="text-2xl font-bold mb-6 text-center">
+          {step === 1 ? '기뷰페이 계좌 생성' : '비밀번호 확인'}
+        </h2>
+        
+        <div className="mb-6">
+          <p className="text-gray-600 text-center mb-4">
+            {step === 1 
+              ? '계좌 이용을 위한 6자리 비밀번호를 입력해주세요.' 
+              : '비밀번호를 한번 더 입력해주세요.'}
+          </p>
+          
+          {step === 1 ? (
+            <div className="flex justify-center mb-3">
+              <div className="flex gap-2">
+                {[...Array(6)].map((_, i) => (
+                  <div 
+                    key={i} 
+                    className="w-10 h-12 border-2 border-gray-300 rounded-md flex items-center justify-center text-xl font-bold"
+                  >
+                    {password[i] ? '•' : ''}
+                  </div>
+                ))}
+              </div>
+            </div>
+          ) : (
+            <div className="flex justify-center mb-3">
+              <div className="flex gap-2">
+                {[...Array(6)].map((_, i) => (
+                  <div 
+                    key={i} 
+                    className="w-10 h-12 border-2 border-gray-300 rounded-md flex items-center justify-center text-xl font-bold"
+                  >
+                    {confirmPassword[i] ? '•' : ''}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+          
+          {step === 1 ? (
+            <input
+              type="password"
+              value={password}
+              onChange={handlePasswordChange}
+              placeholder="6자리 비밀번호 입력"
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg text-center text-xl tracking-widest"
+              maxLength={6}
+              autoFocus
+            />
+          ) : (
+            <input
+              type="password"
+              value={confirmPassword}
+              onChange={handleConfirmPasswordChange}
+              placeholder="비밀번호 확인"
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg text-center text-xl tracking-widest"
+              maxLength={6}
+              autoFocus
+            />
+          )}
+          
+          {error && (
+            <p className="text-red-500 text-sm mt-2 text-center">{error}</p>
+          )}
+        </div>
+        
+        <div className="flex justify-center gap-4">
+          <button
+            onClick={onClose}
+            className="px-6 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 transition-colors"
+          >
+            취소
+          </button>
+          
+          {step === 1 ? (
+            <button
+              onClick={handleNextStep}
+              disabled={password.length !== 6}
+              className={`px-6 py-2 ${
+                password.length === 6 
+                  ? 'bg-pink-500 hover:bg-pink-600 text-white' 
+                  : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+              } rounded-md transition-colors`}
+            >
+              다음
+            </button>
+          ) : (
+            <button
+              onClick={handleSubmit}
+              disabled={confirmPassword.length !== 6}
+              className={`px-6 py-2 ${
+                confirmPassword.length === 6 
+                  ? 'bg-pink-500 hover:bg-pink-600 text-white' 
+                  : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+              } rounded-md transition-colors`}
+            >
+              계좌 생성
+            </button>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// 충전 모달 컴포넌트 추가
+const ChargeModal: React.FC<{
+  isOpen: boolean;
+  onClose: () => void;
+}> = ({ isOpen, onClose }) => {
+  const [amount, setAmount] = useState<string>('');
+  const [password, setPassword] = useState<string>('');
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [step, setStep] = useState<number>(1); // 1: 금액 입력, 2: 비밀번호 입력
+
+  const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    // 숫자만 입력 가능
+    const value = e.target.value.replace(/[^0-9]/g, '');
+    setAmount(value);
+  };
+
+  const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    // 숫자만 입력 가능하고 6자리로 제한
+    const value = e.target.value.replace(/[^0-9]/g, '').slice(0, 6);
+    setPassword(value);
+  };
+
+  const handleNextStep = () => {
+    if (!amount || Number(amount) <= 0) {
+      setError('유효한 금액을 입력해주세요.');
+      return;
+    }
+    setError(null);
+    setStep(2);
+  };
+
+  const handleSubmit = async () => {
+    if (password.length !== 6) {
+      setError('비밀번호는 6자리 숫자여야 합니다.');
+      return;
+    }
+
+    setLoading(true);
+    setError(null);
+
+    try {
+      // 비밀번호 검증 로직 (실제로는 API 호출)
+      // 임시로 항상 성공하는 것으로 가정
+      const isPasswordCorrect = true; // 실제 구현 시 API로 검증
+
+      if (!isPasswordCorrect) {
+        throw new Error('비밀번호가 일치하지 않습니다.');
+      }
+
+      // 충전 API 호출 (실제로는 구현 필요)
+      // await axios.post(...);
+
+      // 임시 성공 처리
+      alert('충전이 완료되었습니다.');
+      resetModal();
+      onClose();
+    } catch (err: any) {
+      setError(err.message || '충전 중 오류가 발생했습니다.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const resetModal = () => {
+    setAmount('');
+    setPassword('');
+    setError(null);
+    setStep(1);
+  };
+
+  useEffect(() => {
+    if (!isOpen) {
+      resetModal();
+    }
+  }, [isOpen]);
+
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div className="bg-white rounded-2xl p-6 w-full max-w-md">
+        <h2 className="text-2xl font-bold mb-6 text-center">충전하기</h2>
+        
+        {step === 1 ? (
+          // 금액 입력 단계
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                충전 금액
+              </label>
+              <div className="relative">
+                <input
+                  type="text"
+                  value={amount}
+                  onChange={handleAmountChange}
+                  placeholder="금액을 입력하세요"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-500"
+                  autoFocus
+                />
+                <span className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-500">
+                  원
+                </span>
+              </div>
+            </div>
+
+            {error && (
+              <div className="text-red-500 text-sm py-2">
+                {error}
+              </div>
+            )}
+
+            <div className="flex gap-3 mt-6">
+              <button
+                type="button"
+                onClick={onClose}
+                className="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-100 transition-colors"
+              >
+                취소
+              </button>
+              <button
+                type="button"
+                onClick={handleNextStep}
+                disabled={!amount || Number(amount) <= 0}
+                className={`flex-1 px-4 py-2 rounded-lg text-white ${
+                  !amount || Number(amount) <= 0
+                    ? 'bg-pink-300 cursor-not-allowed' 
+                    : 'bg-pink-500 hover:bg-pink-600'
+                } transition-colors`}
+              >
+                다음
+              </button>
+            </div>
+          </div>
+        ) : (
+          // 비밀번호 입력 단계
+          <div className="space-y-4">
+            <div>
+              <p className="text-lg font-medium mb-2 text-center">
+                충전을 위해 계좌 비밀번호를 입력해주세요.
+              </p>
+              <p className="text-gray-600 mb-4 text-center">
+                금액: <span className="font-bold text-gray-800">{Number(amount).toLocaleString()}원</span>
+              </p>
+              
+              <div className="flex justify-center mb-3">
+                <div className="flex gap-2">
+                  {[...Array(6)].map((_, i) => (
+                    <div 
+                      key={i} 
+                      className="w-10 h-12 border-2 border-gray-300 rounded-md flex items-center justify-center text-xl font-bold"
+                    >
+                      {password[i] ? '•' : ''}
+                    </div>
+                  ))}
+                </div>
+              </div>
+              
+              <input
+                type="password"
+                value={password}
+                onChange={handlePasswordChange}
+                placeholder="6자리 비밀번호 입력"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg text-center text-xl tracking-widest"
+                maxLength={6}
+                autoFocus
+              />
+            </div>
+
+            {error && (
+              <div className="text-red-500 text-sm py-2 text-center">
+                {error}
+              </div>
+            )}
+
+            <div className="flex gap-3 mt-6">
+              <button
+                type="button"
+                onClick={() => setStep(1)}
+                className="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-100 transition-colors"
+              >
+                이전
+              </button>
+              <button
+                type="button"
+                onClick={handleSubmit}
+                disabled={password.length !== 6 || loading}
+                className={`flex-1 px-4 py-2 rounded-lg text-white ${
+                  password.length !== 6 || loading
+                    ? 'bg-pink-300 cursor-not-allowed' 
+                    : 'bg-pink-500 hover:bg-pink-600'
+                } transition-colors`}
+              >
+                {loading ? '처리중...' : '충전하기'}
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
 const MainShopping = () => {
   // 상태 관리
   const [products, setProducts] = useState<Product[]>([]);
@@ -120,6 +484,13 @@ const MainShopping = () => {
 
   // 현재 필터링된 상품을 저장하는 상태 추가
   const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
+
+  // 계좌 관련 상태 추가
+  const [hasAccount, setHasAccount] = useState<boolean>(false);
+  const [accountNumber, setAccountNumber] = useState<string>('');
+  const [accountBalance, setAccountBalance] = useState<number>(0);
+  const [isAccountModalOpen, setIsAccountModalOpen] = useState<boolean>(false);
+  const [isChargeModalOpen, setIsChargeModalOpen] = useState<boolean>(false);
 
   // 필터 적용 함수 - 카테고리와 가격대 필터를 모두 적용
   const applyFilters = (allProducts: Product[]) => {
@@ -175,15 +546,27 @@ const MainShopping = () => {
         throw new Error('올바르지 않은 데이터 형식입니다.');
       }
 
+      // 로컬 스토리지에서 좋아요 상태 가져오기
+      const favoriteProducts = JSON.parse(localStorage.getItem('favoriteProducts') || '{}') as Record<string, boolean>;
+      
+      // 상품 목록에 좋아요 상태 반영
+      const productsWithFavorites = productsData.map((product: Product) => ({
+        ...product,
+        favorite: favoriteProducts[String(product.id)] !== undefined 
+          ? favoriteProducts[String(product.id)] 
+          : product.favorite
+      }));
+
       if (pageNum === 0) {
-        setProducts(productsData);
+        // 첫 페이지일 경우 상태 초기화
+        setProducts(productsWithFavorites);
         // 초기 필터링된 상품 목록 설정
-        setFilteredProducts(productsData);
+        setFilteredProducts(productsWithFavorites);
         // 초기 표시할 상품 목록 설정
-        setDisplayedProducts(productsData.slice(0, itemsPerPage));
+        setDisplayedProducts(productsWithFavorites.slice(0, itemsPerPage));
         
         // 베스트 상품 설정 (별점 순 -> 가격 순)
-        const bestProductsList = [...productsData]
+        const bestProductsList = [...productsWithFavorites]
           .sort((a, b) => {
             if (a.star !== b.star) {
               return b.star - a.star;
@@ -194,19 +577,20 @@ const MainShopping = () => {
         setBestProducts(bestProductsList);
         
         // 지금 뜨는 상품 설정 (조회수 기준)
-        const trendingProductsList = [...productsData]
+        const trendingProductsList = [...productsWithFavorites]
           .sort((a, b) => b.views - a.views)
           .slice(0, 5);
         setTrendingProducts(trendingProductsList);
       } else {
-        // 추가 페이지 로드 시
-        const newProducts = [...products, ...productsData];
-        setProducts(newProducts);
-        setFilteredProducts(newProducts);
-        setDisplayedProducts(prev => [...prev, ...productsData.slice(0, itemsPerPage)]);
+        // 추가 페이지의 경우 기존 상품 목록에 추가
+        setProducts(prev => [...prev, ...productsWithFavorites]);
+        // 필터링된 상품 목록에도 추가 (필터 적용)
+        setFilteredProducts(prev => applyFilters([...prev, ...productsWithFavorites]));
+        // 표시할 상품 목록 업데이트
+        setDisplayedProducts(prev => [...prev, ...productsWithFavorites.slice(0, itemsPerPage)]);
       }
 
-      // 페이지네이션 처리 수정
+      // 페이지네이션 처리
       setHasMore(productsData.length === 10); // 10개가 있으면 다음 페이지가 있다고 가정
       setPage(pageNum);
     } catch (err) {
@@ -329,75 +713,7 @@ const MainShopping = () => {
 
   // 첫 로드 시 상품 가져오기
   useEffect(() => {
-    const fetchProductsWithFavorites = async () => {
-      try {
-        setLoading(true);
-        setError(null);
-        
-        const response = await axios.get(
-          `${import.meta.env.VITE_BASE_URL}/products/list`,
-          {
-            params: {
-              page: 0,
-              size: 10,
-              sort: 'createdAt,desc'
-            }
-          }
-        );
-
-        // API 응답 데이터 확인 및 안전한 처리
-        const productsData = response.data;
-        
-        if (!productsData || !Array.isArray(productsData)) {
-          throw new Error('올바르지 않은 데이터 형식입니다.');
-        }
-
-        // 로컬 스토리지에서 좋아요 상태 가져오기
-        const favoriteProducts = JSON.parse(localStorage.getItem('favoriteProducts') || '{}') as Record<string, boolean>;
-        
-        // 상품 목록에 좋아요 상태 반영
-        const productsWithFavorites = productsData.map((product: Product) => ({
-          ...product,
-          favorite: favoriteProducts[String(product.id)] !== undefined 
-            ? favoriteProducts[String(product.id)] 
-            : product.favorite
-        }));
-
-        setProducts(productsWithFavorites);
-        // 초기 필터링된 상품 목록 설정
-        setFilteredProducts(productsWithFavorites);
-        // 초기 표시할 상품 목록 설정
-        setDisplayedProducts(productsWithFavorites.slice(0, itemsPerPage));
-        
-        // 베스트 상품 설정 (별점 순 -> 가격 순)
-        const bestProductsList = [...productsWithFavorites]
-          .sort((a, b) => {
-            if (a.star !== b.star) {
-              return b.star - a.star;
-            }
-            return b.price - a.price;
-          })
-          .slice(0, 8);
-        setBestProducts(bestProductsList);
-        
-        // 지금 뜨는 상품 설정 (조회수 기준)
-        const trendingProductsList = [...productsWithFavorites]
-          .sort((a, b) => b.views - a.views)
-          .slice(0, 5);
-        setTrendingProducts(trendingProductsList);
-
-        // 페이지네이션 처리 수정
-        setHasMore(productsData.length === 10); // 10개가 있으면 다음 페이지가 있다고 가정
-        setPage(0);
-      } catch (err) {
-        console.error('상품을 불러오는 중 오류가 발생했습니다:', err);
-        setError('상품을 불러오는데 실패했습니다. 다시 시도해주세요.');
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchProductsWithFavorites();
+    fetchProducts(0);
   }, []);
 
   // 상품 목록 업데이트 이벤트 감지
@@ -587,6 +903,31 @@ const MainShopping = () => {
     }
   };
 
+  // 계좌 생성 제출 핸들러
+  const handleAccountCreation = (password: string) => {
+    console.log('계좌 생성 - 비밀번호:', password);
+    // TODO: 여기서 API 호출
+    
+    // 임시로 계좌 생성 시뮬레이션
+    const randomAccountNumber = Math.floor(Math.random() * 90000000) + 10000000;
+    setAccountNumber(`110-${randomAccountNumber}-01`);
+    setAccountBalance(0);
+    setHasAccount(true);
+    setIsAccountModalOpen(false);
+    
+    alert('계좌가 성공적으로 생성되었습니다!');
+  };
+  
+  // 충전하기 버튼 클릭 핸들러 추가
+  const handleChargeClick = () => {
+    if (!hasAccount) {
+      setIsAccountModalOpen(true);
+      return;
+    }
+    
+    setIsChargeModalOpen(true);
+  };
+
   return (
     <div className="w-full">
       {/* 초기 로딩 인디케이터 */}
@@ -622,6 +963,50 @@ const MainShopping = () => {
           </div>
         </div>
       </header>
+      
+      {/* 계좌 정보 영역 (새로 추가) */}
+      <div className="bg-gradient-to-r from-pink-500 to-purple-600 py-6">
+        <div className="container mx-auto px-4">
+          <div className="max-w-3xl mx-auto bg-white rounded-xl shadow-lg p-6">
+            {hasAccount ? (
+              <div className="flex flex-col md:flex-row items-center justify-between">
+                <div className="mb-4 md:mb-0">
+                  <p className="text-gray-500 text-sm mb-1">내 기뷰페이 계좌</p>
+                  <p className="text-lg font-bold">{accountNumber}</p>
+                </div>
+                <div className="flex items-center">
+                  <div className="mr-3">
+                    <p className="text-gray-500 text-sm mb-1">잔액</p>
+                    <p className="text-xl font-bold text-pink-600">{accountBalance.toLocaleString()}원</p>
+                  </div>
+                  <button 
+                    onClick={handleChargeClick}
+                    className="bg-pink-500 hover:bg-pink-600 text-white px-4 py-2 rounded-md transition-colors"
+                  >
+                    충전하기
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <div className="flex flex-col items-center justify-center py-6">
+                <div className="w-16 h-16 rounded-full bg-pink-100 flex items-center justify-center mb-4">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-pink-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                  </svg>
+                </div>
+                <h3 className="text-lg font-bold mb-2">기뷰페이 계좌가 없습니다</h3>
+                <p className="text-gray-500 mb-4 text-center">쇼핑과 펀딩을 편리하게 이용하려면<br />기뷰페이 계좌를 만들어보세요!</p>
+                <button 
+                  onClick={() => setIsAccountModalOpen(true)}
+                  className="bg-pink-500 hover:bg-pink-600 text-white px-6 py-2 rounded-full transition-colors"
+                >
+                  계좌 만들기
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
       
       {/* 카테고리 영역 - 한 줄 가로 스크롤 */}
       <div className="bg-white py-4 border-b border-gray-200 sticky top-0 z-30 shadow-sm">
@@ -1023,6 +1408,19 @@ const MainShopping = () => {
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 10l7-7m0 0l7 7m-7-7v18" />
         </svg>
       </button>
+
+      {/* 계좌 생성 모달 */}
+      <AccountCreationModal 
+        isOpen={isAccountModalOpen}
+        onClose={() => setIsAccountModalOpen(false)}
+        onSubmit={handleAccountCreation}
+      />
+      
+      {/* 충전 모달 */}
+      <ChargeModal
+        isOpen={isChargeModalOpen}
+        onClose={() => setIsChargeModalOpen(false)}
+      />
     </div>
   );
 };
