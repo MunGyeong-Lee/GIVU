@@ -6,6 +6,7 @@ import com.backend.givu.model.entity.Funding;
 import com.backend.givu.model.repository.ProductRepository;
 import com.backend.givu.model.requestDTO.FundingCreateDTO;
 import com.backend.givu.model.requestDTO.FundingUpdateDTO;
+import com.backend.givu.model.responseDTO.FundingDetailDTO;
 import com.backend.givu.model.responseDTO.FundingsDTO;
 import com.backend.givu.model.responseDTO.ImageUploadResponseDTO;
 import com.backend.givu.model.service.FundingService;
@@ -173,8 +174,7 @@ public class FundingController implements FundingControllerDocs {
 
     }
 
-
-
+//
 //    @Operation(summary = "펀딩 상세보기", description = "해당 펀딩 상세를 보여줍니다.")
 //    @GetMapping(value="/{fundingId}")
 //    public ResponseEntity<FundingDetailDTO> fundingDetail(
@@ -189,8 +189,8 @@ public class FundingController implements FundingControllerDocs {
 //    }
 //
 //
-
-
+//
+//
 
 
 
