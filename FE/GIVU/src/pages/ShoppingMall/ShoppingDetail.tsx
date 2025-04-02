@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import { useSelector } from 'react-redux';
+import { RootState } from '../../store';
 
 // 옵션 관련 인터페이스 추가
 interface ProductOption {
@@ -36,6 +38,7 @@ interface Review {
   image: string;
   star: number;
   user: ReviewUser;
+  isAuthor?: boolean; // 본인 작성 리뷰 여부
 }
 
 // 임시 데이터 - 나중에 API로 대체
@@ -101,13 +104,14 @@ const ShoppingProductDetail = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [quantity, setQuantity] = useState(1);
-
-  // 기존 상태들
   const [selectedOptions, setSelectedOptions] = useState<Record<string, string>>({});
-  // const [currentImageIndex, setCurrentImageIndex] = useState(0);
-  // const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
   const [reviews, setReviews] = useState<Review[]>([]);
   const [averageRating, setAverageRating] = useState<number>(0);
+  const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false);
+  const [isFavorite, setIsFavorite] = useState<boolean>(false);
+
+  // Redux에서 사용자 정보 가져오기 (안전한 접근)
+  const user = useSelector((state: RootState) => state?.auth?.user || null);
 
   // 페이지 로드 시 스크롤을 맨 위로 이동
   useEffect(() => {
@@ -119,13 +123,23 @@ const ShoppingProductDetail = () => {
     const fetchProductDetail = async () => {
       try {
         setLoading(true);
-        const response = await axios.get(`${import.meta.env.VITE_BASE_URL}/products/${id}`);
-        setProduct(response.data.product);
-        setReviews(response.data.reviews);
+        const token = localStorage.getItem('auth_token');
+        
+        // 상품 정보 가져오기
+        const productResponse = await axios.get(`${import.meta.env.VITE_BASE_URL}/products/${id}`);
+        setProduct(productResponse.data.product);
+        
+        // 리뷰 목록에 isAuthor 필드 추가
+        const reviewsWithAuthor = productResponse.data.reviews.map((review: Review) => ({
+          ...review,
+          isAuthor: user?.id?.toString() === review.user.userId?.toString()
+        }));
+        
+        setReviews(reviewsWithAuthor);
 
         // 평균 별점 계산 (리뷰가 있는 경우에만)
-        if (response.data.reviews.length > 0) {
-          const avgRating = response.data.reviews.reduce((acc: number, review: Review) => acc + review.star, 0) / response.data.reviews.length;
+        if (reviewsWithAuthor.length > 0) {
+          const avgRating = reviewsWithAuthor.reduce((acc: number, review: Review) => acc + review.star, 0) / reviewsWithAuthor.length;
           setAverageRating(avgRating);
         }
       } catch (err) {
@@ -139,7 +153,61 @@ const ShoppingProductDetail = () => {
     if (id) {
       fetchProductDetail();
     }
-  }, [id]);
+  }, [id, user]);
+
+  // 로그인 상태 확인
+  useEffect(() => {
+    const token = localStorage.getItem('auth_token');
+    const userId = localStorage.getItem('userId');
+    // Redux에 사용자 정보가 있거나 로컬 스토리지에 토큰이 있으면 로그인 상태로 간주
+    setIsLoggedIn(!!user || (!!token && !!userId));
+  }, [user]);
+
+  // 좋아요 상태 확인
+  useEffect(() => {
+    const checkFavoriteStatus = async () => {
+      try {
+        const token = localStorage.getItem('auth_token');
+        if (!token && !user) return;
+        if (!id) return; // id가 없으면 함수 종료
+
+        // ID를 문자열로 확실하게 변환
+        const productId = id as string;
+
+        // 로컬 스토리지에서 좋아요 상태 확인
+        const favoriteProducts = JSON.parse(localStorage.getItem('favoriteProducts') || '{}') as Record<string, boolean>;
+        if (favoriteProducts[productId] !== undefined) {
+          setIsFavorite(favoriteProducts[productId]);
+          return;
+        }
+
+        const response = await axios.get(
+          `${import.meta.env.VITE_API_BASE_URL}/products/${productId}`,
+          {
+            headers: {
+              'Authorization': `Bearer ${token}`,
+              'Content-Type': 'application/json',
+              'Accept': 'application/json'
+            },
+            withCredentials: true
+          }
+        );
+        
+        const favoriteStatus = response.data.product.favorite;
+        setIsFavorite(favoriteStatus);
+
+        // 로컬 스토리지에 저장
+        favoriteProducts[productId] = favoriteStatus;
+        localStorage.setItem('favoriteProducts', JSON.stringify(favoriteProducts));
+      } catch (error) {
+        console.error('좋아요 상태 확인 중 오류:', error);
+      }
+    };
+
+    if ((isLoggedIn || user) && id) {
+      checkFavoriteStatus();
+    }
+  }, [id, isLoggedIn, user]);
 
   if (loading) {
     return (
@@ -188,6 +256,138 @@ const ShoppingProductDetail = () => {
         options: selectedOptions
       }
     });
+  };
+
+  // 리뷰 삭제 핸들러 추가
+  const handleDeleteReview = async (reviewId: number) => {
+    if (!window.confirm('리뷰를 삭제하시겠습니까?')) {
+      return;
+    }
+    
+    try {
+      const token = localStorage.getItem('auth_token');
+      if (!token) {
+        alert('로그인이 필요합니다.');
+        return;
+      }
+      
+      await axios.delete(
+        `${import.meta.env.VITE_API_BASE_URL}/products-review/${reviewId}`,
+        {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        }
+      );
+      
+      alert('리뷰가 삭제되었습니다.');
+      
+      // 리뷰 목록에서 삭제된 리뷰 제거
+      const updatedReviews = reviews.filter(review => review.reviewId !== reviewId);
+      setReviews(updatedReviews);
+      
+      // 평균 별점 다시 계산
+      let newAverageRating = 0;
+      if (updatedReviews.length > 0) {
+        newAverageRating = updatedReviews.reduce((acc, review) => acc + review.star, 0) / updatedReviews.length;
+      }
+      setAverageRating(newAverageRating);
+
+      // 상품의 평균 별점 업데이트
+      try {
+        // 상품 정보 다시 가져오기
+        const productResponse = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/products/${id}`);
+        const updatedProduct = productResponse.data.product;
+        
+        // 상품의 평균 별점 업데이트 API 호출
+        await axios.patch(
+          `${import.meta.env.VITE_API_BASE_URL}/products/${id}/star`,
+          { star: newAverageRating },
+          {
+            headers: {
+              'Authorization': `Bearer ${token}`
+            }
+          }
+        );
+
+        // 메인 페이지의 상품 목록도 업데이트
+        const mainResponse = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/products/list`);
+        const updatedProducts = mainResponse.data.map((p: any) => 
+          p.id === updatedProduct.id ? updatedProduct : p
+        );
+        
+        // 전역 상태 업데이트를 위한 이벤트 발생
+        window.dispatchEvent(new CustomEvent('productsUpdated', { 
+          detail: { products: updatedProducts } 
+        }));
+      } catch (error) {
+        console.error('상품 별점 업데이트 중 오류가 발생했습니다:', error);
+      }
+    } catch (error) {
+      console.error('리뷰 삭제 중 오류가 발생했습니다:', error);
+      alert('리뷰 삭제에 실패했습니다. 다시 시도해주세요.');
+    }
+  };
+
+  // 리뷰 수정 핸들러 추가
+  const handleEditReview = async (reviewId: number) => {
+    navigate(`/shopping/product/${id}/review/${reviewId}`);
+  };
+
+  // 좋아요 토글 함수
+  const handleFavoriteClick = async () => {
+    if (!isLoggedIn && !user) {
+      alert('로그인이 필요한 서비스입니다.');
+      return;
+    }
+    
+    if (!id) return; // id가 없으면 함수 종료
+
+    // ID를 문자열로 확실하게 변환
+    const productId = id as string;
+
+    try {
+      const token = localStorage.getItem('auth_token');
+      if (!token && !user) return;
+
+      // API 호출 전에 상태를 먼저 토글
+      const newFavoriteState = !isFavorite;
+      setIsFavorite(newFavoriteState);
+
+      await axios.patch(
+        `${import.meta.env.VITE_API_BASE_URL}/products/${productId}/like`,
+        null,
+        {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+          },
+          withCredentials: true
+        }
+      );
+      
+      // 메인 페이지의 상품 목록도 업데이트
+      const mainResponse = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/products/list`);
+      const updatedProducts = mainResponse.data.map((p: any) => 
+        p.id === product?.id ? { ...p, favorite: newFavoriteState } : p
+      );
+      
+      // 전역 상태 업데이트를 위한 이벤트 발생
+      window.dispatchEvent(new CustomEvent('productsUpdated', { 
+        detail: { products: updatedProducts } 
+      }));
+
+      // 로컬 스토리지에 좋아요 상태 저장
+      const favoriteProducts = JSON.parse(localStorage.getItem('favoriteProducts') || '{}') as Record<string, boolean>;
+      favoriteProducts[productId] = newFavoriteState;
+      localStorage.setItem('favoriteProducts', JSON.stringify(favoriteProducts));
+    } catch (error) {
+      // 에러 발생 시 상태를 원래대로 되돌림
+      setIsFavorite(!isFavorite);
+      console.error('좋아요 처리 중 오류:', error);
+      alert('좋아요 처리 중 오류가 발생했습니다.');
+    }
   };
 
   // JSX에 추가할 리뷰 섹션
@@ -241,6 +441,24 @@ const ShoppingProductDetail = () => {
                   <span className="font-medium">{review.user.nickName}</span>
                 </div>
               </div>
+              
+              {/* 본인 리뷰일 경우 수정/삭제 버튼 표시 */}
+              {review.isAuthor && (
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => handleEditReview(review.reviewId)}
+                    className="text-blue-500 hover:text-blue-700 px-2 py-1 rounded hover:bg-blue-50"
+                  >
+                    수정
+                  </button>
+                  <button
+                    onClick={() => handleDeleteReview(review.reviewId)}
+                    className="text-red-500 hover:text-red-700 px-2 py-1 rounded hover:bg-red-50"
+                  >
+                    삭제
+                  </button>
+                </div>
+              )}
             </div>
             {/* 리뷰 제목 */}
             <h4 className="font-medium mb-2">{review.title}</h4>
@@ -276,29 +494,27 @@ const ShoppingProductDetail = () => {
       <div className="flex flex-col md:flex-row gap-8 mb-12">
         {/* 상품 이미지 영역 */}
         <div className="w-full md:w-1/2 relative">
-          <img
-            src={product.image || 'https://via.placeholder.com/400x400?text=No+Image'}
-            alt={product.productName}
-            className="w-full h-auto rounded-lg"
-          />
-          {/* 찜하기 버튼 */}
-          <button
-            onClick={(e) => {
-              e.preventDefault();
-              // 찜하기 API 호출 로직
-            }}
-            className="absolute top-4 left-4 p-2 bg-white rounded-full shadow-md"
-          >
-            {product.favorite > 0 ? (
-              <svg className="w-6 h-6 text-rose-500" fill="currentColor" viewBox="0 0 20 20">
-                <path fillRule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" />
-              </svg>
-            ) : (
-              <svg className="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-              </svg>
-            )}
-          </button>
+          <div className="relative">
+            <img
+              src={product.image || 'https://via.placeholder.com/400x400?text=No+Image'}
+              alt={product.productName}
+              className="w-full h-auto rounded-lg"
+            />
+            <button
+              onClick={handleFavoriteClick}
+              className="absolute top-4 right-4 p-2 bg-white rounded-full shadow-md hover:bg-gray-100 transition-colors"
+            >
+              {isFavorite ? (
+                <svg className="w-6 h-6 text-rose-500" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" />
+                </svg>
+              ) : (
+                <svg className="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                </svg>
+              )}
+            </button>
+          </div>
         </div>
 
         {/* 상품 정보 및 구매 옵션 */}

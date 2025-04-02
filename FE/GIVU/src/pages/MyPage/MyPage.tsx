@@ -251,6 +251,8 @@ const MyPage = () => {
   const [activeTab, setActiveTab] = useState<TabType>("created");
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
+  const [wishlistProducts, setWishlistProducts] = useState<any[]>([]);
+  const [loadingWishlist, setLoadingWishlist] = useState(false);
   
   // 방법 1: HTMLDivElement | null 타입으로 명시적 정의
   const createdFundingsRef = useRef<HTMLDivElement | null>(null);
@@ -400,6 +402,47 @@ const MyPage = () => {
     return items.slice(startIndex, startIndex + perPage);
   };
   
+  // 찜 목록 데이터 가져오기
+  const fetchWishlistProducts = async () => {
+    try {
+      setLoadingWishlist(true);
+      // 로컬 스토리지에서 좋아요한 상품 ID 가져오기
+      const favoriteProducts = JSON.parse(localStorage.getItem('favoriteProducts') || '{}') as Record<string, boolean>;
+      
+      // true로 표시된 상품 ID만 필터링
+      const favoriteProductIds = Object.entries(favoriteProducts)
+        .filter(([_, isFavorite]) => isFavorite)
+        .map(([id, _]) => id);
+      
+      if (favoriteProductIds.length === 0) {
+        setWishlistProducts([]);
+        return;
+      }
+      
+      // 상품 정보를 가져오기 위한 API 호출
+      const response = await axios.get(`${import.meta.env.VITE_BASE_URL}/products/list`);
+      
+      if (response.data && Array.isArray(response.data)) {
+        // 찜한 상품만 필터링
+        const wishlist = response.data.filter((product: any) => 
+          favoriteProductIds.includes(String(product.id))
+        );
+        setWishlistProducts(wishlist);
+      }
+    } catch (error) {
+      console.error('찜 목록을 불러오는 중 오류가 발생했습니다:', error);
+    } finally {
+      setLoadingWishlist(false);
+    }
+  };
+  
+  // 탭이 wishlist로 변경될 때마다 데이터 가져오기
+  useEffect(() => {
+    if (activeTab === "wishlist") {
+      fetchWishlistProducts();
+    }
+  }, [activeTab]);
+  
   // 탭 내용을 렌더링하는 함수
   const renderTabContent = () => {
     switch (activeTab) {
@@ -544,78 +587,65 @@ const MyPage = () => {
         );
         
       case "wishlist":
-        return WISHLIST_ITEMS.length > 0 ? (
-          <div className="relative">
-            <div className="absolute -left-4 top-1/2 transform -translate-y-1/2 z-10">
-              <button 
-                onClick={() => handleScrollLeft(wishlistRef)}
-                className="p-2 bg-cusBlack text-white rounded-full shadow-md hover:bg-cusBlack-light"
-                aria-label="이전 항목"
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                </svg>
-              </button>
-            </div>
-            
-            <div 
-              ref={wishlistRef}
-              className="flex overflow-x-auto scrollbar-hide gap-4 py-4 pl-2 pr-6"
-              style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
-            >
-              {WISHLIST_ITEMS.map((product) => (
+        const paginatedWishlist = getPaginatedItems(wishlistProducts, currentPage, itemsPerPage);
+        
+        return loadingWishlist ? (
+          <div className="flex justify-center items-center h-64">
+            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-cusBlue"></div>
+          </div>
+        ) : wishlistProducts.length > 0 ? (
+          <div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+              {paginatedWishlist.map((product) => (
                 <Link 
                   key={product.id} 
                   to={`/shopping/product/${product.id}`}
-                  className="bg-white border border-cusGray rounded-xl overflow-hidden hover:shadow-lg transition-all transform hover:-translate-y-1 flex-shrink-0"
-                  style={{ width: '250px' }}
+                  className="block border border-cusGray bg-white rounded-lg overflow-hidden hover:shadow-md transition-shadow"
                 >
-                  <div className="h-48 bg-cusGray-light">
+                  <div className="h-48 bg-cusGray-light relative">
                     <img 
-                      src={product.imageUrl} 
-                      alt={product.name} 
+                      src={product.image || 'https://via.placeholder.com/300x200?text=상품이미지'}
+                      alt={product.productName}
                       className="w-full h-full object-cover"
                     />
+                    <div className="absolute top-2 right-2 bg-cusRed text-white text-xs px-2 py-1 rounded-full">
+                      {product.category}
+                    </div>
                   </div>
                   <div className="p-4">
-                    <h3 className="font-medium mb-2 text-cusBlack">{product.name}</h3>
-                    <div className="flex items-center gap-2 mb-2">
-                      {product.discount > 0 && (
-                        <span className="text-cusBlack-light line-through text-sm">
-                          {product.price.toLocaleString()}원
-                        </span>
-                      )}
-                      <span className="text-cusRed font-bold">
-                        {(product.price * (100 - product.discount) / 100).toLocaleString()}원
-                      </span>
-                      {product.discount > 0 && (
-                        <span className="bg-cusRed-light text-white text-xs font-bold px-2 py-0.5 rounded-full ml-auto">
-                          {product.discount}% 할인
-                        </span>
-                      )}
+                    <h3 className="font-bold text-cusBlack mb-2">{product.productName}</h3>
+                    <div className="flex justify-between items-center">
+                      <span className="text-lg font-bold">{product.price?.toLocaleString()}원</span>
+                      <div className="flex items-center">
+                        <svg className="w-4 h-4 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
+                          <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                        </svg>
+                        <span className="ml-1 text-sm text-cusBlack-light">{product.star?.toFixed(1)}</span>
+                      </div>
                     </div>
                   </div>
                 </Link>
               ))}
             </div>
             
-            <div className="absolute -right-4 top-1/2 transform -translate-y-1/2 z-10">
-              <button 
-                onClick={() => handleScrollRight(wishlistRef)}
-                className="p-2 bg-cusBlack text-white rounded-full shadow-md hover:bg-cusBlack-light"
-                aria-label="다음 항목"
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                </svg>
-              </button>
-            </div>
+            {/* 페이지네이션 컴포넌트 */}
+            <Pagination 
+              totalItems={wishlistProducts.length}
+              itemsPerPage={itemsPerPage}
+              currentPage={currentPage}
+              onPageChange={handlePageChange}
+            />
           </div>
         ) : (
-          <div className="bg-cusGray-light rounded-xl py-10 text-center">
-            <p className="text-cusBlack-light font-medium">아직 위시리스트에 추가한 상품이 없습니다.</p>
-            <Link to="/shopping" className="inline-block mt-4 px-6 py-2 bg-cusRed text-white rounded-full hover:bg-cusRed-light transition-colors text-sm">
-              쇼핑하러 가기
+          <div className="text-center py-16 bg-white rounded-xl shadow-sm">
+            <div className="text-5xl mb-4">❤️</div>
+            <h3 className="text-xl font-bold text-cusBlack mb-2">찜한 상품이 없습니다</h3>
+            <p className="text-cusBlack-light mb-6">마음에 드는 상품을 발견하면 하트를 눌러 찜해보세요!</p>
+            <Link 
+              to="/shopping"
+              className="px-6 py-3 bg-cusBlue text-white rounded-lg inline-block hover:bg-blue-600 transition-colors"
+            >
+              쇼핑몰 둘러보기
             </Link>
           </div>
         );
@@ -752,7 +782,7 @@ const MyPage = () => {
                 <button
                   className={`px-5 py-3 text-base font-bold rounded-full transition-all ${
                     activeTab === "wishlist" 
-                      ? "bg-cusBlack text-cusYellow shadow-lg" 
+                      ? "bg-cusBlack text-pink-500 shadow-lg" 
                       : "bg-cusGray-light text-cusBlack-light hover:bg-cusGray"
                   }`}
                   onClick={() => setActiveTab("wishlist")}
