@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import { useSelector } from 'react-redux';
+import { RootState } from '../../store';
 
 // 옵션 관련 인터페이스 추가
 interface ProductOption {
@@ -102,17 +104,14 @@ const ShoppingProductDetail = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [quantity, setQuantity] = useState(1);
-
-  // 기존 상태들
   const [selectedOptions, setSelectedOptions] = useState<Record<string, string>>({});
-  // const [currentImageIndex, setCurrentImageIndex] = useState(0);
-  // const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
   const [reviews, setReviews] = useState<Review[]>([]);
   const [averageRating, setAverageRating] = useState<number>(0);
-
-  // 좋아요 상태 관련 상태
   const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false);
   const [isFavorite, setIsFavorite] = useState<boolean>(false);
+
+  // Redux에서 사용자 정보 가져오기 (안전한 접근)
+  const user = useSelector((state: RootState) => state?.auth?.user || null);
 
   // 페이지 로드 시 스크롤을 맨 위로 이동
   useEffect(() => {
@@ -124,33 +123,17 @@ const ShoppingProductDetail = () => {
     const fetchProductDetail = async () => {
       try {
         setLoading(true);
-        const response = await axios.get(`${import.meta.env.VITE_BASE_URL}/products/${id}`);
-        setProduct(response.data.product);
-        
-        // 현재 사용자 ID 가져오기
         const token = localStorage.getItem('auth_token');
-        let currentUserId: number | null = null;
-        if (token) {
-          try {
-            const userResponse = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/users/me`, {
-              headers: {
-                'Authorization': `Bearer ${token}`
-              }
-            });
-            currentUserId = userResponse.data.id; // userId를 id로 수정
-          } catch (error) {
-            console.error('사용자 정보를 가져오는 중 오류가 발생했습니다:', error);
-          }
-        }
-
-        // 리뷰 목록에 isAuthor 필드 추가
-        const reviewsWithAuthor = response.data.reviews.map((review: Review) => ({
-          ...review,
-          isAuthor: currentUserId === review.user.userId
-        }));
         
-        console.log('Current User ID:', currentUserId); // 디버깅용 로그
-        console.log('Reviews with Author:', reviewsWithAuthor); // 디버깅용 로그
+        // 상품 정보 가져오기
+        const productResponse = await axios.get(`${import.meta.env.VITE_BASE_URL}/products/${id}`);
+        setProduct(productResponse.data.product);
+        
+        // 리뷰 목록에 isAuthor 필드 추가
+        const reviewsWithAuthor = productResponse.data.reviews.map((review: Review) => ({
+          ...review,
+          isAuthor: user?.id?.toString() === review.user.userId?.toString()
+        }));
         
         setReviews(reviewsWithAuthor);
 
@@ -170,40 +153,61 @@ const ShoppingProductDetail = () => {
     if (id) {
       fetchProductDetail();
     }
-  }, [id]);
+  }, [id, user]);
 
   // 로그인 상태 확인
   useEffect(() => {
     const token = localStorage.getItem('auth_token');
-    setIsLoggedIn(!!token);
-  }, []);
+    const userId = localStorage.getItem('userId');
+    // Redux에 사용자 정보가 있거나 로컬 스토리지에 토큰이 있으면 로그인 상태로 간주
+    setIsLoggedIn(!!user || (!!token && !!userId));
+  }, [user]);
 
   // 좋아요 상태 확인
   useEffect(() => {
     const checkFavoriteStatus = async () => {
       try {
         const token = localStorage.getItem('auth_token');
-        if (!token) return;
+        if (!token && !user) return;
+        if (!id) return; // id가 없으면 함수 종료
+
+        // ID를 문자열로 확실하게 변환
+        const productId = id as string;
+
+        // 로컬 스토리지에서 좋아요 상태 확인
+        const favoriteProducts = JSON.parse(localStorage.getItem('favoriteProducts') || '{}') as Record<string, boolean>;
+        if (favoriteProducts[productId] !== undefined) {
+          setIsFavorite(favoriteProducts[productId]);
+          return;
+        }
 
         const response = await axios.get(
-          `${import.meta.env.VITE_API_BASE_URL}/products/${id}`,
+          `${import.meta.env.VITE_API_BASE_URL}/products/${productId}`,
           {
             headers: {
-              'Authorization': `Bearer ${token}`
-            }
+              'Authorization': `Bearer ${token}`,
+              'Content-Type': 'application/json',
+              'Accept': 'application/json'
+            },
+            withCredentials: true
           }
         );
         
-        setIsFavorite(response.data.product.favorite > 0);
+        const favoriteStatus = response.data.product.favorite;
+        setIsFavorite(favoriteStatus);
+
+        // 로컬 스토리지에 저장
+        favoriteProducts[productId] = favoriteStatus;
+        localStorage.setItem('favoriteProducts', JSON.stringify(favoriteProducts));
       } catch (error) {
         console.error('좋아요 상태 확인 중 오류:', error);
       }
     };
 
-    if (isLoggedIn) {
+    if ((isLoggedIn || user) && id) {
       checkFavoriteStatus();
     }
-  }, [id, isLoggedIn]);
+  }, [id, isLoggedIn, user]);
 
   if (loading) {
     return (
@@ -332,36 +336,55 @@ const ShoppingProductDetail = () => {
 
   // 좋아요 토글 함수
   const handleFavoriteClick = async () => {
-    if (!isLoggedIn) {
+    if (!isLoggedIn && !user) {
       alert('로그인이 필요한 서비스입니다.');
       return;
     }
+    
+    if (!id) return; // id가 없으면 함수 종료
+
+    // ID를 문자열로 확실하게 변환
+    const productId = id as string;
 
     try {
       const token = localStorage.getItem('auth_token');
-      if (!token) return;
+      if (!token && !user) return;
+
+      // API 호출 전에 상태를 먼저 토글
+      const newFavoriteState = !isFavorite;
+      setIsFavorite(newFavoriteState);
 
       await axios.patch(
-        `${import.meta.env.VITE_API_BASE_URL}/products/${id}/like`,
+        `${import.meta.env.VITE_API_BASE_URL}/products/${productId}/like`,
         null,
         {
           headers: {
-            'Authorization': `Bearer ${token}`
-          }
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+          },
+          withCredentials: true
         }
       );
-
-      setIsFavorite(!isFavorite);
       
       // 메인 페이지의 상품 목록도 업데이트
       const mainResponse = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/products/list`);
-      const updatedProducts = mainResponse.data;
+      const updatedProducts = mainResponse.data.map((p: any) => 
+        p.id === product?.id ? { ...p, favorite: newFavoriteState } : p
+      );
       
       // 전역 상태 업데이트를 위한 이벤트 발생
       window.dispatchEvent(new CustomEvent('productsUpdated', { 
         detail: { products: updatedProducts } 
       }));
+
+      // 로컬 스토리지에 좋아요 상태 저장
+      const favoriteProducts = JSON.parse(localStorage.getItem('favoriteProducts') || '{}') as Record<string, boolean>;
+      favoriteProducts[productId] = newFavoriteState;
+      localStorage.setItem('favoriteProducts', JSON.stringify(favoriteProducts));
     } catch (error) {
+      // 에러 발생 시 상태를 원래대로 되돌림
+      setIsFavorite(!isFavorite);
       console.error('좋아요 처리 중 오류:', error);
       alert('좋아요 처리 중 오류가 발생했습니다.');
     }
