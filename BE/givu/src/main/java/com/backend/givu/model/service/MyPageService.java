@@ -2,9 +2,12 @@ package com.backend.givu.model.service;
 
 import com.backend.givu.config.RestTemplateConfig;
 import com.backend.givu.model.entity.User;
+import com.backend.givu.model.requestDTO.CheckAccountRequest;
 import com.backend.givu.model.requestDTO.CreateDepositAccountRequest;
-import com.backend.givu.model.responseDTO.CodeMessageDTO;
+import com.backend.givu.model.responseDTO.ApiResponse;
+import com.backend.givu.model.responseDTO.CheckAccountResponse;
 import com.backend.givu.model.responseDTO.DepositAccountResponse;
+import com.backend.givu.model.responseDTO.UserAccountDTO;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.transaction.Transactional;
@@ -26,18 +29,11 @@ public class MyPageService {
     private ObjectMapper objectMapper;
 
     @Transactional
-    public CodeMessageDTO createDepositAccount(User user){
+    public ApiResponse createDepositAccount(User user){
 
         String url = "https://finopenapi.ssafy.io/ssafy/api/v1/edu/demandDeposit/createDemandDepositAccount";
 
         CreateDepositAccountRequest requestBody = new CreateDepositAccountRequest();
-
-        try {
-            String json = objectMapper.writeValueAsString(requestBody);
-            System.out.println(json);
-        } catch (JsonProcessingException e) {
-            e.printStackTrace();
-        }
 
         ResponseEntity<DepositAccountResponse> response = restTemplate.postForEntity(
                 url,
@@ -48,14 +44,28 @@ public class MyPageService {
         DepositAccountResponse body = response.getBody();
 
         if (body.getHeader().getResponseCode().equals("H0000")) {
-            System.out.println(body.getREC().getAccountNo());
             user.setAccountNumber(body.getREC().getAccountNo());
-            return CodeMessageDTO.success();
+            return ApiResponse.success(null);
         } else {
-            return CodeMessageDTO.fail(
+            return ApiResponse.fail(
                     body.getHeader().getResponseCode(),
                     body.getHeader().getResponseMessage()
             );
         }
+    }
+
+    public ApiResponse<UserAccountDTO> checkAccount(String accountNo){
+        String url = "https://finopenapi.ssafy.io/ssafy/api/v1/edu/demandDeposit/inquireDemandDepositAccountBalance";
+        CheckAccountRequest checkAccountRequest = new CheckAccountRequest(accountNo);
+
+        ResponseEntity<CheckAccountResponse> response = restTemplate.postForEntity(
+                url,
+                checkAccountRequest,
+                CheckAccountResponse.class
+        );
+
+        CheckAccountResponse body = response.getBody();
+
+
     }
 }
