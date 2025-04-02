@@ -1,13 +1,15 @@
 package com.backend.givu.model.responseDTO;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Setter
 @Getter
-public class CheckAccountResponse {
+@NoArgsConstructor
+public class WithdrawalResponseDTO {
     @JsonProperty("Header")
     private Header Header;
 
@@ -33,12 +35,7 @@ public class CheckAccountResponse {
     @Setter
     @NoArgsConstructor
     public static class Rec {
-        private String bankCode;
-        private String accountNo;
-        private String accountBalance;
-        private String accountCreatedDate;
-        private String accountExpiryDate;
-        private String lastTransactionDate;
-        private String currency;
+        private String transactionUniqueNo;
+        private String transactionDate;
     }
 }
