@@ -29,7 +29,7 @@ public class MyPageService {
     private ObjectMapper objectMapper;
 
     @Transactional
-    public ApiResponse createDepositAccount(User user){
+    public ApiResponse<Void> createDepositAccount(User user){
 
         String url = "https://finopenapi.ssafy.io/ssafy/api/v1/edu/demandDeposit/createDemandDepositAccount";
 
@@ -48,7 +48,7 @@ public class MyPageService {
             return ApiResponse.success(null);
         } else {
             return ApiResponse.fail(
-                    body.getHeader().getResponseCode(),
+                    "ERROR",
                     body.getHeader().getResponseMessage()
             );
         }
@@ -66,6 +66,11 @@ public class MyPageService {
 
         CheckAccountResponse body = response.getBody();
 
+        if(body.getHeader().getResponseCode().equals("H0000")){
+            return ApiResponse.success(new UserAccountDTO(body.getREC().getAccountNo(), Integer.parseInt(body.getREC().getAccountBalance())));
+        }else{
+            return ApiResponse.fail("ERROR", body.getHeader().getResponseMessage());
+        }
 
     }
 }
