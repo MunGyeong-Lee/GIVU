@@ -26,16 +26,20 @@ import com.wukiki.givu.R
 import com.wukiki.givu.ui.suit
 
 @Composable
-fun FundingInfoPager(funding: FundingDetail) {
+fun FundingInfoPager(
+    funding: FundingDetail
+) {
     Row(
         modifier = Modifier.fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Image(
-            painter = rememberAsyncImagePainter(funding.images[0]),
-            contentDescription = "펀딩 이미지",
-            modifier = Modifier.size(100.dp)
-        )
+        if (funding.images.isNotEmpty()) {
+            Image(
+                painter = rememberAsyncImagePainter(funding.images[0]),
+                contentDescription = "펀딩 이미지",
+                modifier = Modifier.size(100.dp)
+            )
+        }
         Spacer(modifier = Modifier.width(16.dp))
         Column {
             Row(

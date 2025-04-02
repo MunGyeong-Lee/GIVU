@@ -12,6 +12,7 @@ import com.wukiki.domain.model.Letter
 import com.wukiki.domain.model.Product
 import com.wukiki.domain.model.Review
 import com.wukiki.domain.usecase.GetFundingUseCase
+import com.wukiki.domain.usecase.GetLetterUseCase
 import com.wukiki.domain.usecase.GetProductUseCase
 import com.wukiki.domain.usecase.GetReviewUseCase
 import com.wukiki.givu.util.CheckState
@@ -34,7 +35,8 @@ class FundingViewModel @Inject constructor(
     private val application: Application,
     private val getFundingUseCase: GetFundingUseCase,
     private val getProductUseCase: GetProductUseCase,
-    private val getReviewUseCase: GetReviewUseCase
+    private val getReviewUseCase: GetReviewUseCase,
+    private val getLetterUseCase: GetLetterUseCase
 ) : AndroidViewModel(application) {
 
     /*** Ui State, Event ***/
@@ -163,6 +165,16 @@ class FundingViewModel @Inject constructor(
     private fun makeReviewRequestBody(): RequestBody {
         val metadata = mapOf(
             "comment" to _fundingReview.value
+        )
+        val gson = GsonBuilder().serializeNulls().create()
+        val json = gson.toJson(metadata)
+        return json.toRequestBody("application/json".toMediaTypeOrNull())
+    }
+
+    private fun makeLetterRequestBody(): RequestBody {
+        val metadata = mapOf(
+            "comment" to _writeLetter.value,
+            "access" to "공개"
         )
         val gson = GsonBuilder().serializeNulls().create()
         val json = gson.toJson(metadata)
@@ -298,6 +310,26 @@ class FundingViewModel @Inject constructor(
             true -> _fundingUiState.update { it.copy(reviewNoteCheck = CheckState.TRUE) }
 
             else -> _fundingUiState.update { it.copy(reviewNoteCheck = CheckState.FALSE) }
+        }
+    }
+
+    fun participateFunding() {
+        viewModelScope.launch {
+            val response = getLetterUseCase.submitFundingLetter(
+                fundingId = _selectedFunding.value?.id.toString(),
+                image = null,
+                body = makeLetterRequestBody()
+            )
+
+            when (response.status) {
+                ApiStatus.SUCCESS -> {
+                    _fundingUiEvent.emit(FundingUiEvent.ParticipateFundingSuccess)
+                }
+
+                else -> {
+                    _fundingUiEvent.emit(FundingUiEvent.ParticipateFundingFail)
+                }
+            }
         }
     }
 
