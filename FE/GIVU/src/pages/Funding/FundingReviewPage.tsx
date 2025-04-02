@@ -7,26 +7,30 @@ type ReviewType = '배송/포장' | '제품 품질' | '고객 서비스' | '전�
 
 // 리뷰 아이템 타입 수정
 interface ReviewItem {
-  id: number;
-  title: string;
-  author: string;
-  date: string;
-  views: number;
-  rating: number;
-  content: string;
-  image: string;
-  type: ReviewType;  // 후기 유형 추가
-  authorFundingCount: number;  // 작성자의 펀딩 참여 수 추가
+  id?: number;
+  title?: string;
+  author?: string;
+  date?: string;
+  views?: number;
+  rating?: number;
+  content?: string;
+  image?: string;
+  type?: ReviewType;
+  authorFundingCount?: number;
+  // API 응답에 맞게 추가 필드 허용
+  [key: string]: any;
 }
 
 // API 응답 타입 정의
 interface ReviewResponse {
-  content: ReviewItem[];
-  totalPages: number;
-  totalElements: number;
-  last: boolean;
-  size: number;
-  number: number;
+  content?: ReviewItem[];
+  totalPages?: number;
+  totalElements?: number;
+  last?: boolean;
+  size?: number;
+  number?: number;
+  // API 응답에 맞게 추가 필드 허용
+  [key: string]: any;
 }
 
 // 더미 데이터
@@ -131,7 +135,7 @@ function FundingReviewPage() {
       setError(null);
       
       const response = await axios.get<ReviewResponse>(
-        `${import.meta.env.VITE_BASE_URL}/api/funding/reviews`,
+        `${import.meta.env.VITE_API_BASE_URL}/funding/reviews`,
         {
           params: {
             page: pageNum,
@@ -141,14 +145,19 @@ function FundingReviewPage() {
         }
       );
 
+      // 데이터 안전하게 처리
+      const reviewsData = response.data.content || [];
+      const isLastPage = response.data.last ?? true;
+      const currentPage = response.data.number ?? 0;
+
       if (pageNum === 0) {
-        setReviews(response.data.content);
+        setReviews(reviewsData);
       } else {
-        setReviews(prev => [...prev, ...response.data.content]);
+        setReviews(prev => [...prev, ...reviewsData]);
       }
 
-      setHasMore(!response.data.last);
-      setPage(response.data.number);
+      setHasMore(!isLastPage);
+      setPage(currentPage);
     } catch (err) {
       setError('후기를 불러오는데 실패했습니다. 다시 시도해주세요.');
       console.error('Error fetching reviews:', err);
@@ -185,7 +194,7 @@ function FundingReviewPage() {
           <p className="text-gray-600 text-lg mb-6">
             즐거웠던 순간을 공유해주세요!
           </p>
-          <Link to="/funding/review/write">
+          <Link to="/funding/review/write?fundingId=1">
             <button className="bg-white text-gray-800 px-6 py-3 rounded-md 
               hover:bg-gray-50 transition-colors duration-200 shadow-md
               font-medium text-base border border-gray-300">
