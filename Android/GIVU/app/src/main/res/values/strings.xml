@@ -98,6 +98,7 @@
     <string name="text_question_cancel_funding">정말 해당 펀딩을 취소하시겠습니까?</string>
     <string name="text_cancel_funding">펀딩 취소</string>
     <string name="text_finish_cancel_funding">펀딩이 취소되었어요.</string>
+    <string name="message_cancel_funding_fail">펀딩 취소에 실패했습니다.</string>
 
     <!-- Finish Funding -->
     <string name="label_finish_funding">Finish Funding</string>
