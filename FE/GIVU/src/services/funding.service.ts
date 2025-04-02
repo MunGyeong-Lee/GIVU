@@ -56,7 +56,7 @@ export interface CreateFundingResponse {
  */
 export const createFunding = async (
   fundingData: CreateFundingData,
-  mainImage: string,
+  // mainImage: string,
   additionalImages?: string[]
 ): Promise<CreateFundingResponse> => {
   try {

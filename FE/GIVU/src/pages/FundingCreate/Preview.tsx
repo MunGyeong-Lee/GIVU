@@ -11,7 +11,7 @@ interface PreviewProps {
   onFundingCreated?: (fundingId: string) => void;
 }
 
-const Preview: React.FC<PreviewProps> = ({ fundingData, onNext, onPrev, onFundingCreated }) => {
+const Preview: React.FC<PreviewProps> = ({ fundingData, onPrev, onFundingCreated }) => {
   const { selectedProduct, basicInfo, publicSettings } = fundingData;
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
