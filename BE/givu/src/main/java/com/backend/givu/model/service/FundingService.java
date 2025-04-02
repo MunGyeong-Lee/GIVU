@@ -1,19 +1,20 @@
 package com.backend.givu.model.service;
 
 import com.backend.givu.model.Enum.FundingsStatus;
-import com.backend.givu.model.entity.Funding;
-import com.backend.givu.model.entity.Product;
-import com.backend.givu.model.entity.User;
+import com.backend.givu.model.entity.*;
 import com.backend.givu.model.repository.FundingRepository;
+import com.backend.givu.model.repository.LetterRepository;
 import com.backend.givu.model.repository.ProductRepository;
 import com.backend.givu.model.repository.UserRepository;
 import com.backend.givu.model.requestDTO.FundingCreateDTO;
 import com.backend.givu.model.requestDTO.FundingUpdateDTO;
+import com.backend.givu.model.responseDTO.FundingDetailDTO;
 import com.backend.givu.model.responseDTO.FundingsDTO;
 import com.backend.givu.model.responseDTO.ProductsDTO;
 import com.backend.givu.util.mapper.CategoryMapper;
 import com.backend.givu.util.mapper.ScopeMapper;
 import jakarta.persistence.EntityNotFoundException;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -27,6 +28,7 @@ import java.util.List;
 @RequiredArgsConstructor
 @Slf4j
 public class FundingService {
+    private final LetterRepository letterRepository;
 
     private final FundingRepository fundingRepository;
     private final ProductRepository productRepository;
@@ -77,6 +79,7 @@ public class FundingService {
     /**
      * 펀딩 수정
      */
+    @Transactional
     public FundingsDTO updateFunding (Long userId, Integer fundingId, FundingUpdateDTO fundingDTO, List<String> imageUrls)
             throws AccessDeniedException {
 
@@ -116,7 +119,7 @@ public class FundingService {
             }
         }
 
-        return Funding.toDTO(fundingRepository.save(funding));
+        return Funding.toDTO(funding);
     }
 
     /**
@@ -164,9 +167,29 @@ public class FundingService {
     }
 
     /**
-     * 펀딩 사진
+     * 펀딩 상세 보기
      */
+    public FundingDetailDTO fundingDetail (int fundingId){
 
+        // 존재하는 펀딩인지 확인
+        Funding funding = fundingRepository.findById(fundingId)
+                .orElseThrow(() -> new EntityNotFoundException("펀딩을 찾을 수 없습니다,"));
+
+        //  연관된 상품, 작성자 정보
+        Product product = funding.getProduct();
+        User writer = funding.getUser();
+
+        // 편지 리스트 (User 포함 fetch join)
+        List<Letter> letters = fundingRepository.findLetterByFundingIdWithUser(fundingId);
+
+        // 후기 리스트 (User 포함 fetch join)
+        List<Review> reviews = fundingRepository.findReviewByFundingIdWithUser(fundingId);
+
+        // DTO 조립
+        return FundingDetailDTO.of(funding, writer, product, letters, reviews);
+
+
+    }
 
 
 
