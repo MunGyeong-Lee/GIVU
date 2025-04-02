@@ -64,6 +64,21 @@ public class JwtExceptionFilter extends OncePerRequestFilter {
 
 
     }
+//
+//    /**
+//     * 아래 경로에 대한 요청은 필터를 적용하지 않음 (Swagger 등)
+//     */
+//
+//    @Override
+//    protected boolean shouldNotFilter(HttpServletRequest request) {
+//        String path = request.getRequestURI();
+//        return path.startsWith("/swagger-ui")
+//                || path.startsWith("/v3/api-docs")
+//                || path.startsWith("/swagger-resources")
+//                || path.startsWith("/webjars")
+//                || path.equals("/")
+//                || path.equals("/favicon.ico");
+//    }
 
 
 }

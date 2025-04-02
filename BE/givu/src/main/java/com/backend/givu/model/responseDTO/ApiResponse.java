@@ -11,7 +11,7 @@ import lombok.Setter;
 @AllArgsConstructor
 public class ApiResponse<T> {
     private String code;
-    private String messaage;
+    private String message;
     private T data;
 
     public static<T> ApiResponse<T> success(T data){
