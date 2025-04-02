@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
-import { allFundingItems } from "../../Funding/data/dummyData";
+import { HeroFundingItem } from "../../../types/funding";
+import axios from "axios";
 
 // 선물 상자를 구성하는 개별 펀딩 이미지 컴포넌트
 const FundingImage = ({
@@ -73,7 +74,7 @@ const FeaturedFunding = ({
   item,
   position
 }: {
-  item: any | null;
+  item: HeroFundingItem | null;
   position: { x: number; y: number; } | null;
 }) => {
   if (!item || !position) return null;
@@ -125,15 +126,40 @@ const GiftBoxShape = () => {
   const [rotation, setRotation] = useState(0);
   const [hoveredItem, setHoveredItem] = useState<null | number>(null);
   const [hoveredPosition, setHoveredPosition] = useState<null | { x: number; y: number; }>(null);
+  const [fundingItems, setFundingItems] = useState<HeroFundingItem[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
-  // 랜덤하게 선별된 펀딩 아이템들 - useMemo로 고정
-  const { selectedItems, itemPositions, itemScales } = useMemo(() => {
-    // 필터링된 펀딩 아이템
-    const filteredItems = allFundingItems
-      .filter(item => item.imageUrl && typeof item.imageUrl === 'string')
-      .sort(() => Math.random() - 0.5)
-      .slice(0, 200);
+  // API에서 펀딩 데이터 가져오기
+  useEffect(() => {
+    const fetchFundings = async () => {
+      try {
+        setIsLoading(true);
+        const response = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/fundings/list`);
 
+        // API 응답 데이터를 HeroFundingItem 형식으로 변환
+        const heroItems: HeroFundingItem[] = response.data.map((item: any) => ({
+          id: item.fundingId,
+          title: item.title,
+          imageUrl: item.product.image, // product의 이미지 사용
+          progressPercentage: item.fundedAmount ? Math.floor((item.fundedAmount / item.product.price) * 100) : 0,
+          parcitipantsNumber: item.participantsNumber
+        }));
+
+        setFundingItems(heroItems);
+      } catch (error) {
+        console.error('펀딩 데이터를 가져오는 중 오류가 발생했습니다:', error);
+        // 오류 발생 시 빈 배열 설정
+        setFundingItems([]);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchFundings();
+  }, []);
+
+  // 위치 좌표 및 크기 계산 (이전 코드와 동일)
+  const { itemPositions, itemScales } = useMemo(() => {
     // 위치 좌표 생성
     const positions: { x: number, y: number }[] = [];
 
@@ -188,15 +214,14 @@ const GiftBoxShape = () => {
     }
 
     // 임의로 섞은 뒤 필요한 수만큼 가져옴
-    const shuffledPositions = [...positions].sort(() => Math.random() - 0.5).slice(0, filteredItems.length);
+    const shuffledPositions = [...positions].sort(() => Math.random() - 0.5);
 
     // 각 아이템별 크기도 미리 계산해서 고정
-    const scales = Array.from({ length: filteredItems.length }, () =>
+    const scales = Array.from({ length: positions.length }, () =>
       60 * (Math.random() * 0.3 + 0.7) // 42 ~ 60px 사이의 랜덤 크기
     );
 
     return {
-      selectedItems: filteredItems,
       itemPositions: shuffledPositions,
       itemScales: scales
     };
@@ -216,7 +241,7 @@ const GiftBoxShape = () => {
 
   // 선택된 펀딩 아이템 가져오기
   const selectedFunding = hoveredItem
-    ? selectedItems.find(item => item.id === hoveredItem)
+    ? fundingItems.find(item => item.id === hoveredItem) || null
     : null;
 
   // 회전 애니메이션
@@ -228,6 +253,23 @@ const GiftBoxShape = () => {
     return () => clearInterval(interval);
   }, []);
 
+  // 로딩 중이거나 데이터가 없는 경우 처리
+  if (isLoading) {
+    return (
+      <div className="flex justify-center items-center h-full">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
+
+  if (fundingItems.length === 0) {
+    return (
+      <div className="flex justify-center items-center h-full">
+        <p className="text-gray-500">현재 진행 중인 펀딩이 없습니다.</p>
+      </div>
+    );
+  }
+
   return (
     <>
       <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-full h-screen flex items-center justify-center">
@@ -235,7 +277,7 @@ const GiftBoxShape = () => {
           className="relative scale-125"
           style={{ transform: `rotate(${rotation}deg)` }}
         >
-          {selectedItems.map((item, index) => {
+          {fundingItems.map((item, index) => {
             if (index < itemPositions.length && item.imageUrl) {
               return (
                 <FundingImage
