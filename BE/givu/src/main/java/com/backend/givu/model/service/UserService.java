@@ -1,6 +1,5 @@
 package com.backend.givu.model.service;
 
-import com.backend.givu.model.responseDTO.CodeMessageDTO;
 import com.backend.givu.model.responseDTO.UserSimpleInfoDTO;
 import com.backend.givu.model.responseDTO.UsersDTO;
 import com.backend.givu.model.entity.User;

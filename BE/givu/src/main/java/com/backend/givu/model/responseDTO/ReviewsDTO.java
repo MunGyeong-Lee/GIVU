@@ -1,5 +1,6 @@
 package com.backend.givu.model.responseDTO;
 
+import com.backend.givu.model.entity.Funding;
 import com.backend.givu.model.entity.Review;
 import com.backend.givu.util.DateTimeUtil;
 import lombok.*;
@@ -13,7 +14,7 @@ import java.time.LocalDateTime;
 public class ReviewsDTO {
     private int reviewId;
     private int fundingId;
-    private long userId;
+    private UserSimpleInfoDTO user;
     private String comment;
     private String image;
     private LocalDateTime createdAt;
@@ -23,11 +24,18 @@ public class ReviewsDTO {
     public ReviewsDTO (Review review){
         this.reviewId = review.getId();
         this.fundingId = review.getFunding().getId();
-        this.userId = review.getUser().getId();
         this.comment = review.getComment();
         this.image = review.getImage();
         this.createdAt = DateTimeUtil.toLocalDateTime(review.getCreatedAt());
         this.updatedAt = DateTimeUtil.toLocalDateTime(review.getUpdatedAt());
         this.visit = review.getVisit();
+
+        this.user = new UserSimpleInfoDTO(
+                review.getUser().getId(),
+                review.getUser().getNickname(),
+                review.getUser().getProfileImage()
+
+        );
+
     }
 }
