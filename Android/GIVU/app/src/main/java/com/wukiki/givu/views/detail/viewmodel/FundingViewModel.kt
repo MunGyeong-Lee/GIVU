@@ -12,6 +12,7 @@ import com.wukiki.domain.model.Product
 import com.wukiki.domain.model.User
 import com.wukiki.domain.usecase.GetFundingUseCase
 import com.wukiki.domain.usecase.GetProductUseCase
+import com.wukiki.givu.util.InputValidState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -33,7 +34,10 @@ class FundingViewModel @Inject constructor(
     private val getProductUseCase: GetProductUseCase
 ) : AndroidViewModel(application) {
 
-    /*** Ui Event ***/
+    /*** Ui State, Event ***/
+    private val _fundingUiState = MutableStateFlow<FundingUiState>(FundingUiState())
+    val fundingUiState = _fundingUiState.asStateFlow()
+
     private val _fundingUiEvent = MutableSharedFlow<FundingUiEvent>()
     val fundingUiEvent = _fundingUiEvent.asSharedFlow()
 
@@ -150,6 +154,13 @@ class FundingViewModel @Inject constructor(
                 else -> _isFundingPublicState.value = false
             }
             _fundingBody.value = it.description
+            _fundingUiState.update { uiState ->
+                uiState.copy(
+                    fundingTitleState = InputValidState.VALID,
+                    fundingCategoryState = InputValidState.VALID,
+                    fundingDescriptionState = InputValidState.VALID
+                )
+            }
         }
     }
 
@@ -222,12 +233,33 @@ class FundingViewModel @Inject constructor(
         }
     }
 
+    fun validateFundingTitle(title: String) {
+        when (title.isBlank()) {
+            true -> _fundingUiState.update { it.copy(fundingTitleState = InputValidState.NONE) }
+
+            else -> _fundingUiState.update { it.copy(fundingTitleState = InputValidState.VALID) }
+        }
+    }
+
     fun selectFundingCategory(category: String) {
         _fundingCategory.value = category
+        when (category == "카테고리 선택") {
+            true -> _fundingUiState.update { it.copy(fundingCategoryState = InputValidState.INIT) }
+
+            else -> _fundingUiState.update { it.copy(fundingCategoryState = InputValidState.VALID) }
+        }
     }
 
     fun setFundingState(isPublic: Boolean) {
         _isFundingPublicState.value = isPublic
+    }
+
+    fun validFundingDescription(description: String) {
+        when (description.isBlank()) {
+            true -> _fundingUiState.update { it.copy(fundingDescriptionState = InputValidState.NONE) }
+
+            else -> _fundingUiState.update { it.copy(fundingDescriptionState = InputValidState.VALID) }
+        }
     }
 
     fun setSelectedImages(uris: List<Uri>) {
@@ -263,11 +295,11 @@ class FundingViewModel @Inject constructor(
 
             when (response.status) {
                 ApiStatus.SUCCESS -> {
-
+                    _fundingUiEvent.emit(FundingUiEvent.UpdateFundingSuccess)
                 }
 
                 else -> {
-
+                    _fundingUiEvent.emit(FundingUiEvent.UpdateFundingFail)
                 }
             }
         }

@@ -7,6 +7,12 @@
     <string name="text_return">돌아가기</string>
     <string name="text_image_upload">이미지 업로드</string>
     <string name="message_image_limit">이미지는 최대 3장까지 업로드 가능합니다.</string>
+    <string name="title_funding_category">어떤 날을 기념하고 싶나요?</string>
+    <string name="title_funding_scope">공개 범위 설정</string>
+    <string name="text_funding_scope">펀딩 공개 범위를 설정해주세요.</string>
+    <string name="text_funding_public">누구나 펀딩을 볼 수 있고\n참여할 수 있어요.</string>
+    <string name="text_funding_private">카카오톡 친구만 펀딩에\n참여할 수 있어요.</string>
+    <string name="title_funding_description">친구들에게 남길 메시지를 입력해주세요. (최대 100자)</string>
 
     <!-- Menu -->
     <string name="menu_title_home">홈</string>
@@ -71,6 +77,8 @@
     <string name="label_update_funding">Update Funding</string>
     <string name="title_update_funding">펀딩 수정하기</string>
     <string name="text_update_funding">수정하기</string>
+    <string name="message_update_funding_success">펀딩을 수정했습니다.</string>
+    <string name="message_update_funding_fail">펀딩 수정에 실패했습니다.</string>
 
     <!-- Cancel Funding -->
     <string name="label_cancel_funding">Cancel Funding</string>
