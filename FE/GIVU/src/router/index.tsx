@@ -17,6 +17,7 @@ import ShoppingReview from '../pages/ShoppingMall/ShoppingReview';
 import FundingCreateLayout from "../components/Layout/FundingCreateLayout";
 import PaymentPage from '../pages/Payment/PaymentPage';
 import Complete from "../pages/FundingCreate/Complete";
+import ShoppingReviewEdit from '../pages/ShoppingMall/ShoppingReviewEdit';
 // import NotFound from "../pages/NotFound/NotFound";
 
 const routes = [
@@ -69,6 +70,10 @@ const routes = [
       {
         path: "shopping/product/:id/review",
         element: <ShoppingReview />,
+      },
+      {
+        path: "shopping/product/:id/review/:reviewId",
+        element: <ShoppingReviewEdit />
       },
       {
         path: "shopping/order",

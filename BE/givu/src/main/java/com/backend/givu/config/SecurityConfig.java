@@ -61,7 +61,8 @@ public class SecurityConfig {
                                 "/users",               // 로그아웃, 회원 탈퇴
                                 "/users/test",        // 테스트
                                 "/products-review/**",
-                                "/fundings/**"
+                                "/fundings/**",
+                                "/mypage/**"
                         ).authenticated())
 
                 /**

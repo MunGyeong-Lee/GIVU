@@ -1,18 +1,20 @@
 package com.backend.givu.model.service;
 
-import com.backend.givu.model.entity.Funding;
-import com.backend.givu.model.entity.Product;
-import com.backend.givu.model.entity.User;
+import com.backend.givu.model.Enum.FundingsStatus;
+import com.backend.givu.model.entity.*;
 import com.backend.givu.model.repository.FundingRepository;
+import com.backend.givu.model.repository.LetterRepository;
 import com.backend.givu.model.repository.ProductRepository;
 import com.backend.givu.model.repository.UserRepository;
 import com.backend.givu.model.requestDTO.FundingCreateDTO;
 import com.backend.givu.model.requestDTO.FundingUpdateDTO;
+import com.backend.givu.model.responseDTO.FundingDetailDTO;
 import com.backend.givu.model.responseDTO.FundingsDTO;
 import com.backend.givu.model.responseDTO.ProductsDTO;
 import com.backend.givu.util.mapper.CategoryMapper;
 import com.backend.givu.util.mapper.ScopeMapper;
 import jakarta.persistence.EntityNotFoundException;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -26,6 +28,7 @@ import java.util.List;
 @RequiredArgsConstructor
 @Slf4j
 public class FundingService {
+    private final LetterRepository letterRepository;
 
     private final FundingRepository fundingRepository;
     private final ProductRepository productRepository;
@@ -47,6 +50,7 @@ public class FundingService {
         fundingRepository.save(fundig);
     }
 
+
     /**
      * 펀딩 리스트 조회
      */
@@ -55,12 +59,6 @@ public class FundingService {
         return fundings.stream()
                 .map(FundingsDTO::new)
                 .toList();
-
-//        List<FundingsDTO> dtoList  = new ArrayList<>();
-//        for(Funding funding: fundingList){
-//            dtoList.add(new FundingsDTO(funding));
-//        }
-//        return dtoList;
     }
 
     /**
@@ -81,6 +79,7 @@ public class FundingService {
     /**
      * 펀딩 수정
      */
+    @Transactional
     public FundingsDTO updateFunding (Long userId, Integer fundingId, FundingUpdateDTO fundingDTO, List<String> imageUrls)
             throws AccessDeniedException {
 
@@ -120,7 +119,7 @@ public class FundingService {
             }
         }
 
-        return Funding.toDTO(fundingRepository.save(funding));
+        return Funding.toDTO(funding);
     }
 
     /**
@@ -145,6 +144,52 @@ public class FundingService {
         fundingRepository.deleteById(fundingId);
     }
 
+    /**
+     * 펀딩 완료
+     */
+    public FundingsDTO completeFunding(Long userId, int fundingId){
+        // 존재하는 펀딩인지 확인
+        Funding funding = fundingRepository.findById(fundingId)
+                .orElseThrow(() -> new EntityNotFoundException("펀딩을 찾을 수 없습니다,"));
+
+        // 본인 펀딩인지 확인
+        if(!funding.getUser().getId().equals(userId)) {
+            log.warn("펀딩 삭제 권한 없음: 요청자={}, 작성자={}", userId, funding.getUser().getId());
+            throw new AccessDeniedException("펀딩 완료 권한이 없습니다.");
+        }
+
+        // 완료 상태로 변경
+        funding.setStatus(FundingsStatus.COMPLETED);
+
+        // 변경 사항 저장 및 DTO로 변환
+        return Funding.toDTO(fundingRepository.save(funding));
+
+    }
+
+    /**
+     * 펀딩 상세 보기
+     */
+    public FundingDetailDTO fundingDetail (int fundingId){
+
+        // 존재하는 펀딩인지 확인
+        Funding funding = fundingRepository.findById(fundingId)
+                .orElseThrow(() -> new EntityNotFoundException("펀딩을 찾을 수 없습니다,"));
+
+        //  연관된 상품, 작성자 정보
+        Product product = funding.getProduct();
+        User writer = funding.getUser();
+
+        // 편지 리스트 (User 포함 fetch join)
+        List<Letter> letters = fundingRepository.findLetterByFundingIdWithUser(fundingId);
+
+        // 후기 리스트 (User 포함 fetch join)
+        List<Review> reviews = fundingRepository.findReviewByFundingIdWithUser(fundingId);
+
+        // DTO 조립
+        return FundingDetailDTO.of(funding, writer, product, letters, reviews);
+
+
+    }
 
 
 
