@@ -1,5 +1,6 @@
 package com.wukiki.givu.views.participate
 
+import android.widget.Toast
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -20,32 +21,62 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.wukiki.givu.R
 import com.wukiki.givu.ui.suit
 import com.wukiki.givu.util.CommonTopBar
 import com.wukiki.givu.util.InfoRow
+import com.wukiki.givu.views.detail.viewmodel.FundingUiEvent
 import com.wukiki.givu.views.detail.viewmodel.FundingViewModel
 import com.wukiki.givu.views.participate.component.FundingInfoPager
 
 @Composable
 fun WriteLetterScreen(
-    fundingViewModel: FundingViewModel = hiltViewModel(),
-    navController: NavController
+    fundingViewModel: FundingViewModel,
+    navController: NavController,
+    xmlNavController: NavController
 ) {
+    val context = LocalContext.current
     val funding by fundingViewModel.selectedFunding.collectAsState()
     val writeLetter by fundingViewModel.writeLetter.collectAsState()
+    val fundingUiEvent = fundingViewModel.fundingUiEvent
+
+    LaunchedEffect(Unit) {
+        fundingUiEvent.collect { event ->
+            when (event) {
+                is FundingUiEvent.ParticipateFundingSuccess -> {
+                    Toast.makeText(
+                        context,
+                        context.getString(R.string.message_participate_funding_success),
+                        Toast.LENGTH_SHORT
+                    ).show()
+                    navController.navigate("CompleteParticipate")
+                }
+
+                is FundingUiEvent.ParticipateFundingFail -> {
+                    Toast.makeText(
+                        context,
+                        context.getString(R.string.message_participate_funding_fail),
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
+
+                else -> {}
+            }
+        }
+    }
 
     Scaffold(
         topBar = {
@@ -119,7 +150,9 @@ fun WriteLetterScreen(
                 Spacer(modifier = Modifier.height(16.dp))
 
                 Button(
-                    onClick = { navController.navigate(R.id.action_write_letter_to_complete_funding) },
+                    onClick = {
+                        fundingViewModel.participateFunding()
+                    },
                     modifier = Modifier
                         .fillMaxSize()
                         .height(56.dp),

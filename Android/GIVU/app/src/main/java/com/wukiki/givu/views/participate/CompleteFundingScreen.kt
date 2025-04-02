@@ -28,7 +28,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.wukiki.givu.R
 import com.wukiki.givu.ui.suit
@@ -39,8 +38,9 @@ import com.wukiki.givu.views.participate.component.FundingInfoPager
 
 @Composable
 fun CompleteFundingScreen(
-    fundingViewModel: FundingViewModel = hiltViewModel(),
-    navController: NavController
+    fundingViewModel: FundingViewModel,
+    navController: NavController,
+    xmlNavController: NavController
 ) {
     val funding by fundingViewModel.selectedFunding.collectAsState()
 
@@ -49,7 +49,7 @@ fun CompleteFundingScreen(
             CommonTopBar(
                 stringResource(R.string.title_complete_funding),
                 onBackClick = {},
-                onHomeClick = {}
+                onHomeClick = { xmlNavController.popBackStack() }
             )
         },
         containerColor = Color.White
@@ -102,7 +102,7 @@ fun CompleteFundingScreen(
                 Spacer(modifier = Modifier.height(16.dp))
 
                 Button(
-                    onClick = { navController.navigate(R.id.action_participate_funding_to_write_letter) },
+                    onClick = { xmlNavController.popBackStack() },
                     modifier = Modifier
                         .fillMaxSize()
                         .height(56.dp),
