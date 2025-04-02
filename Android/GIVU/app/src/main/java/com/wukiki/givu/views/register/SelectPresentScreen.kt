@@ -109,7 +109,7 @@ fun FilteredProductList(
         items(products) { product ->
             GiftListItem(
                 product,
-                onClick = {
+                onProductClick = {
                     registerViewModel.selectProduct(product)
                     navController.navigate("DetailPresent")
                 }

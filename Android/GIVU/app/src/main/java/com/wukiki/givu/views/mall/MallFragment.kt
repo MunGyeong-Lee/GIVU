@@ -1,9 +1,15 @@
 package com.wukiki.givu.views.mall
 
 import android.os.Bundle
+import android.util.Log
 import android.view.View
 import androidx.fragment.app.activityViewModels
+import androidx.navigation.NavType
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
 import androidx.navigation.fragment.findNavController
+import androidx.navigation.navArgument
 import com.wukiki.givu.R
 import com.wukiki.givu.config.BaseFragment
 import com.wukiki.givu.databinding.FragmentMallBinding
@@ -23,7 +29,30 @@ class MallFragment : BaseFragment<FragmentMallBinding>(R.layout.fragment_mall) {
         binding.vm = viewModel
 
         binding.composeMall.setContent {
-            MallScreen(navController = findNavController())
+            val navController = rememberNavController()
+
+            NavHost(
+                navController = navController,
+                startDestination = "MallMainScreen"
+            ) {
+                composable(route = "MallMainScreen") {
+                    MallScreen(navController = navController, mallViewModel = viewModel)
+                }
+
+                composable(
+                    route = "ProductDetailScreen/{productId}",
+                    arguments = listOf(navArgument("productId") { type = NavType.StringType })
+                ) { backStackEntry ->
+                    val productId = backStackEntry.arguments?.getString("productId")
+                    Log.d("Mall Fragment", "아이디: ${productId}")
+                    ProductDetailScreen(productId = productId, mallViewModel = viewModel)
+                }
+
+
+
+            }
+
+
         }
     }
 

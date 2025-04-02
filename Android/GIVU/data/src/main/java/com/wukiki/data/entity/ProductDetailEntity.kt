@@ -5,6 +5,15 @@ import com.squareup.moshi.JsonClass
 
 @JsonClass(generateAdapter = true)
 data class ProductEntity(
+    @Json(name = "product")
+    val product: ProductDetailEntity,
+
+    @Json(name = "reviews")
+    val reviews: List<ProductReviewEntity>,
+)
+
+@JsonClass(generateAdapter = true)
+data class ProductDetailEntity(
     @Json(name = "id")
     val id: Int,
 
@@ -31,4 +40,6 @@ data class ProductEntity(
 
     @Json(name = "description")
     val description: String
+
+
 )

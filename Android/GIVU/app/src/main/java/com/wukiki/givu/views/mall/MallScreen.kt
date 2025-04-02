@@ -1,5 +1,7 @@
 package com.wukiki.givu.views.mall
 
+import android.util.Log
+import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -16,6 +18,7 @@ import androidx.compose.material.Divider
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -24,6 +27,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -35,13 +39,16 @@ import com.wukiki.givu.ui.suit
 import com.wukiki.givu.util.StoreItemCategoryComponent
 import com.wukiki.givu.views.mall.component.MallTopBar
 import com.wukiki.givu.views.mall.component.PopularItemListPager
+import com.wukiki.givu.views.mall.viewmodel.MallUiEvent
 import com.wukiki.givu.views.mall.viewmodel.MallViewModel
 
 @Composable
 fun MallScreen(
-    mallViewModel: MallViewModel = hiltViewModel(),
+    mallViewModel: MallViewModel,
     navController: NavController
 ) {
+
+    val context = LocalContext.current
     val categories = mapOf(
         "전체" to "ALL",
         "전자기기" to "ELECTRONICS",
@@ -57,6 +64,21 @@ fun MallScreen(
     )
     var selectedCategory by remember { mutableStateOf("전체") }
     val products by mallViewModel.filteredProducts.collectAsState()
+
+
+    LaunchedEffect(Unit) {
+        mallViewModel.mallUiEvent.collect { event ->
+            when (event) {
+                MallUiEvent.GetProductsFail -> {
+                    Toast.makeText(context, "상품 불러오기 실패", Toast.LENGTH_SHORT).show()
+                }
+
+                MallUiEvent.GoToProductDetail -> {
+
+                }
+            }
+        }
+    }
 
     Scaffold(
         containerColor = Color.White
@@ -108,7 +130,7 @@ fun MallScreen(
                     contentDescription = null,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .aspectRatio(4F / 3F),  // ⭐ 4:3 비율로 설정
+                        .aspectRatio(4F / 3F),  // 4:3 비율로 설정
                 )
             }
 
@@ -154,8 +176,10 @@ fun MallScreen(
             items(products) { product ->
                 GiftListItem(
                     product = product,
-                    onClick = {
+                    onProductClick = {
                         /*** 상품 상세 페이지 이동 ***/
+                        Log.d("Mall Screen", "아이디: ${product.productId}")
+                        navController.navigate("ProductDetailScreen/${product.productId}")
                     }
                 )
             }
@@ -189,7 +213,7 @@ private fun FilterCategoryItemList(
     ) {
         items(filteredProducts) { product ->
             GiftListItem(product,
-                onClick = {
+                onProductClick = {
 //                    누르면 해당 아이템 상세 정보 화면으로 이동
                 }
             )

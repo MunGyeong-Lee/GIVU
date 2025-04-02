@@ -2,6 +2,7 @@ package com.wukiki.givu.views.mall
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -18,11 +19,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.material3.Text
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -36,14 +39,18 @@ import com.wukiki.givu.util.CommonUtils
 @Composable
 fun GiftListItem(
     product: Product,
-    onClick: () -> Unit
+    onProductClick: () -> Unit
 ) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .height(106.dp)
+            .height(124.dp)
             .padding(vertical = 4.dp)
-            .clickable { onClick() },
+            .clickable(
+                interactionSource = remember { MutableInteractionSource() },
+                indication = null,
+                onClick = onProductClick
+            ),
         verticalAlignment = Alignment.CenterVertically
     ) {
         AsyncImage(
@@ -63,15 +70,24 @@ fun GiftListItem(
                 .padding(vertical = 8.dp),
             verticalArrangement = Arrangement.Center
         ) {
+
+            // product name에서 첫단어만 빼면 브랜드 이름
+            // 나머지가 제품 이름
+            val input = product.productName
+            val firstSpaceIndex = input.indexOf(" ")
+
+            val brandName = if (firstSpaceIndex != -1) input.substring(0, firstSpaceIndex) else ""
+            val productName = if (firstSpaceIndex != -1) input.substring(firstSpaceIndex + 1) else input
+
             Text(
-                text = "브랜드 이름: ${product.category}",
+                text = brandName,
                 fontFamily = suit,
                 fontWeight = FontWeight.Bold,
-                fontSize = 14.sp
+                fontSize = 15.sp
             )
             Spacer(Modifier.height(6.dp))
             Text(
-                text = product.productName,
+                text = productName,
                 fontFamily = suit,
                 fontWeight = FontWeight.Medium,
                 fontSize = 14.sp
@@ -91,7 +107,7 @@ fun GiftListItem(
                 Spacer(Modifier.weight(1f))
                 Image(
                     painter = painterResource(R.drawable.ic_like_on), null,
-                    modifier = Modifier.size(24.dp)
+                    modifier = Modifier.size(20.dp)
                 )
 
                 Spacer(Modifier.width(4.dp))
