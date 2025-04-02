@@ -1,6 +1,9 @@
 package com.backend.givu.model.entity;
 
 import com.backend.givu.model.Enum.LettersPrivate;
+import com.backend.givu.model.requestDTO.LetterCreateDTO;
+import com.backend.givu.model.responseDTO.LettersDTO;
+import com.backend.givu.util.mapper.LetterPrivateMapper;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -54,4 +57,29 @@ public class Letter {
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     @Column(name = "access", columnDefinition = "letter_private")
     private LettersPrivate access;
+
+    @PrePersist
+    protected void onCreate(){
+        Instant now = Instant.now() ;
+        this.createdAt = now;
+        this.updatedAt = now;
+    }
+
+    @PreUpdate
+    protected  void onUpdate(){
+        this.updatedAt = Instant.now();
+    }
+
+    public static Letter from(User user, Funding funding, LetterCreateDTO dto){
+        Letter letter  = Letter.builder()
+                .funding(funding)
+                .user(user)
+                .comment(dto.getComment())
+                .image(dto.getImage())
+                .access(LetterPrivateMapper.fromClient(dto.getAccess()))
+                .build();
+        return letter;
+    }
+
+    public static LettersDTO toDTO(Letter letter){return new LettersDTO(letter);}
 }

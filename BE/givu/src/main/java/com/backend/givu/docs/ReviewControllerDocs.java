@@ -23,7 +23,7 @@ public interface ReviewControllerDocs {
                             "**요청 형식 예시 (`data` 파트):**\n\n" +
                             "```json\n" +
                             "{\n" +
-                            "  \"comment\": \"얘들아 고마워~!\",\n" +
+                            "  \"comment\": \"얘들아 고마워~!\"\n" +
 
                             "}\n" +
                             "```\n\n" +
