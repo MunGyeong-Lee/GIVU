@@ -59,6 +59,10 @@ public class User {
     @Column(name = "updated_at")
     private Instant updatedAt;
 
+    @Size(max = 255)
+    @Column(name = "account_number")
+    private String accountNumber;
+
     @OneToMany(mappedBy = "user")
     private Set<BankTransaction> bankTransactions = new LinkedHashSet<>();
 

@@ -1,7 +1,14 @@
 spring:
   application:
     name: givu
-  # redis 확인 1
+
+  servlet:
+    multipart:
+      max-file-size: 5MB      # 파일 한 장 최대 5MB
+      max-request-size: 30MB  # 총 요청 최대 20MB
+
+
+  # redis 확인
   data:
     redis:
       ## EC2
@@ -31,6 +38,8 @@ server:
     port: 8080
     servlet:
       context-path: /api
+    tomcat:
+      max-swallow-size: -1          # 무제한
 
 kakao:
   client-id: 08cd78d237da6ad8828d168ac223e313
@@ -66,12 +75,7 @@ cloud:
     s3:
       bucket: givuproject-images
 
-#springdoc:
-#  api-docs:
-#    path: /api-docs
-#  swagger-ui:
-#    path: /swagger-ui
-#    enabled: true
+
 springdoc:
   api-docs:
     path: /v3/api-docs

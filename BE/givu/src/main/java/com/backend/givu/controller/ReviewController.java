@@ -4,6 +4,7 @@ import com.backend.givu.docs.ReviewControllerDocs;
 import com.backend.givu.model.entity.CustomUserDetail;
 import com.backend.givu.model.repository.ReviewRepository;
 import com.backend.givu.model.requestDTO.FundingCreateDTO;
+import com.backend.givu.model.requestDTO.ReviewCreateDTO;
 import com.backend.givu.model.responseDTO.FundingsDTO;
 import com.backend.givu.model.responseDTO.ImageUploadResponseDTO;
 import com.backend.givu.model.responseDTO.ReviewsDTO;
@@ -55,7 +56,7 @@ public class ReviewController implements ReviewControllerDocs {
 
         // Json 문자열 -> DTO 변환
         ObjectMapper objectMapper = new ObjectMapper();
-        ReviewsDTO dto = objectMapper.readValue(data, ReviewsDTO.class);
+        ReviewCreateDTO dto = objectMapper.readValue(data, ReviewCreateDTO.class);
 
         // 이미지가 존재하면 업로드하고 URL 전달
         if(imageFile != null && !imageFile.isEmpty()){

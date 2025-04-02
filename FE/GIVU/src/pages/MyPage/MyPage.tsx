@@ -69,24 +69,24 @@ const MY_REVIEWS = [
 ];
 
 // 임시 찜 목록 데이터
-const WISHLIST_ITEMS = [
-  { 
-    id: 5, 
-    name: "에어팟 프로 2", 
-    price: 359000, 
-    category: "가전/디지털", 
-    imageUrl: "https://via.placeholder.com/200x200?text=에어팟+프로", 
-    discount: 10 
-  },
-  { 
-    id: 11, 
-    name: "애플 맥북 프로", 
-    price: 2490000, 
-    category: "가전/디지털", 
-    imageUrl: "https://via.placeholder.com/200x200?text=맥북+프로", 
-    discount: 5 
-  }
-];
+// const WISHLIST_ITEMS = [
+//   { 
+//     id: 5, 
+//     name: "에어팟 프로 2", 
+//     price: 359000, 
+//     category: "가전/디지털", 
+//     imageUrl: "https://via.placeholder.com/200x200?text=에어팟+프로", 
+//     discount: 10 
+//   },
+//   { 
+//     id: 11, 
+//     name: "애플 맥북 프로", 
+//     price: 2490000, 
+//     category: "가전/디지털", 
+//     imageUrl: "https://via.placeholder.com/200x200?text=맥북+프로", 
+//     discount: 5 
+//   }
+// ];
 
 // 탭 메뉴 타입 정의
 type TabType = "created" | "participated" | "liked" | "wishlist";
@@ -109,10 +109,10 @@ interface FundingProps {
 type TransactionType = 'deposit' | 'withdrawal';
 
 // 거래 인터페이스 정의
-interface Transaction {
-  transactionBalance: number;
-  accountNo: string;
-}
+// interface Transaction {
+//   transactionBalance: number;
+//   accountNo: string;
+// }
 
 // 기존 타입 정의들 위에 추가
 interface UserData {
@@ -130,47 +130,86 @@ const TransactionModal: React.FC<{
   type: TransactionType;
 }> = ({ isOpen, onClose, type }) => {
   const [amount, setAmount] = useState<string>('');
-  const [accountNo, setAccountNo] = useState<string>('');
+  const [password, setPassword] = useState<string>('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [step, setStep] = useState<number>(1); // 1: 금액 입력, 2: 비밀번호 입력
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    // 숫자만 입력 가능
+    const value = e.target.value.replace(/[^0-9]/g, '');
+    setAmount(value);
+  };
+
+  const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    // 숫자만 입력 가능하고 6자리로 제한
+    const value = e.target.value.replace(/[^0-9]/g, '').slice(0, 6);
+    setPassword(value);
+  };
+
+  const handleNextStep = () => {
+    if (!amount || Number(amount) <= 0) {
+      setError('유효한 금액을 입력해주세요.');
+      return;
+    }
     setError(null);
+    setStep(2);
+  };
+
+  const handleSubmit = async () => {
+    if (password.length !== 6) {
+      setError('비밀번호는 6자리 숫자여야 합니다.');
+      return;
+    }
+
     setLoading(true);
+    setError(null);
 
     try {
-      // 입력값 검증
-      if (!amount || !accountNo) {
-        throw new Error('모든 필드를 입력해주세요.');
+      // 비밀번호 검증 로직 (실제로는 API 호출)
+      // 임시로 항상 성공하는 것으로 가정
+      const isPasswordCorrect = true; // 실제 구현 시 API로 검증
+
+      if (!isPasswordCorrect) {
+        throw new Error('비밀번호가 일치하지 않습니다.');
       }
 
-      if (accountNo.length !== 16) {
-        throw new Error('올바른 계좌번호를 입력해주세요. (16자리)');
-      }
+      // const transaction: Transaction = {
+      //   transactionBalance: Number(amount),
+      //   accountNo: 'dummy' // 계좌번호는 API에서 유저 정보로 확인
+      // };
 
-      const transaction: Transaction = {
-        transactionBalance: Number(amount),
-        accountNo: accountNo
-      };
-
+      // 실제 API 호출 부분 (주석 처리)
+      /*
       const response = await axios.post(
         `${import.meta.env.VITE_BASE_URL}/api/transaction/${type}`,
         transaction
       );
+      */
 
-      if (response.data === true) {
-        alert(type === 'deposit' ? '충전이 완료되었습니다.' : '출금이 완료되었습니다.');
-        onClose();
-      } else {
-        throw new Error('거래에 실패했습니다.');
-      }
+      // 임시 성공 처리
+      alert(type === 'deposit' ? '충전이 완료되었습니다.' : '출금이 완료되었습니다.');
+      resetModal();
+      onClose();
     } catch (err: any) {
       setError(err.message || '거래 중 오류가 발생했습니다.');
     } finally {
       setLoading(false);
     }
   };
+
+  const resetModal = () => {
+    setAmount('');
+    setPassword('');
+    setError(null);
+    setStep(1);
+  };
+
+  useEffect(() => {
+    if (!isOpen) {
+      resetModal();
+    }
+  }, [isOpen]);
 
   if (!isOpen) return null;
 
@@ -181,66 +220,281 @@ const TransactionModal: React.FC<{
           {type === 'deposit' ? '충전하기' : '출금하기'}
         </h2>
         
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-cusBlack-light mb-1">
-              계좌번호
-            </label>
-            <input
-              type="text"
-              value={accountNo}
-              onChange={(e) => setAccountNo(e.target.value.replace(/[^0-9]/g, ''))}
-              maxLength={16}
-              placeholder="SSAFY 계좌번호 16자리"
-              className="w-full px-4 py-2 border border-cusGray rounded-lg focus:outline-none focus:ring-2 focus:ring-cusBlue"
-            />
-          </div>
-          
-          <div>
-            <label className="block text-sm font-medium text-cusBlack-light mb-1">
-              금액ㅋㅋㅋ
-            </label>
-            <div className="relative">
-              <input
-                type="text"
-                value={amount}
-                onChange={(e) => setAmount(e.target.value.replace(/[^0-9]/g, ''))}
-                placeholder="금액을 입력하세요"
-                className="w-full px-4 py-2 border border-cusGray rounded-lg focus:outline-none focus:ring-2 focus:ring-cusBlue"
-              />
-              <span className="absolute right-4 top-1/2 transform -translate-y-1/2 text-cusBlack-light">
-                원
-              </span>
+        {step === 1 ? (
+          // 금액 입력 단계
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-cusBlack-light mb-1">
+                {type === 'deposit' ? '충전 금액' : '출금 금액'}
+              </label>
+              <div className="relative">
+                <input
+                  type="text"
+                  value={amount}
+                  onChange={handleAmountChange}
+                  placeholder="금액을 입력하세요"
+                  className="w-full px-4 py-2 border border-cusGray rounded-lg focus:outline-none focus:ring-2 focus:ring-cusBlue"
+                  autoFocus
+                />
+                <span className="absolute right-4 top-1/2 transform -translate-y-1/2 text-cusBlack-light">
+                  원
+                </span>
+              </div>
+            </div>
+
+            {error && (
+              <div className="text-cusRed text-sm py-2">
+                {error}
+              </div>
+            )}
+
+            <div className="flex gap-3 mt-6">
+              <button
+                type="button"
+                onClick={onClose}
+                className="flex-1 px-4 py-2 border border-cusGray rounded-lg text-cusBlack-light hover:bg-cusGray-light transition-colors"
+              >
+                취소
+              </button>
+              <button
+                type="button"
+                onClick={handleNextStep}
+                disabled={!amount || Number(amount) <= 0}
+                className={`flex-1 px-4 py-2 rounded-lg text-white ${
+                  !amount || Number(amount) <= 0
+                    ? 'bg-cusBlue-light cursor-not-allowed' 
+                    : 'bg-cusBlue hover:bg-cusBlue-dark'
+                } transition-colors`}
+              >
+                다음
+              </button>
             </div>
           </div>
+        ) : (
+          // 비밀번호 입력 단계
+          <div className="space-y-4">
+            <div>
+              <p className="text-lg font-medium text-cusBlack mb-2">
+                {type === 'deposit' ? '충전' : '출금'}을 위해 계좌 비밀번호를 입력해주세요.
+              </p>
+              <p className="text-cusBlack-light mb-4">
+                금액: <span className="font-bold text-cusBlack">{Number(amount).toLocaleString()}원</span>
+              </p>
+              
+              <div className="flex justify-center mb-3">
+                <div className="flex gap-2">
+                  {[...Array(6)].map((_, i) => (
+                    <div 
+                      key={i} 
+                      className="w-10 h-12 border-2 border-gray-300 rounded-md flex items-center justify-center text-xl font-bold"
+                    >
+                      {password[i] ? '•' : ''}
+                    </div>
+                  ))}
+                </div>
+              </div>
+              
+              <input
+                type="password"
+                value={password}
+                onChange={handlePasswordChange}
+                placeholder="6자리 비밀번호 입력"
+                className="w-full px-4 py-3 border border-cusGray rounded-lg text-center text-xl tracking-widest"
+                maxLength={6}
+                autoFocus
+              />
+            </div>
 
-          {error && (
-            <div className="text-cusRed text-sm py-2">
-              {error}
+            {error && (
+              <div className="text-cusRed text-sm py-2 text-center">
+                {error}
+              </div>
+            )}
+
+            <div className="flex gap-3 mt-6">
+              <button
+                type="button"
+                onClick={() => setStep(1)}
+                className="flex-1 px-4 py-2 border border-cusGray rounded-lg text-cusBlack-light hover:bg-cusGray-light transition-colors"
+              >
+                이전
+              </button>
+              <button
+                type="button"
+                onClick={handleSubmit}
+                disabled={password.length !== 6 || loading}
+                className={`flex-1 px-4 py-2 rounded-lg text-white ${
+                  password.length !== 6 || loading
+                    ? 'bg-cusBlue-light cursor-not-allowed' 
+                    : 'bg-cusBlue hover:bg-cusBlue-dark'
+                } transition-colors`}
+              >
+                {loading ? '처리중...' : type === 'deposit' ? '충전하기' : '출금하기'}
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+// 계좌 생성 모달 컴포넌트 추가
+const AccountCreationModal: React.FC<{
+  isOpen: boolean;
+  onClose: () => void;
+  onSubmit: (password: string) => void;
+}> = ({ isOpen, onClose, onSubmit }) => {
+  const [password, setPassword] = useState<string>('');
+  const [confirmPassword, setConfirmPassword] = useState<string>('');
+  const [error, setError] = useState<string | null>(null);
+  const [step, setStep] = useState<number>(1); // 1: 비밀번호 입력, 2: 비밀번호 확인
+
+  const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value.replace(/[^0-9]/g, '').slice(0, 6);
+    setPassword(value);
+  };
+
+  const handleConfirmPasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value.replace(/[^0-9]/g, '').slice(0, 6);
+    setConfirmPassword(value);
+  };
+
+  const handleNextStep = () => {
+    if (password.length !== 6) {
+      setError('비밀번호는 6자리 숫자여야 합니다.');
+      return;
+    }
+    setError(null);
+    setStep(2);
+  };
+
+  const handleSubmit = () => {
+    if (password !== confirmPassword) {
+      setError('비밀번호가 일치하지 않습니다.');
+      return;
+    }
+    onSubmit(password);
+  };
+
+  const resetModal = () => {
+    setPassword('');
+    setConfirmPassword('');
+    setError(null);
+    setStep(1);
+  };
+
+  useEffect(() => {
+    if (!isOpen) {
+      resetModal();
+    }
+  }, [isOpen]);
+
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div className="bg-white rounded-2xl p-8 w-full max-w-md">
+        <h2 className="text-2xl font-bold mb-6 text-center">
+          {step === 1 ? '기뷰페이 계좌 생성' : '비밀번호 확인'}
+        </h2>
+        
+        <div className="mb-6">
+          <p className="text-gray-600 text-center mb-4">
+            {step === 1 
+              ? '계좌 이용을 위한 6자리 비밀번호를 입력해주세요.' 
+              : '비밀번호를 한번 더 입력해주세요.'}
+          </p>
+          
+          {step === 1 ? (
+            <div className="flex justify-center mb-3">
+              <div className="flex gap-2">
+                {[...Array(6)].map((_, i) => (
+                  <div 
+                    key={i} 
+                    className="w-10 h-12 border-2 border-gray-300 rounded-md flex items-center justify-center text-xl font-bold"
+                  >
+                    {password[i] ? '•' : ''}
+                  </div>
+                ))}
+              </div>
+            </div>
+          ) : (
+            <div className="flex justify-center mb-3">
+              <div className="flex gap-2">
+                {[...Array(6)].map((_, i) => (
+                  <div 
+                    key={i} 
+                    className="w-10 h-12 border-2 border-gray-300 rounded-md flex items-center justify-center text-xl font-bold"
+                  >
+                    {confirmPassword[i] ? '•' : ''}
+                  </div>
+                ))}
+              </div>
             </div>
           )}
-
-          <div className="flex gap-3 mt-6">
+          
+          {step === 1 ? (
+            <input
+              type="password"
+              value={password}
+              onChange={handlePasswordChange}
+              placeholder="6자리 비밀번호 입력"
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg text-center text-xl tracking-widest"
+              maxLength={6}
+              autoFocus
+            />
+          ) : (
+            <input
+              type="password"
+              value={confirmPassword}
+              onChange={handleConfirmPasswordChange}
+              placeholder="비밀번호 확인"
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg text-center text-xl tracking-widest"
+              maxLength={6}
+              autoFocus
+            />
+          )}
+          
+          {error && (
+            <p className="text-red-500 text-sm mt-2 text-center">{error}</p>
+          )}
+        </div>
+        
+        <div className="flex justify-center gap-4">
+          <button
+            onClick={onClose}
+            className="px-6 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 transition-colors"
+          >
+            취소
+          </button>
+          
+          {step === 1 ? (
             <button
-              type="button"
-              onClick={onClose}
-              className="flex-1 px-4 py-2 border border-cusGray rounded-lg text-cusBlack-light hover:bg-cusGray-light transition-colors"
+              onClick={handleNextStep}
+              disabled={password.length !== 6}
+              className={`px-6 py-2 ${
+                password.length === 6 
+                  ? 'bg-pink-500 hover:bg-pink-600 text-white' 
+                  : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+              } rounded-md transition-colors`}
             >
-              취소
+              다음
             </button>
+          ) : (
             <button
-              type="submit"
-              disabled={loading}
-              className={`flex-1 px-4 py-2 rounded-lg text-white ${
-                loading 
-                  ? 'bg-cusBlue-light cursor-not-allowed' 
-                  : 'bg-cusBlue hover:bg-cusBlue-dark'
-              } transition-colors`}
+              onClick={handleSubmit}
+              disabled={confirmPassword.length !== 6}
+              className={`px-6 py-2 ${
+                confirmPassword.length === 6 
+                  ? 'bg-pink-500 hover:bg-pink-600 text-white' 
+                  : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+              } rounded-md transition-colors`}
             >
-              {loading ? '처리중...' : type === 'deposit' ? '충전하기' : '출금하기'}
+              계좌 생성
             </button>
-          </div>
-        </form>
+          )}
+        </div>
       </div>
     </div>
   );
@@ -251,12 +505,14 @@ const MyPage = () => {
   const [activeTab, setActiveTab] = useState<TabType>("created");
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
+  const [wishlistProducts, setWishlistProducts] = useState<any[]>([]);
+  const [loadingWishlist, setLoadingWishlist] = useState(false);
   
   // 방법 1: HTMLDivElement | null 타입으로 명시적 정의
   const createdFundingsRef = useRef<HTMLDivElement | null>(null);
   const participatedFundingsRef = useRef<HTMLDivElement | null>(null);
   // const reviewsRef = useRef<HTMLDivElement | null>(null);
-  const wishlistRef = useRef<HTMLDivElement | null>(null);
+  // const wishlistRef = useRef<HTMLDivElement | null>(null);
   
   
   // 스크롤 함수 타입 정의 변경
@@ -399,6 +655,47 @@ const MyPage = () => {
     const startIndex = (page - 1) * perPage;
     return items.slice(startIndex, startIndex + perPage);
   };
+  
+  // 찜 목록 데이터 가져오기
+  const fetchWishlistProducts = async () => {
+    try {
+      setLoadingWishlist(true);
+      // 로컬 스토리지에서 좋아요한 상품 ID 가져오기
+      const favoriteProducts = JSON.parse(localStorage.getItem('favoriteProducts') || '{}') as Record<string, boolean>;
+      
+      // true로 표시된 상품 ID만 필터링
+      const favoriteProductIds = Object.entries(favoriteProducts)
+        .filter(([_, isFavorite]) => isFavorite)
+        .map(([id, _]) => id);
+      
+      if (favoriteProductIds.length === 0) {
+        setWishlistProducts([]);
+        return;
+      }
+      
+      // 상품 정보를 가져오기 위한 API 호출
+      const response = await axios.get(`${import.meta.env.VITE_BASE_URL}/products/list`);
+      
+      if (response.data && Array.isArray(response.data)) {
+        // 찜한 상품만 필터링
+        const wishlist = response.data.filter((product: any) => 
+          favoriteProductIds.includes(String(product.id))
+        );
+        setWishlistProducts(wishlist);
+      }
+    } catch (error) {
+      console.error('찜 목록을 불러오는 중 오류가 발생했습니다:', error);
+    } finally {
+      setLoadingWishlist(false);
+    }
+  };
+  
+  // 탭이 wishlist로 변경될 때마다 데이터 가져오기
+  useEffect(() => {
+    if (activeTab === "wishlist") {
+      fetchWishlistProducts();
+    }
+  }, [activeTab]);
   
   // 탭 내용을 렌더링하는 함수
   const renderTabContent = () => {
@@ -544,78 +841,65 @@ const MyPage = () => {
         );
         
       case "wishlist":
-        return WISHLIST_ITEMS.length > 0 ? (
-          <div className="relative">
-            <div className="absolute -left-4 top-1/2 transform -translate-y-1/2 z-10">
-              <button 
-                onClick={() => handleScrollLeft(wishlistRef)}
-                className="p-2 bg-cusBlack text-white rounded-full shadow-md hover:bg-cusBlack-light"
-                aria-label="이전 항목"
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                </svg>
-              </button>
-            </div>
-            
-            <div 
-              ref={wishlistRef}
-              className="flex overflow-x-auto scrollbar-hide gap-4 py-4 pl-2 pr-6"
-              style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
-            >
-              {WISHLIST_ITEMS.map((product) => (
+        const paginatedWishlist = getPaginatedItems(wishlistProducts, currentPage, itemsPerPage);
+        
+        return loadingWishlist ? (
+          <div className="flex justify-center items-center h-64">
+            <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-cusBlue"></div>
+          </div>
+        ) : wishlistProducts.length > 0 ? (
+          <div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+              {paginatedWishlist.map((product) => (
                 <Link 
                   key={product.id} 
                   to={`/shopping/product/${product.id}`}
-                  className="bg-white border border-cusGray rounded-xl overflow-hidden hover:shadow-lg transition-all transform hover:-translate-y-1 flex-shrink-0"
-                  style={{ width: '250px' }}
+                  className="block border border-cusGray bg-white rounded-lg overflow-hidden hover:shadow-md transition-shadow"
                 >
-                  <div className="h-48 bg-cusGray-light">
+                  <div className="h-48 bg-cusGray-light relative">
                     <img 
-                      src={product.imageUrl} 
-                      alt={product.name} 
+                      src={product.image || 'https://via.placeholder.com/300x200?text=상품이미지'}
+                      alt={product.productName}
                       className="w-full h-full object-cover"
                     />
+                    <div className="absolute top-2 right-2 bg-cusRed text-white text-xs px-2 py-1 rounded-full">
+                      {product.category}
+                    </div>
                   </div>
                   <div className="p-4">
-                    <h3 className="font-medium mb-2 text-cusBlack">{product.name}</h3>
-                    <div className="flex items-center gap-2 mb-2">
-                      {product.discount > 0 && (
-                        <span className="text-cusBlack-light line-through text-sm">
-                          {product.price.toLocaleString()}원
-                        </span>
-                      )}
-                      <span className="text-cusRed font-bold">
-                        {(product.price * (100 - product.discount) / 100).toLocaleString()}원
-                      </span>
-                      {product.discount > 0 && (
-                        <span className="bg-cusRed-light text-white text-xs font-bold px-2 py-0.5 rounded-full ml-auto">
-                          {product.discount}% 할인
-                        </span>
-                      )}
+                    <h3 className="font-bold text-cusBlack mb-2">{product.productName}</h3>
+                    <div className="flex justify-between items-center">
+                      <span className="text-lg font-bold">{product.price?.toLocaleString()}원</span>
+                      <div className="flex items-center">
+                        <svg className="w-4 h-4 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
+                          <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                        </svg>
+                        <span className="ml-1 text-sm text-cusBlack-light">{product.star?.toFixed(1)}</span>
+                      </div>
                     </div>
                   </div>
                 </Link>
               ))}
             </div>
             
-            <div className="absolute -right-4 top-1/2 transform -translate-y-1/2 z-10">
-              <button 
-                onClick={() => handleScrollRight(wishlistRef)}
-                className="p-2 bg-cusBlack text-white rounded-full shadow-md hover:bg-cusBlack-light"
-                aria-label="다음 항목"
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                </svg>
-              </button>
-            </div>
+            {/* 페이지네이션 컴포넌트 */}
+            <Pagination 
+              totalItems={wishlistProducts.length}
+              itemsPerPage={itemsPerPage}
+              currentPage={currentPage}
+              onPageChange={handlePageChange}
+            />
           </div>
         ) : (
-          <div className="bg-cusGray-light rounded-xl py-10 text-center">
-            <p className="text-cusBlack-light font-medium">아직 위시리스트에 추가한 상품이 없습니다.</p>
-            <Link to="/shopping" className="inline-block mt-4 px-6 py-2 bg-cusRed text-white rounded-full hover:bg-cusRed-light transition-colors text-sm">
-              쇼핑하러 가기
+          <div className="text-center py-16 bg-white rounded-xl shadow-sm">
+            <div className="text-5xl mb-4">❤️</div>
+            <h3 className="text-xl font-bold text-cusBlack mb-2">찜한 상품이 없습니다</h3>
+            <p className="text-cusBlack-light mb-6">마음에 드는 상품을 발견하면 하트를 눌러 찜해보세요!</p>
+            <Link 
+              to="/shopping"
+              className="px-6 py-3 bg-cusBlue text-white rounded-lg inline-block hover:bg-blue-600 transition-colors"
+            >
+              쇼핑몰 둘러보기
             </Link>
           </div>
         );
@@ -631,14 +915,46 @@ const MyPage = () => {
 
   const [isTransactionModalOpen, setIsTransactionModalOpen] = useState(false);
   const [transactionType, setTransactionType] = useState<TransactionType>('deposit');
+  
+  // 계좌 관련 상태 추가
+  const [hasAccount, setHasAccount] = useState<boolean>(false);
+  const [accountNumber, setAccountNumber] = useState<string>('');
+  const [isAccountModalOpen, setIsAccountModalOpen] = useState<boolean>(false);
+  
+  const [userData, setUserData] = useState<UserData | null>(null);
 
   const handleTransactionClick = (type: TransactionType) => {
+    if (!hasAccount) {
+      setIsAccountModalOpen(true);
+      return;
+    }
+    
     setTransactionType(type);
     setIsTransactionModalOpen(true);
   };
-
-  const [userData, setUserData] = useState<UserData | null>(null);
-
+  
+  // 계좌 생성 제출 핸들러
+  const handleAccountCreation = (password: string) => {
+    console.log('계좌 생성 - 비밀번호:', password);
+    // TODO: 여기서 API 호출
+    
+    // 임시로 계좌 생성 시뮬레이션
+    const randomAccountNumber = Math.floor(Math.random() * 90000000) + 10000000;
+    setAccountNumber(`110-${randomAccountNumber}-01`);
+    setHasAccount(true);
+    setIsAccountModalOpen(false);
+    
+    // 사용자 데이터 업데이트 (잔액 초기화)
+    if (userData) {
+      setUserData({
+        ...userData,
+        balance: 0,
+      });
+    }
+    
+    alert('계좌가 성공적으로 생성되었습니다!');
+  };
+  
   // 컴포넌트 마운트 시 로그인 체크 및 사용자 정보 가져오기
   useEffect(() => {
     const userString = localStorage.getItem('user');
@@ -653,6 +969,15 @@ const MyPage = () => {
     try {
       const parsedUser = JSON.parse(userString);
       setUserData(parsedUser);
+      
+      // 임시로 계좌가 있는지 확인 (실제로는 API 호출)
+      // userData에 balance가 있고 null이 아닌 경우 계좌가 있다고 간주
+      if (parsedUser.balance !== undefined && parsedUser.balance !== null) {
+        setHasAccount(true);
+        // 계좌번호도 설정 (실제로는 API에서 가져옴)
+        const randomAccountNumber = Math.floor(Math.random() * 90000000) + 10000000;
+        setAccountNumber(`110-${randomAccountNumber}-01`);
+      }
     } catch (error) {
       console.error('사용자 정보 파싱 오류:', error);
       navigate('/login');
@@ -686,31 +1011,62 @@ const MyPage = () => {
                   <div className="mr-auto md:ml-4">
                     <h1 className="text-2xl font-bold text-cusBlack">{userData.nickname}</h1>
                   </div>
-                  <div className="flex gap-3">
+                  {hasAccount ? (
+                    <div className="flex gap-3">
+                      <button
+                        onClick={() => handleTransactionClick('deposit')}
+                        className="px-5 py-2 border border-cusBlue rounded-full text-sm bg-btnLightBlue text-cusBlue hover:bg-btnLightBlue-hover hover:text-white transition-colors shadow-sm"
+                      >
+                        충전하기
+                      </button>
+                      <button
+                        onClick={() => handleTransactionClick('withdrawal')}
+                        className="px-5 py-2 border border-cusYellow rounded-full text-sm bg-btnYellow text-cusBlack hover:bg-btnYellow-hover transition-colors shadow-sm"
+                      >
+                        출금하기
+                      </button>
+                    </div>
+                  ) : (
                     <button
-                      onClick={() => handleTransactionClick('deposit')}
+                      onClick={() => setIsAccountModalOpen(true)}
                       className="px-5 py-2 border border-cusBlue rounded-full text-sm bg-btnLightBlue text-cusBlue hover:bg-btnLightBlue-hover hover:text-white transition-colors shadow-sm"
                     >
-                      충전하기
+                      계좌 만들기
                     </button>
-                    <button
-                      onClick={() => handleTransactionClick('withdrawal')}
-                      className="px-5 py-2 border border-cusYellow rounded-full text-sm bg-btnYellow text-cusBlack hover:bg-btnYellow-hover transition-colors shadow-sm"
-                    >
-                      출금하기
-                    </button>
-                  </div>
+                  )}
                 </div>
                 
-                <div className="flex items-center">
-                  <div className="mr-10">
-                    <div className="flex items-center mb-2">
-                      <span className="text-yellow-500 text-2xl mr-2">👑</span>
-                      <h3 className="text-lg font-medium text-cusBlue">내 기뷰페이</h3>
+                {hasAccount ? (
+                  <div className="flex flex-col md:flex-row items-center md:items-start justify-start gap-10 py-4 md:pl-4">
+                    <div className="text-center md:text-left">
+                      <div className="flex items-center justify-center md:justify-start mb-2">
+                        <span className="text-yellow-500 text-3xl mr-2">👑</span>
+                        <h3 className="text-xl font-bold text-cusBlue">내 기뷰페이</h3>
+                      </div>
+                      <p className="text-3xl font-bold text-cusBlack">{userData.balance?.toLocaleString()}<span className="text-xl ml-1">원</span></p>
                     </div>
-                    <p className="text-3xl font-bold text-cusBlack">{userData.balance?.toLocaleString()}</p>
+                    <div className="text-center md:text-left">
+                      <p className="text-cusBlack-light mb-2">내 기뷰페이 계좌</p>
+                      <p className="text-xl font-bold text-cusBlack">{accountNumber}</p>
+                    </div>
                   </div>
-                </div>
+                ) : (
+                  <div className="flex flex-col items-center justify-center py-4">
+                    <div className="w-16 h-16 rounded-full bg-cusLightBlue flex items-center justify-center mb-4">
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-cusBlue" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                      </svg>
+                    </div>
+                    <h3 className="text-lg font-bold mb-2 text-cusBlack">기뷰페이 계좌가 없습니다</h3>
+                    <p className="text-cusBlack-light mb-4 text-center">쇼핑과 펀딩을 편리하게 이용하려면<br />기뷰페이 계좌를 만들어보세요!</p>
+                    <button 
+                      onClick={() => setIsAccountModalOpen(true)}
+                      className="px-6 py-2 bg-cusBlue text-white rounded-full hover:bg-cusBlue-dark transition-colors"
+                    >
+                      계좌 만들기
+                    </button>
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -752,7 +1108,7 @@ const MyPage = () => {
                 <button
                   className={`px-5 py-3 text-base font-bold rounded-full transition-all ${
                     activeTab === "wishlist" 
-                      ? "bg-cusBlack text-cusYellow shadow-lg" 
+                      ? "bg-cusBlack text-pink-500 shadow-lg" 
                       : "bg-cusGray-light text-cusBlack-light hover:bg-cusGray"
                   }`}
                   onClick={() => setActiveTab("wishlist")}
@@ -774,6 +1130,13 @@ const MyPage = () => {
             isOpen={isTransactionModalOpen}
             onClose={() => setIsTransactionModalOpen(false)}
             type={transactionType}
+          />
+          
+          {/* 계좌 생성 모달 */}
+          <AccountCreationModal 
+            isOpen={isAccountModalOpen}
+            onClose={() => setIsAccountModalOpen(false)}
+            onSubmit={handleAccountCreation}
           />
         </>
       )}

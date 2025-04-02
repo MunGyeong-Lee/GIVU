@@ -6,6 +6,7 @@ import com.backend.givu.model.entity.Funding;
 import com.backend.givu.model.repository.ProductRepository;
 import com.backend.givu.model.requestDTO.FundingCreateDTO;
 import com.backend.givu.model.requestDTO.FundingUpdateDTO;
+import com.backend.givu.model.responseDTO.FundingDetailDTO;
 import com.backend.givu.model.responseDTO.FundingsDTO;
 import com.backend.givu.model.responseDTO.ImageUploadResponseDTO;
 import com.backend.givu.model.service.FundingService;
@@ -156,6 +157,35 @@ public class FundingController implements FundingControllerDocs {
 
         fundingService.deleteFunding(userId, fundingId);
         return ResponseEntity.noContent().build(); //204 No Content
+    }
+
+    @Operation(summary = "펀딩 완료", description = "해당 펀딩을 완료시킵니다.")
+    @PutMapping(value = "/{fundingId}/complete")
+    public ResponseEntity<FundingsDTO> completeFunding(
+            @AuthenticationPrincipal CustomUserDetail userDetail,
+            @PathVariable int fundingId,
+            HttpServletRequest request) throws AccessDeniedException{
+
+        Long userId = userDetail.getId();
+        log.info("펀딩 완료 요청: userId={}, fundingId={}", userId, fundingId);
+
+        FundingsDTO completeFunding = fundingService.completeFunding(userId, fundingId);
+        return ResponseEntity.ok(completeFunding);
+
+    }
+
+
+    @Operation(summary = "펀딩 상세보기", description = "해당 펀딩 상세를 보여줍니다.")
+    @GetMapping(value="/{fundingId}")
+    public ResponseEntity<FundingDetailDTO> fundingDetail(
+            @AuthenticationPrincipal CustomUserDetail userDetail,
+            @PathVariable int fundingId,
+            HttpServletRequest request) throws IOException{
+
+        Long userId = userDetail.getId();
+
+        FundingDetailDTO fundingDetail = fundingService.fundingDetail(fundingId);
+        return ResponseEntity.ok(fundingDetail);
     }
 
 
