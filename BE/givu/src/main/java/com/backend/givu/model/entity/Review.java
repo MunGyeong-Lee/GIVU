@@ -53,6 +53,20 @@ public class Review {
     @Column(name = "visit")
     private Long visit;
 
+
+    @PrePersist
+    protected void onCreate(){
+        Instant now = Instant.now() ;
+        this.createdAt = now;
+        this.updatedAt = now;
+    }
+
+    @PreUpdate
+    protected  void onUpdate(){
+        this.updatedAt = Instant.now();
+    }
+
+
     public static Review from(User user, Funding funding, ReviewCreateDTO dto){
          Review review = Review.builder()
                 .funding(funding)
