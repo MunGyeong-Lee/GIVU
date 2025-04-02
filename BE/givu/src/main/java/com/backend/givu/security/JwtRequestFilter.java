@@ -18,6 +18,7 @@ import java.io.IOException;
 
 /**
  * API 요청이 올때마다 Access 토큰이 유효한지 확인하는 역할
+ * ( Swagger나 정적 리소스 등 인증이 필요 없는 요청은 필터를 건너 뛴다)
  */
 @Slf4j
 @Component
@@ -77,6 +78,20 @@ public class JwtRequestFilter  extends OncePerRequestFilter {
         }
         return null ;
     }
+
+//    /**
+//     * 아래 경로에 대한 요청은 필터를 적용하지 않음 (Swagger 등)
+//     */
+//    @Override
+//    protected boolean shouldNotFilter(HttpServletRequest request) {
+//        String path = request.getRequestURI();
+//        return path.startsWith("/swagger-ui")
+//                || path.startsWith("/v3/api-docs")
+//                || path.startsWith("/swagger-resources")
+//                || path.startsWith("/webjars")
+//                || path.equals("/")
+//                || path.equals("/favicon.ico");
+//    }
 
 
 
