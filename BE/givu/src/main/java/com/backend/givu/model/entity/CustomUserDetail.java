@@ -42,6 +42,15 @@ public class CustomUserDetail implements UserDetails {
         return user.getEmail();
     }
 
+    public String getAccountNo(){
+        if(user.getAccountNumber() != null){
+            return user.getAccountNumber();
+        }
+        else{
+            return "";
+        }
+    }
+
     /* 세부 설정 */
 
     @Override
