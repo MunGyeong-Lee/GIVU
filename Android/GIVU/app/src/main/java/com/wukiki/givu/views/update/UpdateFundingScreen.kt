@@ -1,5 +1,6 @@
 package com.wukiki.givu.views.update
 
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -32,6 +33,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -43,6 +45,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -59,6 +62,7 @@ import com.wukiki.givu.ui.pretendard
 import com.wukiki.givu.ui.suit
 import com.wukiki.givu.util.CommonBottomButton
 import com.wukiki.givu.util.CommonTopBar
+import com.wukiki.givu.views.detail.viewmodel.FundingUiEvent
 import com.wukiki.givu.views.detail.viewmodel.FundingViewModel
 import com.wukiki.givu.views.update.component.UpdateFundingImagePager
 import kotlinx.coroutines.launch
@@ -70,7 +74,6 @@ fun UpdateFundingScreen(
     navController: NavController,
     xmlNavController: NavController
 ) {
-
     data class CategoryItem(val iconId: Int, val label: String)
 
     val categoryList = listOf(
@@ -87,11 +90,39 @@ fun UpdateFundingScreen(
     val scope = rememberCoroutineScope()
     val scrollState = rememberScrollState()
 
+    val context = LocalContext.current
     val selectedFunding by fundingViewModel.selectedFunding.collectAsState()
     val fundingTitle by fundingViewModel.fundingTitle.collectAsState()
     val fundingCategory by fundingViewModel.fundingCategory.collectAsState()
     val isFundingPublicState by fundingViewModel.isFundingPublicState.collectAsState()
     val fundingBody by fundingViewModel.fundingBody.collectAsState()
+    val fundingUiState by fundingViewModel.fundingUiState.collectAsState()
+    val fundingUiEvent = fundingViewModel.fundingUiEvent
+
+    LaunchedEffect(Unit) {
+        fundingUiEvent.collect { event ->
+            when (event) {
+                is FundingUiEvent.UpdateFundingSuccess -> {
+                    Toast.makeText(
+                        context,
+                        context.getString(R.string.message_update_funding_success),
+                        Toast.LENGTH_SHORT
+                    ).show()
+                    xmlNavController.popBackStack()
+                }
+
+                is FundingUiEvent.UpdateFundingFail -> {
+                    Toast.makeText(
+                        context,
+                        context.getString(R.string.message_update_funding_fail),
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
+
+                else -> {}
+            }
+        }
+    }
 
     Scaffold(
         bottomBar = {
@@ -106,9 +137,11 @@ fun UpdateFundingScreen(
                         .fillMaxWidth()
                         .height(68.dp),
                     text = stringResource(R.string.text_update_funding),
-                    true
+                    fundingUiState.isUpdateButton
                 ) {
-                    fundingViewModel.updateFunding()
+                    if (fundingUiState.isUpdateButton) {
+                        fundingViewModel.updateFunding()
+                    }
                 }
             }
         },
@@ -187,6 +220,7 @@ fun UpdateFundingScreen(
                         value = fundingTitle,
                         onValueChange = {
                             fundingViewModel.fundingTitle.value = it
+                            fundingViewModel.validateFundingTitle(it)
                         },
                         modifier = Modifier.fillMaxWidth(),
                         textStyle = TextStyle(
@@ -215,7 +249,7 @@ fun UpdateFundingScreen(
                     Spacer(Modifier.height(24.dp))
                     TitleText("카테고리")
                     Text(
-                        text = "어떤 날을 기념하고 싶나요?",
+                        text = stringResource(R.string.title_funding_category),
                         fontFamily = suit,
                         fontWeight = FontWeight.Normal,
                         fontSize = 16.sp,
@@ -330,9 +364,9 @@ fun UpdateFundingScreen(
                     }
 
                     Spacer(Modifier.height(24.dp))
-                    TitleText("공개 범위 설정")
+                    TitleText(stringResource(R.string.title_funding_scope))
                     Text(
-                        text = "펀딩 공개 범위를 설정해주세요.",
+                        text = stringResource(R.string.text_funding_scope),
                         fontFamily = suit,
                         fontWeight = FontWeight.Normal,
                         fontSize = 16.sp,
@@ -380,8 +414,7 @@ fun UpdateFundingScreen(
                             )
                             Spacer(Modifier.height(16.dp))
                             Text(
-                                text = "누구나 펀딩을 볼 수 있고\n" +
-                                        "참여할 수 있어요.",
+                                text = stringResource(R.string.text_funding_public),
                                 fontFamily = suit,
                                 fontWeight = FontWeight.Medium,
                                 fontSize = 14.sp,
@@ -428,8 +461,7 @@ fun UpdateFundingScreen(
                             )
                             Spacer(Modifier.height(16.dp))
                             Text(
-                                text = "카카오톡 친구만 펀딩에\n" +
-                                        "참여할 수 있어요.",
+                                text = stringResource(R.string.text_funding_private),
                                 fontFamily = suit,
                                 fontWeight = FontWeight.Medium,
                                 fontSize = 14.sp,
@@ -455,6 +487,7 @@ fun UpdateFundingScreen(
                         value = fundingBody,
                         onValueChange = {
                             fundingViewModel.fundingBody.value = it
+                            fundingViewModel.validFundingDescription(it)
                         },
                         modifier = Modifier
                             .fillMaxWidth()
@@ -468,7 +501,7 @@ fun UpdateFundingScreen(
                         ),
                         placeholder = {
                             Text(
-                                text = "친구들에게 남길 메시지를 입력해주세요. (최대 100자)",
+                                text = stringResource(R.string.title_funding_description),
                                 fontSize = 14.sp,
                                 fontFamily = pretendard,
                                 fontWeight = FontWeight(400),
