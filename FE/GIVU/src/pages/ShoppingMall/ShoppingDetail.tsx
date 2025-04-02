@@ -123,7 +123,7 @@ const ShoppingProductDetail = () => {
     const fetchProductDetail = async () => {
       try {
         setLoading(true);
-        const token = localStorage.getItem('auth_token');
+        // const token = localStorage.getItem('auth_token');
         
         // 상품 정보 가져오기
         const productResponse = await axios.get(`${import.meta.env.VITE_BASE_URL}/products/${id}`);

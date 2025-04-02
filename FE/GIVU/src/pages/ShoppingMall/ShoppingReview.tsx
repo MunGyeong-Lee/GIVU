@@ -140,31 +140,6 @@ const ShoppingReview = () => {
     }
   };
 
-  // 리뷰 삭제 함수 (필요시 사용)
-  const deleteReview = async (reviewId: number) => {
-    if (!window.confirm('리뷰를 삭제하시겠습니까?')) {
-      return;
-    }
-    
-    try {
-      const token = localStorage.getItem('auth_token');
-      await axios.delete(
-        `${import.meta.env.VITE_API_BASE_URL}/products-review/${reviewId}`,
-        {
-          headers: {
-            'Authorization': token ? `Bearer ${token}` : ''
-          }
-        }
-      );
-      
-      alert('리뷰가 삭제되었습니다.');
-      // 필요 시 페이지 리로드 또는 상태 업데이트
-    } catch (error) {
-      console.error('리뷰 삭제 중 오류가 발생했습니다:', error);
-      alert('리뷰 삭제에 실패했습니다. 다시 시도해주세요.');
-    }
-  };
-
   if (loadingProduct) {
     return (
       <div className="flex justify-center items-center h-screen">
