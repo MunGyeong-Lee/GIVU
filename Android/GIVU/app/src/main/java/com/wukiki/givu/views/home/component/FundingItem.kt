@@ -1,5 +1,6 @@
 package com.wukiki.givu.views.home.component
 
+import android.os.Bundle
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -27,9 +28,9 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
 import coil.compose.SubcomposeAsyncImage
 import com.wukiki.domain.model.Funding
 import com.wukiki.givu.R
@@ -39,10 +40,17 @@ import com.wukiki.givu.util.CommonUtils
 @Composable
 fun FundingItem(
     funding: Funding,
+    navController: NavController,
     onLikeClick: () -> Unit
 ) {
     Card(
-        modifier = Modifier.wrapContentHeight(),
+        modifier = Modifier.wrapContentHeight()
+            .clickable {
+                val bundle = Bundle().apply {
+                    putInt("fundingId", funding.id)
+                }
+                navController.navigate(R.id.action_home_to_detail_funding, bundle)
+            },
         colors = CardDefaults.cardColors(containerColor = Color.White)
     ) {
         Row(
@@ -138,34 +146,4 @@ fun FundingItem(
             }
         }
     }
-}
-
-@Preview(showBackground = true)
-@Composable
-fun PreviewFundingItem() {
-    FundingItem(
-        funding = Funding(
-            id = 1,
-            userId = 1,
-            userNickname = "",
-            userProfile = "",
-            productId = 1,
-            productName = "",
-            productPrice = "",
-            productImage = "",
-            title = "호날두 축구화 구매",
-            body = "펀딩 내용 설명",
-            description = "설명",
-            category = "sports",
-            categoryName = "스포츠",
-            scope = "public",
-            participantsNumber = "100",
-            fundedAmount = 58000,
-            status = "liked",
-            images = listOf("https://images.unsplash.com/photo-1522383225653-ed111181a951"),
-            createdAt = "2024-03-01",
-            updatedAt = "2024-03-10"
-        ),
-        onLikeClick = {}
-    )
 }

@@ -139,7 +139,7 @@ fun HomeScreen(
                     fontFamily = suit
                 )
                 Spacer(modifier = Modifier.height(8.dp))
-                FundingAllPager(homeViewModel)
+                FundingAllPager(homeViewModel, navController)
             }
         }
     }

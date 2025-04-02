@@ -22,7 +22,7 @@ class DetailFundingFragment :
         super.onViewCreated(view, savedInstanceState)
 
         binding.vm = viewModel
-        viewModel.initFundings()
+        viewModel.initFunding(arguments?.getInt("fundingId") ?: -1)
         viewModel.initProducts()
 
         binding.composeDetailFunding.setContent {
