@@ -1,7 +1,7 @@
 // TanStack Query를 사용하는 Custom Hook
 
 import { useMutation } from '@tanstack/react-query';
-import { createFunding, CreateFundingData, CreateFundingResponse } from '../services/funding.service';
+import { createFunding, CreateFundingData } from '../services/funding.service';
 import { useNavigate } from 'react-router-dom';
 
 interface FundingResponse {
@@ -61,7 +61,7 @@ export const useCreateFunding = () => {
           hasToken: !!token
         });
         
-        const response = await createFunding(fundingData, mainImage, additionalImages);
+        const response = await createFunding(fundingData, additionalImages);
         console.log('[펀딩 생성 응답 성공]', response);
         
         return response;
@@ -86,17 +86,17 @@ export const useCreateFunding = () => {
         isAuthenticated: !!token
       });
     },
-    onError: (error, variables, context) => {
+    onError: (error) => {
       console.error('[펀딩 생성 Mutation 오류]', error);
       if (error.message.includes('로그인이 필요합니다') || 
           error.message.includes('인증이 만료되었습니다')) {
         navigate('/login');
       }
     },
-    onSuccess: (data, variables, context) => {
+    onSuccess: (data) => {
       console.log('[펀딩 생성 Mutation 성공]', data);
     },
-    onSettled: (data, error, variables, context) => {
+    onSettled: (data, error) => {
       console.log('[펀딩 생성 Mutation 완료]', { data, error });
     }
   });

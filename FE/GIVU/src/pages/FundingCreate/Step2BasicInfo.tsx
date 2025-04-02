@@ -200,11 +200,11 @@ const Step2BasicInfo: React.FC<Step2BasicInfoProps> = ({
     }
   };
 
-  // 대표 이미지 업로드 핸들러
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    // 대표 이미지는 변경 불가능하므로 기능 제거
-    e.preventDefault();
-  };
+  // // 대표 이미지 업로드 핸들러
+  // const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  //   // 대표 이미지는 변경 불가능하므로 기능 제거
+  //   e.preventDefault();
+  // };
 
   // 추가 이미지 업로드 핸들러
   const handleAdditionalImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {

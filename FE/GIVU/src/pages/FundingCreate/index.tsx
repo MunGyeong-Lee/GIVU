@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
 import Step1Products from './Step1Products';
 import Step2BasicInfo from './Step2BasicInfo';
 import Step3PublicSettings from './Step3PublicSettings';
@@ -52,7 +51,6 @@ type StepType = 1 | 2 | 3 | 'preview';
 const FundingCreateContainer: React.FC = () => {
   const [currentStep, setCurrentStep] = useState<StepType>(1);
   const [fundingState, setFundingState] = useState<FundingCreateState>(initialState);
-  const navigate = useNavigate();
 
   // 상태 업데이트 함수
   const updateState = (key: keyof FundingCreateState, value: any) => {
