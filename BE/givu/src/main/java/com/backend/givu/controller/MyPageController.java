@@ -6,7 +6,7 @@ import com.backend.givu.model.entity.CustomUserDetail;
 import com.backend.givu.model.entity.User;
 import com.backend.givu.model.repository.UserRepository;
 import com.backend.givu.model.responseDTO.ApiResponse;
-import com.backend.givu.model.responseDTO.CodeMessageDTO;
+//import com.backend.givu.model.responseDTO.CodeMessageDTO;
 import com.backend.givu.model.service.MyPageService;
 import com.backend.givu.model.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -36,15 +36,15 @@ public class MyPageController {
         return ResponseEntity.ok(myPageService.createDepositAccount(user));
     }
 
-    @GetMapping("/checkAccount")
-    public ResponseEntity<> checkAccount(@AuthenticationPrincipal CustomUserDetail userDetail){
-        String accountNo = userDetail.getAccountNo();
-        if(accountNo.isEmpty()){
-           return ResponseEntity.ok().build();
-        }
-
-
-
-    }
+//    @GetMapping("/checkAccount")
+//    public ResponseEntity<> checkAccount(@AuthenticationPrincipal CustomUserDetail userDetail){
+//        String accountNo = userDetail.getAccountNo();
+//        if(accountNo.isEmpty()){
+//           return ResponseEntity.ok().build();
+//        }
+//
+//
+//
+//    }
 
 }

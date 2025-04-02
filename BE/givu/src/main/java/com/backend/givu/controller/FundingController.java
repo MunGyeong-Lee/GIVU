@@ -174,23 +174,23 @@ public class FundingController implements FundingControllerDocs {
 
     }
 
-//
-//    @Operation(summary = "펀딩 상세보기", description = "해당 펀딩 상세를 보여줍니다.")
-//    @GetMapping(value="/{fundingId}")
-//    public ResponseEntity<FundingDetailDTO> fundingDetail(
-//            @AuthenticationPrincipal CustomUserDetail userDetail,
-//            @PathVariable int fundingId,
-//            HttpServletRequest request) throws IOException{
-//
-//        Long userId = userDetail.getId();
-//
-//        FundingDetailDTO fundingDetail = fundingService.fundingDetail(fundingId);
-//        return ResponseEntity.ok(fundingDetail);
-//    }
-//
-//
-//
-//
+
+    @Operation(summary = "펀딩 상세보기", description = "해당 펀딩 상세를 보여줍니다.")
+    @GetMapping(value="/{fundingId}")
+    public ResponseEntity<FundingDetailDTO> fundingDetail(
+            @AuthenticationPrincipal CustomUserDetail userDetail,
+            @PathVariable int fundingId,
+            HttpServletRequest request) throws IOException{
+
+        Long userId = userDetail.getId();
+
+        FundingDetailDTO fundingDetail = fundingService.fundingDetail(fundingId);
+        return ResponseEntity.ok(fundingDetail);
+    }
+
+
+
+
 
 
 

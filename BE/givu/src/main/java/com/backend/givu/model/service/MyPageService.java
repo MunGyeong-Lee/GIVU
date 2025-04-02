@@ -54,18 +54,18 @@ public class MyPageService {
         }
     }
 
-    public ApiResponse<UserAccountDTO> checkAccount(String accountNo){
-        String url = "https://finopenapi.ssafy.io/ssafy/api/v1/edu/demandDeposit/inquireDemandDepositAccountBalance";
-        CheckAccountRequest checkAccountRequest = new CheckAccountRequest(accountNo);
-
-        ResponseEntity<CheckAccountResponse> response = restTemplate.postForEntity(
-                url,
-                checkAccountRequest,
-                CheckAccountResponse.class
-        );
-
-        CheckAccountResponse body = response.getBody();
-
-
-    }
+//    public ApiResponse<UserAccountDTO> checkAccount(String accountNo){
+//        String url = "https://finopenapi.ssafy.io/ssafy/api/v1/edu/demandDeposit/inquireDemandDepositAccountBalance";
+//        CheckAccountRequest checkAccountRequest = new CheckAccountRequest(accountNo);
+//
+//        ResponseEntity<CheckAccountResponse> response = restTemplate.postForEntity(
+//                url,
+//                checkAccountRequest,
+//                CheckAccountResponse.class
+//        );
+//
+//        CheckAccountResponse body = response.getBody();
+//
+//
+//    }
 }

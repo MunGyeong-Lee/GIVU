@@ -58,6 +58,18 @@ public class Letter {
     @Column(name = "access", columnDefinition = "letter_private")
     private LettersPrivate access;
 
+    @PrePersist
+    protected void onCreate(){
+        Instant now = Instant.now() ;
+        this.createdAt = now;
+        this.updatedAt = now;
+    }
+
+    @PreUpdate
+    protected  void onUpdate(){
+        this.updatedAt = Instant.now();
+    }
+
     public static Letter from(User user, Funding funding, LetterCreateDTO dto){
         Letter letter  = Letter.builder()
                 .funding(funding)
