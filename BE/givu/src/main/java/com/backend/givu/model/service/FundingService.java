@@ -48,6 +48,7 @@ public class FundingService {
         fundingRepository.save(fundig);
     }
 
+
     /**
      * 펀딩 리스트 조회
      */
@@ -160,9 +161,11 @@ public class FundingService {
         // 변경 사항 저장 및 DTO로 변환
         return Funding.toDTO(fundingRepository.save(funding));
 
-
-
     }
+
+    /**
+     * 펀딩 사진
+     */
 
 
 
