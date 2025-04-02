@@ -1,9 +1,12 @@
 package com.backend.givu.model.service;
 
+import com.backend.givu.model.responseDTO.ApiResponse;
 import com.backend.givu.model.responseDTO.UserSimpleInfoDTO;
 import com.backend.givu.model.responseDTO.UsersDTO;
 import com.backend.givu.model.entity.User;
 import com.backend.givu.model.repository.UserRepository;
+import jakarta.persistence.EntityNotFoundException;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.aspectj.apache.bcel.classfile.Code;
 import org.springframework.stereotype.Service;
@@ -52,6 +55,21 @@ public class UserService {
 
     public Optional<User> getUserByKakaoId(Long kakaoId){
         return userRepository.findByKakaoId(kakaoId);
+    }
+
+    @Transactional
+    public ApiResponse<Void> setUserPaymentPassword(long userId , String password){
+        User user = userRepository.findById(userId).orElseThrow(()->new EntityNotFoundException("해당 사용자가 존재하지 않습니다."));
+        user.setPaymentPassword(password);
+        return ApiResponse.success(null);
+    }
+
+    public ApiResponse<Void> checkPaymentPassword(User user, String password){
+        if(user.getPaymentPassword().equals(password)){
+            return ApiResponse.success(null);
+        }else{
+            return ApiResponse.fail("ERROR", "비밀번호가 일치하지 않습니다.");
+        }
     }
 
 }
