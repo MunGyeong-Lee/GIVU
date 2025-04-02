@@ -5,7 +5,9 @@ import com.amazonaws.Response;
 import com.backend.givu.model.entity.CustomUserDetail;
 import com.backend.givu.model.entity.User;
 import com.backend.givu.model.repository.UserRepository;
+import com.backend.givu.model.requestDTO.AmountDTO;
 import com.backend.givu.model.responseDTO.ApiResponse;
+import com.backend.givu.model.responseDTO.ChargeResultDTO;
 import com.backend.givu.model.responseDTO.UserAccountDTO;
 import com.backend.givu.model.service.MyPageService;
 import com.backend.givu.model.service.UserService;
@@ -40,10 +42,23 @@ public class MyPageController {
     @GetMapping("/checkAccount")
     public ResponseEntity<ApiResponse<UserAccountDTO>> checkAccount(@AuthenticationPrincipal CustomUserDetail userDetail){
         String accountNo = userDetail.getAccountNo();
-        if(accountNo.isEmpty()){
+        if(accountNo.isBlank()){
            return ResponseEntity.ok(ApiResponse.fail("ERROR", "계좌가 존재하지 않습니다."));
         }
         return ResponseEntity.ok(myPageService.checkAccount(accountNo));
     }
 
+
+    @Operation(summary = "유저 연동계좌 출금 (GIVUPay 충전)" , description = "해당 유저의 연동계좌에서 출금 후 GIVUPay로 충전합니다.")
+    @PostMapping("/account/withdrawal")
+    public ResponseEntity<ApiResponse<ChargeResultDTO>> withdrawalFromAccount(@AuthenticationPrincipal CustomUserDetail userDetail,
+                                                                   @RequestBody AmountDTO amountDTO){
+        String accountNo = userDetail.getAccountNo();
+        long userId = userDetail.getId();
+        User user = userService.getUserById(userId);
+        if(accountNo.isBlank()){
+            return ResponseEntity.ok(ApiResponse.fail("ERROR", "계좌가 존재하지 않습니다."));
+        }
+        return ResponseEntity.ok(myPageService.withdrawalFromAccount(accountNo, user, amountDTO.getAmount()));
+    }
 }
