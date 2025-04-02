@@ -110,6 +110,10 @@ const ShoppingProductDetail = () => {
   const [reviews, setReviews] = useState<Review[]>([]);
   const [averageRating, setAverageRating] = useState<number>(0);
 
+  // 좋아요 상태 관련 상태
+  const [isLoggedIn, setIsLoggedIn] = useState<boolean>(false);
+  const [isFavorite, setIsFavorite] = useState<boolean>(false);
+
   // 페이지 로드 시 스크롤을 맨 위로 이동
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -167,6 +171,39 @@ const ShoppingProductDetail = () => {
       fetchProductDetail();
     }
   }, [id]);
+
+  // 로그인 상태 확인
+  useEffect(() => {
+    const token = localStorage.getItem('auth_token');
+    setIsLoggedIn(!!token);
+  }, []);
+
+  // 좋아요 상태 확인
+  useEffect(() => {
+    const checkFavoriteStatus = async () => {
+      try {
+        const token = localStorage.getItem('auth_token');
+        if (!token) return;
+
+        const response = await axios.get(
+          `${import.meta.env.VITE_API_BASE_URL}/products/${id}`,
+          {
+            headers: {
+              'Authorization': `Bearer ${token}`
+            }
+          }
+        );
+        
+        setIsFavorite(response.data.product.favorite > 0);
+      } catch (error) {
+        console.error('좋아요 상태 확인 중 오류:', error);
+      }
+    };
+
+    if (isLoggedIn) {
+      checkFavoriteStatus();
+    }
+  }, [id, isLoggedIn]);
 
   if (loading) {
     return (
@@ -293,6 +330,43 @@ const ShoppingProductDetail = () => {
     navigate(`/shopping/product/${id}/review/${reviewId}`);
   };
 
+  // 좋아요 토글 함수
+  const handleFavoriteClick = async () => {
+    if (!isLoggedIn) {
+      alert('로그인이 필요한 서비스입니다.');
+      return;
+    }
+
+    try {
+      const token = localStorage.getItem('auth_token');
+      if (!token) return;
+
+      await axios.patch(
+        `${import.meta.env.VITE_API_BASE_URL}/products/${id}/like`,
+        null,
+        {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        }
+      );
+
+      setIsFavorite(!isFavorite);
+      
+      // 메인 페이지의 상품 목록도 업데이트
+      const mainResponse = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/products/list`);
+      const updatedProducts = mainResponse.data;
+      
+      // 전역 상태 업데이트를 위한 이벤트 발생
+      window.dispatchEvent(new CustomEvent('productsUpdated', { 
+        detail: { products: updatedProducts } 
+      }));
+    } catch (error) {
+      console.error('좋아요 처리 중 오류:', error);
+      alert('좋아요 처리 중 오류가 발생했습니다.');
+    }
+  };
+
   // JSX에 추가할 리뷰 섹션
   const ReviewSection = () => (
     <div className="mb-12">
@@ -397,29 +471,27 @@ const ShoppingProductDetail = () => {
       <div className="flex flex-col md:flex-row gap-8 mb-12">
         {/* 상품 이미지 영역 */}
         <div className="w-full md:w-1/2 relative">
-          <img
-            src={product.image || 'https://via.placeholder.com/400x400?text=No+Image'}
-            alt={product.productName}
-            className="w-full h-auto rounded-lg"
-          />
-          {/* 찜하기 버튼 */}
-          <button
-            onClick={(e) => {
-              e.preventDefault();
-              // 찜하기 API 호출 로직
-            }}
-            className="absolute top-4 left-4 p-2 bg-white rounded-full shadow-md"
-          >
-            {product.favorite > 0 ? (
-              <svg className="w-6 h-6 text-rose-500" fill="currentColor" viewBox="0 0 20 20">
-                <path fillRule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" />
-              </svg>
-            ) : (
-              <svg className="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
-              </svg>
-            )}
-          </button>
+          <div className="relative">
+            <img
+              src={product.image || 'https://via.placeholder.com/400x400?text=No+Image'}
+              alt={product.productName}
+              className="w-full h-auto rounded-lg"
+            />
+            <button
+              onClick={handleFavoriteClick}
+              className="absolute top-4 right-4 p-2 bg-white rounded-full shadow-md hover:bg-gray-100 transition-colors"
+            >
+              {isFavorite ? (
+                <svg className="w-6 h-6 text-rose-500" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M3.172 5.172a4 4 0 015.656 0L10 6.343l1.172-1.171a4 4 0 115.656 5.656L10 17.657l-6.828-6.829a4 4 0 010-5.656z" />
+                </svg>
+              ) : (
+                <svg className="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                </svg>
+              )}
+            </button>
+          </div>
         </div>
 
         {/* 상품 정보 및 구매 옵션 */}
