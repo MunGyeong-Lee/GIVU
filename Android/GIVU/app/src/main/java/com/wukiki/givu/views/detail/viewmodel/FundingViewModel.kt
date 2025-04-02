@@ -12,6 +12,8 @@ import com.wukiki.domain.model.Product
 import com.wukiki.domain.model.User
 import com.wukiki.domain.usecase.GetFundingUseCase
 import com.wukiki.domain.usecase.GetProductUseCase
+import com.wukiki.domain.usecase.GetReviewUseCase
+import com.wukiki.givu.util.CheckState
 import com.wukiki.givu.util.InputValidState
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -24,14 +26,14 @@ import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.MultipartBody
 import okhttp3.RequestBody
 import okhttp3.RequestBody.Companion.toRequestBody
-import timber.log.Timber
 import javax.inject.Inject
 
 @HiltViewModel
 class FundingViewModel @Inject constructor(
     private val application: Application,
     private val getFundingUseCase: GetFundingUseCase,
-    private val getProductUseCase: GetProductUseCase
+    private val getProductUseCase: GetProductUseCase,
+    private val getReviewUseCase: GetReviewUseCase
 ) : AndroidViewModel(application) {
 
     /*** Ui State, Event ***/
@@ -87,11 +89,17 @@ class FundingViewModel @Inject constructor(
     private val _fundingParticipants = MutableStateFlow<List<User>>(emptyList())
     val fundingParticipants = _fundingParticipants.asStateFlow()
 
-    private val _fundingReviewUris = MutableStateFlow<List<Uri>>(emptyList())
-    val fundingReviewUris = _fundingReviewUris.asStateFlow()
+    private val _fundingReviewUri = MutableStateFlow<Uri?>(null)
+    val fundingReviewUri = _fundingReviewUri.asStateFlow()
 
-    private val _fundingReviewMultiparts = MutableStateFlow<List<MultipartBody.Part>>(emptyList())
-    val fundingReviewMultiparts = _fundingReviewMultiparts.asStateFlow()
+    private val _fundingReviewMultipart = MutableStateFlow<MultipartBody.Part?>(null)
+    val fundingReviewMultipart = _fundingReviewMultipart.asStateFlow()
+
+    private val _isFundingReviewPersonalCheck = MutableStateFlow<Boolean>(false)
+    val isFundingReviewPersonalCheck = _isFundingReviewPersonalCheck.asStateFlow()
+
+    private val _isFundingReviewNoteCheck = MutableStateFlow<Boolean>(false)
+    val isFundingReviewNoteCheck = _isFundingReviewNoteCheck.asStateFlow()
 
     private val _products = MutableStateFlow<List<Product>>(emptyList())
     val products = _products.asStateFlow()
@@ -186,6 +194,15 @@ class FundingViewModel @Inject constructor(
         return json.toRequestBody("application/json".toMediaTypeOrNull())
     }
 
+    private fun makeReviewRequestBody(): RequestBody {
+        val metadata = mapOf(
+            "comment" to _fundingReview.value
+        )
+        val gson = GsonBuilder().serializeNulls().create()
+        val json = gson.toJson(metadata)
+        return json.toRequestBody("application/json".toMediaTypeOrNull())
+    }
+
     private fun uriToMultipart(uri: Uri): MultipartBody.Part? {
         val contentResolver = application.contentResolver
         val fileName = "image_${System.currentTimeMillis()}.jpg"
@@ -263,7 +280,6 @@ class FundingViewModel @Inject constructor(
     }
 
     fun setSelectedImages(uris: List<Uri>) {
-        Timber.d("Uris: $uris")
         _fundingImageUris.value += uris
         _fundingImageMultiparts.value = _fundingImageUris.value.mapNotNull { uri ->
             uriToMultipart(uri)
@@ -282,6 +298,42 @@ class FundingViewModel @Inject constructor(
             current.toMutableMap().apply {
                 this[url] = !(this[url] ?: false)
             } as HashMap<String, Boolean>
+        }
+    }
+
+    fun validateReviewComment(comment: String) {
+        when (comment.isBlank()) {
+            true -> _fundingUiState.update { it.copy(reviewCommentState = InputValidState.NONE) }
+
+            else -> _fundingUiState.update { it.copy(reviewCommentState = InputValidState.VALID) }
+        }
+    }
+
+    fun setSelectedReviewImages(uri: Uri) {
+        _fundingReviewUri.value = uri
+        _fundingReviewMultipart.value = uriToMultipart(uri)
+    }
+
+    fun removeReviewUri() {
+        _fundingReviewUri.value = null
+        _fundingReviewMultipart.value = null
+    }
+
+    fun setPersonalCheck() {
+        _isFundingReviewPersonalCheck.value = !_isFundingReviewPersonalCheck.value
+        when (_isFundingReviewPersonalCheck.value) {
+            true -> _fundingUiState.update { it.copy(reviewPersonalCheck = CheckState.TRUE) }
+
+            else -> _fundingUiState.update { it.copy(reviewPersonalCheck = CheckState.FALSE) }
+        }
+    }
+
+    fun setNoteCheck() {
+        _isFundingReviewNoteCheck.value = !_isFundingReviewNoteCheck.value
+        when (_isFundingReviewNoteCheck.value) {
+            true -> _fundingUiState.update { it.copy(reviewNoteCheck = CheckState.TRUE) }
+
+            else -> _fundingUiState.update { it.copy(reviewNoteCheck = CheckState.FALSE) }
         }
     }
 
@@ -318,6 +370,26 @@ class FundingViewModel @Inject constructor(
 
                 else -> {
                     _fundingUiEvent.emit(FundingUiEvent.CancelFundingFail)
+                }
+            }
+        }
+    }
+
+    fun finishFunding() {
+        viewModelScope.launch {
+            val response = getReviewUseCase.finishReview(
+                fundingId = _selectedFunding.value?.id ?: -1,
+                file = _fundingReviewMultipart.value,
+                body = makeReviewRequestBody()
+            )
+
+            when (response.status) {
+                ApiStatus.SUCCESS -> {
+                    _fundingUiEvent.emit(FundingUiEvent.FinishFundingSuccess)
+                }
+
+                else -> {
+                    _fundingUiEvent.emit(FundingUiEvent.FinishFundingFail)
                 }
             }
         }

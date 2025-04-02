@@ -11,4 +11,8 @@ sealed class FundingUiEvent {
     data object CancelFundingSuccess : FundingUiEvent()
 
     data object CancelFundingFail : FundingUiEvent()
+
+    data object FinishFundingSuccess : FundingUiEvent()
+
+    data object FinishFundingFail : FundingUiEvent()
 }
