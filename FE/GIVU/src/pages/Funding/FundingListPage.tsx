@@ -1,7 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import apiClient from '../../api';
 import FundingGrid from './components/FundingGrid';
 import CategoryTabs from './components/CategoryTabs';
 import SortOptions from './components/SortOptions';
