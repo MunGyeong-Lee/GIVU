@@ -1,5 +1,6 @@
 package com.wukiki.data.util
 
+import java.text.DecimalFormat
 import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
@@ -15,5 +16,10 @@ object CommonUtils {
         } catch (e: Exception) {
             "1970.01.01"
         }
+    }
+
+    fun makeCommaPrice(num: Int): String {
+        val comma = DecimalFormat("#,###")
+        return "${comma.format(num)}원"
     }
 }
