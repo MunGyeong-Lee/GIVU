@@ -61,4 +61,17 @@ public class MyPageController {
         }
         return ResponseEntity.ok(myPageService.withdrawalFromAccount(accountNo, user, amountDTO.getAmount()));
     }
+
+    @Operation(summary = "유저 연동계좌 입금 (GIVUPay 출금)" , description = "해당 유저의 GIVUPay에서 출금 후 연동계좌로 충전합니다.")
+    @PostMapping("/account/deposit")
+    public ResponseEntity<ApiResponse<ChargeResultDTO>> depositToAccount(@AuthenticationPrincipal CustomUserDetail userDetail,
+                                                                              @RequestBody AmountDTO amountDTO){
+        String accountNo = userDetail.getAccountNo();
+        long userId = userDetail.getId();
+        User user = userService.getUserById(userId);
+        if(accountNo.isBlank()){
+            return ResponseEntity.ok(ApiResponse.fail("ERROR", "계좌가 존재하지 않습니다."));
+        }
+        return ResponseEntity.ok(myPageService.depositToAccount(accountNo, user, amountDTO.getAmount()));
+    }
 }

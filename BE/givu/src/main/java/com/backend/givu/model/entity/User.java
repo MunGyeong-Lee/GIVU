@@ -63,6 +63,10 @@ public class User {
     @Column(name = "account_number")
     private String accountNumber;
 
+    @Size(max = 100)
+    @Column(name = "payment_password")
+    private String paymentPassword;
+
     @OneToMany(mappedBy = "user")
     private Set<BankTransaction> bankTransactions = new LinkedHashSet<>();
 
