@@ -317,7 +317,7 @@ class FundingViewModel @Inject constructor(
                 }
 
                 else -> {
-
+                    _fundingUiEvent.emit(FundingUiEvent.CancelFundingFail)
                 }
             }
         }

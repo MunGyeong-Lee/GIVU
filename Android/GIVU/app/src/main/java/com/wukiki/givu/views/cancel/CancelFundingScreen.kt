@@ -1,5 +1,6 @@
 package com.wukiki.givu.views.cancel
 
+import android.widget.Toast
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
@@ -27,6 +28,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
@@ -46,6 +48,7 @@ fun CancelFundingScreen(
     fundingViewModel: FundingViewModel,
     navController: NavController
 ) {
+    val context = LocalContext.current
     val funding by fundingViewModel.selectedFunding.collectAsState()
     val paymentPassword by fundingViewModel.paymentPassword.collectAsState()
     val shadowBrush = Brush.verticalGradient(
@@ -61,6 +64,14 @@ fun CancelFundingScreen(
                     navController.navigate(R.id.action_cancel_funding_to_finish_cancel_funding)
                 }
 
+                is FundingUiEvent.CancelFundingFail -> {
+                    Toast.makeText(
+                        context,
+                        context.getString(R.string.message_cancel_funding_fail),
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
+
                 else -> {}
             }
         }
@@ -68,9 +79,11 @@ fun CancelFundingScreen(
 
     Scaffold(
         topBar = {
-            CommonTopBar(stringResource(R.string.title_cancel_funding),
+            CommonTopBar(
+                stringResource(R.string.title_cancel_funding),
                 onBackClick = {},
-                onHomeClick = {})
+                onHomeClick = {}
+            )
         },
         containerColor = Color.White
     ) { innerPadding ->
