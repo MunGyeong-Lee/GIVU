@@ -46,6 +46,8 @@
     <!-- Register -->
     <string name="title_register_image_upload">대표 이미지 업로드</string>
     <string name="text_register_image_upload">펀딩을 대표하는 이미지를 업로드해주세요.</string>
+    <string name="message_register_success">펀딩을 생성했습니다.</string>
+    <string name="message_register_fail">펀딩 생성에 실패했습니다.</string>
 
     <!-- Detail -->
     <string name="label_detail_funding">Detail Funding</string>

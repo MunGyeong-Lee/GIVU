@@ -27,7 +27,6 @@ import com.wukiki.givu.ui.pretendard
 import com.wukiki.givu.util.StoreDetailBottomButton
 import com.wukiki.givu.util.StoreDetailTopBar
 import com.wukiki.givu.views.register.viewmodel.RegisterViewModel
-import timber.log.Timber
 
 @Composable
 fun DetailPresentScreen(
@@ -36,7 +35,6 @@ fun DetailPresentScreen(
     xmlNavController: NavController
 ) {
     val selectedProduct by registerViewModel.selectedProduct.collectAsState()
-    Timber.d("vm: $registerViewModel")
 
     Box(
         modifier = Modifier.fillMaxSize()
@@ -94,7 +92,10 @@ fun DetailPresentScreen(
             navController = xmlNavController,
             actionId = -1
         ) {
-            navController.navigate("RegisterInputStep2")
+            navController.navigate("RegisterStep1") {
+                popUpTo("RegisterStep1") { inclusive = false }
+                launchSingleTop = true
+            }
         }
     }
 }

@@ -105,7 +105,8 @@ fun UpdateFundingScreen(
                     Modifier
                         .fillMaxWidth()
                         .height(68.dp),
-                    text = stringResource(R.string.text_update_funding)
+                    text = stringResource(R.string.text_update_funding),
+                    true
                 ) {
                     fundingViewModel.updateFunding()
                 }
