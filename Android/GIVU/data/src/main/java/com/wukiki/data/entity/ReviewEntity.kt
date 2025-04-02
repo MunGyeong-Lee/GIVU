@@ -18,13 +18,13 @@ data class ReviewEntity(
     val comment: String,
 
     @Json(name = "image")
-    val image: String,
+    val image: String?,
 
     @Json(name = "createdAt")
-    val createdAt: String,
+    val createdAt: String?,
 
     @Json(name = "updatedAt")
-    val updatedAt: String,
+    val updatedAt: String?,
 
     @Json(name = "visit")
     val visit: Int

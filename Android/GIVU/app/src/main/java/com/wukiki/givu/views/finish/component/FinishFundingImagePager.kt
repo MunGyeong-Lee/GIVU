@@ -1,6 +1,5 @@
 package com.wukiki.givu.views.finish.component
 
-import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
@@ -18,7 +17,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -34,13 +32,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
 import com.wukiki.givu.R
 import com.wukiki.givu.ui.suit
@@ -48,14 +44,13 @@ import com.wukiki.givu.views.detail.viewmodel.FundingViewModel
 
 @Composable
 fun FinishFundingImagePager(
-    fundingViewModel: FundingViewModel = hiltViewModel()
+    fundingViewModel: FundingViewModel
 ) {
-    val context = LocalContext.current
-    val images by fundingViewModel.fundingReviewUris.collectAsState()
+    val image by fundingViewModel.fundingReviewUri.collectAsState()
     val photoPickerLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.PickMultipleVisualMedia(maxItems = 3)
-    ) { uris ->
-        fundingViewModel.setSelectedImages(uris.take(3 - images.size))
+        contract = ActivityResultContracts.PickVisualMedia()
+    ) { uri ->
+        uri?.let { fundingViewModel.setSelectedReviewImages(uri) }
     }
 
     Column(
@@ -79,24 +74,12 @@ fun FinishFundingImagePager(
                         .size(120.dp)
                         .background(Color.White, RoundedCornerShape(10.dp))
                         .clickable {
-                            when (images.size < 3) {
-                                true -> {
-                                    photoPickerLauncher.launch(
-                                        PickVisualMediaRequest(
-                                            ActivityResultContracts.PickVisualMedia.ImageOnly
-                                        )
+                            if (image == null) {
+                                photoPickerLauncher.launch(
+                                    PickVisualMediaRequest(
+                                        ActivityResultContracts.PickVisualMedia.ImageOnly
                                     )
-                                }
-
-                                else -> {
-                                    Toast
-                                        .makeText(
-                                            context,
-                                            context.getString(R.string.message_image_limit),
-                                            Toast.LENGTH_SHORT
-                                        )
-                                        .show()
-                                }
+                                )
                             }
                         },
                     contentAlignment = Alignment.Center
@@ -133,15 +116,8 @@ fun FinishFundingImagePager(
                         )
                         Spacer(modifier = Modifier.height(8.dp))
                         Text(
-                            text = when (images.isEmpty()) {
-                                true -> {
-                                    stringResource(R.string.text_image_upload)
-                                }
-
-                                else -> {
-                                    "${images.size}/3"
-                                }
-                            },
+                            text =
+                            stringResource(R.string.text_image_upload),
                             fontSize = 16.sp,
                             fontFamily = suit,
                             color = Color(0xFFF88383)
@@ -150,38 +126,40 @@ fun FinishFundingImagePager(
                 }
             }
 
-            items(images) { uri ->
-                Box(
-                    modifier = Modifier.size(120.dp)
-                ) {
-                    AsyncImage(
-                        model = uri,
-                        contentDescription = null,
-                        contentScale = ContentScale.Crop,
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .clip(RoundedCornerShape(10.dp))
-                    )
-
-                    IconButton(
-                        onClick = { fundingViewModel.removeUri(uri) },
-                        modifier = Modifier
-                            .align(Alignment.TopEnd)
-                            .padding(4.dp)
-                            .size(20.dp)
+            if (image != null) {
+                item {
+                    Box(
+                        modifier = Modifier.size(120.dp)
                     ) {
-                        Box(
+                        AsyncImage(
+                            model = image,
+                            contentDescription = null,
+                            contentScale = ContentScale.Crop,
                             modifier = Modifier
-                                .size(16.dp)
-                                .background(Color.Black.copy(alpha = 0.6f), CircleShape),
-                            contentAlignment = Alignment.Center
+                                .fillMaxSize()
+                                .clip(RoundedCornerShape(10.dp))
+                        )
+
+                        IconButton(
+                            onClick = { fundingViewModel.removeReviewUri() },
+                            modifier = Modifier
+                                .align(Alignment.TopEnd)
+                                .padding(4.dp)
+                                .size(20.dp)
                         ) {
-                            Icon(
-                                imageVector = Icons.Default.Close,
-                                contentDescription = "삭제",
-                                tint = Color.White,
-                                modifier = Modifier.size(10.dp)
-                            )
+                            Box(
+                                modifier = Modifier
+                                    .size(16.dp)
+                                    .background(Color.Black.copy(alpha = 0.6f), CircleShape),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Close,
+                                    contentDescription = "삭제",
+                                    tint = Color.White,
+                                    modifier = Modifier.size(10.dp)
+                                )
+                            }
                         }
                     }
                 }
