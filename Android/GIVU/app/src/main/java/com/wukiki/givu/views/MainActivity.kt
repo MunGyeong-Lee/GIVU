@@ -2,13 +2,16 @@ package com.wukiki.givu.views
 
 import android.os.Bundle
 import androidx.activity.viewModels
+import androidx.fragment.app.viewModels
 import androidx.navigation.NavController
 import androidx.navigation.fragment.NavHostFragment
 import androidx.navigation.ui.setupWithNavController
 import com.wukiki.givu.R
 import com.wukiki.givu.config.BaseActivity
 import com.wukiki.givu.databinding.ActivityMainBinding
+import com.wukiki.givu.views.community.viewmodel.CommunityViewModel
 import com.wukiki.givu.views.detail.viewmodel.FundingViewModel
+import com.wukiki.givu.views.home.viewmodel.HomeViewModel
 import com.wukiki.givu.views.mall.viewmodel.MallViewModel
 import com.wukiki.givu.views.register.viewmodel.RegisterViewModel
 import com.wukiki.givu.views.search.viewmodel.SearchViewModel
@@ -18,6 +21,8 @@ import dagger.hilt.android.AndroidEntryPoint
 class MainActivity : BaseActivity<ActivityMainBinding>(ActivityMainBinding::inflate) {
 
     private val mainViewModel: MainViewModel by viewModels()
+    private val homeViewModel: HomeViewModel by viewModels()
+    private val communityViewModel: CommunityViewModel by viewModels()
     private val fundingViewModel: FundingViewModel by viewModels()
     private val registerViewModel: RegisterViewModel by viewModels()
     private val searchViewModel: SearchViewModel by viewModels()
