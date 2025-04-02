@@ -58,7 +58,9 @@ public class SecurityConfig {
                                 "/users/info",
                                 "/users/givupay/**",    // 기뷰페이 관련
                                 "/users/payment",       // 유저 거래 내역 조회
-                                "/users",               // 로그아웃, 회원 탈퇴
+                                "/users",
+                                "/users/setPassword",
+                                "/users/checkPassword",
                                 "/users/test",        // 테스트
                                 "/products-review/**",
                                 "/fundings/**",

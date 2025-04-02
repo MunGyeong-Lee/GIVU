@@ -3,6 +3,7 @@ package com.backend.givu.controller;
 import com.backend.givu.exception.AuthErrorException;
 import com.backend.givu.model.Enum.HttpStatusCode;
 import com.backend.givu.model.entity.CustomUserDetail;
+import com.backend.givu.model.requestDTO.PaymentPasswordRequestDTO;
 import com.backend.givu.model.responseDTO.*;
 import com.backend.givu.model.entity.User;
 import com.backend.givu.model.service.KakaoLoginService;
@@ -146,14 +147,22 @@ public class UserController {
         return ResponseEntity.ok(dto);
     }
 
-//    @Operation(summary = "사용자 정보 조회(다른 유저)", description = "해당 유저의 간단한 정보 (이름, 사진, 이미지) 조회")
-//    @GetMapping("/{userId}")
-//    public ResponseEntity<UserSimpleInfoDTO> findUserSimpleInfo(@PathVariable long userId){
-//        UserSimpleInfoDTO user = userService.getUserSimpleInfoById(userId);
-//        return ResponseEntity.ok(user);
-//    }
+    @Operation(summary = "2차 비밀번호 설정", description = "해당 유저의 2차 비밀번호를 설정합니다.")
+    @PostMapping("/setPassword")
+    public ResponseEntity<ApiResponse<Void>> setPassword(@AuthenticationPrincipal CustomUserDetail userDetail,
+                                                         @RequestBody PaymentPasswordRequestDTO password){
+        long userId = userDetail.getId();
+        return ResponseEntity.ok(userService.setUserPaymentPassword(userId, password.getPassword()));
+    }
 
-
+    @Operation(summary = "2차 비밀번호 일치 여부 확인", description = "해당 유저의 2차 비밀번호 일치 여부를 확인합니다.")
+    @PostMapping("/checkPassword")
+    public ResponseEntity<ApiResponse<Void>> checkPassword(@AuthenticationPrincipal CustomUserDetail userDetail,
+                                                           @RequestBody PaymentPasswordRequestDTO dto){
+        User user = userDetail.getUser();
+        String password = dto.getPassword();
+        return ResponseEntity.ok(userService.checkPaymentPassword(user,password));
+    }
 
     /**
      *
