@@ -1,10 +1,7 @@
-import React, { useState } from 'react';
+import React from 'react';
 
 interface PublicSettings {
-  isPublic: boolean;
-  allowComments: boolean;
-  showParticipants: boolean;
-  password?: string;
+  isPublic: boolean; // true: 전체 공개, false: 친구 공개
 }
 
 interface Step3PublicSettingsProps {
@@ -20,183 +17,115 @@ const Step3PublicSettings: React.FC<Step3PublicSettingsProps> = ({
   onNext,
   onPrev
 }) => {
-  const [passwordError, setPasswordError] = useState<string>('');
-
-  // 토글 변경 핸들러
-  const handleToggleChange = (field: keyof PublicSettings) => {
-    updatePublicSettings({
-      ...publicSettings,
-      [field]: !publicSettings[field]
-    });
-
-    // 비공개로 변경할 때 비밀번호 필드 초기화
-    if (field === 'isPublic' && publicSettings.isPublic) {
-      updatePublicSettings({
-        ...publicSettings,
-        isPublic: false,
-        password: ''
-      });
-    }
-  };
-
-  // 비밀번호 변경 핸들러
-  const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const password = e.target.value;
-    updatePublicSettings({
-      ...publicSettings,
-      password
-    });
-
-    // 비밀번호 유효성 검사
-    if (!publicSettings.isPublic && password.length < 4) {
-      setPasswordError('비밀번호는 최소 4자 이상이어야 합니다.');
-    } else {
-      setPasswordError('');
-    }
-  };
-
   // 다음 버튼 클릭 핸들러
   const handleNext = () => {
-    // 비공개 설정인 경우 비밀번호 필수 검사
-    if (!publicSettings.isPublic) {
-      if (!publicSettings.password || publicSettings.password.length < 4) {
-        setPasswordError('비밀번호는 최소 4자 이상이어야 합니다.');
-        return;
-      }
-    }
-
     onNext();
   };
 
   return (
     <div className="p-6">
-      <div className="mb-8">
-        <h2 className="text-xl font-semibold mb-4">공개 설정</h2>
-        <p className="text-gray-600">펀딩의 공개 범위와 기능을 설정해주세요.</p>
+      <div className="mb-8 text-center border-b pb-6">
+        <h2 className="text-2xl font-bold mb-2">공개 설정</h2>
+        <p className="text-gray-600 max-w-xl mx-auto">
+          펀딩의 공개 범위를 설정해주세요. 공개 범위에 따라 펀딩이 노출되는 방식이 달라집니다.
+        </p>
       </div>
 
-      <div className="space-y-8">
-        {/* 공개 범위 설정 */}
-        <div className="mb-6">
-          <h3 className="text-lg font-medium mb-4">공개 범위</h3>
+      <div className="max-w-4xl mx-auto">
+        {/* 공개 범위 선택 - 좌우로 크게 나누어 표시 */}
+        <div className="mb-10">
+          <h3 className="text-lg font-medium mb-4 pb-2 border-b">공개 범위 선택</h3>
 
-          <div className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
             {/* 전체 공개 옵션 */}
-            <div className="flex items-center p-4 border rounded-lg cursor-pointer hover:bg-gray-50"
-              onClick={() => updatePublicSettings({ ...publicSettings, isPublic: true })}>
-              <div className="w-6 h-6 flex items-center justify-center border border-gray-300 rounded-full mr-3">
-                {publicSettings.isPublic && (
-                  <div className="w-4 h-4 bg-primary-color rounded-full"></div>
-                )}
+            <div
+              className={`flex flex-col h-64 border-2 rounded-xl cursor-pointer transition-all overflow-hidden ${publicSettings.isPublic
+                ? 'border-primary-color shadow-md'
+                : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
+                }`}
+              onClick={() => updatePublicSettings({ isPublic: true })}
+            >
+              <div className={`flex-1 flex flex-col items-center justify-center p-6 ${publicSettings.isPublic ? 'bg-primary-color/5' : ''
+                }`}>
+                <div className="w-20 h-20 rounded-full bg-primary-color/10 flex items-center justify-center mb-4">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-10 w-10 text-primary-color" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" />
+                  </svg>
+                </div>
+                <h4 className="font-bold text-lg mb-1">전체 공개</h4>
+                <p className="text-center text-sm text-gray-600">
+                  펀딩이 공개 목록에 표시되며,<br />누구나 검색하고 볼 수 있습니다.
+                </p>
               </div>
-              <div className="flex-1">
-                <h4 className="font-medium">전체 공개</h4>
-                <p className="text-sm text-gray-600">누구나 이 펀딩을 검색하고 볼 수 있습니다.</p>
-              </div>
-            </div>
-
-            {/* 비공개 옵션 */}
-            <div className="flex items-center p-4 border rounded-lg cursor-pointer hover:bg-gray-50"
-              onClick={() => updatePublicSettings({ ...publicSettings, isPublic: false })}>
-              <div className="w-6 h-6 flex items-center justify-center border border-gray-300 rounded-full mr-3">
-                {!publicSettings.isPublic && (
-                  <div className="w-4 h-4 bg-primary-color rounded-full"></div>
-                )}
-              </div>
-              <div className="flex-1">
-                <h4 className="font-medium">비공개</h4>
-                <p className="text-sm text-gray-600">링크를 가진 사람만 이 펀딩을 볼 수 있습니다.</p>
-              </div>
-            </div>
-          </div>
-
-          {/* 비밀번호 입력 (비공개 선택 시) */}
-          {!publicSettings.isPublic && (
-            <div className="mt-4 ml-9">
-              <label className="block text-sm font-medium mb-2">
-                펀딩 비밀번호 <span className="text-red-500">*</span>
-              </label>
-              <div className="relative">
-                <input
-                  type="password"
-                  placeholder="비밀번호를 입력하세요"
-                  value={publicSettings.password || ''}
-                  onChange={handlePasswordChange}
-                  className={`w-full p-2 border rounded-md ${passwordError ? 'border-red-500' : 'border-gray-300'
-                    }`}
-                />
-              </div>
-              {passwordError && (
-                <p className="mt-1 text-sm text-red-500">{passwordError}</p>
-              )}
-              <p className="mt-1 text-xs text-gray-500">
-                펀딩에 참여하려는 사람들에게 이 비밀번호를 알려주세요.
-              </p>
-            </div>
-          )}
-        </div>
-
-        {/* 기능 설정 */}
-        <div>
-          <h3 className="text-lg font-medium mb-4">기능 설정</h3>
-          <div className="space-y-4">
-            {/* 댓글 허용 */}
-            <div className="flex items-center justify-between p-4 border rounded-lg">
-              <div>
-                <h4 className="font-medium">댓글 허용</h4>
-                <p className="text-sm text-gray-600">펀딩 참여자들이 댓글을 작성할 수 있습니다.</p>
-              </div>
-              <div className="relative">
-                <button
-                  onClick={() => handleToggleChange('allowComments')}
-                  className={`w-12 h-6 rounded-full transition-colors duration-200 focus:outline-none ${publicSettings.allowComments ? 'bg-primary-color' : 'bg-gray-300'
-                    }`}
-                >
-                  <div
-                    className={`w-5 h-5 bg-white rounded-full shadow transform transition-transform duration-200 ${publicSettings.allowComments ? 'translate-x-6' : 'translate-x-1'
-                      }`}
-                  />
-                </button>
+              <div className={`h-12 flex items-center justify-center ${publicSettings.isPublic ? 'bg-primary-color text-white' : 'bg-gray-100 text-gray-500'
+                }`}>
+                <div className="flex items-center">
+                  {publicSettings.isPublic && (
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                    </svg>
+                  )}
+                  <span className="font-medium">{publicSettings.isPublic ? '선택됨' : '선택하기'}</span>
+                </div>
               </div>
             </div>
 
-            {/* 참여자 표시 */}
-            <div className="flex items-center justify-between p-4 border rounded-lg">
-              <div>
-                <h4 className="font-medium">참여자 표시</h4>
-                <p className="text-sm text-gray-600">펀딩에 참여한 사람들의 정보를 표시합니다.</p>
+            {/* 친구 공개 옵션 */}
+            <div
+              className={`flex flex-col h-64 border-2 rounded-xl cursor-pointer transition-all overflow-hidden ${!publicSettings.isPublic
+                ? 'border-primary-color shadow-md'
+                : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
+                }`}
+              onClick={() => updatePublicSettings({ isPublic: false })}
+            >
+              <div className={`flex-1 flex flex-col items-center justify-center p-6 ${!publicSettings.isPublic ? 'bg-primary-color/5' : ''
+                }`}>
+                <div className="w-20 h-20 rounded-full bg-primary-color/10 flex items-center justify-center mb-4">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-10 w-10 text-primary-color" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                  </svg>
+                </div>
+                <h4 className="font-bold text-lg mb-1">친구 공개</h4>
+                <p className="text-center text-sm text-gray-600">
+                  친구만 이 펀딩을 볼 수 있으며,<br />공개 목록에 표시되지 않습니다.
+                </p>
               </div>
-              <div className="relative">
-                <button
-                  onClick={() => handleToggleChange('showParticipants')}
-                  className={`w-12 h-6 rounded-full transition-colors duration-200 focus:outline-none ${publicSettings.showParticipants ? 'bg-primary-color' : 'bg-gray-300'
-                    }`}
-                >
-                  <div
-                    className={`w-5 h-5 bg-white rounded-full shadow transform transition-transform duration-200 ${publicSettings.showParticipants ? 'translate-x-6' : 'translate-x-1'
-                      }`}
-                  />
-                </button>
+              <div className={`h-12 flex items-center justify-center ${!publicSettings.isPublic ? 'bg-primary-color text-white' : 'bg-gray-100 text-gray-500'
+                }`}>
+                <div className="flex items-center">
+                  {!publicSettings.isPublic && (
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                    </svg>
+                  )}
+                  <span className="font-medium">{!publicSettings.isPublic ? '선택됨' : '선택하기'}</span>
+                </div>
               </div>
             </div>
           </div>
         </div>
-      </div>
 
-      {/* 버튼 */}
-      <div className="flex justify-between mt-8">
-        <button
-          onClick={onPrev}
-          className="px-6 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300"
-        >
-          이전 단계
-        </button>
-        <button
-          onClick={handleNext}
-          className="px-6 py-2 bg-primary-color text-white rounded-md hover:bg-primary-color/90"
-        >
-          다음 단계
-        </button>
+        {/* 버튼 */}
+        <div className="flex justify-between mt-10 border-t pt-6">
+          <button
+            onClick={onPrev}
+            className="px-6 py-2.5 bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors flex items-center font-medium shadow-sm"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-1" viewBox="0 0 20 20" fill="currentColor">
+              <path fillRule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" clipRule="evenodd" />
+            </svg>
+            이전 단계
+          </button>
+          <button
+            onClick={handleNext}
+            className="px-8 py-2.5 bg-primary-color text-white rounded-lg hover:bg-primary-color/90 transition-colors flex items-center font-medium shadow-md"
+          >
+            다음 단계
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 ml-1" viewBox="0 0 20 20" fill="currentColor">
+              <path fillRule="evenodd" d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z" clipRule="evenodd" />
+            </svg>
+          </button>
+        </div>
       </div>
     </div>
   );
