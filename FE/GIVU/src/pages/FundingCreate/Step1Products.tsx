@@ -127,7 +127,15 @@ const Step1Products: React.FC<Step1ProductsProps> = ({
 
   // 상품 선택 함수
   const handleSelectProduct = (product: Product) => {
-    updateSelectedProduct(product);
+    console.log("상품 선택:", product.id, product.productName);
+
+    // 이전 선택 상품과 다른 경우에만 처리
+    if (selectedProduct.id !== product.id) {
+      updateSelectedProduct(product);
+    } else {
+      // 이미 선택된 상품 선택 취소
+      updateSelectedProduct({} as Product);
+    }
   };
 
   // 카테고리 스크롤 함수
