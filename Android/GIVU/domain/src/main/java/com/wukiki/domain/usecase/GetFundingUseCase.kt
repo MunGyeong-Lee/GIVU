@@ -2,6 +2,7 @@ package com.wukiki.domain.usecase
 
 import com.wukiki.domain.model.ApiResult
 import com.wukiki.domain.model.Funding
+import com.wukiki.domain.model.FundingDetail
 import com.wukiki.domain.repository.FundingRepository
 import okhttp3.MultipartBody
 import okhttp3.RequestBody
@@ -15,6 +16,9 @@ class GetFundingUseCase @Inject constructor(
         files: List<MultipartBody.Part>,
         body: RequestBody
     ): ApiResult<Funding> = fundingRepository.registerFunding(files, body)
+
+    suspend fun fetchFundingDetail(fundingId: Int): ApiResult<FundingDetail> =
+        fundingRepository.fetchFundingDetail(fundingId)
 
     suspend fun updateFundingDetail(
         fundingId: Int,
