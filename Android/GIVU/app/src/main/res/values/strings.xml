@@ -44,6 +44,7 @@
 
     <!-- My Page -->
     <string name="label_my_page">My Page</string>
+    <string name="message_logout_success">로그아웃에 성공했습니다.</string>
 
     <!-- Search -->
     <string name="label_search">Search</string>

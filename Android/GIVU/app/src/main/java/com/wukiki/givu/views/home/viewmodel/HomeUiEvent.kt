@@ -5,4 +5,6 @@ sealed class HomeUiEvent {
     data object AutoLoginFail : HomeUiEvent()
 
     data object GoToDetailFunding : HomeUiEvent()
+
+    data object Logout : HomeUiEvent()
 }

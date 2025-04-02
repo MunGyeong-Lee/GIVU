@@ -135,4 +135,12 @@ class HomeViewModel @Inject constructor(
             _user.value = fetchUserInfo().first()
         }
     }
+
+    fun logout() {
+        viewModelScope.launch {
+            getAuthUseCase.logout()
+            updateUserInfo()
+            _homeUiEvent.emit(HomeUiEvent.Logout)
+        }
+    }
 }

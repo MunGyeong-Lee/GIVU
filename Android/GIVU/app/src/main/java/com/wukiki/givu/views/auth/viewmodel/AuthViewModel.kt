@@ -122,11 +122,4 @@ class AuthViewModel @Inject constructor(
             }
         }
     }
-
-    fun logout() {
-        viewModelScope.launch {
-            getAuthUseCase.logout()
-            _authUiEvent.emit(AuthUiEvent.Logout)
-        }
-    }
 }
