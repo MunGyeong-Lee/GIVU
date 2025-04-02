@@ -11,15 +11,19 @@ import java.util.Random;
 
 @Getter
 @Setter
-public class CheckAccountRequest {
+public class WithdrawalRequestDTO {
 
     @JsonProperty("Header")
     private Header Header;
     private String accountNo;
+    private String transactionBalance;
+    private String transactionSummary;
 
-    public CheckAccountRequest(String accountNo) {
+    public WithdrawalRequestDTO(String accountNo, String amount) {
         this.Header = new Header();
         this.accountNo = accountNo;
+        this.transactionBalance = amount;
+        this.transactionSummary = "(수시입출금) : 출금";
     }
 
     @Getter
@@ -36,8 +40,8 @@ public class CheckAccountRequest {
         private String userKey;
 
         public Header() {
-            this.apiName = "inquireDemandDepositAccountBalance";
-            this.apiServiceCode = "inquireDemandDepositAccountBalance";
+            this.apiName = "updateDemandDepositAccountWithdrawal";
+            this.apiServiceCode = "updateDemandDepositAccountWithdrawal";
             this.transmissionDate = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMMdd"));
             this.transmissionTime = LocalTime.now().format(DateTimeFormatter.ofPattern("HHmmss"));
             this.institutionCode = "00100";

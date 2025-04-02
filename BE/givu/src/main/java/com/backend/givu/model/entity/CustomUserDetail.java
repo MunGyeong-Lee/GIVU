@@ -43,12 +43,7 @@ public class CustomUserDetail implements UserDetails {
     }
 
     public String getAccountNo(){
-        if(user.getAccountNumber() != null){
-            return user.getAccountNumber();
-        }
-        else{
-            return "";
-        }
+        return user.getAccountNumber() == null ? "" : user.getAccountNumber();
     }
 
     /* 세부 설정 */
