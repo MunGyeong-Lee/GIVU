@@ -82,7 +82,7 @@ fun GiftListItem(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = CommonUtils.makeCommaPrice(product.price.toInt()),
+                    text = product.price,
                     fontFamily = pretendard,
                     fontWeight = FontWeight.Black,
                     fontSize = 16.sp,

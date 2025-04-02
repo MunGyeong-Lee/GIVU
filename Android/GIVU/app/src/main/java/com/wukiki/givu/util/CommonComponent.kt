@@ -89,6 +89,7 @@ fun CommonTopBar(
 fun CommonBottomButton(
     modifier: Modifier,
     text: String,
+    enabled: Boolean,
     onClick: () -> Unit
 ) {
     Box(
@@ -99,10 +100,10 @@ fun CommonBottomButton(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(8.dp),
-            enabled = true,
+            enabled = enabled,
             shape = RoundedCornerShape(5.dp),
             border = BorderStroke(1.dp, Color(0xFFECECEC)),
-            colors = ButtonDefaults.buttonColors(colorResource(R.color.main_primary)),
+            colors = ButtonDefaults.buttonColors(if (enabled) colorResource(R.color.main_primary) else Color.LightGray),
             elevation = ButtonDefaults.elevation(0.dp)
         ) {
             Text(
@@ -110,7 +111,7 @@ fun CommonBottomButton(
                 fontFamily = suit,
                 fontWeight = FontWeight.Bold,
                 fontSize = 18.sp,
-                color = Color.White
+                color = if (enabled) Color.White else Color.DarkGray
             )
         }
     }

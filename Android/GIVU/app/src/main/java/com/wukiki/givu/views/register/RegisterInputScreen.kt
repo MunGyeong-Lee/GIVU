@@ -1,5 +1,6 @@
 package com.wukiki.givu.views.register
 
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -32,6 +33,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -43,6 +45,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
@@ -59,6 +62,7 @@ import com.wukiki.givu.ui.suit
 import com.wukiki.givu.util.CommonBottomButton
 import com.wukiki.givu.util.CommonTopBar
 import com.wukiki.givu.views.register.component.RegisterFundingImagePager
+import com.wukiki.givu.views.register.viewmodel.RegisterUiEvent
 import com.wukiki.givu.views.register.viewmodel.RegisterViewModel
 import kotlinx.coroutines.launch
 
@@ -85,11 +89,37 @@ fun RegisterInputScreen(
     val scope = rememberCoroutineScope()
     val scrollState = rememberScrollState()
 
+    val context = LocalContext.current
     val selectedProduct by registerViewModel.selectedProduct.collectAsState()
     val fundingTitle by registerViewModel.fundingTitle.collectAsState()
     val fundingCategory by registerViewModel.fundingCategory.collectAsState()
     val isFundingPublicState by registerViewModel.isFundingPublicState.collectAsState()
     val fundingBody by registerViewModel.fundingBody.collectAsState()
+    val registerUiState by registerViewModel.registerUiState.collectAsState()
+    val registerUiEvent = registerViewModel.registerUiEvent
+
+    LaunchedEffect(Unit) {
+        registerUiEvent.collect { event ->
+            when (event) {
+                is RegisterUiEvent.RegisterFundingSuccess -> {
+                    navController.navigate("RegisterSuccess") {
+                        popUpTo("RegisterStep1") { inclusive = true }
+                        launchSingleTop = true
+                    }
+                }
+
+                is RegisterUiEvent.RegisterFundingFail -> {
+                    Toast.makeText(
+                        context,
+                        context.getString(R.string.message_register_fail),
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
+
+                else -> {}
+            }
+        }
+    }
 
     Scaffold(
         bottomBar = {
@@ -103,9 +133,12 @@ fun RegisterInputScreen(
                     Modifier
                         .fillMaxWidth()
                         .height(68.dp),
-                    text = "선물 선택하기"
+                    text = "선물 선택하기",
+                    registerUiState.isRegisterButton
                 ) {
-                    registerViewModel.registerFunding()
+                    if (registerUiState.isRegisterButton) {
+                        registerViewModel.registerFunding()
+                    }
                 }
             }
         },
@@ -195,6 +228,7 @@ fun RegisterInputScreen(
                         value = fundingTitle,
                         onValueChange = {
                             registerViewModel.fundingTitle.value = it
+                            registerViewModel.validateFundingTitle(it)
                         },
                         modifier = Modifier.fillMaxWidth(),
                         textStyle = TextStyle(
@@ -463,6 +497,7 @@ fun RegisterInputScreen(
                         value = fundingBody,
                         onValueChange = {
                             registerViewModel.fundingBody.value = it
+                            registerViewModel.validFundingDescription(it)
                         },
                         modifier = Modifier
                             .fillMaxWidth()
@@ -502,8 +537,7 @@ fun RegisterInputScreen(
 
 @Composable
 private fun TitleText(title: String) {
-
-    Row() {
+    Row {
         Text(
             text = title,
             fontFamily = suit,
@@ -516,7 +550,7 @@ private fun TitleText(title: String) {
             fontWeight = FontWeight.SemiBold,
             fontSize = 20.sp,
             color = Color.Red,
-            modifier = Modifier.offset(y = -8.dp)
+            modifier = Modifier.offset(y = (-8).dp)
         )
     }
 }

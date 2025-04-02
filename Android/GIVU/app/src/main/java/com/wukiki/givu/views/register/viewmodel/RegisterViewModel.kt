@@ -4,15 +4,18 @@ import android.app.Application
 import android.net.Uri
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
-import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 import com.wukiki.domain.model.ApiStatus
 import com.wukiki.domain.model.Product
 import com.wukiki.domain.usecase.GetFundingUseCase
 import com.wukiki.domain.usecase.GetProductUseCase
+import com.wukiki.givu.util.InputValidState
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.MultipartBody
@@ -27,6 +30,13 @@ class RegisterViewModel @Inject constructor(
     private val getProductUseCase: GetProductUseCase,
     private val getFundingUseCase: GetFundingUseCase
 ) : AndroidViewModel(application) {
+
+    /*** Ui State, Event ***/
+    private val _registerUiState = MutableStateFlow<RegisterUiState>(RegisterUiState())
+    val registerUiState = _registerUiState.asStateFlow()
+
+    private val _registerUiEvent = MutableSharedFlow<RegisterUiEvent>()
+    val registerUiEvent = _registerUiEvent.asSharedFlow()
 
     /*** Datas ***/
     private val _products = MutableStateFlow<List<Product>>(emptyList())
@@ -75,7 +85,7 @@ class RegisterViewModel @Inject constructor(
                 }
 
                 else -> {
-                    // _fundingUiEvent.emit(FundingUiEvent.GetProductsFail)
+                    _registerUiEvent.emit(RegisterUiEvent.GetProductsFail)
                 }
             }
         }
@@ -114,6 +124,25 @@ class RegisterViewModel @Inject constructor(
         }
     }
 
+    fun initFundingInfo() {
+        _selectedProduct.value = null
+        _fundingTitle.value = ""
+        _fundingCategory.value = "카테고리 선택"
+        _fundingCategoryName.value = ""
+        _isFundingPublicState.value = true
+        _fundingBody.value = ""
+        _fundingImageUris.value = emptyList()
+        _fundingImageMultiparts.value = emptyList()
+        _registerUiState.update {
+            it.copy(
+                productSelectState = InputValidState.NONE,
+                fundingTitleState = InputValidState.NONE,
+                fundingCategoryState = InputValidState.NONE,
+                fundingDescriptionState = InputValidState.NONE
+            )
+        }
+    }
+
     fun filterProducts(category: String) {
         when (category == "ALL") {
             true -> {
@@ -128,15 +157,36 @@ class RegisterViewModel @Inject constructor(
 
     fun selectProduct(product: Product) {
         _selectedProduct.value = product
-        Timber.d("Selected Product: ${_selectedProduct.value}")
+        _registerUiState.update { it.copy(productSelectState = InputValidState.VALID) }
+    }
+
+    fun validateFundingTitle(title: String) {
+        when (title.isBlank()) {
+            true -> _registerUiState.update { it.copy(fundingTitleState = InputValidState.NONE) }
+
+            else -> _registerUiState.update { it.copy(fundingTitleState = InputValidState.VALID) }
+        }
     }
 
     fun selectFundingCategory(category: String) {
         _fundingCategory.value = category
+        when (category == "카테고리 선택") {
+            true -> _registerUiState.update { it.copy(fundingCategoryState = InputValidState.INIT) }
+
+            else -> _registerUiState.update { it.copy(fundingCategoryState = InputValidState.VALID) }
+        }
     }
 
     fun setFundingState(isPublic: Boolean) {
         _isFundingPublicState.value = isPublic
+    }
+
+    fun validFundingDescription(description: String) {
+        when (description.isBlank()) {
+            true -> _registerUiState.update { it.copy(fundingDescriptionState = InputValidState.NONE) }
+
+            else -> _registerUiState.update { it.copy(fundingDescriptionState = InputValidState.VALID) }
+        }
     }
 
     fun setSelectedImages(uris: List<Uri>) {
@@ -155,7 +205,6 @@ class RegisterViewModel @Inject constructor(
 
     fun registerFunding() {
         viewModelScope.launch {
-            Timber.d("New Funding: ${_fundingImageMultiparts.value}")
             val response = getFundingUseCase.registerFunding(
                 files = _fundingImageMultiparts.value,
                 body = makeNewFundingRequestBody()
@@ -163,11 +212,11 @@ class RegisterViewModel @Inject constructor(
 
             when (response.status) {
                 ApiStatus.SUCCESS -> {
-
+                    _registerUiEvent.emit(RegisterUiEvent.RegisterFundingSuccess)
                 }
 
                 else -> {
-
+                    _registerUiEvent.emit(RegisterUiEvent.RegisterFundingFail)
                 }
             }
         }

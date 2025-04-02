@@ -25,52 +25,14 @@ class RegisterFundingFragment :
         super.onViewCreated(view, savedInstanceState)
 
         binding.vm = viewModel
+        viewModel.initFundingInfo()
 
         binding.composeRegisterFunding.setContent {
-
-//            val navController = rememberAnimatedNavController()
-//            AnimatedNavHost(
-//                navController = navController,
-//                startDestination = "RegisterStep1",
-//                enterTransition = {
-//                    slideInHorizontally(initialOffsetX = { it }) + fadeIn()
-//                },
-//                exitTransition = {
-//                    slideOutHorizontally(targetOffsetX = { -it }) + fadeOut()
-//                },
-//                popEnterTransition = {
-//                    slideInHorizontally(initialOffsetX = { -it }) + fadeIn()
-//                },
-//                popExitTransition = {
-//                    slideOutHorizontally(targetOffsetX = { it }) + fadeOut()
-//                }
-//            ) {
-//                composable("RegisterStep1") {
-//                    RegisterFundingScreen(navController)
-//                }
-//
-//                composable("RegisterInputStep2") {
-//                    RegisterInputScreen()
-//                }
-//
-//                composable("SelectPresent") {
-//                    SelectPresentScreen(navController)
-//
-//                }
-//                composable("DetailPresent") {
-//                    DetailPresentScreen()
-//                }
-//            }
-
-
             val navController = rememberNavController()
-//            val navController = rememberAnimatedNavController()
-//            AnimatedNavHost(
             NavHost(
                 navController = navController,
                 startDestination = "RegisterStep1"
             ) {
-
                 composable("RegisterStep1") {
                     RegisterFundingScreen(viewModel, navController, findNavController())
                 }
@@ -81,10 +43,14 @@ class RegisterFundingFragment :
 
                 composable("SelectPresent") {
                     SelectPresentScreen(viewModel, navController, findNavController())
-
                 }
+
                 composable("DetailPresent") {
                     DetailPresentScreen(viewModel, navController, findNavController())
+                }
+
+                composable("RegisterSuccess") {
+                    RegisterSuccessScreen(viewModel, navController, findNavController())
                 }
             }
         }

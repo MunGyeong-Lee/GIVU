@@ -130,6 +130,9 @@ class FundingViewModel @Inject constructor(
     }
 
     private fun setFundingInfo() {
+        _originalImages.value = hashMapOf()
+        _fundingImageUris.value = listOf()
+        _fundingImageMultiparts.value = listOf()
         _selectedFunding.value?.let {
             it.images.forEach { image ->
                 _originalImages.update { current ->
