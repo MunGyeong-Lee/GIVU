@@ -3,6 +3,7 @@ package com.wukiki.data.mapper
 import com.wukiki.data.entity.ProductDetailEntity
 import com.wukiki.data.entity.ProductEntity
 import com.wukiki.data.util.CommonUtils.formatDateTime
+import com.wukiki.data.util.CommonUtils.makeCommaPrice
 import com.wukiki.domain.model.Product
 
 object ProductMapper {

@@ -15,6 +15,8 @@ import androidx.compose.material3.ScrollableTabRow
 import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -27,10 +29,15 @@ import androidx.compose.ui.unit.sp
 import com.wukiki.domain.model.Funding
 import com.wukiki.givu.R
 import com.wukiki.givu.ui.suit
+import com.wukiki.givu.views.home.viewmodel.HomeViewModel
 import kotlinx.coroutines.launch
 
 @Composable
-fun FundingAllPager(fundings: List<Funding>) {
+fun FundingAllPager(
+    homeViewModel: HomeViewModel
+) {
+    val fundings by homeViewModel.fundings.collectAsState()
+
     val categories = listOf(
         Pair("ALL", R.drawable.ic_classification_all),
         Pair("생일", R.drawable.ic_classification_birth),
@@ -96,8 +103,8 @@ fun FundingAllPager(fundings: List<Funding>) {
             modifier = Modifier
                 .fillMaxWidth()
                 .wrapContentHeight()
-        ) { _ ->
-            FundingListPager(fundings)
+        ) { index ->
+            FundingListPager(fundings[index])
         }
     }
 }

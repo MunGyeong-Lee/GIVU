@@ -86,19 +86,24 @@ fun CommonTopBar(
 
 
 @Composable
-fun CommonBottomButton(modifier: Modifier, text: String) {
+fun CommonBottomButton(
+    modifier: Modifier,
+    text: String,
+    enabled: Boolean,
+    onClick: () -> Unit
+) {
     Box(
         modifier = modifier
     ) {
         Button(
-            onClick = { },
+            onClick = { onClick() },
             modifier = Modifier
                 .fillMaxSize()
                 .padding(8.dp),
-            enabled = true,
+            enabled = enabled,
             shape = RoundedCornerShape(5.dp),
             border = BorderStroke(1.dp, Color(0xFFECECEC)),
-            colors = ButtonDefaults.buttonColors(colorResource(R.color.main_primary)),
+            colors = ButtonDefaults.buttonColors(if (enabled) colorResource(R.color.main_primary) else Color.LightGray),
             elevation = ButtonDefaults.elevation(0.dp)
         ) {
             Text(
@@ -106,7 +111,7 @@ fun CommonBottomButton(modifier: Modifier, text: String) {
                 fontFamily = suit,
                 fontWeight = FontWeight.Bold,
                 fontSize = 18.sp,
-                color = Color.White
+                color = if (enabled) Color.White else Color.DarkGray
             )
         }
     }
@@ -190,7 +195,8 @@ fun StoreDetailBottomButton(
     modifier: Modifier,
     text: String,
     navController: NavController,
-    actionId: Int
+    actionId: Int,
+    onClick: () -> Unit
 ) {
     Box(
         modifier = modifier
@@ -229,7 +235,7 @@ fun StoreDetailBottomButton(
 
 
             Button(
-                onClick = { navController.navigate(actionId) },
+                onClick = { if (actionId != -1) navController.navigate(actionId) else onClick() },
                 modifier = Modifier.fillMaxSize(),
                 enabled = true,
                 shape = RoundedCornerShape(5.dp),

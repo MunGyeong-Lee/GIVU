@@ -1,5 +1,6 @@
 package com.wukiki.givu.views.cancel
 
+import android.widget.Toast
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
@@ -18,6 +19,7 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -26,37 +28,62 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.wukiki.givu.R
 import com.wukiki.givu.ui.suit
 import com.wukiki.givu.util.CommonTopBar
 import com.wukiki.givu.views.cancel.component.RecommendGiftPager
+import com.wukiki.givu.views.detail.viewmodel.FundingUiEvent
 import com.wukiki.givu.views.detail.viewmodel.FundingViewModel
 
 @Composable
 fun CancelFundingScreen(
-    fundingViewModel: FundingViewModel = hiltViewModel(),
+    fundingViewModel: FundingViewModel,
     navController: NavController
 ) {
+    val context = LocalContext.current
     val funding by fundingViewModel.selectedFunding.collectAsState()
     val paymentPassword by fundingViewModel.paymentPassword.collectAsState()
     val shadowBrush = Brush.verticalGradient(
         colors = listOf(Color.Gray.copy(alpha = 0.3f), Color.Transparent)
     )
     var showDialog by remember { mutableStateOf(false) }
+    val fundingUiEvent = fundingViewModel.fundingUiEvent
+
+    LaunchedEffect(Unit) {
+        fundingUiEvent.collect { event ->
+            when (event) {
+                is FundingUiEvent.CancelFundingSuccess -> {
+                    navController.navigate(R.id.action_cancel_funding_to_finish_cancel_funding)
+                }
+
+                is FundingUiEvent.CancelFundingFail -> {
+                    Toast.makeText(
+                        context,
+                        context.getString(R.string.message_cancel_funding_fail),
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
+
+                else -> {}
+            }
+        }
+    }
 
     Scaffold(
         topBar = {
-            CommonTopBar(stringResource(R.string.title_cancel_funding),
+            CommonTopBar(
+                stringResource(R.string.title_cancel_funding),
                 onBackClick = {},
-                onHomeClick = {})
+                onHomeClick = {}
+            )
         },
         containerColor = Color.White
     ) { innerPadding ->
@@ -174,7 +201,7 @@ fun CancelFundingScreen(
         if (showDialog) {
             CancelFundingDialogScreen(
                 onDismiss = { showDialog = false },
-                onConfirm = { navController.navigate(R.id.action_cancel_funding_to_finish_cancel_funding) }
+                onConfirm = { fundingViewModel.cancelFunding() }
             )
         }
     }

@@ -30,14 +30,14 @@ import com.wukiki.givu.util.CommonTopBar
 
 @Composable
 fun FundingFinishedScreen(
-    navController: NavController
+    xmlNavController: NavController
 ) {
     Scaffold(
         topBar = {
             CommonTopBar(
                 stringResource(R.string.title_finish_funding),
                 onBackClick = {},
-                onHomeClick = {}
+                onHomeClick = { xmlNavController.popBackStack() }
             )
         },
         containerColor = Color.White
@@ -67,7 +67,7 @@ fun FundingFinishedScreen(
             Spacer(modifier = Modifier.height(24.dp))
 
             Button(
-                onClick = { },
+                onClick = { xmlNavController.popBackStack() },
                 colors = ButtonDefaults.buttonColors(
                     containerColor = Color(0xFFF88383),
                     contentColor = Color.White

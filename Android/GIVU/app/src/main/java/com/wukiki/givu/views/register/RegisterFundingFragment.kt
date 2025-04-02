@@ -11,80 +11,46 @@ import com.wukiki.givu.R
 import com.wukiki.givu.config.BaseFragment
 import com.wukiki.givu.databinding.FragmentRegisterFundingBinding
 import com.wukiki.givu.views.MainViewModel
-import com.wukiki.givu.views.detail.viewmodel.FundingViewModel
+import com.wukiki.givu.views.register.viewmodel.RegisterViewModel
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
 class RegisterFundingFragment :
     BaseFragment<FragmentRegisterFundingBinding>(R.layout.fragment_register_funding) {
 
-    private val viewModel: FundingViewModel by activityViewModels()
+    private val viewModel: RegisterViewModel by activityViewModels()
     private val mainViewModel: MainViewModel by activityViewModels()
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
         binding.vm = viewModel
+        viewModel.initFundingInfo()
 
         binding.composeRegisterFunding.setContent {
-
-//            val navController = rememberAnimatedNavController()
-//            AnimatedNavHost(
-//                navController = navController,
-//                startDestination = "RegisterStep1",
-//                enterTransition = {
-//                    slideInHorizontally(initialOffsetX = { it }) + fadeIn()
-//                },
-//                exitTransition = {
-//                    slideOutHorizontally(targetOffsetX = { -it }) + fadeOut()
-//                },
-//                popEnterTransition = {
-//                    slideInHorizontally(initialOffsetX = { -it }) + fadeIn()
-//                },
-//                popExitTransition = {
-//                    slideOutHorizontally(targetOffsetX = { it }) + fadeOut()
-//                }
-//            ) {
-//                composable("RegisterStep1") {
-//                    RegisterFundingScreen(navController)
-//                }
-//
-//                composable("RegisterInputStep2") {
-//                    RegisterInputScreen()
-//                }
-//
-//                composable("SelectPresent") {
-//                    SelectPresentScreen(navController)
-//
-//                }
-//                composable("DetailPresent") {
-//                    DetailPresentScreen()
-//                }
-//            }
-
-
             val navController = rememberNavController()
-//            val navController = rememberAnimatedNavController()
-//            AnimatedNavHost(
             NavHost(
                 navController = navController,
                 startDestination = "RegisterStep1"
             ) {
-
                 composable("RegisterStep1") {
-                    RegisterFundingScreen(navController, xmlNavController = findNavController())
+                    RegisterFundingScreen(viewModel, navController, findNavController())
                 }
 
                 composable("RegisterInputStep2") {
-                    RegisterInputScreen(navController, xmlNavController = findNavController())
+                    RegisterInputScreen(viewModel, navController, findNavController())
                 }
 
                 composable("SelectPresent") {
-                    SelectPresentScreen(navController = navController, xmlNavController = findNavController())
-
+                    SelectPresentScreen(viewModel, navController, findNavController())
                 }
+
                 composable("DetailPresent") {
-                    DetailPresentScreen(navController, xmlNavController = findNavController())
+                    DetailPresentScreen(viewModel, navController, findNavController())
+                }
+
+                composable("RegisterSuccess") {
+                    RegisterSuccessScreen(viewModel, navController, findNavController())
                 }
             }
         }

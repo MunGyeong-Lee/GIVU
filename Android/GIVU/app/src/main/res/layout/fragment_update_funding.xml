@@ -4,36 +4,36 @@
     xmlns:tools="http://schemas.android.com/tools">
 
     <data>
-
+        
         <variable
             name="vm"
             type="com.wukiki.givu.views.detail.viewmodel.FundingViewModel" />
-
+        
     </data>
 
     <androidx.constraintlayout.widget.ConstraintLayout
-        android:id="@+id/fragment_funding_finished"
+        android:id="@+id/fragment_update_funding"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:background="@color/neutral_white"
-        tools:context=".views.finish.FundingFinishedFragment">
+        tools:context=".views.update.UpdateFundingFragment">
 
         <androidx.constraintlayout.widget.Guideline
-            android:id="@+id/gl_start_funding_finished"
+            android:id="@+id/gl_start_update_funding"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:orientation="vertical"
             app:layout_constraintGuide_begin="@dimen/dp_medium" />
 
         <androidx.constraintlayout.widget.Guideline
-            android:id="@+id/gl_top_funding_finished"
+            android:id="@+id/gl_top_update_funding"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
             app:layout_constraintGuide_begin="@dimen/dp_medium" />
 
         <androidx.compose.ui.platform.ComposeView
-            android:id="@+id/compose_funding_finished"
+            android:id="@+id/compose_update_funding"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             app:layout_constraintEnd_toEndOf="parent"
@@ -41,14 +41,14 @@
             app:layout_constraintTop_toTopOf="parent" />
 
         <androidx.constraintlayout.widget.Guideline
-            android:id="@+id/gl_end_funding_finished"
+            android:id="@+id/gl_end_update_funding"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:orientation="vertical"
             app:layout_constraintGuide_end="@dimen/dp_medium" />
 
         <androidx.constraintlayout.widget.Guideline
-            android:id="@+id/gl_bottom_funding_finished"
+            android:id="@+id/gl_bottom_update_funding"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:orientation="horizontal"

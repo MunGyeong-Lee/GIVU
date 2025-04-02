@@ -98,7 +98,7 @@ fun GiftListItem(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = CommonUtils.makeCommaPrice(product.price.toInt()),
+                    text = product.price,
                     fontFamily = pretendard,
                     fontWeight = FontWeight.Black,
                     fontSize = 16.sp,
@@ -126,18 +126,10 @@ fun GiftListItem(
 
 @Preview(showBackground = true)
 @Composable
-private fun previewItem() {
+private fun PreviewItem() {
     Column(
         Modifier
             .fillMaxSize()
             .padding(horizontal = 24.dp)
-    ) {
-
-//        GiftListItem()
-//        GiftListItem()
-//        GiftListItem()
-//        GiftListItem()
-    }
-
-
+    ) {}
 }

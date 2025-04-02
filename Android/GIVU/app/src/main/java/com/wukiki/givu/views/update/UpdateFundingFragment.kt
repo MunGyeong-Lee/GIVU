@@ -1,18 +1,19 @@
-package com.wukiki.givu.views.finish
+package com.wukiki.givu.views.update
 
 import android.os.Bundle
 import android.view.View
 import androidx.fragment.app.activityViewModels
+import androidx.navigation.compose.rememberNavController
 import androidx.navigation.fragment.findNavController
 import com.wukiki.givu.R
 import com.wukiki.givu.config.BaseFragment
-import com.wukiki.givu.databinding.FragmentFundingFinishedBinding
+import com.wukiki.givu.databinding.FragmentUpdateFundingBinding
 import com.wukiki.givu.views.detail.viewmodel.FundingViewModel
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
-class FundingFinishedFragment :
-    BaseFragment<FragmentFundingFinishedBinding>(R.layout.fragment_funding_finished) {
+class UpdateFundingFragment :
+    BaseFragment<FragmentUpdateFundingBinding>(R.layout.fragment_update_funding) {
 
     private val viewModel: FundingViewModel by activityViewModels()
 
@@ -21,8 +22,9 @@ class FundingFinishedFragment :
 
         binding.vm = viewModel
 
-        binding.composeFundingFinished.setContent {
-            FundingFinishedScreen(navController = findNavController())
+        binding.composeUpdateFunding.setContent {
+            val navController = rememberNavController()
+            UpdateFundingScreen(viewModel, navController, findNavController())
         }
     }
 }

@@ -53,7 +53,7 @@ fun FundingItem(
         ) {
             // 이미지 (왼쪽)
             SubcomposeAsyncImage(
-                model = funding.images[0],
+                model = if (funding.images.isNotEmpty()) funding.images[0] else "",
                 contentDescription = "Funding Image",
                 contentScale = ContentScale.Crop,
                 loading = { CircularProgressIndicator() },
@@ -83,7 +83,7 @@ fun FundingItem(
                 Spacer(modifier = Modifier.height(4.dp))
 
                 Text(
-                    text = funding.id,
+                    text = funding.id.toString(),
                     fontSize = 16.sp,
                     fontWeight = FontWeight.SemiBold,
                     fontFamily = suit,
@@ -145,9 +145,14 @@ fun FundingItem(
 fun PreviewFundingItem() {
     FundingItem(
         funding = Funding(
-            id = "1",
-            userId = "user123",
-            productId = "product456",
+            id = 1,
+            userId = 1,
+            userNickname = "",
+            userProfile = "",
+            productId = 1,
+            productName = "",
+            productPrice = "",
+            productImage = "",
             title = "호날두 축구화 구매",
             body = "펀딩 내용 설명",
             description = "설명",

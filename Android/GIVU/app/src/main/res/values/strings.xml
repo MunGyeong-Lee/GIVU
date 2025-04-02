@@ -7,6 +7,12 @@
     <string name="text_return">돌아가기</string>
     <string name="text_image_upload">이미지 업로드</string>
     <string name="message_image_limit">이미지는 최대 3장까지 업로드 가능합니다.</string>
+    <string name="title_funding_category">어떤 날을 기념하고 싶나요?</string>
+    <string name="title_funding_scope">공개 범위 설정</string>
+    <string name="text_funding_scope">펀딩 공개 범위를 설정해주세요.</string>
+    <string name="text_funding_public">누구나 펀딩을 볼 수 있고\n참여할 수 있어요.</string>
+    <string name="text_funding_private">카카오톡 친구만 펀딩에\n참여할 수 있어요.</string>
+    <string name="title_funding_description">친구들에게 남길 메시지를 입력해주세요. (최대 100자)</string>
 
     <!-- Menu -->
     <string name="menu_title_home">홈</string>
@@ -20,6 +26,7 @@
     <string name="text_my_friends_funding">내 친구들의 펀딩</string>
     <string name="text_funding_list">펀딩 목록</string>
     <string name="text_search_keyword_need">검색어를 입력하세요</string>
+    <string name="message_auto_login_fail">자동 로그인에 실패하였습니다.</string>
 
     <!-- Login -->
     <string name="text_login_description">간편하게 로그인하고\n특별한 날에\n펀딩을 통해 선물을 받아보세요</string>
@@ -42,6 +49,12 @@
     <string name="label_search">Search</string>
     <string name="title_empty_result">검색 결과가 없습니다.</string>
 
+    <!-- Register -->
+    <string name="title_register_image_upload">대표 이미지 업로드</string>
+    <string name="text_register_image_upload">펀딩을 대표하는 이미지를 업로드해주세요.</string>
+    <string name="message_register_success">펀딩을 생성했습니다.</string>
+    <string name="message_register_fail">펀딩 생성에 실패했습니다.</string>
+
     <!-- Detail -->
     <string name="label_detail_funding">Detail Funding</string>
 
@@ -59,6 +72,13 @@
     <string name="label_complete_funding">Complete Funding</string>
     <string name="title_complete_funding">펀딩 참여 완료</string>
     <string name="text_complete_funding">펀딩에 참여했습니다.</string>
+
+    <!-- Update Funding -->
+    <string name="label_update_funding">Update Funding</string>
+    <string name="title_update_funding">펀딩 수정하기</string>
+    <string name="text_update_funding">수정하기</string>
+    <string name="message_update_funding_success">펀딩을 수정했습니다.</string>
+    <string name="message_update_funding_fail">펀딩 수정에 실패했습니다.</string>
 
     <!-- Cancel Funding -->
     <string name="label_cancel_funding">Cancel Funding</string>
@@ -78,6 +98,7 @@
     <string name="text_question_cancel_funding">정말 해당 펀딩을 취소하시겠습니까?</string>
     <string name="text_cancel_funding">펀딩 취소</string>
     <string name="text_finish_cancel_funding">펀딩이 취소되었어요.</string>
+    <string name="message_cancel_funding_fail">펀딩 취소에 실패했습니다.</string>
 
     <!-- Finish Funding -->
     <string name="label_finish_funding">Finish Funding</string>

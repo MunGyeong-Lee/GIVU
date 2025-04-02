@@ -22,7 +22,7 @@ class CancelFundingFragment :
         binding.vm = viewModel
 
         binding.composeCancelFunding.setContent {
-            CancelFundingScreen(navController = findNavController())
+            CancelFundingScreen(viewModel, findNavController())
         }
     }
 }

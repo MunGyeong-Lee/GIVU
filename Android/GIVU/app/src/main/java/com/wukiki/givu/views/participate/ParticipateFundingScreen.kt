@@ -62,11 +62,11 @@ fun ParticipateFundingScreen(
                     ParticipantInfoPager()
                     IdentityVerificationPager()
                     PaymentBalancePager()
-                    TermsAndConditionsPager(
-                        stringResource(R.string.title_participate_funding),
-                        navController,
-                        R.id.action_participate_funding_to_write_letter
-                    )
+//                    TermsAndConditionsPager(
+//                        stringResource(R.string.title_participate_funding),
+//                        navController,
+//                        R.id.action_participate_funding_to_write_letter
+//                    )
                 }
             }
         }

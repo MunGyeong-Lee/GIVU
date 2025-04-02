@@ -22,9 +22,11 @@ class DetailFundingFragment :
         super.onViewCreated(view, savedInstanceState)
 
         binding.vm = viewModel
+        viewModel.initFundings()
+        viewModel.initProducts()
 
         binding.composeDetailFunding.setContent {
-            DetailFundingScreen(navController = findNavController())
+            DetailFundingScreen(viewModel, findNavController())
         }
     }
 
