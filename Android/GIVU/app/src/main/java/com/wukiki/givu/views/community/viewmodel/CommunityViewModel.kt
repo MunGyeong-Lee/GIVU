@@ -2,17 +2,34 @@ package com.wukiki.givu.views.community.viewmodel
 
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.viewModelScope
 import com.wukiki.domain.model.Funding
 import com.wukiki.domain.model.User
+import com.wukiki.domain.usecase.GetAuthUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
 class CommunityViewModel @Inject constructor(
-    application: Application
+    application: Application,
+    private val getAuthUseCase: GetAuthUseCase,
 ) : AndroidViewModel(application) {
+
+    /*** Ui Event ***/
+    private val _communityUiEvent = MutableSharedFlow<CommunityUiEvent>()
+    val communityUiEvent = _communityUiEvent.asSharedFlow()
+
+    /*** Datas ***/
+    private val _user = MutableStateFlow<User?>(null)
+    val user = _user.asStateFlow()
 
     private val _friends = MutableStateFlow<List<User>>(emptyList())
     val friends = _friends.asStateFlow()
@@ -331,6 +348,17 @@ class CommunityViewModel @Inject constructor(
         )
 
         _friends.value = sampleFriends
+    }
+
+    private fun fetchUserInfo(): Flow<User?> = flow {
+        val user = getAuthUseCase.getUserInfo().first()
+        emit(user)
+    }
+
+    fun initUserInfo() {
+        viewModelScope.launch {
+            _user.value = fetchUserInfo().first()
+        }
     }
 
     fun selectFriend(friend: User) {
