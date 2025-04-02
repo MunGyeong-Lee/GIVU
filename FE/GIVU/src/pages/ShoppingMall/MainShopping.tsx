@@ -329,9 +329,109 @@ const MainShopping = () => {
 
   // 첫 로드 시 상품 가져오기
   useEffect(() => {
-    fetchProducts(0);
+    const fetchProductsWithFavorites = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        
+        const response = await axios.get(
+          `${import.meta.env.VITE_BASE_URL}/products/list`,
+          {
+            params: {
+              page: 0,
+              size: 10,
+              sort: 'createdAt,desc'
+            }
+          }
+        );
+
+        // API 응답 데이터 확인 및 안전한 처리
+        const productsData = response.data;
+        
+        if (!productsData || !Array.isArray(productsData)) {
+          throw new Error('올바르지 않은 데이터 형식입니다.');
+        }
+
+        // 로컬 스토리지에서 좋아요 상태 가져오기
+        const favoriteProducts = JSON.parse(localStorage.getItem('favoriteProducts') || '{}') as Record<string, boolean>;
+        
+        // 상품 목록에 좋아요 상태 반영
+        const productsWithFavorites = productsData.map((product: Product) => ({
+          ...product,
+          favorite: favoriteProducts[String(product.id)] !== undefined 
+            ? favoriteProducts[String(product.id)] 
+            : product.favorite
+        }));
+
+        setProducts(productsWithFavorites);
+        // 초기 필터링된 상품 목록 설정
+        setFilteredProducts(productsWithFavorites);
+        // 초기 표시할 상품 목록 설정
+        setDisplayedProducts(productsWithFavorites.slice(0, itemsPerPage));
+        
+        // 베스트 상품 설정 (별점 순 -> 가격 순)
+        const bestProductsList = [...productsWithFavorites]
+          .sort((a, b) => {
+            if (a.star !== b.star) {
+              return b.star - a.star;
+            }
+            return b.price - a.price;
+          })
+          .slice(0, 8);
+        setBestProducts(bestProductsList);
+        
+        // 지금 뜨는 상품 설정 (조회수 기준)
+        const trendingProductsList = [...productsWithFavorites]
+          .sort((a, b) => b.views - a.views)
+          .slice(0, 5);
+        setTrendingProducts(trendingProductsList);
+
+        // 페이지네이션 처리 수정
+        setHasMore(productsData.length === 10); // 10개가 있으면 다음 페이지가 있다고 가정
+        setPage(0);
+      } catch (err) {
+        console.error('상품을 불러오는 중 오류가 발생했습니다:', err);
+        setError('상품을 불러오는데 실패했습니다. 다시 시도해주세요.');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProductsWithFavorites();
   }, []);
-  
+
+  // 상품 목록 업데이트 이벤트 감지
+  useEffect(() => {
+    const handleProductsUpdate = (event: CustomEvent) => {
+      const updatedProducts = event.detail.products;
+      setProducts(updatedProducts);
+      setFilteredProducts(updatedProducts);
+      setDisplayedProducts(updatedProducts.slice(0, itemsPerPage));
+      
+      // 베스트 상품 업데이트
+      const bestProductsList = [...updatedProducts]
+        .sort((a, b) => {
+          if (a.star !== b.star) {
+            return b.star - a.star;
+          }
+          return b.price - a.price;
+        })
+        .slice(0, 8);
+      setBestProducts(bestProductsList);
+      
+      // 지금 뜨는 상품 업데이트
+      const trendingProductsList = [...updatedProducts]
+        .sort((a, b) => b.views - a.views)
+        .slice(0, 5);
+      setTrendingProducts(trendingProductsList);
+    };
+
+    window.addEventListener('productsUpdated', handleProductsUpdate as EventListener);
+    return () => {
+      window.removeEventListener('productsUpdated', handleProductsUpdate as EventListener);
+    };
+  }, [itemsPerPage]);
+
   // 카테고리나 가격대 필터 변경 시 필터링된 상품 갱신
   useEffect(() => {
     if (products.length > 0) {
@@ -352,6 +452,8 @@ const MainShopping = () => {
   // 찜하기 버튼 클릭 핸들러 추가
   const handleWishlistClick = async (e: React.MouseEvent, productId: number) => {
     e.preventDefault();
+    e.stopPropagation();  // 이벤트 버블링 방지
+    
     const token = localStorage.getItem('auth_token');
     
     if (!token) {
@@ -359,43 +461,77 @@ const MainShopping = () => {
       return;
     }
 
-    // 토큰 디버깅
-    console.log('원본 토큰:', token);
-    const finalToken = token.startsWith('Bearer ') ? token : `Bearer ${token}`;
-    console.log('최종 토큰:', finalToken);
-
     try {
-      const response = await axios.patch(
+      // 상품 ID를 문자열로 확실하게 변환
+      const productIdStr = String(productId);
+      
+      // API 호출 전에 상태를 먼저 토글
+      const product = products.find(p => p.id === productId);
+      if (!product) return;
+
+      const newFavoriteState = !product.favorite;
+      
+      // 로컬 스토리지에 상태 저장
+      const favoriteProducts = JSON.parse(localStorage.getItem('favoriteProducts') || '{}') as Record<string, boolean>;
+      favoriteProducts[productIdStr] = newFavoriteState;
+      localStorage.setItem('favoriteProducts', JSON.stringify(favoriteProducts));
+
+      // UI 상태 업데이트 - 모든 상태를 업데이트해야 함
+      const updateProductState = (list: Product[]) => 
+        list.map(p => p.id === productId ? { ...p, favorite: newFavoriteState } : p);
+      
+      // 모든 상태 업데이트
+      const updatedProducts = updateProductState(products);
+      const updatedFilteredProducts = updateProductState(filteredProducts);
+      const updatedDisplayedProducts = updateProductState(displayedProducts);
+      const updatedBestProducts = updateProductState(bestProducts);
+      const updatedTrendingProducts = updateProductState(trendingProducts);
+      
+      setProducts(updatedProducts);
+      setFilteredProducts(updatedFilteredProducts);
+      setDisplayedProducts(updatedDisplayedProducts);
+      setBestProducts(updatedBestProducts);
+      setTrendingProducts(updatedTrendingProducts);
+
+      await axios.patch(
         `${import.meta.env.VITE_API_BASE_URL}/products/${productId}/like`,
         null,
         {
           headers: {
-            'Authorization': finalToken,
+            'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json',
             'Accept': 'application/json'
           },
-          withCredentials: true  // CORS 인증 정보 포함
+          withCredentials: true
         }
       );
-      
-      console.log('API 요청 성공:', response);
 
-      if (response.status === 200 || response.status === 204) {
-        const updatedProducts = products.map(product => 
-          product.id === productId 
-            ? { ...product, favorite: !product.favorite }
-            : product
-        );
-        setProducts(updatedProducts);
-        setFilteredProducts(updatedProducts);
-        setDisplayedProducts(updatedProducts);
-      }
+      console.log(`상품 ${productId}의 좋아요 상태가 ${newFavoriteState}로 변경되었습니다.`);
     } catch (error: any) {
+      // 에러 발생 시 상태를 원래대로 되돌림
+      const product = products.find(p => p.id === productId);
+      if (product) {
+        const originalState = product.favorite;
+        
+        // 로컬 스토리지 원상복구
+        const favoriteProducts = JSON.parse(localStorage.getItem('favoriteProducts') || '{}') as Record<string, boolean>;
+        favoriteProducts[String(productId)] = originalState;
+        localStorage.setItem('favoriteProducts', JSON.stringify(favoriteProducts));
+        
+        // UI 상태 원상복구
+        const revertProductState = (list: Product[]) => 
+          list.map(p => p.id === productId ? { ...p, favorite: originalState } : p);
+        
+        setProducts(revertProductState(products));
+        setFilteredProducts(revertProductState(filteredProducts));
+        setDisplayedProducts(revertProductState(displayedProducts));
+        setBestProducts(revertProductState(bestProducts));
+        setTrendingProducts(revertProductState(trendingProducts));
+      }
       console.error('찜하기 처리 중 오류 발생:', error);
       if (error.response) {
         console.log('에러 상태:', error.response.status);
         console.log('에러 데이터:', error.response.data);
-        console.log('요청 헤더:', error.config.headers);
       }
       alert('찜하기 처리 중 오류가 발생했습니다.');
     }
@@ -731,10 +867,17 @@ const MainShopping = () => {
                   </div>
                   <div className="p-4">
                     <h4 className="font-bold text-base">{product.productName}</h4>
-                    <div className="flex items-center gap-2 mt-2">
+                    <div className="flex items-center justify-between mt-2">
                       <span className="text-black font-bold text-lg">
                         {product.price ? Number(product.price).toLocaleString() + '원' : '가격 정보 없음'}
                       </span>
+                      {/* 별점 표시 */}
+                      <div className="flex items-center">
+                        <svg className="w-4 h-4 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
+                          <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                        </svg>
+                        <span className="ml-1 text-sm text-gray-600">{product.star.toFixed(1)}</span>
+                      </div>
                     </div>
                     <div className="mt-4 flex items-center text-sm text-gray-500">
                       <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" className="w-4 h-4 mr-1">
@@ -825,9 +968,9 @@ const MainShopping = () => {
                       </button>
                     </div>
                     <div className="p-4">
-                      <h3 className="font-medium mb-2 text-sm md:text-base">{product.productName}</h3>
-                      <div className="flex items-center justify-between mb-4">
-                        <span className="text-black font-bold text-sm md:text-base">
+                      <h4 className="font-bold text-base">{product.productName}</h4>
+                      <div className="flex items-center justify-between mt-2">
+                        <span className="text-black font-bold text-lg">
                           {product.price ? Number(product.price).toLocaleString() + '원' : '가격 정보 없음'}
                         </span>
                         {/* 별점 표시 */}
