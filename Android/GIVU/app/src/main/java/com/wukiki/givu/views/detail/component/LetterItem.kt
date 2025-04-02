@@ -35,7 +35,7 @@ fun LetterItem(letter: Letter) {
             Spacer(modifier = Modifier.width(4.dp))
             Text(
                 modifier = Modifier.weight(1F),
-                text = letter.userId,
+                text = letter.userNickname,
                 fontSize = 18.sp,
                 fontWeight = FontWeight.Bold,
                 fontFamily = suit

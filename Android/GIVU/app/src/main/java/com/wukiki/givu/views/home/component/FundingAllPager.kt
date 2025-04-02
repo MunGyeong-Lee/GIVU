@@ -26,6 +26,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
 import com.wukiki.domain.model.Funding
 import com.wukiki.givu.R
 import com.wukiki.givu.ui.suit
@@ -34,7 +35,8 @@ import kotlinx.coroutines.launch
 
 @Composable
 fun FundingAllPager(
-    homeViewModel: HomeViewModel
+    homeViewModel: HomeViewModel,
+    navController: NavController
 ) {
     val fundings by homeViewModel.fundings.collectAsState()
 
@@ -104,7 +106,7 @@ fun FundingAllPager(
                 .fillMaxWidth()
                 .wrapContentHeight()
         ) { index ->
-            FundingListPager(fundings[index])
+            FundingListPager(fundings[index], navController)
         }
     }
 }

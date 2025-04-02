@@ -1,5 +1,6 @@
 package com.wukiki.data.api
 
+import com.wukiki.data.entity.FundingDetailEntity
 import com.wukiki.data.entity.FundingEntity
 import com.wukiki.data.entity.FundingImageEntity
 import okhttp3.MultipartBody
@@ -21,6 +22,11 @@ interface FundingApi {
         @Part files: List<MultipartBody.Part>,
         @Part("data") body: RequestBody
     ): Response<FundingEntity>
+
+    @GET("fundings/{fundingId}")
+    suspend fun getFundingDetail(
+        @Path("fundingId") fundingId: String
+    ): Response<FundingDetailEntity>
 
     @Multipart
     @POST("fundings/{fundingId}")

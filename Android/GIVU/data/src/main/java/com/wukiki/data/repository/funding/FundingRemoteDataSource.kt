@@ -1,5 +1,6 @@
 package com.wukiki.data.repository.funding
 
+import com.wukiki.data.entity.FundingDetailEntity
 import com.wukiki.data.entity.FundingEntity
 import com.wukiki.data.entity.FundingImageEntity
 import okhttp3.MultipartBody
@@ -12,6 +13,8 @@ interface FundingRemoteDataSource {
         files: List<MultipartBody.Part>,
         body: RequestBody
     ): Response<FundingEntity>
+
+    suspend fun getFundingDetail(fundingId: String): Response<FundingDetailEntity>
 
     suspend fun postFundingDetail(
         fundingId: String,

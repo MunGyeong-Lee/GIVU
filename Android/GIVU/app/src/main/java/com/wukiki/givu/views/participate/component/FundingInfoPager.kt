@@ -21,11 +21,12 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.rememberAsyncImagePainter
 import com.wukiki.domain.model.Funding
+import com.wukiki.domain.model.FundingDetail
 import com.wukiki.givu.R
 import com.wukiki.givu.ui.suit
 
 @Composable
-fun FundingInfoPager(funding: Funding) {
+fun FundingInfoPager(funding: FundingDetail) {
     Row(
         modifier = Modifier.fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically
@@ -64,7 +65,7 @@ fun FundingInfoPager(funding: Funding) {
                 Spacer(modifier = Modifier.width(4.dp))
                 Text(
                     modifier = Modifier.weight(1F),
-                    text = funding.userId.toString(),
+                    text = funding.writerNickname,
                     fontWeight = FontWeight.Medium,
                     fontFamily = suit,
                     color = Color.Gray,

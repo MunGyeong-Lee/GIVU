@@ -9,12 +9,14 @@ object ReviewMapper {
         return Review(
             reviewId = reviewEntity.reviewId,
             fundingId = reviewEntity.fundingId,
-            userId = reviewEntity.userId,
+            userId = reviewEntity.user.userId,
             comment = reviewEntity.comment,
             image = reviewEntity.image ?: "",
             createdAt = reviewEntity.createdAt ?: "",
             updatedAt = reviewEntity.updatedAt ?: "",
-            visit = reviewEntity.visit.toString()
+            visit = reviewEntity.visit.toString(),
+            userNickname = reviewEntity.user.nickname,
+            userProfile = reviewEntity.user.image
         )
     }
 }

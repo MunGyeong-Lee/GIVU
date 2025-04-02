@@ -1,5 +1,6 @@
 package com.wukiki.givu.views.home.component
 
+import android.os.Bundle
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
@@ -37,13 +38,21 @@ import com.wukiki.givu.ui.suit
 import com.wukiki.givu.util.CommonUtils
 
 @Composable
-fun PopularFundingCardItem(funding: Funding, navController: NavController) {
+fun PopularFundingCardItem(
+    funding: Funding,
+    navController: NavController
+) {
     Card(
         modifier = Modifier
             .width(320.dp)
             .padding(horizontal = 8.dp, vertical = 16.dp)
             .shadow(6.dp, RoundedCornerShape(10.dp), clip = true)
-            .clickable { navController.navigate(R.id.action_home_to_detail_funding) },
+            .clickable {
+                val bundle = Bundle().apply {
+                    putInt("fundingId", funding.id)
+                }
+                navController.navigate(R.id.action_home_to_detail_funding, bundle)
+            },
         colors = CardDefaults.cardColors(containerColor = Color.White)
     ) {
         Column {

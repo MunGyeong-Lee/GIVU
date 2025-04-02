@@ -2,6 +2,7 @@ package com.wukiki.domain.repository
 
 import com.wukiki.domain.model.ApiResult
 import com.wukiki.domain.model.Funding
+import com.wukiki.domain.model.FundingDetail
 import okhttp3.MultipartBody
 import okhttp3.RequestBody
 
@@ -11,6 +12,8 @@ interface FundingRepository {
         files: List<MultipartBody.Part>,
         body: RequestBody
     ): ApiResult<Funding>
+
+    suspend fun fetchFundingDetail(fundingId: Int): ApiResult<FundingDetail>
 
     suspend fun updateFundingDetail(
         fundingId: Int,

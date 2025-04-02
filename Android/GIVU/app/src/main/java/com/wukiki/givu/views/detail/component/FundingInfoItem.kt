@@ -11,7 +11,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
-import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -22,14 +21,25 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.wukiki.domain.model.Funding
+import com.wukiki.domain.model.FundingDetail
 import com.wukiki.givu.R
 import com.wukiki.givu.ui.suit
 import com.wukiki.givu.util.CommonUtils
 import com.wukiki.givu.util.ReportButton
 
 @Composable
-fun FundingInfoItem(funding: Funding) {
+fun FundingInfoItem(
+    funding: FundingDetail
+) {
+    val categories = mapOf(
+        "생일" to R.drawable.ic_category_birthday,
+        "집들이" to R.drawable.ic_category_house,
+        "결혼" to R.drawable.ic_category_marriage,
+        "졸업" to R.drawable.ic_category_graduate,
+        "취업" to R.drawable.ic_category_buisness,
+        "출산" to R.drawable.ic_category_born,
+    )
+
     Column(
         modifier = Modifier.padding(16.dp)
     ) {
@@ -37,7 +47,7 @@ fun FundingInfoItem(funding: Funding) {
             verticalAlignment = Alignment.CenterVertically
         ) {
             Icon(
-                painterResource(id = R.drawable.ic_category_birthday),
+                painterResource(id = categories[funding.category] ?: R.drawable.ic_category_birthday),
                 contentDescription = "카테고리",
                 tint = Color.Gray
             )
@@ -63,7 +73,7 @@ fun FundingInfoItem(funding: Funding) {
         )
 
         Text(
-            text = funding.userId.toString(),
+            text = funding.writerNickname,
             fontSize = 16.sp,
             color = Color.Gray,
             fontFamily = suit,
@@ -91,16 +101,16 @@ fun FundingInfoItem(funding: Funding) {
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(24.dp) // ✅ 원이 커지지 않도록 높이 조정
-                .clip(RoundedCornerShape(15.dp)) // ✅ 둥근 테두리 적용
-                .background(Color.LightGray) // ✅ 배경색 적용
+                .height(24.dp)
+                .clip(RoundedCornerShape(15.dp))
+                .background(Color.LightGray)
         ) {
             Box(
                 modifier = Modifier
-                    .fillMaxWidth(12F / 100F) // ✅ 현재 진행도 만큼 길이 설정
-                    .height(24.dp) // ✅ 동일한 높이 유지
-                    .clip(RoundedCornerShape(15.dp)) // ✅ 모서리 둥글게
-                    .background(Color.Red) // ✅ 진행 색상 적용
+                    .fillMaxWidth(funding.fundedAmount.toFloat() / funding.productPrice.toFloat())
+                    .height(24.dp)
+                    .clip(RoundedCornerShape(15.dp))
+                    .background(Color.Red)
             )
         }
 

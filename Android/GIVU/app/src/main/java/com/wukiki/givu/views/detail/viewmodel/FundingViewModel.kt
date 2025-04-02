@@ -7,9 +7,10 @@ import androidx.lifecycle.viewModelScope
 import com.google.gson.GsonBuilder
 import com.wukiki.domain.model.ApiStatus
 import com.wukiki.domain.model.Funding
+import com.wukiki.domain.model.FundingDetail
 import com.wukiki.domain.model.Letter
 import com.wukiki.domain.model.Product
-import com.wukiki.domain.model.User
+import com.wukiki.domain.model.Review
 import com.wukiki.domain.usecase.GetFundingUseCase
 import com.wukiki.domain.usecase.GetProductUseCase
 import com.wukiki.domain.usecase.GetReviewUseCase
@@ -47,7 +48,7 @@ class FundingViewModel @Inject constructor(
     private val _fundings = MutableStateFlow<List<Funding>>(emptyList())
     val fundings = _fundings.asStateFlow()
 
-    private val _selectedFunding = MutableStateFlow<Funding?>(null)
+    private val _selectedFunding = MutableStateFlow<FundingDetail?>(null)
     val selectedFunding = _selectedFunding.asStateFlow()
 
     private val _originalImages = MutableStateFlow<HashMap<String, Boolean>>(hashMapOf())
@@ -86,7 +87,7 @@ class FundingViewModel @Inject constructor(
     private val _fundingReview = MutableStateFlow<String>("")
     val fundingReview = _fundingReview
 
-    private val _fundingParticipants = MutableStateFlow<List<User>>(emptyList())
+    private val _fundingParticipants = MutableStateFlow<List<Review>>(emptyList())
     val fundingParticipants = _fundingParticipants.asStateFlow()
 
     private val _fundingReviewUri = MutableStateFlow<Uri?>(null)
@@ -104,48 +105,13 @@ class FundingViewModel @Inject constructor(
     private val _products = MutableStateFlow<List<Product>>(emptyList())
     val products = _products.asStateFlow()
 
-    init {
-        initFundings()
-        initProducts()
-
-        val newLetter = Letter(
-            letterId = "1",
-            fundingId = "1",
-            userId = "2",
-            comment = "굿~",
-            image = "",
-            private = "전체 공개",
-            createdAt = "2025.03.20",
-            updatedAt = "2025.03.20"
-        )
-
-        _selectedFundingLetter.value = listOf(newLetter)
-
-        val newParticipants = listOf(
-            User(
-                id = "1",
-                kakaoid = "1",
-                nickname = "김싸피",
-                email = "aa@aa.com",
-                birth = "1970.01.01",
-                profileImage = "https://img.tumblbug.com/eyJidWNrZXQiOiJ0dW1ibGJ1Zy1pbWctYXNzZXRzIiwia2V5IjoiY292ZXIvNzMyZWNiODgtMDdhYS00Y2FmLThlNTEtNGIwOTkyMDY1MzJmL2U3N2MwYTEzLTE5NzktNDJlNy1hNDFjLTljN2JmMTIxZGMzNC5wbmciLCJlZGl0cyI6eyJyZXNpemUiOnsid2lkdGgiOjQ2NSwiaGVpZ2h0Ijo0NjUsIndpdGhvdXRFbmxhcmdlbWVudCI6dHJ1ZX19fQ==",
-                address = "",
-                gender = "TODO()",
-                ageRange = "TODO()",
-                balance = "TODO()",
-                createdAt = "TODO()",
-                updatedAt = "TODO()"
-            )
-        )
-
-        _fundingParticipants.value = newParticipants
-    }
-
     private fun setFundingInfo() {
         _originalImages.value = hashMapOf()
         _fundingImageUris.value = listOf()
         _fundingImageMultiparts.value = listOf()
         _selectedFunding.value?.let {
+            _selectedFundingLetter.value = it.letters
+            _fundingParticipants.value = it.reviews
             it.images.forEach { image ->
                 _originalImages.update { current ->
                     current.toMutableMap().apply {
@@ -214,15 +180,13 @@ class FundingViewModel @Inject constructor(
         }
     }
 
-    fun initFundings() {
+    fun initFunding(fundingId: Int) {
         viewModelScope.launch {
-            val response = getFundingUseCase.fetchFundings()
+            val response = getFundingUseCase.fetchFundingDetail(fundingId)
 
             when (response.status) {
                 ApiStatus.SUCCESS -> {
-                    val newFundings = response.data ?: emptyList()
-                    _fundings.value = newFundings
-                    _selectedFunding.value = newFundings.last()
+                    _selectedFunding.value = response.data
                     setFundingInfo()
                 }
 

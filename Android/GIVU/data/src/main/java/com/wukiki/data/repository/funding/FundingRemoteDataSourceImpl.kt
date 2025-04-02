@@ -1,6 +1,7 @@
 package com.wukiki.data.repository.funding
 
 import com.wukiki.data.api.FundingApi
+import com.wukiki.data.entity.FundingDetailEntity
 import com.wukiki.data.entity.FundingEntity
 import com.wukiki.data.entity.FundingImageEntity
 import okhttp3.MultipartBody
@@ -16,6 +17,9 @@ class FundingRemoteDataSourceImpl @Inject constructor(
         files: List<MultipartBody.Part>,
         body: RequestBody
     ): Response<FundingEntity> = fundingApi.postFunding(files, body)
+
+    override suspend fun getFundingDetail(fundingId: String): Response<FundingDetailEntity> =
+        fundingApi.getFundingDetail(fundingId)
 
     override suspend fun postFundingDetail(
         fundingId: String,
