@@ -1,10 +1,12 @@
 package com.wukiki.data.repository.funding
 
 import android.util.Log
+import com.wukiki.data.mapper.FundingDetailMapper
 import com.wukiki.data.mapper.FundingMapper
 import com.wukiki.data.mapper.FundingsMapper
 import com.wukiki.domain.model.ApiResult
 import com.wukiki.domain.model.Funding
+import com.wukiki.domain.model.FundingDetail
 import com.wukiki.domain.repository.FundingRepository
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -37,6 +39,26 @@ class FundingRepositoryImpl @Inject constructor(
             }
         } catch (e: Exception) {
             Log.e("FundingRepositoryImpl", "registerFunding Error: $e")
+            ApiResult.fail()
+        }
+
+    override suspend fun fetchFundingDetail(fundingId: Int): ApiResult<FundingDetail> =
+        try {
+            val response = withContext(CoroutineScope(Dispatchers.IO).coroutineContext) {
+                fundingRemoteDataSource.getFundingDetail(fundingId.toString())
+            }
+
+            val responseBody = response.body()
+            Log.d("FundingRepositoryImpl", "Response: $responseBody")
+            if (response.isSuccessful && (responseBody != null)) {
+                Log.d("FundingRepositoryImpl", "fetchFundingDetail Success")
+                ApiResult.success(FundingDetailMapper(responseBody))
+            } else {
+                Log.d("FundingRepositoryImpl", "fetchFundingDetail Fail: ${response.code()}")
+                ApiResult.error(response.errorBody().toString(), null)
+            }
+        } catch (e: Exception) {
+            Log.e("FundingRepositoryImpl", "fetchFundingDetail Error: $e")
             ApiResult.fail()
         }
 

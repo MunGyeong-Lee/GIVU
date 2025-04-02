@@ -4,11 +4,11 @@ import com.squareup.moshi.Json
 import com.squareup.moshi.JsonClass
 
 @JsonClass(generateAdapter = true)
-data class ReviewEntity(
-    @Json(name = "reviewId")
-    val reviewId: Int,
+data class LetterEntity(
+    @Json(name = "letterId")
+    val letterId: Int,
 
-    @Json(name = "fundingId")
+    @Json(name = "funding")
     val fundingId: Int,
 
     @Json(name = "user")
@@ -20,12 +20,12 @@ data class ReviewEntity(
     @Json(name = "image")
     val image: String?,
 
+    @Json(name = "access")
+    val access: String?,
+
     @Json(name = "createdAt")
     val createdAt: String?,
 
     @Json(name = "updatedAt")
-    val updatedAt: String?,
-
-    @Json(name = "visit")
-    val visit: Int
+    val updatedAt: String?
 )

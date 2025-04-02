@@ -18,7 +18,9 @@ object ProductReviewsMapper {
                     image = "",
                     createdAt = "",
                     updatedAt = "",
-                    visit = ""
+                    visit = "",
+                    userNickname = "",
+                    userProfile = ""
                 )
             )
         }
