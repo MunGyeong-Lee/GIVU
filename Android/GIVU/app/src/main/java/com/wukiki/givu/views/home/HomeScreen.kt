@@ -30,7 +30,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.wukiki.givu.R
 import com.wukiki.givu.ui.suit
@@ -44,7 +43,7 @@ import com.wukiki.givu.views.home.viewmodel.HomeViewModel
 
 @Composable
 fun HomeScreen(
-    homeViewModel: HomeViewModel = hiltViewModel(),
+    homeViewModel: HomeViewModel,
     navController: NavController
 ) {
     val context = LocalContext.current
@@ -70,24 +69,28 @@ fun HomeScreen(
 
     Scaffold(
         floatingActionButton = {
-            Column(horizontalAlignment = Alignment.End) {
-                FloatingActionButton(
-                    onClick = { navController.navigate(R.id.action_home_to_register_funding) },
-                    containerColor = colorResource(id = R.color.main_primary),
-                    modifier = Modifier
-                        .padding(bottom = 20.dp)
-                        .border(
-                            (0.5).dp, Color(0xFFBFE0EF),
-                            RoundedCornerShape(30.dp)
-                        ),
-                    interactionSource = remember { MutableInteractionSource() },
+            if (user != null) {
+                Column(
+                    horizontalAlignment = Alignment.End
                 ) {
-                    Icon(
-                        painter = painterResource(id = R.drawable.ic_add_plus),
-                        contentDescription = null,
-                        tint = Color.White,
-                        modifier = Modifier.size(32.dp)
-                    )
+                    FloatingActionButton(
+                        onClick = { navController.navigate(R.id.action_home_to_register_funding) },
+                        containerColor = colorResource(id = R.color.main_primary),
+                        modifier = Modifier
+                            .padding(bottom = 20.dp)
+                            .border(
+                                (0.5).dp, Color(0xFFBFE0EF),
+                                RoundedCornerShape(30.dp)
+                            ),
+                        interactionSource = remember { MutableInteractionSource() },
+                    ) {
+                        Icon(
+                            painter = painterResource(id = R.drawable.ic_add_plus),
+                            contentDescription = null,
+                            tint = Color.White,
+                            modifier = Modifier.size(32.dp)
+                        )
+                    }
                 }
             }
         },

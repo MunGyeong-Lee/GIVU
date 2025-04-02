@@ -13,11 +13,13 @@ import com.wukiki.givu.R
 import com.wukiki.givu.config.BaseFragment
 import com.wukiki.givu.databinding.FragmentMyPageBinding
 import com.wukiki.givu.views.MainViewModel
+import com.wukiki.givu.views.home.viewmodel.HomeViewModel
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
 class MyPageFragment : BaseFragment<FragmentMyPageBinding>(R.layout.fragment_my_page) {
 
+    private val viewModel: HomeViewModel by activityViewModels()
     private val mainViewModel: MainViewModel by activityViewModels()
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -25,12 +27,9 @@ class MyPageFragment : BaseFragment<FragmentMyPageBinding>(R.layout.fragment_my_
 
         binding.composeMyPage.setContent {
             val navController = rememberNavController()
-
-            // 현재 화면 경로 탐색
             val navBackStackEntry by navController.currentBackStackEntryAsState()
             val currentRoute = navBackStackEntry?.destination?.route
 
-            // 바텀 네비게이션 표시
             LaunchedEffect(currentRoute) {
                 if (currentRoute == "MyPageScreen") {
                     mainViewModel.setBnvState(true)
@@ -44,7 +43,7 @@ class MyPageFragment : BaseFragment<FragmentMyPageBinding>(R.layout.fragment_my_
                 startDestination = "MyPageScreen"
             ) {
                 composable("MyPageScreen") {
-                    MyPageScreen(navController)
+                    MyPageScreen(viewModel, navController)
                 }
 
                 composable("PayUsageScreen") {
@@ -54,11 +53,7 @@ class MyPageFragment : BaseFragment<FragmentMyPageBinding>(R.layout.fragment_my_
                 composable("UserInfoScreen") {
                     UserInfoScreen()
                 }
-
             }
-
         }
-
     }
-
 }
