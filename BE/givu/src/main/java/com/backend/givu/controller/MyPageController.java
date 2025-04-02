@@ -7,6 +7,7 @@ import com.backend.givu.model.entity.User;
 import com.backend.givu.model.repository.UserRepository;
 import com.backend.givu.model.responseDTO.ApiResponse;
 import com.backend.givu.model.responseDTO.CodeMessageDTO;
+import com.backend.givu.model.responseDTO.UserAccountDTO;
 import com.backend.givu.model.service.MyPageService;
 import com.backend.givu.model.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -27,7 +28,7 @@ public class MyPageController {
 
     @Operation(summary = "유저 연동계좌 생성", description = "해당 유저의 연동계좌를 생성합니다.")
     @PostMapping("/createAccount")
-    public ResponseEntity<ApiResponse> createDepositAccount(@AuthenticationPrincipal CustomUserDetail userDetail){
+    public ResponseEntity<ApiResponse<Void>> createDepositAccount(@AuthenticationPrincipal CustomUserDetail userDetail){
         Long userId = userDetail.getId();
         User user = userService.getUserById(userId);
         if(user.getAccountNumber() != null){
@@ -36,15 +37,14 @@ public class MyPageController {
         return ResponseEntity.ok(myPageService.createDepositAccount(user));
     }
 
+    @Operation(summary = "유저 연동계좌 조회", description = "해당 유저의 연동계좌를 조회합니다.")
     @GetMapping("/checkAccount")
-    public ResponseEntity<> checkAccount(@AuthenticationPrincipal CustomUserDetail userDetail){
+    public ResponseEntity<ApiResponse<UserAccountDTO>> checkAccount(@AuthenticationPrincipal CustomUserDetail userDetail){
         String accountNo = userDetail.getAccountNo();
         if(accountNo.isEmpty()){
-           return ResponseEntity.ok().build();
+           return ResponseEntity.ok(ApiResponse.fail("ERROR", "계좌가 존재하지 않습니다."));
         }
-
-
-
+        return ResponseEntity.ok(myPageService.checkAccount(accountNo));
     }
 
 }
