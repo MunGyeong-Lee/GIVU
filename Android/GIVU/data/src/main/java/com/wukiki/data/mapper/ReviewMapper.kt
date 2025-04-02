@@ -1,5 +1,6 @@
-package com.wukiki.data.entity
+package com.wukiki.data.mapper
 
+import com.wukiki.data.entity.ReviewEntity
 import com.wukiki.domain.model.Review
 
 object ReviewMapper {
@@ -10,9 +11,9 @@ object ReviewMapper {
             fundingId = reviewEntity.fundingId,
             userId = reviewEntity.userId,
             comment = reviewEntity.comment,
-            image = reviewEntity.image,
-            createdAt = reviewEntity.createdAt,
-            updatedAt = reviewEntity.updatedAt,
+            image = reviewEntity.image ?: "",
+            createdAt = reviewEntity.createdAt ?: "",
+            updatedAt = reviewEntity.updatedAt ?: "",
             visit = reviewEntity.visit.toString()
         )
     }

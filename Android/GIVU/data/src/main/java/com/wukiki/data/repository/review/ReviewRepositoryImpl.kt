@@ -1,24 +1,29 @@
 package com.wukiki.data.repository.review
 
 import android.util.Log
-import com.wukiki.data.entity.ReviewMapper
-import com.wukiki.data.mapper.ProductReviewsMapper
+import com.wukiki.data.mapper.ReviewMapper
 import com.wukiki.domain.model.ApiResult
 import com.wukiki.domain.model.Review
 import com.wukiki.domain.repository.ReviewRepository
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import okhttp3.MultipartBody
+import okhttp3.RequestBody
 import javax.inject.Inject
 
 class ReviewRepositoryImpl @Inject constructor(
     private val reviewRemoteDataSource: ReviewRemoteDataSource
 ) : ReviewRepository {
 
-    override suspend fun registerFundingReview(fundingId: Int): ApiResult<Review> =
+    override suspend fun registerFundingReview(
+        fundingId: Int,
+        file: MultipartBody.Part?,
+        body: RequestBody
+    ): ApiResult<Review> =
         try {
             val response = withContext(CoroutineScope(Dispatchers.IO).coroutineContext) {
-                reviewRemoteDataSource.postFundingReview(fundingId.toString())
+                reviewRemoteDataSource.postFundingReview(fundingId.toString(), file, body)
             }
 
             val responseBody = response.body()
