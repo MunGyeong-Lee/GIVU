@@ -66,6 +66,10 @@ class MyPageFragment : BaseFragment<FragmentMyPageBinding>(R.layout.fragment_my_
                 composable("MyRegisterFunding") {
                     MyRegisterFundingScreen(viewModel, findNavController())
                 }
+
+                composable("MyParticipateFunding") {
+                    MyParticipateFundingScreen(viewModel, findNavController())
+                }
             }
         }
     }

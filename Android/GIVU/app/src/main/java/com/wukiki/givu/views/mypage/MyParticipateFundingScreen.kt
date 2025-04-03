@@ -24,14 +24,14 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.wukiki.givu.ui.suit
 import com.wukiki.givu.views.home.viewmodel.HomeViewModel
-import com.wukiki.givu.views.mypage.component.MyRegisterFundingCardItem
+import com.wukiki.givu.views.mypage.component.MyParticipateFundingCardItem
 
 @Composable
-fun MyRegisterFundingScreen(
+fun MyParticipateFundingScreen(
     homeViewModel: HomeViewModel,
     xmlNavController: NavController
 ) {
-    val fundings by homeViewModel.myRegisterFundings.collectAsState()
+    val fundings by homeViewModel.myParticipateFundings.collectAsState()
 
     Scaffold(
         containerColor = Color(0xFFF3F4F6)
@@ -44,7 +44,7 @@ fun MyRegisterFundingScreen(
             verticalArrangement = Arrangement.Center
         ) {
             Text(
-                text = "내가 만든 펀딩",
+                text = "내가 참여한 펀딩",
                 fontFamily = suit,
                 fontWeight = FontWeight.Bold,
                 fontSize = 22.sp
@@ -61,7 +61,7 @@ fun MyRegisterFundingScreen(
                         contentAlignment = Alignment.Center
                     ) {
                         Text(
-                            text = "만든 펀딩이 없습니다.",
+                            text = "참여한 펀딩이 없습니다.",
                             fontFamily = suit,
                             fontWeight = FontWeight.Bold,
                             fontSize = 28.sp
@@ -74,7 +74,7 @@ fun MyRegisterFundingScreen(
                         modifier = Modifier.fillMaxWidth()
                     ) {
                         items(fundings, key = { it.id }) { funding ->
-                            MyRegisterFundingCardItem(funding, xmlNavController)
+                            MyParticipateFundingCardItem(funding, xmlNavController)
                         }
 
                         item {
