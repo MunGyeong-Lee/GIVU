@@ -3,6 +3,7 @@ package com.wukiki.givu.views.home.viewmodel
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import com.google.gson.GsonBuilder
 import com.wukiki.domain.model.ApiStatus
 import com.wukiki.domain.model.Funding
 import com.wukiki.domain.model.User
@@ -18,6 +19,9 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.launch
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
+import okhttp3.RequestBody
+import okhttp3.RequestBody.Companion.toRequestBody
 import timber.log.Timber
 import javax.inject.Inject
 
@@ -39,6 +43,9 @@ class HomeViewModel @Inject constructor(
 
     private val _balance = MutableStateFlow<Int>(0)
     val balance = _balance.asStateFlow()
+
+    private val _charge = MutableStateFlow<Int>(0)
+    val charge = _charge.asStateFlow()
 
     private val _fundings = MutableStateFlow<List<List<Funding>>>(listOf(listOf(), listOf(), listOf(), listOf(), listOf(), listOf()))
     val fundings = _fundings.asStateFlow()
@@ -62,22 +69,6 @@ class HomeViewModel @Inject constructor(
         emit(user)
     }
 
-    private fun initUserInfo() {
-        viewModelScope.launch {
-            val response = getAuthUseCase.fetchUserInfo()
-
-            when (response.status) {
-                ApiStatus.SUCCESS -> {
-                    _user.value = response.data
-                }
-
-                else -> {
-                    _homeUiEvent.emit(HomeUiEvent.AutoLoginFail)
-                }
-            }
-        }
-    }
-
     private fun initFundings() {
         viewModelScope.launch {
             val response = getFundingUseCase.fetchFundings()
@@ -85,7 +76,6 @@ class HomeViewModel @Inject constructor(
             when (response.status) {
                 ApiStatus.SUCCESS -> {
                     val newFundings = response.data ?: emptyList()
-                    Timber.d("Fundings: $newFundings")
                     setFundings(newFundings)
                 }
 
@@ -135,9 +125,34 @@ class HomeViewModel @Inject constructor(
         _popularFundings.value = allFundings.sortedByDescending { it.participantsNumber }.subList(0, 10)
     }
 
-    fun updateUserInfo() {
+    private fun makePayRequestBody(): RequestBody {
+        val metadata = mapOf(
+            "amount" to _charge.value
+        )
+        val gson = GsonBuilder().serializeNulls().create()
+        val json = gson.toJson(metadata)
+        return json.toRequestBody("application/json".toMediaTypeOrNull())
+    }
+
+    private fun updateUserInfo() {
         viewModelScope.launch {
             _user.value = fetchUserInfo().first()
+        }
+    }
+
+    fun initUserInfo() {
+        viewModelScope.launch {
+            val response = getAuthUseCase.fetchUserInfo()
+
+            when (response.status) {
+                ApiStatus.SUCCESS -> {
+                    _user.value = response.data
+                }
+
+                else -> {
+                    _homeUiEvent.emit(HomeUiEvent.AutoLoginFail)
+                }
+            }
         }
     }
 
@@ -152,6 +167,30 @@ class HomeViewModel @Inject constructor(
 
                 else -> {
 
+                }
+            }
+        }
+    }
+
+    fun setCharge(money: Int) {
+        _charge.value = money
+    }
+
+    fun withdrawAccount() {
+        viewModelScope.launch {
+            val response = getMyPageUseCase.withdrawGivuPay(
+                body = makePayRequestBody()
+            )
+
+            when (response.status) {
+                ApiStatus.SUCCESS -> {
+                    _homeUiEvent.emit(HomeUiEvent.WithdrawalSuccess)
+                    _charge.value = 0
+                    initUserInfo()
+                }
+
+                else -> {
+                    _homeUiEvent.emit(HomeUiEvent.WithdrawalFail)
                 }
             }
         }

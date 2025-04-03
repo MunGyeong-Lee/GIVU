@@ -9,6 +9,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.fragment.findNavController
 import com.wukiki.givu.R
 import com.wukiki.givu.config.BaseFragment
 import com.wukiki.givu.databinding.FragmentMyPageBinding
@@ -54,6 +55,10 @@ class MyPageFragment : BaseFragment<FragmentMyPageBinding>(R.layout.fragment_my_
 
                 composable("UserInfoScreen") {
                     UserInfoScreen()
+                }
+
+                composable("ChargeAccount") {
+                    ChargeAccountScreen(viewModel, navController, findNavController())
                 }
             }
         }

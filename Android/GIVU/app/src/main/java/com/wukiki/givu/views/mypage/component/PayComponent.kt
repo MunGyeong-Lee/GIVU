@@ -115,7 +115,7 @@ fun PayComponent(
             Spacer(Modifier.width(24.dp))
 
             Text(
-                text = CommonUtils.makeCommaPrice(balance),
+                text = CommonUtils.makeCommaPrice((user?.balance ?: "0").toInt()),
                 fontFamily = pretendard,
                 fontWeight = FontWeight.Bold,
                 fontSize = 24.sp,
@@ -144,7 +144,7 @@ fun PayComponent(
                         interactionSource = remember { MutableInteractionSource() },
                         indication = null,
                         onClick = {
-
+                            navController.navigate("ChargeAccount")
                         }
                     ),
                 contentAlignment = Alignment.Center
