@@ -3,6 +3,7 @@ package com.wukiki.data.repository.mypage
 import com.wukiki.data.api.MyPageApi
 import com.wukiki.data.entity.AccountEntity
 import com.wukiki.data.entity.BalanceEntity
+import com.wukiki.data.entity.MyFundingEntity
 import okhttp3.RequestBody
 import retrofit2.Response
 import javax.inject.Inject
@@ -20,4 +21,9 @@ class MyPageRemoteDataSourceImpl @Inject constructor(
     override suspend fun getAccount(): Response<AccountEntity> = myPageApi.getAccount()
 
     override suspend fun postAccount(): Response<AccountEntity> = myPageApi.postAccount()
+
+    override suspend fun getMyFundings(): Response<MyFundingEntity> = myPageApi.getMyFundings()
+
+    override suspend fun getMyParticipantFundings(): Response<MyFundingEntity> =
+        myPageApi.getMyParticipantFundings()
 }
