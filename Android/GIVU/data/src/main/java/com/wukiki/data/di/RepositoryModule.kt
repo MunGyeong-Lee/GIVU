@@ -9,6 +9,8 @@ import com.wukiki.data.repository.funding.FundingRemoteDataSource
 import com.wukiki.data.repository.funding.FundingRepositoryImpl
 import com.wukiki.data.repository.letter.LetterRemoteDataSource
 import com.wukiki.data.repository.letter.LetterRepositoryImpl
+import com.wukiki.data.repository.mypage.MyPageRemoteDataSource
+import com.wukiki.data.repository.mypage.MyPageRepositoryImpl
 import com.wukiki.data.repository.product.ProductRemoteDataSource
 import com.wukiki.data.repository.product.ProductRepositoryImpl
 import com.wukiki.data.repository.productreview.ProductReviewRemoteDataSource
@@ -19,6 +21,7 @@ import com.wukiki.domain.repository.AuthRepository
 import com.wukiki.domain.repository.DataStoreRepository
 import com.wukiki.domain.repository.FundingRepository
 import com.wukiki.domain.repository.LetterRepository
+import com.wukiki.domain.repository.MyPageRepository
 import com.wukiki.domain.repository.ProductRepository
 import com.wukiki.domain.repository.ProductReviewRepository
 import com.wukiki.domain.repository.ReviewRepository
@@ -66,6 +69,12 @@ object RepositoryModule {
     @Singleton
     fun provideLetterRepository(letterRemoteDataSource: LetterRemoteDataSource): LetterRepository {
         return LetterRepositoryImpl(letterRemoteDataSource)
+    }
+
+    @Provides
+    @Singleton
+    fun provideMyPageRepository(myPageRemoteDataSource: MyPageRemoteDataSource): MyPageRepository {
+        return MyPageRepositoryImpl(myPageRemoteDataSource)
     }
 
     @Provides

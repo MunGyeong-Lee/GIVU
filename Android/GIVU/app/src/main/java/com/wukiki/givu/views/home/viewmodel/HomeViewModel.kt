@@ -8,6 +8,7 @@ import com.wukiki.domain.model.Funding
 import com.wukiki.domain.model.User
 import com.wukiki.domain.usecase.GetAuthUseCase
 import com.wukiki.domain.usecase.GetFundingUseCase
+import com.wukiki.domain.usecase.GetMyPageUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -24,7 +25,8 @@ import javax.inject.Inject
 class HomeViewModel @Inject constructor(
     application: Application,
     private val getAuthUseCase: GetAuthUseCase,
-    private val getFundingUseCase: GetFundingUseCase
+    private val getFundingUseCase: GetFundingUseCase,
+    private val getMyPageUseCase: GetMyPageUseCase
 ) : AndroidViewModel(application), OnHomeClickListener {
 
     /*** UiState, UiEvent ***/
@@ -34,6 +36,9 @@ class HomeViewModel @Inject constructor(
     /*** Data ***/
     private val _user = MutableStateFlow<User?>(null)
     val user = _user.asStateFlow()
+
+    private val _balance = MutableStateFlow<Int>(0)
+    val balance = _balance.asStateFlow()
 
     private val _fundings = MutableStateFlow<List<List<Funding>>>(listOf(listOf(), listOf(), listOf(), listOf(), listOf(), listOf()))
     val fundings = _fundings.asStateFlow()
@@ -133,6 +138,22 @@ class HomeViewModel @Inject constructor(
     fun updateUserInfo() {
         viewModelScope.launch {
             _user.value = fetchUserInfo().first()
+        }
+    }
+
+    fun initAccount() {
+        viewModelScope.launch {
+            val response = getMyPageUseCase.fetchAccount()
+
+            when (response.status) {
+                ApiStatus.SUCCESS -> {
+                    _balance.value = response.data ?: 0
+                }
+
+                else -> {
+
+                }
+            }
         }
     }
 

@@ -3,6 +3,7 @@ package com.wukiki.data.di
 import com.wukiki.data.api.AuthApi
 import com.wukiki.data.api.FundingApi
 import com.wukiki.data.api.LetterApi
+import com.wukiki.data.api.MyPageApi
 import com.wukiki.data.api.ProductApi
 import com.wukiki.data.api.ProductReviewApi
 import com.wukiki.data.api.ReviewApi
@@ -12,6 +13,8 @@ import com.wukiki.data.repository.funding.FundingRemoteDataSource
 import com.wukiki.data.repository.funding.FundingRemoteDataSourceImpl
 import com.wukiki.data.repository.letter.LetterRemoteDataSource
 import com.wukiki.data.repository.letter.LetterRemoteDataSourceImpl
+import com.wukiki.data.repository.mypage.MyPageRemoteDataSource
+import com.wukiki.data.repository.mypage.MyPageRemoteDataSourceImpl
 import com.wukiki.data.repository.product.ProductRemoteDataSource
 import com.wukiki.data.repository.product.ProductRemoteDataSourceImpl
 import com.wukiki.data.repository.productreview.ProductReviewRemoteDataSource
@@ -62,5 +65,11 @@ object RemoteDataModule {
     @Singleton
     fun provideLetterRemoteDataSource(letterApi: LetterApi): LetterRemoteDataSource {
         return LetterRemoteDataSourceImpl(letterApi)
+    }
+
+    @Provides
+    @Singleton
+    fun provideMyPageRemoteDataSource(myPageApi: MyPageApi): MyPageRemoteDataSource {
+        return MyPageRemoteDataSourceImpl(myPageApi)
     }
 }

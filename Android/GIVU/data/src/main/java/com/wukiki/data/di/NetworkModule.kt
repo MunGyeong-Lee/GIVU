@@ -5,6 +5,7 @@ import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import com.wukiki.data.api.AuthApi
 import com.wukiki.data.api.FundingApi
 import com.wukiki.data.api.LetterApi
+import com.wukiki.data.api.MyPageApi
 import com.wukiki.data.api.ProductApi
 import com.wukiki.data.api.ReviewApi
 import com.wukiki.data.util.JwtInterceptor
@@ -81,5 +82,11 @@ object NetworkModule {
     @Singleton
     fun provideLetterApiService(@Named("Givu") retrofit: Retrofit): LetterApi {
         return retrofit.create(LetterApi::class.java)
+    }
+
+    @Provides
+    @Singleton
+    fun provideMyPageApiService(@Named("Givu") retrofit: Retrofit): MyPageApi {
+        return retrofit.create(MyPageApi::class.java)
     }
 }
