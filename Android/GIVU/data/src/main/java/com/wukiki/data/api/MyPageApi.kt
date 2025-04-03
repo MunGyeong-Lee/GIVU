@@ -2,6 +2,7 @@ package com.wukiki.data.api
 
 import com.wukiki.data.entity.AccountEntity
 import com.wukiki.data.entity.BalanceEntity
+import com.wukiki.data.entity.MyFundingEntity
 import okhttp3.RequestBody
 import retrofit2.Response
 import retrofit2.http.Body
@@ -25,4 +26,10 @@ interface MyPageApi {
 
     @POST("mypage/createAccount")
     suspend fun postAccount(): Response<AccountEntity>
+
+    @GET("mypage/myfundings")
+    suspend fun getMyFundings(): Response<MyFundingEntity>
+
+    @GET("mypage/myParticipantfundings")
+    suspend fun getMyParticipantFundings(): Response<MyFundingEntity>
 }
