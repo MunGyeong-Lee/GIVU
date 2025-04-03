@@ -104,7 +104,7 @@ class DataStoreRepositoryImpl @Inject constructor(
                     address = address ?: "",
                     gender = gender ?: "",
                     ageRange = ageRange ?: "",
-                    balance = balance ?: "",
+                    balance = balance ?: "0",
                     createdAt = createdAt ?: "",
                     updatedAt = updatedAt ?: ""
                 )

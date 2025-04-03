@@ -14,20 +14,16 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.Card
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.RadioButton
-import androidx.compose.material3.Slider
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.blur
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
@@ -35,16 +31,22 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.wukiki.givu.ui.suit
+import com.wukiki.givu.util.CommonUtils.makeCommaPrice
+import com.wukiki.givu.views.detail.viewmodel.FundingViewModel
 
 @Composable
-fun FundingAmountSelectionPager() {
+fun FundingAmountSelectionPager(
+    fundingViewModel: FundingViewModel
+) {
+    val user by fundingViewModel.user.collectAsState()
+
     Column(
         modifier = Modifier.fillMaxWidth()
     ) {
         Text(text = "펀딩 참여 금액", fontSize = 18.sp, fontWeight = FontWeight.Bold)
         Spacer(modifier = Modifier.height(8.dp))
 
-        val amounts = listOf("5,000원", "10,000원", "20,000원", "30,000원", "50,000원")
+        val amounts = listOf(5000, 10000, 20000, 30000, 50000)
         val amountsDescription =
             listOf("커피 한 잔 선물", "디저트 한 개 선물", "식사 한 끼 선물", "소품 한 개 선물", "프리미엄 선물")
         var selectedAmount by remember { mutableStateOf("") }
@@ -65,16 +67,17 @@ fun FundingAmountSelectionPager() {
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(16.dp)
-                        .clickable { selectedAmount = amount },
+                        .clickable { selectedAmount = makeCommaPrice(amount) },
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     RadioButton(
-                        selected = selectedAmount == amount,
-                        onClick = { selectedAmount = amount })
+                        enabled = (amount >= (user?.balance ?: "0").toInt()),
+                        selected = selectedAmount == makeCommaPrice(amount),
+                        onClick = { selectedAmount = makeCommaPrice(amount) })
                     Spacer(modifier = Modifier.width(8.dp))
                     Column {
                         Text(
-                            text = amount,
+                            text = makeCommaPrice(amount),
                             fontSize = 20.sp,
                             fontFamily = suit,
                             fontWeight = FontWeight.Bold,

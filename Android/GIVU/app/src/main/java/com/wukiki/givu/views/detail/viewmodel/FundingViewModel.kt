@@ -11,17 +11,23 @@ import com.wukiki.domain.model.FundingDetail
 import com.wukiki.domain.model.Letter
 import com.wukiki.domain.model.Product
 import com.wukiki.domain.model.Review
+import com.wukiki.domain.model.User
+import com.wukiki.domain.usecase.GetAuthUseCase
 import com.wukiki.domain.usecase.GetFundingUseCase
 import com.wukiki.domain.usecase.GetLetterUseCase
+import com.wukiki.domain.usecase.GetMyPageUseCase
 import com.wukiki.domain.usecase.GetProductUseCase
 import com.wukiki.domain.usecase.GetReviewUseCase
 import com.wukiki.givu.util.CheckState
 import com.wukiki.givu.util.InputValidState
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
@@ -33,10 +39,12 @@ import javax.inject.Inject
 @HiltViewModel
 class FundingViewModel @Inject constructor(
     private val application: Application,
+    private val getAuthUseCase: GetAuthUseCase,
     private val getFundingUseCase: GetFundingUseCase,
     private val getProductUseCase: GetProductUseCase,
     private val getReviewUseCase: GetReviewUseCase,
-    private val getLetterUseCase: GetLetterUseCase
+    private val getLetterUseCase: GetLetterUseCase,
+    private val getMyPageUseCase: GetMyPageUseCase
 ) : AndroidViewModel(application) {
 
     /*** Ui State, Event ***/
@@ -47,6 +55,12 @@ class FundingViewModel @Inject constructor(
     val fundingUiEvent = _fundingUiEvent.asSharedFlow()
 
     /*** Datas ***/
+    private val _user = MutableStateFlow<User?>(null)
+    val user = _user.asStateFlow()
+
+    private val _balance = MutableStateFlow<Int>(0)
+    val balance = _balance.asStateFlow()
+
     private val _fundings = MutableStateFlow<List<Funding>>(emptyList())
     val fundings = _fundings.asStateFlow()
 
@@ -195,6 +209,27 @@ class FundingViewModel @Inject constructor(
         }
     }
 
+    private fun fetchUserInfo(): Flow<User?> = flow {
+        val user = getAuthUseCase.getUserInfo().first()
+        emit(user)
+    }
+
+    fun initUserInfo() {
+        viewModelScope.launch {
+            val response = getAuthUseCase.fetchUserInfo()
+
+            when (response.status) {
+                ApiStatus.SUCCESS -> {
+                    _user.value = response.data
+                }
+
+                else -> {
+
+                }
+            }
+        }
+    }
+
     fun initFunding(fundingId: Int) {
         viewModelScope.launch {
             val response = getFundingUseCase.fetchFundingDetail(fundingId)
@@ -224,6 +259,22 @@ class FundingViewModel @Inject constructor(
 
                 else -> {
                     _fundingUiEvent.emit(FundingUiEvent.GetProductsFail)
+                }
+            }
+        }
+    }
+
+    fun initBalance() {
+        viewModelScope.launch {
+            val response = getMyPageUseCase.fetchAccount()
+
+            when (response.status) {
+                ApiStatus.SUCCESS -> {
+                    _balance.value = response.data ?: 0
+                }
+
+                else -> {
+
                 }
             }
         }
