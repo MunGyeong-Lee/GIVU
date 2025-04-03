@@ -6,6 +6,9 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.wukiki.domain.model.ApiStatus
 import com.wukiki.domain.model.Product
+import com.wukiki.domain.model.ProductReview
+import com.wukiki.domain.model.Review
+import com.wukiki.domain.usecase.GetProductReviewUseCase
 import com.wukiki.domain.usecase.GetProductUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -19,7 +22,8 @@ import javax.inject.Inject
 @HiltViewModel
 class MallViewModel @Inject constructor(
     application: Application,
-    private val getProductUseCase: GetProductUseCase
+    private val getProductUseCase: GetProductUseCase,
+    private val getProductReviewUseCase: GetProductReviewUseCase
 ) : AndroidViewModel(application) {
 
     /*** Ui Event ***/
@@ -35,6 +39,9 @@ class MallViewModel @Inject constructor(
 
     private val _selectedProduct = MutableStateFlow<Product?>(null)
     val selectedProduct = _selectedProduct.asStateFlow()
+
+//    private val _productReviewList = MutableStateFlow<List<ProductReview>>(emptyList())
+//    val productReviewList = _productReviewList.asStateFlow()
 
     init {
         initProducts()

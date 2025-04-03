@@ -7,6 +7,7 @@ import com.wukiki.data.api.FundingApi
 import com.wukiki.data.api.LetterApi
 import com.wukiki.data.api.MyPageApi
 import com.wukiki.data.api.ProductApi
+import com.wukiki.data.api.ProductReviewApi
 import com.wukiki.data.api.ReviewApi
 import com.wukiki.data.util.JwtInterceptor
 import dagger.Module
@@ -64,6 +65,12 @@ object NetworkModule {
     @Singleton
     fun provideProductApiService(@Named("Givu") retrofit: Retrofit): ProductApi {
         return retrofit.create(ProductApi::class.java)
+    }
+
+    @Provides
+    @Singleton
+    fun provideProductReviewApiService(@Named("Givu") retrofit: Retrofit): ProductReviewApi {
+        return retrofit.create(ProductReviewApi::class.java)
     }
 
     @Provides
