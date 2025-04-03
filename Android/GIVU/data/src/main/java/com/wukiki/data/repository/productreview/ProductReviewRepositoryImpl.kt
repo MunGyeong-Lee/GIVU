@@ -3,6 +3,7 @@ package com.wukiki.data.repository.productreview
 import android.util.Log
 import com.wukiki.data.mapper.ProductReviewsMapper
 import com.wukiki.domain.model.ApiResult
+import com.wukiki.domain.model.ProductReview
 import com.wukiki.domain.model.Review
 import com.wukiki.domain.repository.ProductReviewRepository
 import kotlinx.coroutines.CoroutineScope
@@ -14,7 +15,7 @@ class ProductReviewRepositoryImpl @Inject constructor(
     private val productReviewRemoteDataSource: ProductReviewRemoteDataSource
 ) : ProductReviewRepository {
 
-    override suspend fun getProductReviews(productId: Int): ApiResult<List<Review>> =
+    override suspend fun getProductReviews(productId: Int): ApiResult<List<ProductReview>> =
         try {
             val response = withContext(CoroutineScope(Dispatchers.IO).coroutineContext) {
                 productReviewRemoteDataSource.getProductReviews(productId)

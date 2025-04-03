@@ -21,7 +21,8 @@ object ProductsMapper {
                     favorite = productEntity.favorite.toString(),
                     star = productEntity.star.toString(),
                     createdAt = formatDateTime(productEntity.createdAt),
-                    description = productEntity.description
+                    description = productEntity.description,
+                    reviews = emptyList()
                 )
             )
         }

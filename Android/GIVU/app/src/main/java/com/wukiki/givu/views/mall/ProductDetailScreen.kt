@@ -20,6 +20,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentWidth
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -34,6 +36,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -48,12 +53,14 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.SubcomposeAsyncImage
+import com.wukiki.domain.model.ProductReview
 import com.wukiki.givu.R
 import com.wukiki.givu.ui.pretendard
 import com.wukiki.givu.ui.suit
 import com.wukiki.givu.util.CommonUtils
 import com.wukiki.givu.util.StoreDetailBottomButton
 import com.wukiki.givu.util.StoreDetailTopBar
+import com.wukiki.givu.views.mall.component.ReviewComponent
 import com.wukiki.givu.views.mall.viewmodel.MallViewModel
 
 @Composable
@@ -62,19 +69,29 @@ fun ProductDetailScreen(
     mallViewModel: MallViewModel
 ) {
     val productInfo by mallViewModel.selectedProduct.collectAsState()
+    var productReviewList by remember { mutableStateOf(emptyList<ProductReview>()) }
 
-    LaunchedEffect(productId) {
+    LaunchedEffect(Unit) {
 
         productId?.let {
             mallViewModel.getDetailProductInfo(productId)
             Log.d("Mall Detail Screen", "아이디: ${productId}")
-            Log.d("Mall Detail Screen", "상품: ${productInfo}")
+
         }
     }
 
+    LaunchedEffect(productInfo) {
+
+        productReviewList = productInfo?.reviews ?: emptyList()
+
+        Log.d("Mall Detail Screen", "상품: ${productInfo}")
+        Log.d("Mall Detail Screen", "리뷰: ${productReviewList}")
+    }
+
     productInfo?.let {
-        Box(modifier = Modifier
-            .fillMaxSize()
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
 //            .padding(bottom = 68.dp)
         ) {
 
@@ -82,120 +99,127 @@ fun ProductDetailScreen(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(bottom = 68.dp)
-                    .verticalScroll(rememberScrollState())
+//                    .verticalScroll(rememberScrollState())
             ) {
                 StoreDetailTopBar()
 
-                SubcomposeAsyncImage(
-                    model = it.image,
-                    contentDescription = null,
-                    contentScale = ContentScale.FillWidth,
-                    loading = { CircularProgressIndicator() },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .aspectRatio(4f / 3f),
-                )
-
-                Spacer(Modifier.height(16.dp))
-                Column() {
-                    Text(
-                        text = it.productName,
-                        fontFamily = pretendard,
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 22.sp,
-                        maxLines = 2,
-                        overflow = TextOverflow.Ellipsis
-                    )
-
-                    Spacer(Modifier.height(12.dp))
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Icon(
-                            painter = painterResource(R.drawable.ic_star_best),
+                LazyColumn(
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    item {
+                        SubcomposeAsyncImage(
+                            model = it.image,
                             contentDescription = null,
-                            tint = Color(0xFFFEBE14),
-//                            modifier = Modifier.size(20.dp)
-                        )
-                        Spacer(Modifier.width(4.dp))
-                        Text(
-                            text = it.star,
-                            fontFamily = pretendard,
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 16.sp,
-                            color = Color(0xFF666666)
+                            contentScale = ContentScale.FillWidth,
+                            loading = { CircularProgressIndicator() },
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .aspectRatio(4f / 3f),
                         )
                     }
 
-                    Spacer(Modifier.height(16.dp))
-                    Text(
-                        text = "판매가",
-                        fontFamily = suit,
-                        fontWeight = FontWeight.Medium,
-                        fontSize = 16.sp,
-//                        color = colorResource(R.color.main_secondary)
-                    )
-                    Spacer(Modifier.height(4.dp))
-                    Text(
-                        text = CommonUtils.makeCommaPrice(it.price.toInt()),
-                        fontFamily = pretendard,
-                        fontWeight = FontWeight.SemiBold,
-                        fontSize = 20.sp,
-                    )
+                    item {
+                        Column() {
+                            Spacer(Modifier.height(16.dp))
+                            Text(
+                                text = it.productName,
+                                fontFamily = pretendard,
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 22.sp,
+                                maxLines = 2,
+                                overflow = TextOverflow.Ellipsis
+                            )
 
-                    Spacer(Modifier.height(24.dp))
-                    Divider(
-                        modifier = Modifier.fillMaxWidth(),
-                        thickness = 15.dp,
-                        color = Color(0xFFF2F2F2)
-                    )
-                    Spacer(Modifier.height(24.dp))
-                    Text(
-                        text = "상품 정보",
-                        fontFamily = suit,
-                        fontWeight = FontWeight.SemiBold,
-                        fontSize = 20.sp,
-                    )
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(top = 12.dp)
-                            .clip(shape = RoundedCornerShape(5.dp))
-                            .border(1.dp, Color.Black, RoundedCornerShape(5.dp)),
-                    ) {
-                        Text(
-                            text = it.description,
-                            fontFamily = suit,
-                            fontWeight = FontWeight.Medium,
-                            fontSize = 16.sp,
-                            modifier = Modifier.padding(12.dp)
-//                        color = colorResource(R.color.main_secondary)
-                        )
+                            Spacer(Modifier.height(12.dp))
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Icon(
+                                    painter = painterResource(R.drawable.ic_star_best),
+                                    contentDescription = null,
+                                    tint = Color(0xFFFEBE14),
+                                    //                            modifier = Modifier.size(20.dp)
+                                )
+                                Spacer(Modifier.width(4.dp))
+                                Text(
+                                    text = it.star,
+                                    fontFamily = pretendard,
+                                    fontWeight = FontWeight.Bold,
+                                    fontSize = 16.sp,
+                                    color = Color(0xFF666666)
+                                )
+                            }
+
+                            Spacer(Modifier.height(16.dp))
+                            Text(
+                                text = "판매가",
+                                fontFamily = suit,
+                                fontWeight = FontWeight.Medium,
+                                fontSize = 16.sp,
+                                //                        color = colorResource(R.color.main_secondary)
+                            )
+                            Spacer(Modifier.height(4.dp))
+                            Text(
+                                text = CommonUtils.makeCommaPrice(it.price.toInt()),
+                                fontFamily = pretendard,
+                                fontWeight = FontWeight.SemiBold,
+                                fontSize = 20.sp,
+                            )
+
+                            Spacer(Modifier.height(24.dp))
+                            Divider(
+                                modifier = Modifier.fillMaxWidth(),
+                                thickness = 15.dp,
+                                color = Color(0xFFF2F2F2)
+                            )
+                            Spacer(Modifier.height(24.dp))
+                            Text(
+                                text = "상품 정보",
+                                fontFamily = suit,
+                                fontWeight = FontWeight.SemiBold,
+                                fontSize = 20.sp,
+                            )
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(top = 12.dp)
+                                    .clip(shape = RoundedCornerShape(5.dp))
+                                    .border(1.dp, Color.Black, RoundedCornerShape(5.dp)),
+                            ) {
+                                Text(
+                                    text = it.description,
+                                    fontFamily = suit,
+                                    fontWeight = FontWeight.Medium,
+                                    fontSize = 16.sp,
+                                    modifier = Modifier.padding(12.dp)
+                                    //                        color = colorResource(R.color.main_secondary)
+                                )
+                            }
+                            Spacer(Modifier.height(24.dp))
+                            Divider(
+                                modifier = Modifier.fillMaxWidth(),
+                                thickness = 15.dp,
+                                color = Color(0xFFF2F2F2)
+                            )
+                            Spacer(Modifier.height(24.dp))
+                            Text(
+                                text = "후기",
+                                fontFamily = suit,
+                                fontWeight = FontWeight.SemiBold,
+                                fontSize = 20.sp,
+                            )
+                            Spacer(Modifier.height(24.dp))
+                        }
                     }
-                    Spacer(Modifier.height(24.dp))
-                    Divider(
-                        modifier = Modifier.fillMaxWidth(),
-                        thickness = 15.dp,
-                        color = Color(0xFFF2F2F2)
-                    )
-                    Spacer(Modifier.height(24.dp))
-                    Text(
-                        text = "후기",
-                        fontFamily = suit,
-                        fontWeight = FontWeight.SemiBold,
-                        fontSize = 20.sp,
-                    )
-                    Spacer(Modifier.height(24.dp))
 
-
-
-
-                    Spacer(Modifier.height(16.dp))
+                    items(productReviewList) { review ->
+                        ReviewComponent(review)
+                    }
                 }
+                Spacer(Modifier.height(16.dp))
 
             }
-
 
 
             // 하단 바

@@ -9,5 +9,6 @@ data class Product(
     val favorite: String,
     val star: String,
     val createdAt: String,
-    val description: String
+    val description: String,
+    val reviews: List<ProductReview>
 )
