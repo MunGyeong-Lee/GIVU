@@ -80,6 +80,8 @@ pipeline {
                         docker run -d --name ${backendNew} \
                             --network ${NETWORK} \
                             -e PORT=${SPRINGBOOT_PORT} \
+                            -v /etc/localtime:/etc/localtime:ro \
+                            -v /etc/timezone:/etc/timezone:ro \
                             -p ${backendPort}:8080 \
                             ${SPRING_IMAGE}
 
