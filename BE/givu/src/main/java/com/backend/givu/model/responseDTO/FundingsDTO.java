@@ -75,21 +75,10 @@ public class FundingsDTO {
         this.image = funding.getImage();
         this.createdAt = DateTimeUtil.toLocalDateTime(funding.getCreatedAt());
         this.updatedAt = DateTimeUtil.toLocalDateTime(funding.getUpdatedAt());
-
         // user 정보
-        this.user = new UserSimpleInfoDTO(
-                funding.getUser().getId(),
-                funding.getUser().getNickname(),
-                funding.getUser().getProfileImage()
-        );
-
+        this.user = new UserSimpleInfoDTO(funding.getUser());
         // product 정보
-        this.product = new ProductsSimpleInfoDTO(
-                funding.getProduct().getId(),
-                funding.getProduct().getProductName(),
-                funding.getProduct().getPrice(),
-                funding.getProduct().getImage()
-        );
+        this.product = new ProductsSimpleInfoDTO(funding.getProduct());
     }
 
 }
