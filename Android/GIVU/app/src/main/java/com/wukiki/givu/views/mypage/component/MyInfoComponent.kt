@@ -27,11 +27,14 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
 import com.wukiki.givu.R
 import com.wukiki.givu.ui.suit
 
 @Composable
-fun MyInfoComponent() {
+fun MyInfoComponent(
+    navController: NavController
+) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -96,9 +99,7 @@ fun MyInfoComponent() {
                     .height(52.dp)
                     .padding(vertical = 4.dp)
                     .clip(shape = RoundedCornerShape(10.dp))
-                    .clickable {
-
-                    },
+                    .clickable { navController.navigate("MyRegisterFunding") },
 
                 verticalAlignment = Alignment.CenterVertically
             ) {
@@ -193,11 +194,4 @@ fun MyInfoComponent() {
 
         }
     }
-}
-
-@Preview(showBackground = true)
-@Composable
-private fun InfoPreview() {
-    MyInfoComponent()
-
 }

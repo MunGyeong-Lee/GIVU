@@ -41,6 +41,12 @@ class HomeViewModel @Inject constructor(
     private val _user = MutableStateFlow<User?>(null)
     val user = _user.asStateFlow()
 
+    private val _myRegisterFundings = MutableStateFlow<List<Funding>>(emptyList())
+    val myRegisterFundings = _myRegisterFundings.asStateFlow()
+
+    private val _myParticipateFundings = MutableStateFlow<List<Funding>>(emptyList())
+    val myParticipateFundings = _myParticipateFundings.asStateFlow()
+
     private val _balance = MutableStateFlow<Int>(0)
     val balance = _balance.asStateFlow()
 
@@ -151,6 +157,38 @@ class HomeViewModel @Inject constructor(
 
                 else -> {
                     _homeUiEvent.emit(HomeUiEvent.AutoLoginFail)
+                }
+            }
+        }
+    }
+
+    fun initMyRegisterFundings() {
+        viewModelScope.launch {
+            val response = getMyPageUseCase.fetchMyRegisterFundings()
+
+            when (response.status) {
+                ApiStatus.SUCCESS -> {
+                    _myRegisterFundings.value = response.data ?: emptyList()
+                }
+
+                else -> {
+
+                }
+            }
+        }
+    }
+
+    fun initMyParticipateFundings() {
+        viewModelScope.launch {
+            val response = getMyPageUseCase.fetchMyParticipateFundings()
+
+            when (response.status) {
+                ApiStatus.SUCCESS -> {
+                    _myParticipateFundings.value = response.data ?: emptyList()
+                }
+
+                else -> {
+
                 }
             }
         }

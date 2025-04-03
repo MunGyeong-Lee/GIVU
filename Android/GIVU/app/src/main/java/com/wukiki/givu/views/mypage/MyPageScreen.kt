@@ -79,7 +79,7 @@ fun MyPageScreen(
                 .verticalScroll(rememberScrollState())
         ) {
             PayComponent(homeViewModel, navController)
-            MyInfoComponent()
+            MyInfoComponent(navController)
             Spacer(modifier = Modifier.height(16.dp))
             if (user != null) {
                 Button(

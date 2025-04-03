@@ -26,7 +26,9 @@ class MyPageFragment : BaseFragment<FragmentMyPageBinding>(R.layout.fragment_my_
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        viewModel.initAccount()
+        viewModel.initUserInfo()
+        viewModel.initMyRegisterFundings()
+        viewModel.initMyParticipateFundings()
 
         binding.composeMyPage.setContent {
             val navController = rememberNavController()
@@ -59,6 +61,10 @@ class MyPageFragment : BaseFragment<FragmentMyPageBinding>(R.layout.fragment_my_
 
                 composable("ChargeAccount") {
                     ChargeAccountScreen(viewModel, navController, findNavController())
+                }
+
+                composable("MyRegisterFunding") {
+                    MyRegisterFundingScreen(viewModel, findNavController())
                 }
             }
         }
