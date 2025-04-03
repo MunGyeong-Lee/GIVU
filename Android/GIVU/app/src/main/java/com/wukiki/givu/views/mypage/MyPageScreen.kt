@@ -78,7 +78,7 @@ fun MyPageScreen(
                 .padding(top = 60.dp)
                 .verticalScroll(rememberScrollState())
         ) {
-            PayComponent(navController)
+            PayComponent(homeViewModel, navController)
             MyInfoComponent()
             Spacer(modifier = Modifier.height(16.dp))
             if (user != null) {
