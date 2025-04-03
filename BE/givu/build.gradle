@@ -46,6 +46,7 @@ dependencies {
 	testImplementation 'org.springframework.security:spring-security-test'
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 	testImplementation 'org.mockito:mockito-core' //Mockito
+	implementation 'org.springframework.kafka:spring-kafka'	// kafka
 //	implementation 'org.hibernate.validator:hibernate-validator:8.0.1.Final'
 //	implementation 'org.glassfish:jakarta.el:4.0.2'
 
