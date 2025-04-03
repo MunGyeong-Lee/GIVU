@@ -61,6 +61,26 @@ public class FundingService {
     }
 
     /**
+     * 내가 만든 펀딩 리스트 조회
+     */
+    public ApiResponse<List<FundingsDTO>> findAllMyFunding(long userId){
+        List<Funding> fundings =  fundingRepository.findAllMyFundingWithUserAndProduct(userId);
+        return ApiResponse.success(fundings.stream()
+                .map(FundingsDTO::new)
+                .toList());
+    }
+
+    /**
+     * 내가 참여한 펀딩 리스트 조회
+     */
+    public ApiResponse<List<FundingsDTO>> findAllMyParticipantFunding(long userId){
+        List<Funding> fundings =  fundingRepository.findMyParticipantFunding(userId);
+        return ApiResponse.success(fundings.stream()
+                .map(FundingsDTO::new)
+                .toList());
+    }
+
+    /**
      * 펀딩 생성
      */
     public FundingsDTO saveFunding (Long userId, FundingCreateDTO fundingDTO, List<String > imageUrls){
