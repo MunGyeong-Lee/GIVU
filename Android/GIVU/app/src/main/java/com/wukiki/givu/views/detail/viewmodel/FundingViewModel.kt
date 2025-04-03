@@ -53,6 +53,9 @@ class FundingViewModel @Inject constructor(
     private val _selectedFunding = MutableStateFlow<FundingDetail?>(null)
     val selectedFunding = _selectedFunding.asStateFlow()
 
+    private val _letterSort = MutableStateFlow<String>("최신순")
+    val letterSort = _letterSort.asStateFlow()
+
     private val _originalImages = MutableStateFlow<HashMap<String, Boolean>>(hashMapOf())
     val originalImages = _originalImages.asStateFlow()
 
@@ -112,7 +115,7 @@ class FundingViewModel @Inject constructor(
         _fundingImageUris.value = listOf()
         _fundingImageMultiparts.value = listOf()
         _selectedFunding.value?.let {
-            _selectedFundingLetter.value = it.letters
+            _selectedFundingLetter.value = it.letters.sortedByDescending { it.createdAt }
             _fundingParticipants.value = it.reviews
             it.images.forEach { image ->
                 _originalImages.update { current ->
@@ -222,6 +225,24 @@ class FundingViewModel @Inject constructor(
                 else -> {
                     _fundingUiEvent.emit(FundingUiEvent.GetProductsFail)
                 }
+            }
+        }
+    }
+
+    fun sortLetters(sortOption: String) {
+        _letterSort.value = sortOption
+        val newLetters = _selectedFundingLetter.value
+        when (_letterSort.value) {
+            "최신순" -> {
+                _selectedFundingLetter.value = newLetters.sortedByDescending { it.createdAt }
+            }
+
+            "오래된순" -> {
+                _selectedFundingLetter.value = newLetters.sortedBy { it.createdAt }
+            }
+
+            "이름순" -> {
+                _selectedFundingLetter.value = newLetters.sortedBy { it.userNickname }
             }
         }
     }

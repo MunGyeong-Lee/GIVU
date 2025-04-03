@@ -52,7 +52,7 @@ fun DetailFundingScreen(
                 .background(Color.White)
                 .padding(paddingValues)
         ) {
-            funding?.let { DetailFundingContent(it, letters, navController) }
+            funding?.let { DetailFundingContent(fundingViewModel, it, letters) }
         }
     }
 }
