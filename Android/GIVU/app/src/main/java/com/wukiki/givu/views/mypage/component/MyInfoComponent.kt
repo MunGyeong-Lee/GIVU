@@ -2,7 +2,6 @@ package com.wukiki.givu.views.mypage.component
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -10,7 +9,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -24,7 +22,6 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
@@ -68,13 +65,11 @@ fun MyInfoComponent(
                     .height(52.dp)
                     .padding(vertical = 4.dp)
                     .clip(shape = RoundedCornerShape(10.dp))
-                    .clickable {
-
-                    },
+                    .clickable { navController.navigate("MyParticipateFunding") },
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = "관심 펀딩 목록",
+                    text = "참여한 펀딩 목록",
                     fontFamily = suit,
                     fontWeight = FontWeight.SemiBold,
                     fontSize = 20.sp,
