@@ -67,10 +67,10 @@ fun ParticipateFundingScreen(
             ) {
                 funding?.let {
                     FundingInfoPager(it)
-                    FundingAmountSelectionPager()
+                    FundingAmountSelectionPager(fundingViewModel)
                     ParticipantInfoPager()
                     IdentityVerificationPager()
-                    PaymentBalancePager()
+                    PaymentBalancePager(fundingViewModel)
                     Button(
                         onClick = { navController.navigate("WriteLetter") },
                         modifier = Modifier

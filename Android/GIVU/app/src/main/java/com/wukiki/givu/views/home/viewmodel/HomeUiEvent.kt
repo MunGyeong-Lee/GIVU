@@ -6,5 +6,9 @@ sealed class HomeUiEvent {
 
     data object GoToDetailFunding : HomeUiEvent()
 
+    data object WithdrawalSuccess : HomeUiEvent()
+
+    data object WithdrawalFail : HomeUiEvent()
+
     data object Logout : HomeUiEvent()
 }

@@ -31,6 +31,6 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(R.layout.fragment_home) {
         super.onResume()
 
         mainViewModel.setBnvState(true)
-        viewModel.updateUserInfo()
+        viewModel.initUserInfo()
     }
 }
