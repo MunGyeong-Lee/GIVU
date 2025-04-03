@@ -1,6 +1,7 @@
 package com.wukiki.data.mapper
 
 import com.wukiki.data.entity.FundingDetailEntity
+import com.wukiki.data.util.CommonUtils.formatDateTime
 import com.wukiki.domain.model.FundingDetail
 import com.wukiki.domain.model.Letter
 import com.wukiki.domain.model.Review
@@ -22,8 +23,8 @@ object FundingDetailMapper {
                     comment = letter.comment,
                     image = letter.image ?: "",
                     access = letter.access ?: "",
-                    createdAt = letter.createdAt ?: "",
-                    updatedAt = letter.updatedAt ?: ""
+                    createdAt = formatDateTime(letter.createdAt ?: ""),
+                    updatedAt = formatDateTime(letter.updatedAt ?: "")
                 )
             )
         }
@@ -38,8 +39,8 @@ object FundingDetailMapper {
                     userProfile = review.user.image,
                     comment = review.comment,
                     image = review.image ?: "",
-                    createdAt = review.createdAt ?: "",
-                    updatedAt = review.updatedAt ?: "",
+                    createdAt = formatDateTime(review.createdAt ?: ""),
+                    updatedAt = formatDateTime(review.updatedAt ?: ""),
                     visit = review.visit.toString()
                 )
             )
@@ -56,8 +57,8 @@ object FundingDetailMapper {
             fundedAmount = fundingDetailEntity.data.fundedAmount,
             status = fundingDetailEntity.data.status ?: "",
             images = fundingDetailEntity.data.images ?: emptyList(),
-            createdAt = fundingDetailEntity.data.createdAt,
-            updatedAt = fundingDetailEntity.data.updatedAt ?: "",
+            createdAt = formatDateTime(fundingDetailEntity.data.createdAt),
+            updatedAt = formatDateTime(fundingDetailEntity.data.updatedAt ?: ""),
             writerId = fundingDetailEntity.data.writer.userId,
             writerNickname = fundingDetailEntity.data.writer.nickname,
             writerProfile = fundingDetailEntity.data.writer.image,
