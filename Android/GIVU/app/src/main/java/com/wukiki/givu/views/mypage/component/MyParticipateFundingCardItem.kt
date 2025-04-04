@@ -114,7 +114,24 @@ fun MyParticipateFundingCardItem(
                     contentScale = ContentScale.Crop,
                     modifier = Modifier
                         .size(36.dp)
-                        .clip(CircleShape)
+                        .clip(CircleShape),
+                    loading = {
+                        Box(
+                            modifier = Modifier
+                                .matchParentSize()
+                                .clip(RoundedCornerShape(10.dp))
+                                .shimmerEffect()
+                        )
+                    },
+                    error = {
+                        Image(
+                            painter = painterResource(id = R.drawable.ic_logo),
+                            contentDescription = "Error",
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(10.dp))
+                                .size(24.dp)
+                        )
+                    }
                 )
 
                 Spacer(modifier = Modifier.width(8.dp))
