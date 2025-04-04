@@ -62,6 +62,9 @@
 
     <!-- Detail -->
     <string name="label_detail_funding">Detail Funding</string>
+    <string name="text_funding_finish">펀딩 완료하기</string>
+    <string name="text_funding_update">펀딩 수정</string>
+    <string name="text_funding_cancel">펀딩 취소</string>
 
     <!-- Participate -->
     <string name="label_participate_funding">Participate Funding</string>
