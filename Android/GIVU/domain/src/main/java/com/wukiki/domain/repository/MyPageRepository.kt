@@ -7,11 +7,11 @@ import okhttp3.RequestBody
 
 interface MyPageRepository {
 
-    suspend fun depositGivuPay(body: RequestBody): ApiResult<Account>
+    suspend fun depositGivuPay(body: RequestBody): ApiResult<Pair<Int, Int>>
 
-    suspend fun withdrawGivuPay(body: RequestBody): ApiResult<Account>
+    suspend fun withdrawGivuPay(body: RequestBody): ApiResult<Pair<Int, Int>>
 
-    suspend fun fetchAccount(): ApiResult<Int>
+    suspend fun fetchAccount(): ApiResult<Account>
 
     suspend fun createAccount(): ApiResult<String>
 

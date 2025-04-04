@@ -1,7 +1,6 @@
 package com.wukiki.data.mapper
 
 import com.wukiki.data.entity.MyFundingEntity
-import com.wukiki.data.util.CommonUtils.makeCommaPrice
 import com.wukiki.domain.model.Funding
 
 object MyFundingMapper {
@@ -18,7 +17,7 @@ object MyFundingMapper {
                     userProfile = funding.user.image,
                     productId = funding.product.id,
                     productName = funding.product.productName,
-                    productPrice = makeCommaPrice(funding.product.price),
+                    productPrice = funding.product.price.toString(),
                     productImage = funding.product.image,
                     title = funding.title,
                     body = "",

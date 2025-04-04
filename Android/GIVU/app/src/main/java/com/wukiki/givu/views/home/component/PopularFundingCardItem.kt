@@ -36,6 +36,7 @@ import com.wukiki.domain.model.Funding
 import com.wukiki.givu.R
 import com.wukiki.givu.ui.suit
 import com.wukiki.givu.util.CommonUtils
+import com.wukiki.givu.util.shimmerEffect
 
 @Composable
 fun PopularFundingCardItem(
@@ -61,15 +62,29 @@ fun PopularFundingCardItem(
                     .fillMaxWidth()
                     .height(180.dp)
             ) {
-                if (funding.images.isNotEmpty()) {
-                    SubcomposeAsyncImage(
-                        model = funding.images[0],
-                        contentDescription = "Funding Image",
-                        contentScale = ContentScale.Crop,
-                        loading = { CircularProgressIndicator() },
-                        modifier = Modifier.fillMaxSize()
-                    )
-                }
+                SubcomposeAsyncImage(
+                    model = if (funding.images.isEmpty()) "" else funding.images[0],
+                    contentDescription = "Funding Image",
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier.fillMaxSize(),
+                    loading = {
+                        Box(
+                            modifier = Modifier
+                                .matchParentSize()
+                                .clip(RoundedCornerShape(10.dp))
+                                .shimmerEffect()
+                        )
+                    },
+                    error = {
+                        Image(
+                            painter = painterResource(id = R.drawable.ic_logo),
+                            contentDescription = "Error",
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(10.dp))
+                                .size(24.dp)
+                        )
+                    }
+                )
 
                 Box(
                     modifier = Modifier

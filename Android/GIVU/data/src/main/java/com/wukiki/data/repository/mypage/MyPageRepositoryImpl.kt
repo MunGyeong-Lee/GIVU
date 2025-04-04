@@ -17,7 +17,7 @@ class MyPageRepositoryImpl @Inject constructor(
     private val myPageRemoteDataSource: MyPageRemoteDataSource
 ) : MyPageRepository {
 
-    override suspend fun depositGivuPay(body: RequestBody): ApiResult<Account> =
+    override suspend fun depositGivuPay(body: RequestBody): ApiResult<Pair<Int, Int>> =
         try {
             val response = withContext(CoroutineScope(Dispatchers.IO).coroutineContext) {
                 myPageRemoteDataSource.postAccountDeposit(body)
@@ -27,7 +27,12 @@ class MyPageRepositoryImpl @Inject constructor(
             Log.d("MyPageRepositoryImpl", "Response: $responseBody")
             if (response.isSuccessful && (responseBody != null)) {
                 Log.d("MyPageRepositoryImpl", "depositGivuPay Success")
-                ApiResult.success(AccountMapper(responseBody))
+                ApiResult.success(
+                    Pair(
+                        responseBody.data.givupayBalance,
+                        responseBody.data.accountBalance
+                    )
+                )
             } else {
                 Log.d("MyPageRepositoryImpl", "depositGivuPay Fail: ${response.code()}")
                 ApiResult.error(response.errorBody().toString(), null)
@@ -37,7 +42,7 @@ class MyPageRepositoryImpl @Inject constructor(
             ApiResult.fail()
         }
 
-    override suspend fun withdrawGivuPay(body: RequestBody): ApiResult<Account> =
+    override suspend fun withdrawGivuPay(body: RequestBody): ApiResult<Pair<Int, Int>> =
         try {
             val response = withContext(CoroutineScope(Dispatchers.IO).coroutineContext) {
                 myPageRemoteDataSource.postAccountWithdrawal(body)
@@ -47,7 +52,12 @@ class MyPageRepositoryImpl @Inject constructor(
             Log.d("MyPageRepositoryImpl", "Response: $responseBody")
             if (response.isSuccessful && (responseBody != null)) {
                 Log.d("MyPageRepositoryImpl", "withdrawGivuPay Success")
-                ApiResult.success(AccountMapper(responseBody))
+                ApiResult.success(
+                    Pair(
+                        responseBody.data.givupayBalance,
+                        responseBody.data.accountBalance
+                    )
+                )
             } else {
                 Log.d("MyPageRepositoryImpl", "withdrawGivuPay Fail: ${response.code()}")
                 ApiResult.error(response.errorBody().toString(), null)
@@ -57,7 +67,7 @@ class MyPageRepositoryImpl @Inject constructor(
             ApiResult.fail()
         }
 
-    override suspend fun fetchAccount(): ApiResult<Int> =
+    override suspend fun fetchAccount(): ApiResult<Account> =
         try {
             val response = withContext(CoroutineScope(Dispatchers.IO).coroutineContext) {
                 myPageRemoteDataSource.getAccount()
@@ -67,7 +77,7 @@ class MyPageRepositoryImpl @Inject constructor(
             Log.d("MyPageRepositoryImpl", "Response: $responseBody")
             if (response.isSuccessful && (responseBody != null)) {
                 Log.d("MyPageRepositoryImpl", "fetchAccount Success")
-                ApiResult.success(responseBody.data?.balance ?: 0)
+                ApiResult.success(AccountMapper(responseBody))
             } else {
                 Log.d("MyPageRepositoryImpl", "fetchAccount Fail: ${response.code()}")
                 ApiResult.error(response.errorBody().toString(), null)

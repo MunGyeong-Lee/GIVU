@@ -4,6 +4,7 @@ import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.gson.GsonBuilder
+import com.wukiki.domain.model.Account
 import com.wukiki.domain.model.ApiStatus
 import com.wukiki.domain.model.Funding
 import com.wukiki.domain.model.User
@@ -22,7 +23,6 @@ import kotlinx.coroutines.launch
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.RequestBody
 import okhttp3.RequestBody.Companion.toRequestBody
-import timber.log.Timber
 import javax.inject.Inject
 
 @HiltViewModel
@@ -41,14 +41,14 @@ class HomeViewModel @Inject constructor(
     private val _user = MutableStateFlow<User?>(null)
     val user = _user.asStateFlow()
 
+    private val _account = MutableStateFlow<Account?>(null)
+    val account = _account.asStateFlow()
+
     private val _myRegisterFundings = MutableStateFlow<List<Funding>>(emptyList())
     val myRegisterFundings = _myRegisterFundings.asStateFlow()
 
     private val _myParticipateFundings = MutableStateFlow<List<Funding>>(emptyList())
     val myParticipateFundings = _myParticipateFundings.asStateFlow()
-
-    private val _balance = MutableStateFlow<Int>(0)
-    val balance = _balance.asStateFlow()
 
     private val _charge = MutableStateFlow<Int>(0)
     val charge = _charge.asStateFlow()
@@ -200,7 +200,7 @@ class HomeViewModel @Inject constructor(
 
             when (response.status) {
                 ApiStatus.SUCCESS -> {
-                    _balance.value = response.data ?: 0
+                    _account.value = response.data
                 }
 
                 else -> {

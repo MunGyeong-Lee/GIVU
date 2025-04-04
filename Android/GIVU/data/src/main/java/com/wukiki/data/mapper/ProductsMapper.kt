@@ -16,7 +16,7 @@ object ProductsMapper {
                     productId = productEntity.id.toString(),
                     productName = productEntity.productName,
                     category = productEntity.category,
-                    price = makeCommaPrice(productEntity.price),
+                    price = productEntity.price.toString(),
                     image = productEntity.image,
                     favorite = productEntity.favorite.toString(),
                     star = productEntity.star.toString(),
