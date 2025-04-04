@@ -90,11 +90,11 @@ pipeline {
                             -p ${backendPort}:8080 \
                             ${SPRING_IMAGE}
 
-                        docker rm -f ${frontendNew} || true
-                        docker run -d --name ${frontendNew} \
-                            --network ${NETWORK} \
-                            -p ${frontendPort}:80 \
-                            ${REACT_IMAGE}
+                            docker run -d --name ${frontendNew} \
+                                --network ${NETWORK} \
+                                -p ${frontendPort}:80 \
+                                -v /home/ubuntu/nginx/front-nginx/react-default.conf:/etc/nginx/conf.d/default.conf:ro \
+                                ${REACT_IMAGE}
                     """
 
                     sleep time: 5, unit: 'SECONDS'
