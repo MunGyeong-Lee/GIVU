@@ -17,7 +17,6 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -36,6 +35,7 @@ import com.wukiki.domain.model.Funding
 import com.wukiki.givu.R
 import com.wukiki.givu.ui.suit
 import com.wukiki.givu.util.CommonUtils
+import com.wukiki.givu.util.CommonUtils.makePercentage
 import com.wukiki.givu.util.shimmerEffect
 
 @Composable
@@ -112,20 +112,37 @@ fun PopularFundingCardItem(
                     contentScale = ContentScale.Crop,
                     modifier = Modifier
                         .size(36.dp)
-                        .clip(CircleShape)
+                        .clip(CircleShape),
+                    loading = {
+                        Box(
+                            modifier = Modifier
+                                .matchParentSize()
+                                .clip(RoundedCornerShape(10.dp))
+                                .shimmerEffect()
+                        )
+                    },
+                    error = {
+                        Image(
+                            painter = painterResource(id = R.drawable.ic_logo),
+                            contentDescription = "Error",
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(10.dp))
+                                .size(24.dp)
+                        )
+                    }
                 )
 
                 Spacer(modifier = Modifier.width(8.dp))
 
                 Text(
-                    text = "김싸피",
+                    text = funding.userNickname,
                     fontSize = 16.sp,
                     fontWeight = FontWeight.SemiBold,
                     fontFamily = suit,
                     modifier = Modifier.weight(1F)
                 )
 
-                CategoryTagItem("생일")
+                CategoryTagItem(funding.category)
             }
 
             Spacer(modifier = Modifier.height(6.dp))
@@ -154,14 +171,14 @@ fun PopularFundingCardItem(
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(
-                        text = "58% 달성",
+                        text = "${makePercentage(funding.fundedAmount, funding.productPrice.toInt())}% 달성",
                         fontSize = 16.sp,
                         color = Color.Red,
                         fontWeight = FontWeight.Bold,
                         fontFamily = suit
                     )
 
-                    LetterCountItem("99+")
+                    LetterCountItem(funding.participantsNumber)
                 }
             }
 

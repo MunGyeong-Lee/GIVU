@@ -38,6 +38,7 @@ import com.wukiki.domain.model.Funding
 import com.wukiki.givu.R
 import com.wukiki.givu.ui.suit
 import com.wukiki.givu.util.CommonUtils
+import com.wukiki.givu.util.CommonUtils.makePercentage
 import com.wukiki.givu.util.shimmerEffect
 
 @Composable
@@ -110,7 +111,7 @@ fun FundingItem(
                 Spacer(modifier = Modifier.height(4.dp))
 
                 Text(
-                    text = funding.id.toString(),
+                    text = funding.userNickname,
                     fontSize = 16.sp,
                     fontWeight = FontWeight.SemiBold,
                     fontFamily = suit,
@@ -124,7 +125,7 @@ fun FundingItem(
                     horizontalArrangement = Arrangement.Start
                 ) {
                     Text(
-                        text = CommonUtils.makeCommaPrice(funding.fundedAmount),
+                        text = CommonUtils.makeCommaPrice(funding.productPrice.toInt()),
                         fontSize = 16.sp,
                         fontWeight = FontWeight.SemiBold,
                         fontFamily = suit,
@@ -132,7 +133,7 @@ fun FundingItem(
                     )
                     Spacer(modifier = Modifier.width(4.dp))
                     Text(
-                        text = "58%",
+                        text = "${makePercentage(funding.fundedAmount, funding.productPrice.toInt())}%",
                         fontSize = 16.sp,
                         fontWeight = FontWeight.Medium,
                         fontFamily = suit,
@@ -155,7 +156,7 @@ fun FundingItem(
                     Spacer(modifier = Modifier.width(4.dp))
 
                     Text(
-                        text = "99+",
+                        text = funding.participantsNumber,
                         fontSize = 16.sp,
                         fontWeight = FontWeight.SemiBold,
                         fontFamily = suit,
