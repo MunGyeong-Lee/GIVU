@@ -43,7 +43,7 @@ pipeline {
         stage('Build React') {
             steps {
                 script {
-                    withCredentials([file(credentialsId: 'REACT_ENV_FILE', variable:        'REACT_ENV_PATH')]) {
+                    withCredentials([file(credentialsId: 'REACT_ENV_FILE', variable:'REACT_ENV_PATH')]) {
                 sh 'cp $REACT_ENV_PATH FE/GIVU/.env'
                 sh 'echo "[DEBUG] .env 내용:"'
                 sh 'cat FE/GIVU/.env'
