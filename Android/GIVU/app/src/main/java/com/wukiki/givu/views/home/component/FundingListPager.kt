@@ -1,5 +1,6 @@
 package com.wukiki.givu.views.home.component
 
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.lazy.LazyColumn
@@ -15,12 +16,22 @@ fun FundingListPager(
     fundings: List<Funding>,
     navController: NavController
 ) {
-    LazyColumn(
+//    LazyColumn(
+//        modifier = Modifier
+//            .fillMaxWidth()
+//            .height((100 * fundings.size).dp)
+//    ) {
+//        items(fundings, key = { it.id }) { funding ->
+//            FundingItem(funding, navController) { }
+//        }
+//    }
+
+    Column(
         modifier = Modifier
             .fillMaxWidth()
             .height((100 * fundings.size).dp)
     ) {
-        items(fundings, key = { it.id }) { funding ->
+        fundings.forEach { funding ->
             FundingItem(funding, navController) { }
         }
     }

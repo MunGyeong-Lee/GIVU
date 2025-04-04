@@ -10,18 +10,26 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.KeyboardArrowUp
+import androidx.compose.material3.Button
 import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.FloatingActionButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
@@ -40,6 +48,7 @@ import com.wukiki.givu.views.home.component.PopularFundingListPager
 import com.wukiki.givu.views.home.component.SearchBarItem
 import com.wukiki.givu.views.home.viewmodel.HomeUiEvent
 import com.wukiki.givu.views.home.viewmodel.HomeViewModel
+import kotlinx.coroutines.launch
 
 @Composable
 fun HomeScreen(
@@ -50,6 +59,12 @@ fun HomeScreen(
     val user by homeViewModel.user.collectAsState()
     val popularFundings by homeViewModel.popularFundings.collectAsState()
     val homeUiEvent = homeViewModel.homeUiEvent
+
+    val listState = rememberLazyListState()
+    val coroutineScope = rememberCoroutineScope()
+    val showScrollToTopButton by remember {
+        derivedStateOf { listState.firstVisibleItemIndex > 1 }
+    }
 
     LaunchedEffect(Unit) {
         homeUiEvent.collect { event ->
@@ -69,19 +84,47 @@ fun HomeScreen(
 
     Scaffold(
         floatingActionButton = {
-            if (user != null) {
-                Column(
-                    horizontalAlignment = Alignment.End
-                ) {
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                if (showScrollToTopButton) {
                     FloatingActionButton(
-                        onClick = { navController.navigate(R.id.action_home_to_register_funding) },
+                        onClick = {
+                            coroutineScope.launch {
+                                listState.animateScrollToItem(0)
+                            }
+                        },
+                        elevation = FloatingActionButtonDefaults.elevation(0.dp),
+                        containerColor = Color.White,
+                        modifier = Modifier
+                            .size(32.dp)
+                            .border(
+                                (0.5).dp, Color(0xFFBCBCBC),
+                                RoundedCornerShape(30.dp)
+                            )
+                            .clip(shape = RoundedCornerShape(30.dp))
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.KeyboardArrowUp,
+                            contentDescription = "Scroll to Top"
+                        )
+                    }
+                }
+                Spacer(Modifier.height(8.dp))
+                
+                if (user != null) {
+                    FloatingActionButton(
+                        onClick = {
+                            navController.navigate(R.id.action_home_to_register_funding)
+                        },
                         containerColor = colorResource(id = R.color.main_primary),
                         modifier = Modifier
                             .padding(bottom = 20.dp)
                             .border(
                                 (0.5).dp, Color(0xFFBFE0EF),
                                 RoundedCornerShape(30.dp)
-                            ),
+                            )
+                            .clip(shape = RoundedCornerShape(30.dp)),
                         interactionSource = remember { MutableInteractionSource() },
                     ) {
                         Icon(
@@ -98,6 +141,7 @@ fun HomeScreen(
     ) { contentPadding ->
 
         LazyColumn(
+            state = listState,
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(contentPadding)
