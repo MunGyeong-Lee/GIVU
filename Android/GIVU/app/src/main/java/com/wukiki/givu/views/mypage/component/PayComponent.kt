@@ -46,7 +46,6 @@ fun PayComponent(
     navController: NavController
 ) {
     val user by homeViewModel.user.collectAsState()
-    val balance by homeViewModel.balance.collectAsState()
 
     Card(
         modifier = Modifier

@@ -70,6 +70,7 @@ fun MyPageScreen(
         modifier = Modifier
             .fillMaxSize()
             .background(Color(0xFFF3F4F6))
+            .padding(16.dp)
     ) {
         MyPageTopBar()
         Column(

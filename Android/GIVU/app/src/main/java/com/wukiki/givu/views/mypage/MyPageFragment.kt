@@ -27,6 +27,7 @@ class MyPageFragment : BaseFragment<FragmentMyPageBinding>(R.layout.fragment_my_
         super.onViewCreated(view, savedInstanceState)
 
         viewModel.initUserInfo()
+        viewModel.initAccount()
         viewModel.initMyRegisterFundings()
         viewModel.initMyParticipateFundings()
 
@@ -60,7 +61,7 @@ class MyPageFragment : BaseFragment<FragmentMyPageBinding>(R.layout.fragment_my_
                 }
 
                 composable("ChargeAccount") {
-                    ChargeAccountScreen(viewModel, navController, findNavController())
+                    ChargeAccountScreen(viewModel, navController)
                 }
 
                 composable("MyRegisterFunding") {

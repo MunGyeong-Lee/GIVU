@@ -3,6 +3,7 @@ package com.wukiki.givu.views.mypage
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -39,16 +40,20 @@ fun MyParticipateFundingScreen(
         Column(
             modifier = Modifier
                 .padding(paddingValues)
-                .fillMaxSize(),
+                .fillMaxSize()
+                .padding(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
-            Text(
-                text = "내가 참여한 펀딩",
-                fontFamily = suit,
-                fontWeight = FontWeight.Bold,
-                fontSize = 22.sp
-            )
+            Row {
+                Text(
+                    text = "내가 참여한 펀딩",
+                    fontFamily = suit,
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 22.sp
+                )
+                Spacer(modifier = Modifier.weight(1F))
+            }
 
             Spacer(modifier = Modifier.height(16.dp))
 
@@ -64,7 +69,8 @@ fun MyParticipateFundingScreen(
                             text = "참여한 펀딩이 없습니다.",
                             fontFamily = suit,
                             fontWeight = FontWeight.Bold,
-                            fontSize = 28.sp
+                            fontSize = 20.sp,
+                            color = Color.DarkGray
                         )
                     }
                 }
