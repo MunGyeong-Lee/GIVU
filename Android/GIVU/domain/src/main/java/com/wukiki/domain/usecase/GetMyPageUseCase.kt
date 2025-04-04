@@ -11,13 +11,13 @@ class GetMyPageUseCase @Inject constructor(
     private val myPageRepository: MyPageRepository
 ) {
 
-    suspend fun depositGivuPay(body: RequestBody): ApiResult<Account> =
+    suspend fun depositGivuPay(body: RequestBody): ApiResult<Pair<Int, Int>> =
         myPageRepository.depositGivuPay(body)
 
-    suspend fun withdrawGivuPay(body: RequestBody): ApiResult<Account> =
+    suspend fun withdrawGivuPay(body: RequestBody): ApiResult<Pair<Int, Int>> =
         myPageRepository.withdrawGivuPay(body)
 
-    suspend fun fetchAccount(): ApiResult<Int> = myPageRepository.fetchAccount()
+    suspend fun fetchAccount(): ApiResult<Account> = myPageRepository.fetchAccount()
 
     suspend fun createAccount(): ApiResult<String> = myPageRepository.createAccount()
 
