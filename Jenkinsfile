@@ -41,14 +41,19 @@ pipeline {
         }
 
         stage('Build React') {
-    steps {
-        withCredentials([file(credentialsId: 'REACT_ENV_FILE', variable: 'REACT_ENV_PATH')]) {
-    sh 'cp $REACT_ENV_PATH FE/GIVU/.env'
-    
-}
-        sh "docker build -t ${REACT_IMAGE} -f FE/GIVU/Dockerfile FE/GIVU"
+            steps {
+                script {
+                    withCredentials([file(credentialsId: 'REACT_ENV_FILE', variable:        'REACT_ENV_PATH')]) {
+                sh 'cp $REACT_ENV_PATH FE/GIVU/.env'
+                sh 'echo "[DEBUG] .env 내용:"'
+                sh 'cat FE/GIVU/.env'
+            }
+
+            sh "docker build -t ${REACT_IMAGE} -f FE/GIVU/Dockerfile FE/GIVU"
+        }
     }
 }
+
 
         stage('Deploy App (Blue-Green)') {
             steps {
