@@ -128,7 +128,9 @@ const TransactionModal: React.FC<{
   isOpen: boolean;
   onClose: () => void;
   type: TransactionType;
-}> = ({ isOpen, onClose, type }) => {
+  updateUserData?: (data: UserData) => void;
+  onTransactionSuccess?: (responseData: any) => void;
+}> = ({ isOpen, onClose, type, updateUserData, onTransactionSuccess }) => {
   const [amount, setAmount] = useState<string>('');
   const [password, setPassword] = useState<string>('');
   const [loading, setLoading] = useState(false);
@@ -156,9 +158,30 @@ const TransactionModal: React.FC<{
     setStep(2);
   };
 
+  // 로컬에 저장된 계좌 비밀번호 검증 함수
+  const verifyAccountPassword = (inputPassword: string): boolean => {
+    const encodedPassword = localStorage.getItem('account_password');
+    if (!encodedPassword) {
+      alert('저장된 계좌 비밀번호가 없습니다. 계좌를 다시 생성해주세요.');
+      return false;
+    }
+    
+    // 저장된 암호화된 비밀번호 디코딩
+    const storedPassword = atob(encodedPassword);
+    
+    // 입력된 비밀번호와 저장된 비밀번호 비교
+    return inputPassword === storedPassword;
+  };
+
   const handleSubmit = async () => {
     if (password.length !== 6) {
       setError('비밀번호는 6자리 숫자여야 합니다.');
+      return;
+    }
+
+    // 로컬에서 계좌 비밀번호 검증
+    if (!verifyAccountPassword(password)) {
+      setError('계좌 비밀번호가 일치하지 않습니다.');
       return;
     }
 
@@ -166,33 +189,75 @@ const TransactionModal: React.FC<{
     setError(null);
 
     try {
-      // 비밀번호 검증 로직 (실제로는 API 호출)
-      // 임시로 항상 성공하는 것으로 가정
-      const isPasswordCorrect = true; // 실제 구현 시 API로 검증
-
-      if (!isPasswordCorrect) {
-        throw new Error('비밀번호가 일치하지 않습니다.');
+      // 토큰 가져오기
+      const token = localStorage.getItem('auth_token');
+      if (!token) {
+        throw new Error('로그인이 필요합니다.');
       }
 
-      // const transaction: Transaction = {
-      //   transactionBalance: Number(amount),
-      //   accountNo: 'dummy' // 계좌번호는 API에서 유저 정보로 확인
-      // };
+      // 금액을 반드시 숫자형으로 변환
+      const numericAmount = Number(amount);
+      if (isNaN(numericAmount) || numericAmount <= 0) {
+        throw new Error('유효하지 않은 금액입니다.');
+      }
 
-      // 실제 API 호출 부분 (주석 처리)
-      /*
+      console.log(`${type === 'deposit' ? '충전' : '출금'} 금액: ${numericAmount}`);
+
+      // 실제 API 호출
+      // 충전(기뷰페이로 돈을 넣는 것) -> 연동계좌 출금 API 사용
+      // 출금(기뷰페이에서 돈을 빼는 것) -> 연동계좌 입금 API 사용
+      const endpoint = type === 'deposit' 
+        ? `${import.meta.env.VITE_API_BASE_URL}/mypage/account/withdrawal` // 충전: 계좌→기뷰페이
+        : `${import.meta.env.VITE_API_BASE_URL}/mypage/account/deposit`; // 출금: 기뷰페이→계좌
+      
+      console.log(`거래 요청 시작: ${type}`);
+      
+      // 계좌 비밀번호와 금액을 함께 서버로 전송
+      // 서버에서 비밀번호 검증 후 처리
       const response = await axios.post(
-        `${import.meta.env.VITE_BASE_URL}/api/transaction/${type}`,
-        transaction
+        endpoint,
+        { 
+          amount: numericAmount,
+          password: password // 계좌 비밀번호 전송 (API 요구사항에 따라 필드명 조정 필요)
+        },
+        {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        }
       );
-      */
-
-      // 임시 성공 처리
-      alert(type === 'deposit' ? '충전이 완료되었습니다.' : '출금이 완료되었습니다.');
-      resetModal();
-      onClose();
+      
+      console.log(`거래 응답 수신`);
+      
+      if (response.data.code === 'SUCCESS') {
+        // 트랜잭션 성공 콜백 호출 - 가장 먼저 호출
+        if (onTransactionSuccess) {
+          console.log('트랜잭션 성공 콜백 호출');
+          await onTransactionSuccess(response.data);
+        }
+        
+        // 성공 시 UI 업데이트와 사용자 알림은 콜백 이후에 수행
+        alert(type === 'deposit' ? '기뷰페이 충전이 완료되었습니다.' : '기뷰페이 출금이 완료되었습니다.');
+        resetModal();
+        onClose();
+      } else {
+        // 오류 응답 처리
+        throw new Error(response.data.message || '처리 중 오류가 발생했습니다.');
+      }
     } catch (err: any) {
-      setError(err.message || '거래 중 오류가 발생했습니다.');
+      console.error(`거래 오류:`, err);
+      // 비밀번호 오류 메시지를 더 명확하게 사용자에게 안내
+      if (err.response && err.response.data && err.response.data.message) {
+        if (err.response.data.message.includes('비밀번호') || 
+            err.response.data.message.includes('password')) {
+          setError('계좌 비밀번호가 일치하지 않습니다.');
+        } else {
+          setError(err.response.data.message);
+        }
+      } else {
+        setError(err.message || '거래 중 오류가 발생했습니다.');
+      }
     } finally {
       setLoading(false);
     }
@@ -217,7 +282,7 @@ const TransactionModal: React.FC<{
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <div className="bg-white rounded-2xl p-6 w-full max-w-md">
         <h2 className="text-2xl font-bold mb-6 text-cusBlack">
-          {type === 'deposit' ? '충전하기' : '출금하기'}
+          {type === 'deposit' ? '기뷰페이 충전하기' : '기뷰페이 출금하기'}
         </h2>
         
         {step === 1 ? (
@@ -225,7 +290,7 @@ const TransactionModal: React.FC<{
           <div className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-cusBlack-light mb-1">
-                {type === 'deposit' ? '충전 금액' : '출금 금액'}
+                {type === 'deposit' ? '충전 금액' : '출금 금액'} 
               </label>
               <div className="relative">
                 <input
@@ -275,7 +340,7 @@ const TransactionModal: React.FC<{
           <div className="space-y-4">
             <div>
               <p className="text-lg font-medium text-cusBlack mb-2">
-                {type === 'deposit' ? '충전' : '출금'}을 위해 계좌 비밀번호를 입력해주세요.
+                {type === 'deposit' ? '연동 계좌에서 기뷰페이로 충전' : '기뷰페이에서 연동 계좌로 출금'}을 위해 계좌 비밀번호를 입력해주세요.
               </p>
               <p className="text-cusBlack-light mb-4">
                 금액: <span className="font-bold text-cusBlack">{Number(amount).toLocaleString()}원</span>
@@ -303,6 +368,9 @@ const TransactionModal: React.FC<{
                 maxLength={6}
                 autoFocus
               />
+              <p className="text-xs text-gray-500 mt-2 text-center">
+                계좌 비밀번호는 서버에 안전하게 저장되어 있으며, 거래 시 검증을 위해서만 사용됩니다.
+              </p>
             </div>
 
             {error && (
@@ -475,7 +543,7 @@ const AccountCreationModal: React.FC<{
               disabled={password.length !== 6}
               className={`px-6 py-2 ${
                 password.length === 6 
-                  ? 'bg-pink-500 hover:bg-pink-600 text-white' 
+                  ? 'bg-cusBlue hover:bg-cusBlue-dark text-white' 
                   : 'bg-gray-300 text-gray-500 cursor-not-allowed'
               } rounded-md transition-colors`}
             >
@@ -487,7 +555,7 @@ const AccountCreationModal: React.FC<{
               disabled={confirmPassword.length !== 6}
               className={`px-6 py-2 ${
                 confirmPassword.length === 6 
-                  ? 'bg-pink-500 hover:bg-pink-600 text-white' 
+                  ? 'bg-cusBlue hover:bg-cusBlue-dark text-white' 
                   : 'bg-gray-300 text-gray-500 cursor-not-allowed'
               } rounded-md transition-colors`}
             >
@@ -511,9 +579,12 @@ const MyPage = () => {
   // 방법 1: HTMLDivElement | null 타입으로 명시적 정의
   const createdFundingsRef = useRef<HTMLDivElement | null>(null);
   const participatedFundingsRef = useRef<HTMLDivElement | null>(null);
-  // const reviewsRef = useRef<HTMLDivElement | null>(null);
-  // const wishlistRef = useRef<HTMLDivElement | null>(null);
   
+  // 내가 만든 펀딩, 참여한 펀딩 상태 추가
+  const [myFundings, setMyFundings] = useState<Funding[]>([]);
+  const [participatedFundings, setParticipatedFundings] = useState<Funding[]>([]);
+  const [loadingMyFundings, setLoadingMyFundings] = useState(false);
+  const [loadingParticipatedFundings, setLoadingParticipatedFundings] = useState(false);
   
   // 스크롤 함수 타입 정의 변경
   const scrollHorizontally = (ref: React.RefObject<HTMLDivElement> | any, direction: 'left' | 'right') => {
@@ -697,6 +768,121 @@ const MyPage = () => {
     }
   }, [activeTab]);
   
+  // 내가 만든 펀딩 데이터 가져오기
+  const fetchMyFundings = async () => {
+    try {
+      setLoadingMyFundings(true);
+      const token = localStorage.getItem('auth_token');
+      if (!token) {
+        console.error('로그인이 필요합니다.');
+        return;
+      }
+      
+      const response = await axios.get(
+        `${import.meta.env.VITE_API_BASE_URL}/mypage/myfundings`,
+        {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        }
+      );
+      
+      console.log('내가 만든 펀딩 응답:', response.data);
+      
+      if (response.data && response.data.code === 'SUCCESS' && Array.isArray(response.data.data)) {
+        // API 응답 데이터를 Funding 타입으로 변환
+        const fundings = response.data.data.map((item: FundingResponse) => {
+          // 달성률 계산 (펀딩된 금액 / 상품 가격 * 100), 최대 100%로 제한
+          const progress = item.product.price > 0 
+            ? Math.min(Math.round((item.fundedAmount / item.product.price) * 100), 100)
+            : 0;
+            
+          return {
+            id: item.fundingId,
+            title: item.title,
+            progress: progress,
+            tag: `${progress}% 달성`,
+            imageUrl: item.image && item.image.length > 0 
+              ? item.image[0] 
+              : item.product.image || 'https://via.placeholder.com/300x200?text=펀딩이미지',
+          };
+        });
+        
+        setMyFundings(fundings);
+      } else {
+        setMyFundings([]);
+      }
+    } catch (error) {
+      console.error('내가 만든 펀딩을 가져오는 중 오류 발생:', error);
+      setMyFundings([]);
+    } finally {
+      setLoadingMyFundings(false);
+    }
+  };
+  
+  // 내가 참여한 펀딩 데이터 가져오기
+  const fetchParticipatedFundings = async () => {
+    try {
+      setLoadingParticipatedFundings(true);
+      const token = localStorage.getItem('auth_token');
+      if (!token) {
+        console.error('로그인이 필요합니다.');
+        return;
+      }
+      
+      const response = await axios.get(
+        `${import.meta.env.VITE_API_BASE_URL}/mypage/myParticipantfundings`,
+        {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        }
+      );
+      
+      console.log('내가 참여한 펀딩 응답:', response.data);
+      
+      if (response.data && response.data.code === 'SUCCESS' && Array.isArray(response.data.data)) {
+        // API 응답 데이터를 Funding 타입으로 변환
+        const fundings = response.data.data.map((item: FundingResponse) => {
+          // 달성률 계산 (펀딩된 금액 / 상품 가격 * 100), 최대 100%로 제한
+          const progress = item.product.price > 0 
+            ? Math.min(Math.round((item.fundedAmount / item.product.price) * 100), 100)
+            : 0;
+            
+          return {
+            id: item.fundingId,
+            title: item.title,
+            progress: progress,
+            tag: `${progress}% 달성`,
+            imageUrl: item.image && item.image.length > 0 
+              ? item.image[0] 
+              : item.product.image || 'https://via.placeholder.com/300x200?text=펀딩이미지',
+          };
+        });
+        
+        setParticipatedFundings(fundings);
+      } else {
+        setParticipatedFundings([]);
+      }
+    } catch (error) {
+      console.error('내가 참여한 펀딩을 가져오는 중 오류 발생:', error);
+      setParticipatedFundings([]);
+    } finally {
+      setLoadingParticipatedFundings(false);
+    }
+  };
+  
+  // 탭이 변경될 때 데이터 가져오기
+  useEffect(() => {
+    if (activeTab === "created") {
+      fetchMyFundings();
+    } else if (activeTab === "participated") {
+      fetchParticipatedFundings();
+    } else if (activeTab === "wishlist") {
+      fetchWishlistProducts();
+    }
+  }, [activeTab]);
+  
   // 탭 내용을 렌더링하는 함수
   const renderTabContent = () => {
     switch (activeTab) {
@@ -715,34 +901,52 @@ const MyPage = () => {
               </button>
             </div>
             
-            <div 
-              ref={createdFundingsRef}
-              className="flex overflow-x-auto scrollbar-hide gap-4 py-4 pl-2 pr-6"
-              style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
-            >
-              {MY_FUNDINGS.map((funding) => (
-                <Link 
-                  key={funding.id} 
-                  to={`/funding/${funding.id}`} 
-                  className="flex-shrink-0"
-                  style={{ width: '300px' }}
-                >
-                  <FundingCard funding={funding} />
-                </Link>
-              ))}
-            </div>
-            
-            <div className="absolute -right-4 top-1/2 transform -translate-y-1/2 z-10">
-              <button 
-                onClick={() => handleScrollRight(createdFundingsRef)}
-                className="p-2 bg-cusBlack text-white rounded-full shadow-md hover:bg-cusBlack-light"
-                aria-label="다음 항목"
+            {loadingMyFundings ? (
+              <div className="flex justify-center items-center h-64">
+                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-cusBlue"></div>
+              </div>
+            ) : myFundings.length > 0 ? (
+              <div 
+                ref={createdFundingsRef}
+                className="flex overflow-x-auto scrollbar-hide gap-4 py-4 pl-2 pr-6"
+                style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
               >
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                </svg>
-              </button>
-            </div>
+                {myFundings.map((funding) => (
+                  <Link 
+                    key={funding.id} 
+                    to={`/funding/${funding.id}`} 
+                    className="flex-shrink-0"
+                    style={{ width: '300px' }}
+                  >
+                    <FundingCard funding={funding} />
+                  </Link>
+                ))}
+              </div>
+            ) : (
+              <div className="py-12 text-center bg-cusGray-light rounded-xl">
+                <p className="text-cusBlack-light font-medium mb-4">아직 만든 펀딩이 없습니다.</p>
+                <Link 
+                  to="/funding/create"
+                  className="px-6 py-2 bg-cusRed text-white rounded-full hover:bg-cusRed-dark transition-colors"
+                >
+                  펀딩 만들기
+                </Link>
+              </div>
+            )}
+            
+            {myFundings.length > 0 && (
+              <div className="absolute -right-4 top-1/2 transform -translate-y-1/2 z-10">
+                <button 
+                  onClick={() => handleScrollRight(createdFundingsRef)}
+                  className="p-2 bg-cusBlack text-white rounded-full shadow-md hover:bg-cusBlack-light"
+                  aria-label="다음 항목"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  </svg>
+                </button>
+              </div>
+            )}
           </div>
         );
         
@@ -761,34 +965,52 @@ const MyPage = () => {
               </button>
             </div>
             
-            <div 
-              ref={participatedFundingsRef}
-              className="flex overflow-x-auto scrollbar-hide gap-4 py-4 pl-2 pr-6"
-              style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
-            >
-              {PARTICIPATED_FUNDINGS.map((funding) => (
-                <Link 
-                  key={funding.id} 
-                  to={`/funding/${funding.id}`} 
-                  className="flex-shrink-0"
-                  style={{ width: '300px' }}
-                >
-                  <FundingCard funding={funding} />
-                </Link>
-              ))}
-            </div>
-            
-            <div className="absolute -right-4 top-1/2 transform -translate-y-1/2 z-10">
-              <button 
-                onClick={() => handleScrollRight(participatedFundingsRef)}
-                className="p-2 bg-cusBlack text-white rounded-full shadow-md hover:bg-cusBlack-light"
-                aria-label="다음 항목"
+            {loadingParticipatedFundings ? (
+              <div className="flex justify-center items-center h-64">
+                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-cusBlue"></div>
+              </div>
+            ) : participatedFundings.length > 0 ? (
+              <div 
+                ref={participatedFundingsRef}
+                className="flex overflow-x-auto scrollbar-hide gap-4 py-4 pl-2 pr-6"
+                style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
               >
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                </svg>
-              </button>
-            </div>
+                {participatedFundings.map((funding) => (
+                  <Link 
+                    key={funding.id} 
+                    to={`/funding/${funding.id}`} 
+                    className="flex-shrink-0"
+                    style={{ width: '300px' }}
+                  >
+                    <FundingCard funding={funding} />
+                  </Link>
+                ))}
+              </div>
+            ) : (
+              <div className="py-12 text-center bg-cusGray-light rounded-xl">
+                <p className="text-cusBlack-light font-medium mb-4">아직 참여한 펀딩이 없습니다.</p>
+                <Link 
+                  to="/funding/list"
+                  className="px-6 py-2 bg-cusLightBlue text-white rounded-full hover:bg-cusBlue transition-colors"
+                >
+                  펀딩 둘러보기
+                </Link>
+              </div>
+            )}
+            
+            {participatedFundings.length > 0 && (
+              <div className="absolute -right-4 top-1/2 transform -translate-y-1/2 z-10">
+                <button 
+                  onClick={() => handleScrollRight(participatedFundingsRef)}
+                  className="p-2 bg-cusBlack text-white rounded-full shadow-md hover:bg-cusBlack-light"
+                  aria-label="다음 항목"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  </svg>
+                </button>
+              </div>
+            )}
           </div>
         );
         
@@ -923,6 +1145,325 @@ const MyPage = () => {
   
   const [userData, setUserData] = useState<UserData | null>(null);
 
+  // 연동 계좌 잔액 상태 추가
+  const [bankBalance, setBankBalance] = useState<number>(0);
+  
+  // 잔액 새로고침 함수
+  const refreshBalances = async () => {
+    console.log('잔액 정보 새로고침 시작');
+    const token = localStorage.getItem('auth_token');
+    if (!token) {
+      alert('로그인 정보가 없습니다.');
+      return;
+    }
+    
+    // 로딩 표시 추가
+    const loadingToast = document.createElement('div');
+    loadingToast.className = 'fixed bottom-4 right-4 bg-cusBlack text-white px-4 py-2 rounded-md shadow-lg z-50';
+    loadingToast.textContent = '잔액 정보를 불러오는 중...';
+    document.body.appendChild(loadingToast);
+    
+    try {
+      // 1. /users/info API에서 기뷰페이 잔액 조회 (가장 우선)
+      console.log('기뷰페이 잔액 조회 시작 - /users/info API');
+      try {
+        const userInfoResponse = await axios.get(
+          `${import.meta.env.VITE_API_BASE_URL}/users/info`,
+          {
+            headers: {
+              'Authorization': `Bearer ${token}`
+            }
+          }
+        );
+        
+        console.log('/users/info API 응답:', userInfoResponse.data);
+        
+        // 이 API에서 주는 balance가 기뷰페이 잔액임
+        if (userInfoResponse.data && userInfoResponse.data.balance !== undefined) {
+          const givupayBalance = Number(userInfoResponse.data.balance);
+          console.log('기뷰페이 잔액 (/users/info에서 확인):', givupayBalance);
+          
+          if (userData) {
+            const updatedUserData = {
+              ...userData,
+              balance: givupayBalance
+            };
+            setUserData(updatedUserData);
+            localStorage.setItem('user', JSON.stringify(updatedUserData));
+            console.log('기뷰페이 잔액 업데이트 완료:', givupayBalance);
+          }
+        } else {
+          console.log('/users/info API에 balance 필드가 없음, 대체 API 호출 시도');
+          await fetchBalanceFromAlternativeAPIs(token);
+        }
+      } catch (error) {
+        console.error('/users/info API 호출 오류:', error);
+        await fetchBalanceFromAlternativeAPIs(token);
+      }
+      
+      // 2. 연동 계좌 잔액 조회
+      console.log('연동 계좌 잔액 조회 시작 - /mypage/checkAccount API');
+      try {
+        const accountResponse = await axios.get(
+          `${import.meta.env.VITE_API_BASE_URL}/mypage/checkAccount`,
+          {
+            headers: {
+              'Authorization': `Bearer ${token}`
+            }
+          }
+        );
+        
+        console.log('연동 계좌 조회 응답:', accountResponse.data);
+        
+        if (accountResponse.data && accountResponse.data.code === 'SUCCESS') {
+          // 계좌가 존재하는 경우
+          setHasAccount(true);
+          
+          if (accountResponse.data.data) {
+            // 연동 계좌 번호 설정
+            if (accountResponse.data.data.accountNo) {
+              setAccountNumber(accountResponse.data.data.accountNo);
+              localStorage.setItem('account_number', accountResponse.data.data.accountNo);
+            }
+            
+            if (accountResponse.data.data.balance !== undefined) {
+              const bankBalanceValue = Number(accountResponse.data.data.balance);
+              console.log('연동 계좌 잔액 새로고침:', bankBalanceValue);
+              
+              setBankBalance(bankBalanceValue);
+              localStorage.setItem('bank_balance', bankBalanceValue.toString());
+            }
+          }
+        } else {
+          console.log('연동 계좌 정보가 없거나 조회 실패');
+        }
+      } catch (error) {
+        console.error('연동 계좌 정보 조회 오류:', error);
+        
+        // 3. 대체 API로 계좌 잔액 조회 시도
+        try {
+          console.log('대체 API로 계좌 정보 조회 시도');
+          const altAccountResponse = await axios.get(
+            `${import.meta.env.VITE_API_BASE_URL}/mypage/account/balance`,
+            {
+              headers: {
+                'Authorization': `Bearer ${token}`
+              }
+            }
+          );
+          
+          console.log('대체 API 계좌 정보 응답:', altAccountResponse.data);
+          
+          if (altAccountResponse.data && altAccountResponse.data.code === 'SUCCESS' && 
+              altAccountResponse.data.data && altAccountResponse.data.data.balance !== undefined) {
+            const bankBalanceValue = Number(altAccountResponse.data.data.balance);
+            console.log('대체 API 연동 계좌 잔액:', bankBalanceValue);
+            
+            setBankBalance(bankBalanceValue);
+            localStorage.setItem('bank_balance', bankBalanceValue.toString());
+          }
+        } catch (altError) {
+          console.error('대체 API 계좌 정보 조회 오류:', altError);
+        }
+      }
+      
+      console.log('잔액 새로고침 완료');
+      
+      // 로딩 토스트 제거
+      document.body.removeChild(loadingToast);
+      
+      // 완료 토스트 표시
+      const successToast = document.createElement('div');
+      successToast.className = 'fixed bottom-4 right-4 bg-green-600 text-white px-4 py-2 rounded-md shadow-lg z-50';
+      successToast.textContent = '잔액 정보가 업데이트되었습니다';
+      document.body.appendChild(successToast);
+      
+      // 2초 후 완료 토스트 제거
+      setTimeout(() => {
+        document.body.removeChild(successToast);
+      }, 2000);
+      
+    } catch (error) {
+      console.error('잔액 새로고침 전체 오류:', error);
+      
+      // 로딩 토스트 제거
+      if (document.body.contains(loadingToast)) {
+        document.body.removeChild(loadingToast);
+      }
+      
+      // 에러 토스트 표시
+      const errorToast = document.createElement('div');
+      errorToast.className = 'fixed bottom-4 right-4 bg-red-600 text-white px-4 py-2 rounded-md shadow-lg z-50';
+      errorToast.textContent = '잔액 정보 업데이트 중 오류가 발생했습니다';
+      document.body.appendChild(errorToast);
+      
+      // 2초 후 에러 토스트 제거
+      setTimeout(() => {
+        document.body.removeChild(errorToast);
+      }, 2000);
+    }
+  };
+  
+  // 대체 API로 잔액 조회 함수
+  const fetchBalanceFromAlternativeAPIs = async (token: string) => {
+    // 1. 첫 번째 대체 API - getUserBalance
+    try {
+      const givupayResponse = await axios.get(
+        `${import.meta.env.VITE_API_BASE_URL}/mypage/getUserBalance`,
+        {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        }
+      );
+      
+      console.log('기뷰페이 잔액 조회 응답 (getUserBalance):', givupayResponse.data);
+      
+      if (givupayResponse.data && givupayResponse.data.code === 'SUCCESS' &&
+          givupayResponse.data.data && givupayResponse.data.data.balance !== undefined) {
+        const balance = Number(givupayResponse.data.data.balance);
+        console.log('기뷰페이 잔액 새로고침 (getUserBalance):', balance);
+        
+        if (userData) {
+          const updatedUserData = {
+            ...userData,
+            balance: balance
+          };
+          setUserData(updatedUserData);
+          localStorage.setItem('user', JSON.stringify(updatedUserData));
+          return true; // 이 API로 성공했으면 다음 API는 호출 안함
+        }
+      } else {
+        console.log('getUserBalance API에 balance 필드가 없음, 다음 API 시도');
+      }
+    } catch (error) {
+      console.error('기뷰페이 잔액 조회 API (getUserBalance) 오류:', error);
+    }
+    
+    // 2. 두 번째 대체 API - mypage/balance
+    try {
+      const balanceResponse = await axios.get(
+        `${import.meta.env.VITE_API_BASE_URL}/mypage/balance`,
+        {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        }
+      );
+      
+      console.log('기뷰페이 잔액 조회 응답 (mypage/balance):', balanceResponse.data);
+      
+      if (balanceResponse.data && balanceResponse.data.code === 'SUCCESS') {
+        let givupayBalance = null;
+        
+        // 다양한 필드 이름 조회
+        if (balanceResponse.data.data) {
+          if (balanceResponse.data.data.givupayBalance !== undefined) {
+            givupayBalance = balanceResponse.data.data.givupayBalance;
+          } else if (balanceResponse.data.data.balance !== undefined) {
+            givupayBalance = balanceResponse.data.data.balance;
+          } else if (balanceResponse.data.data.userBalance !== undefined) {
+            givupayBalance = balanceResponse.data.data.userBalance;
+          }
+        }
+        
+        if (givupayBalance !== null && userData) {
+          console.log('기뷰페이 잔액 업데이트 (mypage/balance):', givupayBalance);
+          const updatedUserData = {
+            ...userData,
+            balance: givupayBalance
+          };
+          setUserData(updatedUserData);
+          localStorage.setItem('user', JSON.stringify(updatedUserData));
+          return true;
+        }
+      }
+    } catch (error) {
+      console.error('기뷰페이 잔액 조회 API (mypage/balance) 오류:', error);
+    }
+    
+    return false;
+  };
+  
+  // 트랜잭션 후 연동 계좌 잔액 업데이트
+  const handleTransactionSuccess = async (responseData: any) => {
+    console.log('거래 성공 응답 데이터:', responseData);
+    
+    try {
+      // 로딩 표시 추가
+      const loadingToast = document.createElement('div');
+      loadingToast.className = 'fixed bottom-4 right-4 bg-cusBlack text-white px-4 py-2 rounded-md shadow-lg z-50';
+      loadingToast.textContent = '잔액 정보를 업데이트 중...';
+      document.body.appendChild(loadingToast);
+      
+      // 모든 키 로깅 (디버깅용)
+      console.log('응답 데이터 전체 키 목록:');
+      for (const key in responseData) {
+        console.log(`- ${key}: ${typeof responseData[key]}`);
+      }
+      
+      // 거래 유형 확인 (출금 또는 입금)
+      const transactionType = responseData.type || '알 수 없음';
+      console.log('거래 유형:', transactionType);
+      
+      // 가능한 응답 필드들을 모두 확인
+      if (responseData.userId) {
+        console.log('사용자 ID:', responseData.userId);
+      }
+      
+      if (responseData.givupayBalance !== undefined) {
+        console.log('기뷰페이 잔액:', responseData.givupayBalance);
+        
+        // 기뷰페이 잔액 업데이트
+        if (userData) {
+          const givupayBalance = Number(responseData.givupayBalance);
+          const updatedUserData = {
+            ...userData,
+            balance: givupayBalance
+          };
+          setUserData(updatedUserData);
+          localStorage.setItem('user', JSON.stringify(updatedUserData));
+          console.log('기뷰페이 잔액 업데이트 완료:', givupayBalance);
+        }
+      }
+      
+      if (responseData.accountBalance !== undefined) {
+        console.log('계좌 잔액:', responseData.accountBalance);
+        
+        // 계좌 잔액 업데이트
+        const accountBalance = Number(responseData.accountBalance);
+        setBankBalance(accountBalance);
+        localStorage.setItem('bank_balance', accountBalance.toString());
+        console.log('연동 계좌 잔액 업데이트 완료:', accountBalance);
+      }
+      
+      // 수동으로 잔액 새로고침 실행
+      await refreshBalances();
+      
+      // 로딩 토스트 제거
+      document.body.removeChild(loadingToast);
+      
+      // 성공 토스트 표시
+      const successToast = document.createElement('div');
+      successToast.className = 'fixed bottom-4 right-4 bg-green-600 text-white px-4 py-2 rounded-md shadow-lg z-50';
+      successToast.textContent = `${transactionType === 'DEPOSIT' ? '충전' : '출금'}이 완료되었습니다.`;
+      document.body.appendChild(successToast);
+      
+      // 2초 후 성공 토스트 제거
+      setTimeout(() => {
+        document.body.removeChild(successToast);
+      }, 2000);
+    } catch (error) {
+      console.error('거래 후 잔액 업데이트 중 오류:', error);
+      // 오류가 발생해도 잔액을 새로고침하려고 시도
+      try {
+        await refreshBalances();
+      } catch (refreshError) {
+        console.error('잔액 새로고침 중 추가 오류:', refreshError);
+      }
+    }
+  };
+
   const handleTransactionClick = (type: TransactionType) => {
     if (!hasAccount) {
       setIsAccountModalOpen(true);
@@ -933,56 +1474,233 @@ const MyPage = () => {
     setIsTransactionModalOpen(true);
   };
   
-  // 계좌 생성 제출 핸들러
-  const handleAccountCreation = (password: string) => {
-    console.log('계좌 생성 - 비밀번호:', password);
-    // TODO: 여기서 API 호출
-    
-    // 임시로 계좌 생성 시뮬레이션
-    const randomAccountNumber = Math.floor(Math.random() * 90000000) + 10000000;
-    setAccountNumber(`110-${randomAccountNumber}-01`);
-    setHasAccount(true);
-    setIsAccountModalOpen(false);
-    
-    // 사용자 데이터 업데이트 (잔액 초기화)
-    if (userData) {
-      setUserData({
-        ...userData,
-        balance: 0,
-      });
-    }
-    
-    alert('계좌가 성공적으로 생성되었습니다!');
-  };
-  
   // 컴포넌트 마운트 시 로그인 체크 및 사용자 정보 가져오기
   useEffect(() => {
-    const userString = localStorage.getItem('user');
-    const token = localStorage.getItem('auth_token');
+    const fetchUserAndAccountInfo = async () => {
+      // 로컬 스토리지에서 토큰과 사용자 정보 가져오기
+      const userString = localStorage.getItem('user');
+      const token = localStorage.getItem('auth_token');
 
-    if (!userString || !token) {
-      alert('로그인이 필요한 서비스입니다.');
-      navigate('/login');
-      return;
-    }
-
-    try {
-      const parsedUser = JSON.parse(userString);
-      setUserData(parsedUser);
-      
-      // 임시로 계좌가 있는지 확인 (실제로는 API 호출)
-      // userData에 balance가 있고 null이 아닌 경우 계좌가 있다고 간주
-      if (parsedUser.balance !== undefined && parsedUser.balance !== null) {
-        setHasAccount(true);
-        // 계좌번호도 설정 (실제로는 API에서 가져옴)
-        const randomAccountNumber = Math.floor(Math.random() * 90000000) + 10000000;
-        setAccountNumber(`110-${randomAccountNumber}-01`);
+      if (!token) {
+        alert('로그인이 필요한 서비스입니다.');
+        navigate('/login');
+        return;
       }
-    } catch (error) {
-      console.error('사용자 정보 파싱 오류:', error);
-      navigate('/login');
-    }
+
+      try {
+        // 1. /users/info API에서 사용자 정보 가져오기 (우선)
+        try {
+          const userInfoResponse = await axios.get(
+            `${import.meta.env.VITE_API_BASE_URL}/users/info`,
+            {
+              headers: {
+                'Authorization': `Bearer ${token}`
+              }
+            }
+          );
+          
+          console.log('/users/info API 응답:', userInfoResponse.data);
+          
+          // API에서 받은 정보로 userData 설정
+          if (userInfoResponse.data) {
+            const apiUserData = {
+              kakaoId: userInfoResponse.data.kakaoId,
+              nickname: userInfoResponse.data.nickName, // API 필드명 차이 주의
+              email: userInfoResponse.data.email,
+              profileImage: userInfoResponse.data.profileImage,
+              balance: userInfoResponse.data.balance, // 기뷰페이 잔액
+            };
+            
+            console.log('API에서 가져온 사용자 정보:', apiUserData);
+            
+            // 상태 업데이트 및 로컬 스토리지 저장
+            setUserData(apiUserData);
+            localStorage.setItem('user', JSON.stringify(apiUserData));
+          }
+        } catch (error) {
+          console.error('/users/info API 호출 오류:', error);
+          
+          // API 실패 시 로컬 스토리지의 사용자 정보 사용 (대체 방법)
+          if (userString) {
+            try {
+              const localUserData = JSON.parse(userString);
+              setUserData(localUserData);
+              console.log('로컬 스토리지에서 사용자 정보 로드:', localUserData);
+            } catch (e) {
+              console.error('사용자 정보 파싱 오류:', e);
+            }
+          }
+        }
+        
+        // 2. 연동 계좌 정보 확인
+        console.log('연동 계좌 정보 요청 시작');
+        try {
+          const accountResponse = await axios.get(
+            `${import.meta.env.VITE_API_BASE_URL}/mypage/checkAccount`,
+            {
+              headers: {
+                'Authorization': `Bearer ${token}`
+              }
+            }
+          );
+          
+          console.log('연동 계좌 조회 API 응답:', accountResponse.data);
+          
+          // 계좌가 존재하는 경우
+          if (accountResponse.data && accountResponse.data.code === 'SUCCESS') {
+            console.log('연동 계좌 정보 존재. 계좌 UI 설정');
+            setHasAccount(true);
+            
+            // API 응답 데이터 구조에 따라 계좌 정보 설정
+            if (accountResponse.data.data) {
+              // 연동 계좌 번호 설정
+              if (accountResponse.data.data.accountNo) {
+                setAccountNumber(accountResponse.data.data.accountNo);
+                localStorage.setItem('account_number', accountResponse.data.data.accountNo);
+              }
+              
+              // 연동 계좌 잔액 설정 - accountResponse.data.data.balance는 연동계좌 잔액임
+              if (accountResponse.data.data.balance !== undefined) {
+                setBankBalance(accountResponse.data.data.balance);
+                localStorage.setItem('bank_balance', accountResponse.data.data.balance.toString());
+              }
+            } else {
+              // 이미 저장된 계좌번호가 있으면 사용
+              const savedAccountNumber = localStorage.getItem('account_number');
+              if (savedAccountNumber) {
+                setAccountNumber(savedAccountNumber);
+              }
+              
+              // 저장된 연동 계좌 잔액이 있으면 사용
+              const savedBankBalance = localStorage.getItem('bank_balance');
+              if (savedBankBalance) {
+                setBankBalance(Number(savedBankBalance));
+              }
+            }
+          } else {
+            // 연동 계좌가 없는 경우
+            console.log('연동 계좌 정보 없음. 계좌 생성 UI 표시:', accountResponse.data.message);
+            setHasAccount(false);
+            setAccountNumber('');
+            setBankBalance(0);
+            localStorage.removeItem('account_number');
+            localStorage.removeItem('bank_balance');
+          }
+        } catch (error) {
+          console.error('연동 계좌 정보 조회 오류:', error);
+          
+          // 저장된 계좌 정보로 UI 표시 여부 결정
+          const savedAccountNumber = localStorage.getItem('account_number');
+          if (savedAccountNumber) {
+            setHasAccount(true);
+            setAccountNumber(savedAccountNumber);
+            
+            // 저장된 연동 계좌 잔액이 있으면 표시
+            const savedBankBalance = localStorage.getItem('bank_balance');
+            if (savedBankBalance) {
+              setBankBalance(Number(savedBankBalance));
+            }
+          } else {
+            setHasAccount(false);
+          }
+        }
+        
+        // 페이지 로드 시 잔액 자동 새로고침
+        setTimeout(() => {
+          refreshBalances();
+        }, 500); // 기본 데이터 로드 후 0.5초 후에 잔액 새로고침
+        
+      } catch (error) {
+        console.error('데이터 로드 오류:', error);
+        
+        // 로컬에 저장된 사용자 정보가 있으면 사용
+        if (userString) {
+          try {
+            const parsedUser = JSON.parse(userString);
+            setUserData(parsedUser);
+          } catch (e) {
+            console.error('사용자 정보 파싱 오류:', e);
+            navigate('/login');
+          }
+        } else {
+          navigate('/login');
+        }
+      }
+    };
+
+    fetchUserAndAccountInfo();
   }, [navigate]);
+
+  // 계좌 생성 제출 핸들러
+  const handleAccountCreation = async (password: string) => {
+    try {
+      console.log('계좌 생성 시작 - 비밀번호:', password);
+      const token = localStorage.getItem('auth_token');
+      
+      if (!token) {
+        alert('로그인이 필요합니다.');
+        return;
+      }
+      
+      // 로딩 표시 추가
+      const loadingToast = document.createElement('div');
+      loadingToast.className = 'fixed bottom-4 right-4 bg-cusBlack text-white px-4 py-2 rounded-md shadow-lg z-50';
+      loadingToast.textContent = '계좌를 생성 중입니다...';
+      document.body.appendChild(loadingToast);
+      
+      // 계좌 생성 API 호출
+      const response = await axios.post(
+        `${import.meta.env.VITE_API_BASE_URL}/mypage/account/create`,
+        { password },
+        {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        }
+      );
+      
+      console.log('계좌 생성 응답:', response.data);
+      
+      // 로딩 토스트 제거
+      document.body.removeChild(loadingToast);
+      
+      if (response.data && response.data.code === 'SUCCESS') {
+        // 성공 토스트 표시
+        const successToast = document.createElement('div');
+        successToast.className = 'fixed bottom-4 right-4 bg-green-600 text-white px-4 py-2 rounded-md shadow-lg z-50';
+        successToast.textContent = '계좌가 성공적으로 생성되었습니다!';
+        document.body.appendChild(successToast);
+        
+        // 2초 후 성공 토스트 제거
+        setTimeout(() => {
+          document.body.removeChild(successToast);
+        }, 2000);
+        
+        // 계좌 정보 업데이트
+        setHasAccount(true);
+        setIsAccountModalOpen(false);
+        
+        // 계좌 정보 새로고침
+        await refreshBalances();
+      } else {
+        throw new Error(response.data?.message || '계좌 생성에 실패했습니다.');
+      }
+    } catch (error: any) {
+      console.error('계좌 생성 오류:', error);
+      
+      // 에러 토스트 표시
+      const errorToast = document.createElement('div');
+      errorToast.className = 'fixed bottom-4 right-4 bg-red-600 text-white px-4 py-2 rounded-md shadow-lg z-50';
+      errorToast.textContent = error.message || '계좌 생성 중 오류가 발생했습니다';
+      document.body.appendChild(errorToast);
+      
+      // 2초 후 에러 토스트 제거
+      setTimeout(() => {
+        document.body.removeChild(errorToast);
+      }, 2000);
+    }
+  };
 
   return (
     <div className="max-w-7xl mx-auto px-5 py-8 font-pretendard">
@@ -1013,55 +1731,70 @@ const MyPage = () => {
                   </div>
                   {hasAccount ? (
                     <div className="flex gap-3">
-                      <button
-                        onClick={() => handleTransactionClick('deposit')}
-                        className="px-5 py-2 border border-cusBlue rounded-full text-sm bg-btnLightBlue text-cusBlue hover:bg-btnLightBlue-hover hover:text-white transition-colors shadow-sm"
-                      >
-                        충전하기
-                      </button>
-                      <button
-                        onClick={() => handleTransactionClick('withdrawal')}
-                        className="px-5 py-2 border border-cusYellow rounded-full text-sm bg-btnYellow text-cusBlack hover:bg-btnYellow-hover transition-colors shadow-sm"
-                      >
-                        출금하기
-                      </button>
+                      {/* 버튼 위치 이동 - 상단 버튼 제거 */}
                     </div>
                   ) : (
                     <button
                       onClick={() => setIsAccountModalOpen(true)}
                       className="px-5 py-2 border border-cusBlue rounded-full text-sm bg-btnLightBlue text-cusBlue hover:bg-btnLightBlue-hover hover:text-white transition-colors shadow-sm"
                     >
-                      계좌 만들기
+                      연동 계좌 생성하기
                     </button>
                   )}
                 </div>
                 
                 {hasAccount ? (
                   <div className="flex flex-col md:flex-row items-center md:items-start justify-start gap-10 py-4 md:pl-4">
-                    <div className="text-center md:text-left">
+                    <div className="text-center md:text-left bg-blue-50 p-4 rounded-lg shadow-sm">
                       <div className="flex items-center justify-center md:justify-start mb-2">
                         <span className="text-yellow-500 text-3xl mr-2">👑</span>
                         <h3 className="text-xl font-bold text-cusBlue">내 기뷰페이</h3>
                       </div>
-                      <p className="text-3xl font-bold text-cusBlack">{userData.balance?.toLocaleString()}<span className="text-xl ml-1">원</span></p>
+                      <p className="text-3xl font-bold text-cusBlack">{userData?.balance?.toLocaleString()}<span className="text-xl ml-1">원</span></p>
+                      <div className="flex justify-center md:justify-start gap-2 mt-3">
+                        <button
+                          onClick={() => handleTransactionClick('deposit')}
+                          className="px-4 py-1.5 text-sm bg-cusBlue text-white rounded-full hover:bg-cusBlue-dark transition-colors shadow-sm"
+                        >
+                          충전하기
+                        </button>
+                        <button
+                          onClick={() => handleTransactionClick('withdrawal')}
+                          className="px-4 py-1.5 text-sm bg-yellow-500 text-white rounded-full hover:bg-yellow-600 transition-colors shadow-sm"
+                        >
+                          출금하기
+                        </button>
+                      </div>
                     </div>
-                    <div className="text-center md:text-left">
-                      <p className="text-cusBlack-light mb-2">내 기뷰페이 계좌</p>
+                    <div className="text-center md:text-left bg-gray-50 p-4 rounded-lg shadow-sm">
+                      <p className="text-cusBlack-light mb-2">내 연동 계좌 (한국은행)</p>
                       <p className="text-xl font-bold text-cusBlack">{accountNumber}</p>
+                      <p className="text-lg font-bold text-cusBlack-light mt-1">잔액: <span className="text-green-600">{bankBalance.toLocaleString()} 원</span></p>
+                    </div>
+                    <div className="flex items-end justify-center mt-4 md:mt-auto">
+                      <button
+                        onClick={refreshBalances}
+                        className="px-4 py-2 text-sm bg-white border border-gray-300 text-gray-700 rounded-full hover:bg-gray-100 transition-colors shadow-sm flex items-center"
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                        </svg>
+                        잔액 새로고침
+                      </button>
                     </div>
                   </div>
                 ) : (
-                  <div className="flex flex-col items-center justify-center py-4">
-                    <div className="w-16 h-16 rounded-full bg-cusLightBlue flex items-center justify-center mb-4">
+                  <div className="flex flex-col items-center justify-center py-10">
+                    <div className="w-16 h-16 rounded-full bg-blue-100 flex items-center justify-center mb-4">
                       <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-cusBlue" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
                       </svg>
                     </div>
-                    <h3 className="text-lg font-bold mb-2 text-cusBlack">기뷰페이 계좌가 없습니다</h3>
-                    <p className="text-cusBlack-light mb-4 text-center">쇼핑과 펀딩을 편리하게 이용하려면<br />기뷰페이 계좌를 만들어보세요!</p>
+                    <h3 className="text-lg font-bold mb-2">기뷰페이 계좌가 없습니다</h3>
+                    <p className="text-gray-500 mb-4 text-center">후원과 상품 구매를 편리하게 이용하려면<br />기뷰페이 계좌를 만들어보세요!</p>
                     <button 
                       onClick={() => setIsAccountModalOpen(true)}
-                      className="px-6 py-2 bg-cusBlue text-white rounded-full hover:bg-cusBlue-dark transition-colors"
+                      className="bg-cusBlue hover:bg-cusBlue-dark text-white px-6 py-2 rounded-full transition-colors"
                     >
                       계좌 만들기
                     </button>
@@ -1130,6 +1863,8 @@ const MyPage = () => {
             isOpen={isTransactionModalOpen}
             onClose={() => setIsTransactionModalOpen(false)}
             type={transactionType}
+            updateUserData={setUserData}
+            onTransactionSuccess={handleTransactionSuccess}
           />
           
           {/* 계좌 생성 모달 */}
@@ -1184,5 +1919,32 @@ const FundingCard: React.FC<FundingProps> = ({ funding }) => {
     </div>
   );
 };
+
+// API 응답 타입 정의
+interface FundingResponse {
+  fundingId: number;
+  user: {
+    userId: number;
+    nickName: string;
+    image: string;
+  };
+  product: {
+    id: number;
+    productName: string;
+    price: number;
+    image: string;
+  };
+  title: string;
+  description: string;
+  category: string | null;
+  categoryName: string | null;
+  scope: string;
+  participantsNumber: number;
+  fundedAmount: number;
+  status: string;
+  image: string[];
+  createdAt: string;
+  updatedAt: string;
+}
 
 export default MyPage;
