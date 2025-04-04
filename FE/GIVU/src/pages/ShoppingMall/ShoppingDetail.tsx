@@ -251,7 +251,16 @@ const ShoppingProductDetail = () => {
     // 주문 페이지로 이동하면서 상품 정보, 수량, 선택한 옵션 전달
     navigate('/shopping/order', {
       state: {
-        product,
+        product: {
+          ...product,
+          // 기본 배송 정보 추가
+          deliveryInfo: {
+            fee: 3000,
+            freeFeeOver: 50000,
+            estimatedDays: "1~3일 이내"
+          },
+          imageUrl: product.image // OrderPage에서 imageUrl 사용
+        },
         quantity,
         options: selectedOptions
       }
@@ -345,18 +354,26 @@ const ShoppingProductDetail = () => {
 
     // ID를 문자열로 확실하게 변환
     const productId = id as string;
+    // 토글 상태 미리 선언
+    const newFavoriteState = !isFavorite;
 
     try {
       const token = localStorage.getItem('auth_token');
-      if (!token && !user) return;
+      if (!token) {
+        alert('로그인이 필요합니다.');
+        return;
+      }
 
       // API 호출 전에 상태를 먼저 토글
-      const newFavoriteState = !isFavorite;
       setIsFavorite(newFavoriteState);
+      
+      // 현재 시각을 Unix 타임스탬프(밀리초)로 변환
+      const timestamp = Date.now();
 
+      // API 호출하여 서버에 상태 저장
       await axios.patch(
         `${import.meta.env.VITE_API_BASE_URL}/products/${productId}/like`,
-        null,
+        { timestamp: timestamp },
         {
           headers: {
             'Authorization': `Bearer ${token}`,
@@ -366,6 +383,11 @@ const ShoppingProductDetail = () => {
           withCredentials: true
         }
       );
+      
+      // 로컬 스토리지에도 좋아요 상태 저장 (임시 캐시)
+      const favoriteProducts = JSON.parse(localStorage.getItem('favoriteProducts') || '{}') as Record<string, boolean>;
+      favoriteProducts[productId] = newFavoriteState;
+      localStorage.setItem('favoriteProducts', JSON.stringify(favoriteProducts));
       
       // 메인 페이지의 상품 목록도 업데이트
       const mainResponse = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/products/list`);
@@ -377,16 +399,16 @@ const ShoppingProductDetail = () => {
       window.dispatchEvent(new CustomEvent('productsUpdated', { 
         detail: { products: updatedProducts } 
       }));
-
-      // 로컬 스토리지에 좋아요 상태 저장
-      const favoriteProducts = JSON.parse(localStorage.getItem('favoriteProducts') || '{}') as Record<string, boolean>;
-      favoriteProducts[productId] = newFavoriteState;
-      localStorage.setItem('favoriteProducts', JSON.stringify(favoriteProducts));
     } catch (error) {
       // 에러 발생 시 상태를 원래대로 되돌림
-      setIsFavorite(!isFavorite);
+      setIsFavorite(!newFavoriteState);
       console.error('좋아요 처리 중 오류:', error);
       alert('좋아요 처리 중 오류가 발생했습니다.');
+      
+      // 로컬 스토리지에서도 원래 상태로 되돌림
+      const favoriteProducts = JSON.parse(localStorage.getItem('favoriteProducts') || '{}') as Record<string, boolean>;
+      favoriteProducts[productId] = !newFavoriteState;
+      localStorage.setItem('favoriteProducts', JSON.stringify(favoriteProducts));
     }
   };
 
@@ -585,19 +607,16 @@ const ShoppingProductDetail = () => {
           </div>
 
           {/* 버튼 그룹 */}
-          <div className="grid grid-cols-3 gap-2">
-            <button className="py-3 border border-black rounded-md hover:bg-gray-100 transition-colors">
-              장바구니
-            </button>
+          <div className="flex justify-end gap-2">
             <button
-              className="py-3 border border-black rounded-md hover:bg-gray-100 transition-colors"
+              className="py-3 px-4 border border-black rounded-md hover:bg-gray-100 transition-colors w-[45%] text-center"
               onClick={handlePurchase}
             >
               상품 구매하기
             </button>
             <Link
               to="/funding/create"
-              className="py-3 bg-pink-500 text-white rounded-md hover:bg-pink-600 transition-colors text-center"
+              className="py-3 px-4 bg-pink-500 text-white rounded-md hover:bg-pink-600 transition-colors text-center w-[45%]"
             >
               이 상품으로 펀딩 만들기
             </Link>
