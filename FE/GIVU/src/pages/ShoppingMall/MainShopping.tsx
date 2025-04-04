@@ -577,12 +577,12 @@ const MainShopping = () => {
   const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
 
   // 계좌 관련 상태 추가
-  const [hasAccount] = useState<boolean>(false);
+  // const [hasAccount] = useState<boolean>(false);
   // const [, setAccountNumber] = useState<string>('');
   // const [, setAccountBalance] = useState<number>(0);
   // const [, setBankBalance] = useState<number>(0); // 연동계좌 잔액 상태 추가
-  const [, setIsAccountModalOpen] = useState<boolean>(false);
-  const [, setIsChargeModalOpen] = useState<boolean>(false);
+  // const [, setIsAccountModalOpen] = useState<boolean>(false);
+  // const [, setIsChargeModalOpen] = useState<boolean>(false);
 
   // 충전하기 버튼 클릭 핸들러 추가
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
