@@ -60,6 +60,12 @@ fun HomeScreen(
     val popularFundings by homeViewModel.popularFundings.collectAsState()
     val homeUiEvent = homeViewModel.homeUiEvent
 
+    val listState = rememberLazyListState()
+    val coroutineScope = rememberCoroutineScope()
+    val showScrollToTopButton by remember {
+        derivedStateOf { listState.firstVisibleItemIndex > 1 }
+    }
+
     LaunchedEffect(Unit) {
         homeUiEvent.collect { event ->
             when (event) {
@@ -81,7 +87,31 @@ fun HomeScreen(
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-
+                if (showScrollToTopButton) {
+                    FloatingActionButton(
+                        onClick = {
+                            coroutineScope.launch {
+                                listState.animateScrollToItem(0)
+                            }
+                        },
+                        elevation = FloatingActionButtonDefaults.elevation(0.dp),
+                        containerColor = Color.White,
+                        modifier = Modifier
+                            .size(32.dp)
+                            .border(
+                                (0.5).dp, Color(0xFFBCBCBC),
+                                RoundedCornerShape(30.dp)
+                            )
+                            .clip(shape = RoundedCornerShape(30.dp))
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.KeyboardArrowUp,
+                            contentDescription = "Scroll to Top"
+                        )
+                    }
+                }
+                Spacer(Modifier.height(8.dp))
+                
                 if (user != null) {
                     FloatingActionButton(
                         onClick = {
@@ -111,7 +141,7 @@ fun HomeScreen(
     ) { contentPadding ->
 
         LazyColumn(
-            
+            state = listState,
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(contentPadding)
