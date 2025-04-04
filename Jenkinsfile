@@ -42,10 +42,11 @@ pipeline {
 
         stage('Build React') {
     steps {
-        withCredentials([string(credentialsId:'REACT_ENV', variable: 'REACT_ENV_CONTENT')]) {
-            writeFile file: 'FE/GIVU/.env', text: REACT_ENV_CONTENT
-        }
-        sh "docker build --no-cache -t ${REACT_IMAGE} -f FE/GIVU/Dockerfile FE/GIVU"
+        withCredentials([file(credentialsId: 'REACT_ENV_FILE', variable: 'REACT_ENV_PATH')]) {
+    sh 'cp $REACT_ENV_PATH FE/GIVU/.env'
+    
+}
+        sh "docker build -t ${REACT_IMAGE} -f FE/GIVU/Dockerfile FE/GIVU"
     }
 }
 
