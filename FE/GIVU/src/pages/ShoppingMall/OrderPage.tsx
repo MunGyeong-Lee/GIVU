@@ -218,22 +218,22 @@ const OrderPage = () => {
       }
       
       // 현재 시각을 Unix 타임스탬프(밀리초)로 변환
-      const timestamp = Date.now();
+      // const timestamp = Date.now();
       
       // 결제 요청 데이터 구성
-      const paymentData = {
-        timestamp: timestamp,
-        password: password,
-        amount: totalAmount,
-        orderId: `ORDER-${Date.now()}`, // 임시 주문 ID 생성
-        productInfo: {
-          productId: product.id,
-          name: product.name || product.productName,
-          quantity: quantity,
-          options: options
-        },
-        deliveryInfo: shippingInfo
-      };
+      // const paymentData = {
+      //   timestamp: timestamp,
+      //   password: password,
+      //   amount: totalAmount,
+      //   orderId: `ORDER-${Date.now()}`, // 임시 주문 ID 생성
+      //   productInfo: {
+      //     productId: product.id,
+      //     name: product.name || product.productName,
+      //     quantity: quantity,
+      //     options: options
+      //   },
+      //   deliveryInfo: shippingInfo
+      // };
       
       // 여기서 실제 API 호출로 결제 처리 (주석 처리)
       /*
