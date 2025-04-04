@@ -93,35 +93,35 @@ fun MallScreen(
                 MallTopBar()
             }
 
-            item {
-                Row(
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Text(
-                        text = "홈",
-                        fontFamily = suit,
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 20.sp
-                    )
-                    Spacer(Modifier.width(16.dp))
-                    Text(
-                        text = "인기",
-                        fontFamily = suit,
-                        fontWeight = FontWeight.SemiBold,
-                        fontSize = 20.sp,
-                        color = Color(0xFFBCBCBC)
-                    )
-                    Spacer(Modifier.width(16.dp))
-                    Text(
-                        text = "신규",
-                        fontFamily = suit,
-                        fontWeight = FontWeight.SemiBold,
-                        fontSize = 20.sp,
-                        color = Color(0xFFBCBCBC)
-                    )
-                }
-                Divider(modifier = Modifier.padding(top = 16.dp), color = Color(0xFFECECEC))
-            }
+//            item {
+//                Row(
+//                    modifier = Modifier.fillMaxWidth()
+//                ) {
+//                    Text(
+//                        text = "홈",
+//                        fontFamily = suit,
+//                        fontWeight = FontWeight.Bold,
+//                        fontSize = 20.sp
+//                    )
+//                    Spacer(Modifier.width(16.dp))
+//                    Text(
+//                        text = "인기",
+//                        fontFamily = suit,
+//                        fontWeight = FontWeight.SemiBold,
+//                        fontSize = 20.sp,
+//                        color = Color(0xFFBCBCBC)
+//                    )
+//                    Spacer(Modifier.width(16.dp))
+//                    Text(
+//                        text = "신규",
+//                        fontFamily = suit,
+//                        fontWeight = FontWeight.SemiBold,
+//                        fontSize = 20.sp,
+//                        color = Color(0xFFBCBCBC)
+//                    )
+//                }
+//                Divider(modifier = Modifier.padding(top = 16.dp), color = Color(0xFFECECEC))
+//            }
 
             item {
                 AsyncImage(

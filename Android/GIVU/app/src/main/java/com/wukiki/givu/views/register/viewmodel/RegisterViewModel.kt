@@ -3,6 +3,7 @@ package com.wukiki.givu.views.register.viewmodel
 import android.app.Application
 import android.net.Uri
 import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.gson.GsonBuilder
 import com.wukiki.domain.model.ApiStatus
@@ -29,7 +30,7 @@ class RegisterViewModel @Inject constructor(
     private val application: Application,
     private val getProductUseCase: GetProductUseCase,
     private val getFundingUseCase: GetFundingUseCase
-) : AndroidViewModel(application) {
+) : ViewModel() {
 
     /*** Ui State, Event ***/
     private val _registerUiState = MutableStateFlow<RegisterUiState>(RegisterUiState())

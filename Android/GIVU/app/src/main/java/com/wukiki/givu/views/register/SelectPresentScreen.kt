@@ -111,7 +111,7 @@ fun FilteredProductList(
                 product,
                 onProductClick = {
                     registerViewModel.selectProduct(product)
-                    navController.navigate("DetailPresent")
+                    navController.navigate("DetailPresent/${product.productId}")
                 }
             )
         }

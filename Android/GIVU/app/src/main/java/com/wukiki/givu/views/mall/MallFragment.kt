@@ -44,7 +44,7 @@ class MallFragment : BaseFragment<FragmentMallBinding>(R.layout.fragment_mall) {
                     arguments = listOf(navArgument("productId") { type = NavType.StringType })
                 ) { backStackEntry ->
                     val productId = backStackEntry.arguments?.getString("productId")
-                    Log.d("Mall Fragment", "아이디: ${productId}")
+
                     ProductDetailScreen(productId = productId, mallViewModel = viewModel)
                 }
 

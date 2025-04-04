@@ -130,11 +130,11 @@ fun RegisterInputScreen(
                 color = Color.White
             ) {
                 CommonBottomButton(
-                    Modifier
+                    modifier = Modifier
                         .fillMaxWidth()
                         .height(68.dp),
                     text = "선물 선택하기",
-                    registerUiState.isRegisterButton
+                    enabled = registerUiState.isRegisterButton
                 ) {
                     if (registerUiState.isRegisterButton) {
                         registerViewModel.registerFunding()

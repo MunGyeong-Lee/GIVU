@@ -1,6 +1,10 @@
 package com.wukiki.givu.views
 
+import android.content.Context
+import android.content.pm.PackageManager
 import android.os.Bundle
+import android.util.Base64
+import android.util.Log
 import androidx.activity.viewModels
 import androidx.fragment.app.viewModels
 import androidx.navigation.NavController
@@ -16,6 +20,7 @@ import com.wukiki.givu.views.mall.viewmodel.MallViewModel
 import com.wukiki.givu.views.register.viewmodel.RegisterViewModel
 import com.wukiki.givu.views.search.viewmodel.SearchViewModel
 import dagger.hilt.android.AndroidEntryPoint
+import java.security.MessageDigest
 
 @AndroidEntryPoint
 class MainActivity : BaseActivity<ActivityMainBinding>(ActivityMainBinding::inflate) {
@@ -24,7 +29,7 @@ class MainActivity : BaseActivity<ActivityMainBinding>(ActivityMainBinding::infl
     private val homeViewModel: HomeViewModel by viewModels()
     private val communityViewModel: CommunityViewModel by viewModels()
     private val fundingViewModel: FundingViewModel by viewModels()
-    private val registerViewModel: RegisterViewModel by viewModels()
+//    private val registerViewModel: RegisterViewModel by viewModels()
     private val searchViewModel: SearchViewModel by viewModels()
     private val mallViewModel: MallViewModel by viewModels()
     private lateinit var navController: NavController
