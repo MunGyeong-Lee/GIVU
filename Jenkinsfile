@@ -41,14 +41,19 @@ pipeline {
         }
 
         stage('Build React') {
-            steps {
-                    withCredentials([string(credentialsId:'REACT_ENV', variable: 'REACT_ENV_CONTENT')]) {
-                        writeFile file: 'FE/GIVU/.env', text: REACT_ENV_CONTENT
-                }
+    steps {
+        withCredentials([string(credentialsId:'REACT_ENV', variable: 'REACT_ENV_CONTENT')]) {
+            writeFile file: 'FE/GIVU/.env', text: REACT_ENV_CONTENT
 
-                sh "docker build -t ${REACT_IMAGE} -f FE/GIVU/Dockerfile FE/GIVU"
-            }
+            // 🔍 .env 파일 확인 로그 추가
+            sh "echo '------ .env preview ------'"
+            sh "cat FE/GIVU/.env"
+            sh "echo '---------------------------'"
         }
+
+        sh "docker build -t ${REACT_IMAGE} -f FE/GIVU/Dockerfile FE/GIVU"
+    }
+}
 
         stage('Deploy App (Blue-Green)') {
             steps {
