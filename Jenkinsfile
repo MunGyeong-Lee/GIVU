@@ -45,8 +45,7 @@ pipeline {
         withCredentials([string(credentialsId:'REACT_ENV', variable: 'REACT_ENV_CONTENT')]) {
             writeFile file: 'FE/GIVU/.env', text: REACT_ENV_CONTENT
         }
-
-        sh "docker build -t ${REACT_IMAGE} -f FE/GIVU/Dockerfile FE/GIVU"
+        sh "docker build --no-cache -t ${REACT_IMAGE} -f FE/GIVU/Dockerfile FE/GIVU"
     }
 }
 
