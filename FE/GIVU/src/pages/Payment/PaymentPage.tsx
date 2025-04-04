@@ -1,12 +1,104 @@
 import { useState, useEffect } from 'react';
 import { useLocation, useNavigate} from 'react-router-dom';
-// import axios from 'axios';
+import axios from 'axios';
 
 interface PaymentState {
   amount: number;
   title: string;
   creatorName: string;
 }
+
+// 비밀번호 모달 컴포넌트 추가
+const PasswordModal = ({ isOpen, onClose, onSubmit, loading }: {
+  isOpen: boolean;
+  onClose: () => void;
+  onSubmit: (password: string) => void;
+  loading: boolean;
+}) => {
+  const [password, setPassword] = useState<string>('');
+  const [error, setError] = useState<string | null>(null);
+
+  const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    // 숫자만 입력 가능하고 6자리로 제한
+    const value = e.target.value.replace(/[^0-9]/g, '').slice(0, 6);
+    setPassword(value);
+  };
+
+  const handleSubmit = () => {
+    if (password.length !== 6) {
+      setError('비밀번호는 6자리 숫자여야 합니다.');
+      return;
+    }
+    setError(null);
+    onSubmit(password);
+  };
+
+  useEffect(() => {
+    if (!isOpen) {
+      setPassword('');
+      setError(null);
+    }
+  }, [isOpen]);
+
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div className="bg-white rounded-lg p-6 w-full max-w-md">
+        <h2 className="text-xl font-bold mb-4">2차 비밀번호 확인</h2>
+        <p className="text-gray-600 mb-4">결제를 완료하려면 2차 비밀번호를 입력해주세요.</p>
+        
+        <div className="flex justify-center mb-4">
+          <div className="flex gap-2">
+            {[...Array(6)].map((_, i) => (
+              <div 
+                key={i} 
+                className="w-10 h-12 border-2 border-gray-300 rounded-md flex items-center justify-center text-xl font-bold"
+              >
+                {password[i] ? '•' : ''}
+              </div>
+            ))}
+          </div>
+        </div>
+        
+        <input
+          type="password"
+          value={password}
+          onChange={handlePasswordChange}
+          placeholder="6자리 비밀번호 입력"
+          className="w-full px-4 py-3 border border-gray-300 rounded-lg text-center text-xl tracking-widest mb-4"
+          maxLength={6}
+          autoFocus
+        />
+        
+        {error && (
+          <p className="text-red-500 text-sm mb-4">{error}</p>
+        )}
+        
+        <div className="flex gap-3">
+          <button
+            onClick={onClose}
+            className="flex-1 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
+            disabled={loading}
+          >
+            취소
+          </button>
+          <button
+            onClick={handleSubmit}
+            disabled={password.length !== 6 || loading}
+            className={`flex-1 py-2 rounded-lg text-white ${
+              password.length !== 6 || loading
+                ? 'bg-gray-400 cursor-not-allowed'
+                : 'bg-black hover:bg-gray-800'
+            }`}
+          >
+            {loading ? '처리 중...' : '확인'}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
 
 const PaymentPage = () => {
   const location = useLocation();
@@ -21,92 +113,263 @@ const PaymentPage = () => {
   };
   
   const { amount, title } = paymentData;
-  const [balance, setBalance] = useState<number>(50000); // 임시 잔액 데이터
+  const [balance, setBalance] = useState<number>(0); // 기본값을 0으로 설정
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
 
   useEffect(() => {
-    // 실제 API 연동 시 주석 해제
-    // const fetchBalance = async () => {
-    //   try {
-    //     setLoading(true);
-    //     const token = localStorage.getItem('auth_token');
-    //     if (!token) {
-    //       navigate('/login');
-    //       return;
-    //     }
-    //
-    //     const response = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/users/balance`, {
-    //       headers: {
-    //         'Authorization': `Bearer ${token}`
-    //       }
-    //     });
-    //     setBalance(response.data.balance);
-    //   } catch (err) {
-    //     setError('잔액 조회에 실패했습니다.');
-    //     console.error('Error fetching balance:', err);
-    //   } finally {
-    //     setLoading(false);
-    //   }
-    // };
+    // 실제 API를 사용하여 잔액 조회
+    const fetchBalance = async () => {
+      try {
+        setLoading(true);
+        const token = localStorage.getItem('auth_token') || 
+                      localStorage.getItem('access_token') || 
+                      localStorage.getItem('token');
+                      
+        if (!token) {
+          alert('로그인이 필요한 서비스입니다.');
+          navigate('/login');
+          return;
+        }
+
+        const baseUrl = import.meta.env.VITE_BASE_URL || import.meta.env.VITE_API_BASE_URL || 'https://j12d107.p.ssafy.io/api';
+        
+        console.log('GIVU Pay 잔액 조회 시작');
+        
+        // 1. /users/info API에서 기뷰페이 잔액 조회 (가장 우선)
+        try {
+          const userInfoResponse = await axios.get(
+            `${baseUrl}/users/info`,
+            {
+              headers: {
+                'Authorization': `Bearer ${token}`
+              }
+            }
+          );
+          
+          console.log('/users/info API 응답:', userInfoResponse.data);
+          
+          // 이 API에서 주는 balance가 기뷰페이 잔액임
+          if (userInfoResponse.data && userInfoResponse.data.balance !== undefined) {
+            const givupayBalance = Number(userInfoResponse.data.balance);
+            console.log('기뷰페이 잔액 (/users/info에서 확인):', givupayBalance);
+            setBalance(givupayBalance);
+          } else {
+            console.log('/users/info API에 balance 필드가 없음, 대체 API 호출 시도');
+            await fetchBalanceFromAlternativeAPIs(token, baseUrl);
+          }
+        } catch (error) {
+          console.error('/users/info API 호출 오류:', error);
+          await fetchBalanceFromAlternativeAPIs(token, baseUrl);
+        }
+      } catch (err) {
+        setError('잔액 조회에 실패했습니다.');
+        console.error('Error fetching balance:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
     
-    // API 대신 임시 데이터 사용
-    setLoading(true);
-    setTimeout(() => {
-      setBalance(50000); // 임시 잔액 데이터
-      setLoading(false);
-    }, 500);
+    // 대체 API를 사용한 잔액 조회 함수
+    const fetchBalanceFromAlternativeAPIs = async (token: string, baseUrl: string) => {
+      // 1. 첫 번째 대체 API - getUserBalance
+      try {
+        const givupayResponse = await axios.get(
+          `${baseUrl}/mypage/getUserBalance`,
+          {
+            headers: {
+              'Authorization': `Bearer ${token}`
+            }
+          }
+        );
+        
+        console.log('기뷰페이 잔액 조회 응답 (getUserBalance):', givupayResponse.data);
+        
+        if (givupayResponse.data && givupayResponse.data.code === 'SUCCESS' &&
+            givupayResponse.data.data && givupayResponse.data.data.balance !== undefined) {
+          const balance = Number(givupayResponse.data.data.balance);
+          console.log('기뷰페이 잔액 새로고침 (getUserBalance):', balance);
+          setBalance(balance);
+          return true; // 이 API로 성공했으면 다음 API는 호출 안함
+        } else {
+          console.log('getUserBalance API에 balance 필드가 없음, 다음 API 시도');
+        }
+      } catch (error) {
+        console.error('기뷰페이 잔액 조회 API (getUserBalance) 오류:', error);
+      }
+      
+      // 2. 두 번째 대체 API - mypage/balance
+      try {
+        const balanceResponse = await axios.get(
+          `${baseUrl}/mypage/balance`,
+          {
+            headers: {
+              'Authorization': `Bearer ${token}`
+            }
+          }
+        );
+        
+        console.log('기뷰페이 잔액 조회 응답 (mypage/balance):', balanceResponse.data);
+        
+        if (balanceResponse.data && balanceResponse.data.code === 'SUCCESS') {
+          let givupayBalance = null;
+          
+          // 다양한 필드 이름 조회
+          if (balanceResponse.data.data) {
+            if (balanceResponse.data.data.givupayBalance !== undefined) {
+              givupayBalance = balanceResponse.data.data.givupayBalance;
+            } else if (balanceResponse.data.data.balance !== undefined) {
+              givupayBalance = balanceResponse.data.data.balance;
+            } else if (balanceResponse.data.data.userBalance !== undefined) {
+              givupayBalance = balanceResponse.data.data.userBalance;
+            }
+          }
+          
+          if (givupayBalance !== null) {
+            console.log('기뷰페이 잔액 업데이트 (mypage/balance):', givupayBalance);
+            setBalance(Number(givupayBalance));
+            return true;
+          }
+        }
+      } catch (error) {
+        console.error('기뷰페이 잔액 조회 API (mypage/balance) 오류:', error);
+      }
+      
+      return false;
+    };
     
-    // fetchBalance();
+    fetchBalance();
   }, [navigate]);
 
-  const handlePayment = async () => {
+  // 2차 비밀번호 검증 함수
+  const verifyAccountPassword = async (inputPassword: string): Promise<boolean> => {
     try {
-      const token = localStorage.getItem('auth_token');
+      const token = localStorage.getItem('auth_token') || 
+                    localStorage.getItem('access_token') || 
+                    localStorage.getItem('token');
+      if (!token) {
+        alert('로그인이 필요합니다.');
+        return false;
+      }
+      
+      const baseUrl = import.meta.env.VITE_BASE_URL || import.meta.env.VITE_API_BASE_URL || 'https://j12d107.p.ssafy.io/api';
+      
+      // 2차 비밀번호 확인 API 호출
+      const response = await axios.post(
+        `${baseUrl}/users/checkPassword`,
+        { password: inputPassword },
+        {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        }
+      );
+      
+      console.log('비밀번호 확인 응답:', response.data);
+      
+      // 성공 코드인 경우 비밀번호 일치
+      return response.data && response.data.code === 'SUCCESS';
+    } catch (error) {
+      console.error('비밀번호 확인 오류:', error);
+      return false;
+    }
+  };
+
+  const handlePasswordSubmit = async (password: string) => {
+    setLoading(true);
+    
+    try {
+      // 비밀번호 검증
+      const isPasswordValid = await verifyAccountPassword(password);
+      if (!isPasswordValid) {
+        alert('2차 비밀번호가 일치하지 않습니다.');
+        setLoading(false);
+        return;
+      }
+      
+      // 비밀번호 확인 완료 후 결제 진행
+      processPayment();
+    } catch (err) {
+      console.error('비밀번호 확인 오류:', err);
+      setError('비밀번호 확인 중 오류가 발생했습니다.');
+      setLoading(false);
+    }
+  };
+
+  const processPayment = async () => {
+    try {
+      const token = localStorage.getItem('auth_token') || 
+                    localStorage.getItem('access_token') || 
+                    localStorage.getItem('token');
       if (!token) {
         navigate('/login');
         return;
       }
 
-      if (balance < amount) {
-        alert('잔액이 부족합니다. GIVU 페이를 충전해주세요.');
-        return;
-      }
-
-      // 실제 API 연동 대신 성공 처리
-      setLoading(true);
-      setTimeout(() => {
-        setLoading(false);
-        alert('결제가 완료되었습니다!');
-        navigate('/funding');
-      }, 1000);
+      const baseUrl = import.meta.env.VITE_BASE_URL || import.meta.env.VITE_API_BASE_URL || 'https://j12d107.p.ssafy.io/api';
       
-      // 실제 API 연동 시 주석 해제
-      // const response = await axios.post(
-      //   `${import.meta.env.VITE_API_BASE_URL}/payments`,
-      //   {
-      //     amount,
-      //     title,
-      //     creatorName
-      //   },
-      //   {
-      //     headers: {
-      //       'Authorization': `Bearer ${token}`
-      //     }
-      //   }
-      // );
-      //
-      // if (response.status === 200) {
-      //   alert('결제가 완료되었습니다!');
-      //   navigate('/funding');
-      // }
+      // 실제 환경에선 아래 API 연동 코드를 사용할 것임
+      // 현재는 임시로 성공 처리 후 잔액 갱신
+      try {
+        // 결제 API 호출 (현재는 setTimeout으로 대체)
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        
+        // 결제 성공 메시지
+        alert('결제가 완료되었습니다!');
+        
+        // 결제 후 잔액 갱신을 위한 API 호출
+        
+        // 잔액 재조회
+        try {
+          const userInfoResponse = await axios.get(
+            `${baseUrl}/users/info`,
+            {
+              headers: {
+                'Authorization': `Bearer ${token}`
+              }
+            }
+          );
+          
+          if (userInfoResponse.data && userInfoResponse.data.balance !== undefined) {
+            const newBalance = Number(userInfoResponse.data.balance);
+            console.log('결제 후 업데이트된 기뷰페이 잔액:', newBalance);
+            setBalance(newBalance);
+          }
+        } catch (balanceError) {
+          console.error('결제 후 잔액 조회 오류:', balanceError);
+        }
+        
+        // 비밀번호 모달 닫기
+        setIsPasswordModalOpen(false);
+        
+        // 펀딩 목록 페이지로 이동
+        navigate('/funding');
+      } catch (paymentError) {
+        console.error('결제 처리 오류:', paymentError);
+        alert('결제 처리 중 오류가 발생했습니다.');
+      } finally {
+        setLoading(false);
+      }
     } catch (err) {
       setError('결제 처리 중 오류가 발생했습니다.');
       console.error('Error processing payment:', err);
+      setLoading(false);
     }
   };
 
-  if (loading) {
+  const handlePayment = () => {
+    if (balance < amount) {
+      alert('잔액이 부족합니다. GIVU 페이를 충전해주세요.');
+      return;
+    }
+
+    // 비밀번호 모달 열기
+    setIsPasswordModalOpen(true);
+  };
+
+  if (loading && !isPasswordModalOpen) {
     return (
       <div className="flex justify-center items-center h-screen">
         <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-rose-500"></div>
@@ -139,9 +402,44 @@ const PaymentPage = () => {
             <span className="text-gray-600">선물 금액</span>
             <span className="font-medium">{amount.toLocaleString()}원</span>
           </div>
-          <div className="flex justify-between">
+          <div className="flex justify-between items-center">
             <span className="text-gray-600">현재 GIVU 페이 잔액</span>
-            <span className="font-medium">{balance.toLocaleString()}원</span>
+            <div className="flex items-center gap-2">
+              <span className="font-medium">{balance.toLocaleString()}원</span>
+              <button
+                onClick={() => {
+                  setLoading(true);
+                  const fetchBalanceFn = async () => {
+                    try {
+                      const token = localStorage.getItem('auth_token') || 
+                                    localStorage.getItem('access_token') || 
+                                    localStorage.getItem('token');
+                      if (!token) return;
+                      
+                      const baseUrl = import.meta.env.VITE_BASE_URL || import.meta.env.VITE_API_BASE_URL || 'https://j12d107.p.ssafy.io/api';
+                      
+                      const userInfoResponse = await axios.get(`${baseUrl}/users/info`, {
+                        headers: { 'Authorization': `Bearer ${token}` }
+                      });
+                      
+                      if (userInfoResponse.data && userInfoResponse.data.balance !== undefined) {
+                        setBalance(Number(userInfoResponse.data.balance));
+                      }
+                    } catch (error) {
+                      console.error('잔액 갱신 오류:', error);
+                    } finally {
+                      setLoading(false);
+                    }
+                  };
+                  
+                  fetchBalanceFn();
+                }}
+                className="text-xs py-1 px-2 bg-gray-100 hover:bg-gray-200 rounded text-gray-600"
+                disabled={loading}
+              >
+                {loading ? '로딩 중...' : '잔액 새로고침'}
+              </button>
+            </div>
           </div>
           <div className="flex justify-between text-lg font-bold">
             <span>결제 후 잔액</span>
@@ -149,6 +447,19 @@ const PaymentPage = () => {
               {(balance - amount).toLocaleString()}원
             </span>
           </div>
+          
+          {balance < amount && (
+            <div className="mt-4 bg-red-50 border border-red-100 p-3 rounded-md text-sm text-red-600">
+              <p className="font-semibold mb-1">잔액이 부족합니다!</p>
+              <p>마이페이지에서 GIVU Pay를 충전해주세요.</p>
+              <button 
+                onClick={() => navigate('/mypage')}
+                className="mt-2 w-full py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition-colors text-sm"
+              >
+                GIVU Pay 충전하러 가기
+              </button>
+            </div>
+          )}
         </div>
       </div>
 
@@ -180,6 +491,14 @@ const PaymentPage = () => {
           결제하기
         </button>
       </div>
+      
+      {/* 비밀번호 모달 */}
+      <PasswordModal
+        isOpen={isPasswordModalOpen}
+        onClose={() => setIsPasswordModalOpen(false)}
+        onSubmit={handlePasswordSubmit}
+        loading={loading}
+      />
     </div>
   );
 };

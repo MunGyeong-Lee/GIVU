@@ -64,10 +64,10 @@ const fragmentShader = `
     float col = mod(vImageIndex, ${ATLAS_COLS}.0);
     float row = floor(vImageIndex / ${ATLAS_COLS}.0);
     
-    // 아틀라스 내에서의 UV 좌표 계산 (다른 방식 시도)
+    // 아틀라스 내에서의 UV 좌표 계산 (수정된 방식)
     vec2 atlasUV = vec2(
       vUv.x * singleImageUVSize.x + col * singleImageUVSize.x,
-      (1.0 - vUv.y) * singleImageUVSize.y + row * singleImageUVSize.y
+      vUv.y * singleImageUVSize.y + row * singleImageUVSize.y
     );
     
     // 아틀라스 텍스처에서 해당 픽셀 색상 가져오기
@@ -503,6 +503,7 @@ const GiftBoxEffect = ({
   }, [fundingItems, onItemHover, onItemLeave]);
 
   // plane 지오메트리 생성 시 UV 좌표 조정 효과 추가
+  /*
   useEffect(() => {
     if (geometryRef.current) {
       // 기존 UV 좌표 가져오기
@@ -518,6 +519,7 @@ const GiftBoxEffect = ({
       uv.needsUpdate = true;
     }
   }, []);
+  */
 
   return (
     <group ref={groupRef}>
