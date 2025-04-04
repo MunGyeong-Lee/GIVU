@@ -6,6 +6,7 @@ WORKDIR /app
 COPY package*.json ./
 RUN npm install
 COPY . .
+RUN cat .env  # 디버깅용
 RUN npm run build
 
 # ────────────── Run Stage ──────────────
