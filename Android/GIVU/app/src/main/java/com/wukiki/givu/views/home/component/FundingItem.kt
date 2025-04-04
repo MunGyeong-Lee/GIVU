@@ -1,8 +1,10 @@
 package com.wukiki.givu.views.home.component
 
 import android.os.Bundle
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -36,6 +38,7 @@ import com.wukiki.domain.model.Funding
 import com.wukiki.givu.R
 import com.wukiki.givu.ui.suit
 import com.wukiki.givu.util.CommonUtils
+import com.wukiki.givu.util.shimmerEffect
 
 @Composable
 fun FundingItem(
@@ -64,11 +67,27 @@ fun FundingItem(
                 model = if (funding.images.isNotEmpty()) funding.images[0] else "",
                 contentDescription = "Funding Image",
                 contentScale = ContentScale.Crop,
-                loading = { CircularProgressIndicator() },
                 modifier = Modifier
                     .width(180.dp) // 이미지 크기
                     .aspectRatio(3F / 2F)
-                    .clip(RoundedCornerShape(15.dp))
+                    .clip(RoundedCornerShape(15.dp)),
+                loading = {
+                    Box(
+                        modifier = Modifier
+                            .matchParentSize()
+                            .clip(RoundedCornerShape(10.dp))
+                            .shimmerEffect()
+                    )
+                },
+                error = {
+                    Image(
+                        painter = painterResource(id = R.drawable.ic_logo),
+                        contentDescription = "Error",
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(10.dp))
+                            .size(24.dp)
+                    )
+                }
             )
 
             Spacer(modifier = Modifier.width(8.dp))

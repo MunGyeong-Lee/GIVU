@@ -9,4 +9,8 @@ object CommonUtils {
         val comma = DecimalFormat("#,###")
         return "${comma.format(num)}원"
     }
+
+    fun makePercentage(first: Int, second: Int): Int {
+        return (first.toFloat() / second.toFloat() * 100F).toInt()
+    }
 }

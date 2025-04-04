@@ -5,6 +5,7 @@ import android.net.Uri
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.gson.GsonBuilder
+import com.wukiki.domain.model.Account
 import com.wukiki.domain.model.ApiStatus
 import com.wukiki.domain.model.Funding
 import com.wukiki.domain.model.FundingDetail
@@ -58,8 +59,8 @@ class FundingViewModel @Inject constructor(
     private val _user = MutableStateFlow<User?>(null)
     val user = _user.asStateFlow()
 
-    private val _balance = MutableStateFlow<Int>(0)
-    val balance = _balance.asStateFlow()
+    private val _account = MutableStateFlow<Account?>(null)
+    val account = _account.asStateFlow()
 
     private val _fundings = MutableStateFlow<List<Funding>>(emptyList())
     val fundings = _fundings.asStateFlow()
@@ -270,7 +271,7 @@ class FundingViewModel @Inject constructor(
 
             when (response.status) {
                 ApiStatus.SUCCESS -> {
-                    _balance.value = response.data ?: 0
+                    _account.value = response.data
                 }
 
                 else -> {
