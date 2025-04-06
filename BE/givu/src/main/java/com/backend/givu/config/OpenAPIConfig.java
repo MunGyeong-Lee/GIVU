@@ -39,6 +39,7 @@ public class OpenAPIConfig {
                         new Server().url("http://192.168.100.203:8080/api").description("Local Server 1"),
                         new Server().url("http://192.168.100.201:8080/api").description("Local Server 2"),
                         new Server().url("http://192.168.0.115:8080/api").description("문경집")
+//                        new Server().url("http://172.30.1.79:8080/api").description("투썸")
                 ))
                 .addSecurityItem(new SecurityRequirement().addList(securitySchemeName))
                 .components(new io.swagger.v3.oas.models.Components()

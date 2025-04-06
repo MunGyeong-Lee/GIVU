@@ -31,20 +31,19 @@ public class Payment {
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
-    @NotNull
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @OnDelete(action = OnDeleteAction.CASCADE)
-    @JoinColumn(name = "related_funding_id", nullable = false)
+    @JoinColumn(name = "related_funding_id")
     private Funding relatedFunding;
 
-    @NotNull
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @OnDelete(action = OnDeleteAction.CASCADE)
-    @JoinColumn(name = "related_product_id", nullable = false)
+    @JoinColumn(name = "related_product_id")
     private Product relatedProduct;
 
     @Column(name = "amount")
     private Integer amount;
+
     @Column(name = "date")
     private Instant date;
 
@@ -57,4 +56,19 @@ public class Payment {
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     @Column(name = "status", columnDefinition = "payment_status")
     private PaymentsStatus status;
+
+    @PrePersist
+    protected void onCreate(){
+        Instant now = Instant.now() ;
+        this.date = now;
+
+    }
+
+    @PreUpdate
+    protected  void onUpdate(){
+        this.date = Instant.now();
+    }
+
+
+
 }
