@@ -101,7 +101,7 @@ pipeline {
                                 ${REACT_IMAGE}
                     """
 
-                    sleep time: 5, unit: 'SECONDS'
+                    sleep time: 15, unit: 'SECONDS'
 
                     // nginx.conf 생성
                     def sedCommand = """
