@@ -110,6 +110,15 @@ pipeline {
                             ${nginxTemplatePath} > ${nginxConfPath}
                     """
                     sh script: sedCommand
+
+                    // 🕒 네트워크 이름 해석 가능해질 때까지 ping으로 대기
+                    sh """
+                    for i in {1..10}; do
+                    docker exec ${backendNew} ping -c 1 ${frontendNew} && break
+                    echo "[⏳] ${frontendNew} not ready, retrying..."
+                    sleep 2
+                    done
+                    """
                     
                     def nginxExists = sh(script: "docker ps -a --format '{{.Names}}' | grep nginx || true", returnStdout: true).trim()
 
