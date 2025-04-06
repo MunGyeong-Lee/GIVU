@@ -1,6 +1,7 @@
 package com.backend.givu.controller;
 
 import com.backend.givu.model.entity.Product;
+import com.backend.givu.model.responseDTO.ApiResponse;
 import com.backend.givu.model.responseDTO.ImageUploadResponseDTO;
 import com.backend.givu.model.responseDTO.ProductDetailDTO;
 import com.backend.givu.model.responseDTO.ProductsDTO;
@@ -32,6 +33,13 @@ public class ProductController {
     public ResponseEntity<List<ProductsDTO>> findAll() {
         List<ProductsDTO> productList = productService.findAllProduct();
         return ResponseEntity.ok(productList);
+    }
+
+    @Operation(summary = "검색 상품 조회", description = "해당 검색어가 이름 또는 설명에 포함된 모든 상품을 조회합니다.")
+    @GetMapping("/search")
+    public ResponseEntity<ApiResponse<List<ProductsDTO>>> searchProducts(@RequestParam String keyword){
+        ApiResponse<List<ProductsDTO>> response = productService.findAllSearchProduct(keyword, keyword);
+        return ResponseEntity.ok(response);
     }
 
     @Operation(summary = "상품 상세 조회", description = "상품 상세 정보를 조회합니다.")
@@ -71,4 +79,11 @@ public class ProductController {
         productService.increaseLikeCount(productId);
         return ResponseEntity.ok().build();
     }
+
+    @PostMapping("/products/reindex")
+    public ResponseEntity<String> reindexAllProducts() {
+        productService.indexAllProductsToElasticsearch();
+        return ResponseEntity.ok("✅ 모든 상품을 Elasticsearch에 색인 완료!");
+    }
+
 }
