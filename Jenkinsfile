@@ -27,7 +27,7 @@ pipeline {
                 stage('Start Infra Services') {
             steps {
                  sh "docker network create givu_nginx-network || true"
-                 sh "docker-compose -f ${COMPOSE_FILE} up -d postgres redis kafka kafka-ui"
+                 sh "docker-compose -f ${COMPOSE_FILE} up -d postgres redis kafka kafka-ui elasticsearch kibana"
 
             }
         }
