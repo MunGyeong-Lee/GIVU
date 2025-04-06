@@ -26,7 +26,7 @@ pipeline {
 
                 stage('Start Infra Services') {
             steps {
-                 sh "docker-compose -f ${COMPOSE_FILE} --project-name givuproject up -d postgres redis kafka kafka-ui"
+                 sh "docker-compose -f ${COMPOSE_FILE} up -d postgres redis kafka kafka-ui"
 
             }
         }
