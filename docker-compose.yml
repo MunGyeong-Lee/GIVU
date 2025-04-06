@@ -1,6 +1,5 @@
 version: '3.8'
 
-
 services:
   # ---------------------
   # Kafka (KIP-500 mode)
@@ -8,7 +7,6 @@ services:
   kafka:
     image: bitnami/kafka:3.9.0
     container_name: kafka
-    # Zookeeper 없이 KIP-500 모드로 동작하기 위해 아래 환경 변수들을 세팅
     environment:
       - KAFKA_CFG_NODE_ID=1
       - KAFKA_CFG_PROCESS_ROLES=broker,controller
@@ -40,7 +38,6 @@ services:
     environment:
       - KAFKA_CLUSTERS_0_NAME=local
       - KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS=kafka:9092
-      # Zookeeper 없이도 동작 가능하므로 KAFKA_CLUSTERS_0_ZOOKEEPER는 제거
     networks:
       - kafka-network
 
@@ -62,7 +59,7 @@ services:
       - givu_nginx-network
 
   redis:
-    image: redis:latest
+    image: redis
     container_name: redis
     ports:
       - "6379:6379"
@@ -72,13 +69,9 @@ services:
     networks:
       - givu_nginx-network
 
-  # ---------------------------------------------------------
-  # [옵션] 로컬 테스트용 Backend/Frontend + nginx-local
-  #
-  # 실제 Jenkins 파이프라인에서는 Blue-Green 배포를 위해
-  # docker run 명령어로 backend-v1/backend-v2, frontend-v1/frontend-v2, nginx 등을
-  # 띄우고 교체하므로, 아래는 로컬 개발/테스트 시 편의를 위한 항목
-  # ---------------------------------------------------------
+  # ---------------------
+  # App Containers (for local dev)
+  # ---------------------
   backend-v1:
     image: my-spring-app
     container_name: backend-v1
@@ -116,7 +109,7 @@ services:
       - givu_nginx-network
 
   nginx-local:
-    image: nginx:latest
+    image: nginx
     container_name: nginx-local
     ports:
       - "80:80"
@@ -129,87 +122,12 @@ services:
 # 네트워크 및 볼륨
 # ---------------------
 networks:
+  kafka-network:
+    driver: bridge
   givu_nginx-network:
     driver: bridge
-  kafka-network:
-    driver: bridge
 
 volumes:
-  pgdata:
-  redis-data:
   kafka-data:
-
-    container_name: kafka-ui
-    ports: ["8081:8080"]
-    environment:
-      - KAFKA_CLUSTERS_0_NAME=local
-      - KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS=kafka:9092
-    networks: [kafka-network]
-
-  backend-v1:
-    image: my-spring-app
-    container_name: backend-v1
-    ports: ["1115:8080"]
-    environment:
-      - PORT=8080
-    networks: [nginx-network]
-
-  backend-v2:
-    image: my-spring-app
-    container_name: backend-v2
-    ports: ["1116:8080"]
-    environment:
-      - PORT=8080
-    networks: [nginx-network]
-
-  frontend-v1:
-    image: my-react-app
-    container_name: frontend-v1
-    ports: ["3000:80"]
-    networks: [nginx-network]
-
-  frontend-v2:
-    image: my-react-app
-    container_name: frontend-v2
-    ports: ["3001:80"]
-    networks: [nginx-network]
-
-  postgres:
-    image: postgres:17
-    container_name: postgres
-    ports: ["5432:5432"]
-    environment:
-      - POSTGRES_DB=givudb
-      - POSTGRES_USER=d107
-      - POSTGRES_PASSWORD=d107password
-    volumes:
-      - pgdata:/var/lib/postgresql/data
-    networks: [nginx-network]
-
-  redis:
-    image: redis
-    container_name: redis
-    ports: ["6379:6379"]
-    command: redis-server --requirepass d107password
-    volumes:
-      - redis-data:/data
-    networks: [nginx-network]
-  # 확인5
-  nginx:
-    image: nginx
-    container_name: nginx
-    ports: ["80:80"]
-    volumes:
-      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
-    networks: [nginx-network]
-
-networks:
-  nginx-network:
-    driver: bridge
-  kafka-network:
-    driver: bridge
-
-volumes:
   pgdata:
   redis-data:
-# 확인2
