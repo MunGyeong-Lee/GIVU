@@ -207,7 +207,6 @@ public class FundingService {
         // DTO 조립
         FundingDetailDTO dto = FundingDetailDTO.of(funding, writer, product, letters, reviews);
 
-
         return ApiResponse.success(dto);
 
 
