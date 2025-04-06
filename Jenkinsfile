@@ -36,7 +36,8 @@ pipeline {
                     sh 'chmod +x gradlew'
                     sh './gradlew build -Dspring.profiles.active=test --no-daemon'
                 }
-                sh "docker build -t ${SPRING_IMAGE} -f BE/givu/Dockerfile BE/givu"
+                //sh "docker build -t ${SPRING_IMAGE} -f BE/givu/Dockerfile BE/givu"
+                sh './gradlew build -x test -Dspring.profiles.active=test --no-daemon'
             }
         }
 
