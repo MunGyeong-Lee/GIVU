@@ -51,8 +51,10 @@ public class GivuTransferEventService {
              */
 
             // 1. 유저와 펀딩 잠금(Row-Level Locking)
-            User user = userRepository.findByIdForUpdate(event.getUserId());
-            Funding funding = fundingRepository.findByIdForUpdate(event.getFundingId());
+            User user = userRepository.findByIdForUpdate(event.getUserId())
+                    .orElseThrow(() -> new EntityNotFoundException("해당하는 유저가 없습니다."));
+            Funding funding = fundingRepository.findByIdForUpdate(event.getFundingId())
+                    .orElseThrow(() -> new EntityNotFoundException("해당하는 펀딩이 없습니다."));
             Payment payment = paymentRepository.findByIdForUpdate(event.getPaymentId())
                     .orElseThrow(() -> new EntityNotFoundException("결제 정보가 없습니다: " + event.getPaymentId()));
             log.info("payment :{} ", payment);

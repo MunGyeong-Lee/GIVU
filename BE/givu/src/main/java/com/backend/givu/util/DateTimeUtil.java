@@ -58,4 +58,11 @@ public class DateTimeUtil {
         }
     }
 
+    public static LocalDateTime parseIsoString(String isoDate) {
+        return LocalDateTime.ofInstant(
+                Instant.parse(isoDate),
+                ZoneId.systemDefault()
+        );
+    }
+
 }

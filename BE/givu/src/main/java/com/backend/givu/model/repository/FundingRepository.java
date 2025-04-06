@@ -13,6 +13,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface FundingRepository extends JpaRepository<Funding, Integer> {
@@ -66,6 +67,6 @@ public interface FundingRepository extends JpaRepository<Funding, Integer> {
 
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("SELECT f FROM Funding f WHERE f.id = :fundingId")
-    Funding findByIdForUpdate(@Param("fundingId") int fundingId);
+    Optional<Funding> findByIdForUpdate(@Param("fundingId") int fundingId);
 
 }

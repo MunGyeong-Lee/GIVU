@@ -1,17 +1,17 @@
 package com.backend.givu.model.service;
 
 import com.amazonaws.services.kms.model.NotFoundException;
+import com.backend.givu.model.Document.ProductDocument;
 import com.backend.givu.model.entity.Product;
 import com.backend.givu.model.entity.ProductReview;
 import com.backend.givu.model.entity.User;
 import com.backend.givu.model.repository.ProductRepository;
 import com.backend.givu.model.repository.ProductReviewRepository;
+import com.backend.givu.model.repository.ProductSearchRepository;
 import com.backend.givu.model.repository.UserRepository;
 import com.backend.givu.model.requestDTO.ProductReviewCreateDTO;
-import com.backend.givu.model.responseDTO.ProductDetailDTO;
-import com.backend.givu.model.responseDTO.ProductReviewDTO;
-import com.backend.givu.model.responseDTO.ProductsDTO;
-import com.backend.givu.model.responseDTO.UserSimpleInfoDTO;
+import com.backend.givu.model.responseDTO.*;
+import com.backend.givu.util.mapper.ProductMapper;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -27,6 +27,7 @@ public class ProductService {
 
     private final ProductRepository productRepository;
     private final ProductReviewRepository productReviewRepository;
+    private final ProductSearchRepository productSearchRepository;
     private final UserRepository userRepository;
 
     public List<ProductsDTO> findAllProduct(){
@@ -37,6 +38,16 @@ public class ProductService {
             dtoList.add(new ProductsDTO(product));
         }
         return dtoList;
+    }
+
+    public ApiResponse<List<ProductsDTO>> findAllSearchProduct(String name, String description){
+        List<ProductDocument> productDocumentList = productSearchRepository.findByProductNameContainingOrDescriptionContaining(name, description);
+
+        List<ProductsDTO> dtoList = new ArrayList<>();
+        for(ProductDocument product : productDocumentList){
+            dtoList.add(new ProductsDTO(product));
+        }
+        return ApiResponse.success(dtoList);
     }
 
     public ProductDetailDTO findProductDetailByProductId(int productId){
@@ -103,4 +114,17 @@ public class ProductService {
 
         product.increaseLike(); // 도메인 메서드로 처리 추천!
     }
+
+    @Transactional(readOnly = true)
+    public void indexAllProductsToElasticsearch() {
+        List<Product> products = productRepository.findAll();
+
+        List<ProductDocument> documents = products.stream()
+                .map(ProductMapper::toDocument)
+                .toList();
+
+        productSearchRepository.saveAll(documents); // ES에 대량 색인
+    }
+
+
 }

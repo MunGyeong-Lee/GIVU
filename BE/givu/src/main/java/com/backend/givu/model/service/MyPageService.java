@@ -19,7 +19,6 @@ import org.springframework.web.reactive.function.client.WebClientResponseExcepti
 public class MyPageService {
 
     private final WebClient webClient;
-    private final RestTemplate restTemplate;
     private final ErrorResponseParser errorResponseParser;
 
     @Transactional

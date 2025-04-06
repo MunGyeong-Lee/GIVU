@@ -47,6 +47,11 @@ public class UserService {
                 .orElseThrow(() -> new RuntimeException("해당 사용자가 존재하지 않습니다."));
     }
 
+    public User getUserByIdForUpdate(Long userId){
+        return userRepository.findByIdForUpdate(userId)
+                .orElseThrow(() -> new RuntimeException("해당 사용자가 존재하지 않습니다."));
+    }
+
     public UserSimpleInfoDTO getUserSimpleInfoById(Long userId){
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("해당 사용자가 존재하지 않습니다."));

@@ -26,7 +26,9 @@ pipeline {
 
                 stage('Start Infra Services') {
             steps {
-                sh "docker-compose -f ${COMPOSE_FILE} up -d postgres redis"
+                 sh "docker network create givu_nginx-network || true"
+                 sh "docker-compose -f ${COMPOSE_FILE} up -d postgres redis kafka kafka-ui"
+
             }
         }
 
@@ -34,21 +36,28 @@ pipeline {
             steps {
                 dir('BE/givu') {
                     sh 'chmod +x gradlew'
-                    sh './gradlew build -Dspring.profiles.active=test --no-daemon'
+                    //sh './gradlew build -Dspring.profiles.active=test --no-daemon'
+                    sh './gradlew build -x test -Dspring.profiles.active=test --no-daemon'
                 }
                 sh "docker build -t ${SPRING_IMAGE} -f BE/givu/Dockerfile BE/givu"
+                
             }
         }
 
         stage('Build React') {
             steps {
-                    withCredentials([string(credentialsId:'REACT_ENV', variable: 'REACT_ENV_CONTENT')]) {
-                        writeFile file: 'FE/GIVU/.env', text: REACT_ENV_CONTENT
-                }
-
-                sh "docker build -t ${REACT_IMAGE} -f FE/GIVU/Dockerfile FE/GIVU"
+                script {
+                    withCredentials([file(credentialsId: 'REACT_ENV_FILE', variable:'REACT_ENV_PATH')]) {
+                sh 'cp $REACT_ENV_PATH FE/GIVU/.env'
+                sh 'echo "[DEBUG] .env 내용:"'
+                sh 'cat FE/GIVU/.env'
             }
+
+            sh "docker build -t ${REACT_IMAGE} -f FE/GIVU/Dockerfile FE/GIVU"
         }
+    }
+}
+
 
         stage('Deploy App (Blue-Green)') {
             steps {
@@ -80,14 +89,16 @@ pipeline {
                         docker run -d --name ${backendNew} \
                             --network ${NETWORK} \
                             -e PORT=${SPRINGBOOT_PORT} \
+                            -v /etc/localtime:/etc/localtime:ro \
+                            -v /etc/timezone:/etc/timezone:ro \
                             -p ${backendPort}:8080 \
                             ${SPRING_IMAGE}
 
-                        docker rm -f ${frontendNew} || true
-                        docker run -d --name ${frontendNew} \
-                            --network ${NETWORK} \
-                            -p ${frontendPort}:80 \
-                            ${REACT_IMAGE}
+                            docker run -d --name ${frontendNew} \
+                                --network ${NETWORK} \
+                                -p ${frontendPort}:80 \
+                                -v /home/ubuntu/nginx/front-nginx/react-default.conf:/etc/nginx/conf.d/default.conf:ro \
+                                ${REACT_IMAGE}
                     """
 
                     sleep time: 5, unit: 'SECONDS'
