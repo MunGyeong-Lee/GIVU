@@ -37,14 +37,10 @@ public class OpenAPIConfig {
                 .servers(List.of(
                         new Server().url("https://j12d107.p.ssafy.io/api").description("EC2 Server"),
                         new Server().url("http://192.168.100.203:8080/api").description("Local Server 1"),
-                        new Server().url("http://192.168.100.201:8080/api").description("Local Server 2"),
-<<<<<<< HEAD
-                        new Server().url("http://192.168.0.115:8080/api").description("문경집")
-//                        new Server().url("http://172.30.1.79:8080/api").description("투썸")
-=======
+
                         new Server().url("http://192.168.0.115:8080/api").description("문경집"),
+//                        new Server().url("http://172.30.1.79:8080/api").description("투썸")
                         new Server().url("http://192.168.0.78:8080/api").description("에이바우트")
->>>>>>> c647609b0918d8d94be5c6ff6ef52f22abcf7926
                 ))
                 .addSecurityItem(new SecurityRequirement().addList(securitySchemeName))
                 .components(new io.swagger.v3.oas.models.Components()
