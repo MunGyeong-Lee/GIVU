@@ -185,7 +185,7 @@ public class FundingController implements FundingControllerDocs {
 
         Long userId = userDetail.getId();
 
-        ApiResponse<FundingDetailDTO> fundingDetail  = fundingService.fundingDetail(fundingId);
+        ApiResponse<FundingDetailDTO> fundingDetail  = fundingService.fundingDetail(userId, fundingId);
         return ResponseEntity.ok(fundingDetail);
     }
 

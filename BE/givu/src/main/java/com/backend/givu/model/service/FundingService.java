@@ -188,15 +188,19 @@ public class FundingService {
     /**
      * 펀딩 상세 보기
      */
-    public ApiResponse<FundingDetailDTO> fundingDetail (int fundingId){
+    public ApiResponse<FundingDetailDTO> fundingDetail (Long userId, int fundingId){
 
         // 존재하는 펀딩인지 확인
         Funding funding = fundingRepository.findById(fundingId)
                 .orElseThrow(() -> new EntityNotFoundException("펀딩을 찾을 수 없습니다,"));
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new EntityNotFoundException("유저를 찾을 수 없습니다."));
 
-        //  연관된 상품, 작성자 정보
+
+        //  연관된 상품, 작성자 정보, 작성자 == 조회하는 유저 인지
         Product product = funding.getProduct();
         User writer = funding.getUser();
+        boolean isCreator = user.getId().equals(funding.getUser().getId());
 
         // 편지 리스트 (User 포함 fetch join)
         List<Letter> letters = fundingRepository.findLetterByFundingIdWithUser(fundingId);
@@ -205,7 +209,7 @@ public class FundingService {
         List<Review> reviews = fundingRepository.findReviewByFundingIdWithUser(fundingId);
 
         // DTO 조립
-        FundingDetailDTO dto = FundingDetailDTO.of(funding, writer, product, letters, reviews);
+        FundingDetailDTO dto = FundingDetailDTO.of(funding, isCreator, writer, product, letters, reviews, user.getId());
 
         return ApiResponse.success(dto);
 
