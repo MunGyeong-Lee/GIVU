@@ -26,7 +26,7 @@ services:
     volumes:
       - kafka-data:/bitnami/kafka
     networks:
-      - kafka-network
+      - givu_nginx-network
 
   kafka-ui:
     image: provectuslabs/kafka-ui:latest
@@ -39,7 +39,7 @@ services:
       - KAFKA_CLUSTERS_0_NAME=local
       - KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS=kafka:9092
     networks:
-      - kafka-network
+      - givu_nginx-network
 
   # ---------------------
   # DB & Cache
@@ -122,8 +122,6 @@ services:
 # 네트워크 및 볼륨
 # ---------------------
 networks:
-  kafka-network:
-    driver: bridge
   givu_nginx-network:
     driver: bridge
 
