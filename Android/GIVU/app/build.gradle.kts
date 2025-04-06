@@ -133,6 +133,9 @@ dependencies {
     // Timber
     implementation("com.jakewharton.timber:timber:5.0.1")
 
+    // Biometric
+    implementation("androidx.biometric:biometric:1.4.0-alpha02")
+
     // Test
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
