@@ -14,10 +14,10 @@ spring:
       password: d107password
 
     # ✅ Elasticsearch 추가
-    elasticsearch:
-      uris: http://elasticsearch:9200
-      connection-timeout: 3s
-      socket-timeout: 3s
+  elasticsearch:
+    uris: http://elasticsearch:9200
+    connection-timeout: 3s
+    socket-timeout: 3s
 
   datasource:
     url: jdbc:postgresql://postgres:5432/givudb
