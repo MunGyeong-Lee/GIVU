@@ -111,10 +111,16 @@ pipeline {
                     """
                     sh script: sedCommand
 
-                    // 🕒 네트워크 이름 해석 가능해질 때까지 ping으로 대기
+                    // DNS가 등록될 때까지 대기 (최대 10번 시도)
                     sh """
                     for i in {1..10}; do
-                    docker exec ${backendNew} ping -c 1 ${frontendNew} && break
+                    docker run --rm --network ${NETWORK} busybox ping -c 1 ${backendNew} && break
+                    echo "[⏳] ${backendNew} not ready, retrying..."
+                    sleep 2
+                    done
+
+                    for i in {1..10}; do
+                    docker run --rm --network ${NETWORK} busybox ping -c 1 ${frontendNew} && break
                     echo "[⏳] ${frontendNew} not ready, retrying..."
                     sleep 2
                     done
