@@ -98,7 +98,7 @@ fun ProductDetailScreen(
             Column(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(bottom = 68.dp)
+                    .padding(bottom = 76.dp)
 //                    .verticalScroll(rememberScrollState())
             ) {
                 StoreDetailTopBar()
@@ -224,12 +224,11 @@ fun ProductDetailScreen(
 
             // 하단 바
             Row(
-                modifier =
-                Modifier
+                modifier = Modifier
                     .fillMaxWidth()
-                    .height(68.dp)
+                    .height(72.dp)
+                    .padding(bottom = 16.dp)
                     .align(Alignment.BottomCenter)
-//                    .background(Color.LightGray)
                 ,
                 verticalAlignment = Alignment.CenterVertically
             ) {
@@ -250,12 +249,11 @@ fun ProductDetailScreen(
                             modifier = Modifier.fillMaxSize()
                         )
                     }
-                    Spacer(Modifier.height(4.dp))
                     Text(
                         text = it.favorite,
                         fontFamily = pretendard,
                         fontWeight = FontWeight.Medium,
-                        fontSize = 14.sp
+                        fontSize = 12.sp
 
                     )
                 }

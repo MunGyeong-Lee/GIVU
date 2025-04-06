@@ -3,10 +3,13 @@ package com.wukiki.givu.views.mall
 import android.os.Bundle
 import android.util.Log
 import android.view.View
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.fragment.findNavController
 import androidx.navigation.navArgument
@@ -30,6 +33,16 @@ class MallFragment : BaseFragment<FragmentMallBinding>(R.layout.fragment_mall) {
 
         binding.composeMall.setContent {
             val navController = rememberNavController()
+            val currentBackStackEntry by navController.currentBackStackEntryAsState()
+            val currentRoute = currentBackStackEntry?.destination?.route
+
+            LaunchedEffect(currentRoute) {
+                if (currentRoute == "MallMainScreen") {
+                    mainViewModel.setBnvState(true)
+                } else {
+                    mainViewModel.setBnvState(false)
+                }
+            }
 
             NavHost(
                 navController = navController,
@@ -49,16 +62,13 @@ class MallFragment : BaseFragment<FragmentMallBinding>(R.layout.fragment_mall) {
                 }
 
 
-
             }
-
-
         }
     }
 
-    override fun onResume() {
-        super.onResume()
-
-        mainViewModel.setBnvState(true)
-    }
+//    override fun onResume() {
+//        super.onResume()
+//
+//        mainViewModel.setBnvState(true)
+//    }
 }
