@@ -42,13 +42,18 @@ pipeline {
 
         stage('Build React') {
             steps {
-                    withCredentials([string(credentialsId:'REACT_ENV', variable: 'REACT_ENV_CONTENT')]) {
-                        writeFile file: 'FE/GIVU/.env', text: REACT_ENV_CONTENT
-                }
-
-                sh "docker build -t ${REACT_IMAGE} -f FE/GIVU/Dockerfile FE/GIVU"
+                script {
+                    withCredentials([file(credentialsId: 'REACT_ENV_FILE', variable:'REACT_ENV_PATH')]) {
+                sh 'cp $REACT_ENV_PATH FE/GIVU/.env'
+                sh 'echo "[DEBUG] .env 내용:"'
+                sh 'cat FE/GIVU/.env'
             }
+
+            sh "docker build -t ${REACT_IMAGE} -f FE/GIVU/Dockerfile FE/GIVU"
         }
+    }
+}
+
 
         stage('Deploy App (Blue-Green)') {
             steps {
@@ -80,6 +85,8 @@ pipeline {
                         docker run -d --name ${backendNew} \
                             --network ${NETWORK} \
                             -e PORT=${SPRINGBOOT_PORT} \
+                            -v /etc/localtime:/etc/localtime:ro \
+                            -v /etc/timezone:/etc/timezone:ro \
                             -p ${backendPort}:8080 \
                             ${SPRING_IMAGE}
 

@@ -43,6 +43,7 @@ public class SecurityConfig {
                                 "/api-docs", 
                                 "/v3/api-docs/**",              // OpenAPI JSON
                                 "/swagger-ui/**",               // Swagger UI 관련 경로
+                                "/swagger-ui.html",
                                 "/swagger-resources/**",        // Swagger 리소스 허용
                                 "/webjars/**",                  // Swagger UI에서 사용하는 WebJars 리소스 허용
                                 "/error",                       // 에러 핸들링 경로
@@ -58,7 +59,9 @@ public class SecurityConfig {
                                 "/users/info",
                                 "/users/givupay/**",    // 기뷰페이 관련
                                 "/users/payment",       // 유저 거래 내역 조회
-                                "/users",               // 로그아웃, 회원 탈퇴
+                                "/users",
+                                "/users/setPassword",
+                                "/users/checkPassword",
                                 "/users/test",        // 테스트
                                 "/products-review/**",
                                 "/fundings/**",
