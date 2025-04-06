@@ -60,7 +60,7 @@ public class MyPageController {
                                                                    @RequestBody AmountDTO amountDTO){
         String accountNo = userDetail.getAccountNo();
         long userId = userDetail.getId();
-        User user = userService.getUserById(userId);
+        User user = userService.getUserByIdForUpdate(userId);
         if(accountNo.isBlank()){
             return ResponseEntity.ok(ApiResponse.fail("ERROR", "계좌가 존재하지 않습니다."));
         }
@@ -73,7 +73,7 @@ public class MyPageController {
                                                                               @RequestBody AmountDTO amountDTO){
         String accountNo = userDetail.getAccountNo();
         long userId = userDetail.getId();
-        User user = userService.getUserById(userId);
+        User user = userService.getUserByIdForUpdate(userId);
         if(accountNo.isBlank()){
             return ResponseEntity.ok(ApiResponse.fail("ERROR", "계좌가 존재하지 않습니다."));
         }

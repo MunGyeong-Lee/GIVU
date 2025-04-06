@@ -1,11 +1,127 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 
+// 결제 비밀번호 모달 컴포넌트
+const PaymentPasswordModal: React.FC<{
+  isOpen: boolean;
+  onClose: () => void;
+  onSubmit: (password: string) => void;
+  amount: number;
+}> = ({ isOpen, onClose, onSubmit, amount }) => {
+  const [password, setPassword] = useState<string>('');
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState<boolean>(false);
+  
+  // 비밀번호 변경 핸들러
+  const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    // 숫자만 입력 가능하고 6자리로 제한
+    const value = e.target.value.replace(/[^0-9]/g, '').slice(0, 6);
+    setPassword(value);
+  };
+  
+  // 제출 핸들러
+  const handleSubmit = () => {
+    if (password.length !== 6) {
+      setError('비밀번호는 6자리 숫자여야 합니다.');
+      return;
+    }
+    
+    setLoading(true);
+    setError(null);
+    
+    // 비밀번호 검증 및 결제 처리
+    onSubmit(password);
+  };
+  
+  // 모달 초기화
+  const resetModal = () => {
+    setPassword('');
+    setError(null);
+    setLoading(false);
+  };
+  
+  // 모달이 닫힐 때 초기화
+  useEffect(() => {
+    if (!isOpen) {
+      resetModal();
+    }
+  }, [isOpen]);
+  
+  if (!isOpen) return null;
+  
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div className="bg-white rounded-2xl p-8 w-full max-w-md">
+        <h2 className="text-2xl font-bold mb-6 text-center">결제 비밀번호 확인</h2>
+        
+        <div className="mb-6">
+          <p className="text-gray-600 text-center mb-4">
+            결제를 완료하기 위해 6자리 비밀번호를 입력해주세요.
+          </p>
+          
+          <p className="text-center font-bold text-lg mb-4">
+            결제 금액: <span className="text-cusRed">{amount.toLocaleString()}원</span>
+          </p>
+          
+          <div className="flex justify-center mb-3">
+            <div className="flex gap-2">
+              {[...Array(6)].map((_, i) => (
+                <div 
+                  key={i} 
+                  className="w-10 h-12 border-2 border-gray-300 rounded-md flex items-center justify-center text-xl font-bold"
+                >
+                  {password[i] ? '•' : ''}
+                </div>
+              ))}
+            </div>
+          </div>
+          
+          <input
+            type="password"
+            value={password}
+            onChange={handlePasswordChange}
+            placeholder="6자리 비밀번호 입력"
+            className="w-full px-4 py-3 border border-gray-300 rounded-lg text-center text-xl tracking-widest"
+            maxLength={6}
+            autoFocus
+          />
+          
+          {error && (
+            <p className="text-red-500 text-sm mt-2 text-center">{error}</p>
+          )}
+        </div>
+        
+        <div className="flex justify-center gap-4">
+          <button
+            onClick={onClose}
+            className="px-6 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 transition-colors"
+          >
+            취소
+          </button>
+          
+          <button
+            onClick={handleSubmit}
+            disabled={password.length !== 6 || loading}
+            className={`px-6 py-2 ${
+              password.length === 6 && !loading
+                ? 'bg-cusRed hover:bg-cusRed-light text-white' 
+                : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+            } rounded-md transition-colors`}
+          >
+            {loading ? '처리중...' : '결제하기'}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 // 주문 페이지 컴포넌트
 const OrderPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [orderInfo, setOrderInfo] = useState<any>(null);
+  const [isPasswordModalOpen, setIsPasswordModalOpen] = useState<boolean>(false);
 
   // 구매 정보 및 상품 정보 (URL에서 가져오거나 location state에서 가져옴)
   useEffect(() => {
@@ -83,9 +199,70 @@ const OrderPage = () => {
       return;
     }
 
-    // 여기서 API 호출로 주문 정보 전송
-    alert('주문이 완료되었습니다!');
-    navigate('/mypage'); // 주문 완료 후 마이페이지로 이동
+    // 비밀번호 입력 모달 표시
+    setIsPasswordModalOpen(true);
+  };
+  
+  // 결제 비밀번호 확인 후 주문 처리
+  const handlePaymentConfirm = async (password: string) => {
+    try {
+      // 비밀번호 검증 (실제로는 API 호출로 검증)
+      console.log('결제 비밀번호:', password);
+      
+      // 토큰 가져오기
+      const token = localStorage.getItem('auth_token');
+      if (!token) {
+        alert('로그인이 필요합니다.');
+        navigate('/login');
+        return;
+      }
+      
+      // 현재 시각을 Unix 타임스탬프(밀리초)로 변환
+      // const timestamp = Date.now();
+      
+      // 결제 요청 데이터 구성
+      // const paymentData = {
+      //   timestamp: timestamp,
+      //   password: password,
+      //   amount: totalAmount,
+      //   orderId: `ORDER-${Date.now()}`, // 임시 주문 ID 생성
+      //   productInfo: {
+      //     productId: product.id,
+      //     name: product.name || product.productName,
+      //     quantity: quantity,
+      //     options: options
+      //   },
+      //   deliveryInfo: shippingInfo
+      // };
+      
+      // 여기서 실제 API 호출로 결제 처리 (주석 처리)
+      /*
+      const response = await axios.post(
+        `${import.meta.env.VITE_API_BASE_URL}/payment/process`,
+        paymentData,
+        {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        }
+      );
+      
+      if (response.data.code !== 'SUCCESS') {
+        throw new Error(response.data.message || '결제에 실패했습니다.');
+      }
+      */
+      
+      // 임시 처리 (API 연동 전)
+      setTimeout(() => {
+        setIsPasswordModalOpen(false);
+        alert('결제가 완료되었습니다!');
+        navigate('/mypage'); // 주문 완료 후 마이페이지로 이동
+      }, 1000);
+    } catch (error: any) {
+      console.error('결제 처리 중 오류:', error);
+      alert(`결제에 실패했습니다: ${error.message || '알 수 없는 오류'}`);
+    }
   };
 
   // 주소 검색 기능
@@ -131,8 +308,10 @@ const OrderPage = () => {
   // 총 상품 금액
   const productTotal = discountedPrice * quantity;
   
-  // 배송비
-  const shippingFee = productTotal >= product.deliveryInfo.freeFeeOver ? 0 : product.deliveryInfo.fee;
+  // 배송비 - 기본값 설정 추가
+  // deliveryInfo가 없는 경우를 대비한 기본값 설정
+  const deliveryInfo = product.deliveryInfo || { freeFeeOver: 50000, fee: 3000 };
+  const shippingFee = productTotal >= deliveryInfo.freeFeeOver ? 0 : deliveryInfo.fee;
   
   // 최종 결제 금액
   const totalAmount = productTotal + shippingFee;
@@ -387,6 +566,14 @@ const OrderPage = () => {
           </button>
         </div>
       </form>
+      
+      {/* 결제 비밀번호 모달 */}
+      <PaymentPasswordModal
+        isOpen={isPasswordModalOpen}
+        onClose={() => setIsPasswordModalOpen(false)}
+        onSubmit={handlePaymentConfirm}
+        amount={totalAmount}
+      />
     </div>
   );
 };
