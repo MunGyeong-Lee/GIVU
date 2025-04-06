@@ -26,7 +26,7 @@ services:
     volumes:
       - kafka-data:/bitnami/kafka
     networks:
-      - nginx-network
+      - givu_nginx-network
 
   kafka-ui:
     image: provectuslabs/kafka-ui:latest
@@ -39,7 +39,7 @@ services:
       - KAFKA_CLUSTERS_0_NAME=local
       - KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS=kafka:9092
     networks:
-      - nginx-network
+      - givu_nginx-network
 
   # ---------------------
   # DB & Cache
@@ -56,7 +56,7 @@ services:
     volumes:
       - pgdata:/var/lib/postgresql/data
     networks:
-      - nginx-network
+      - givu_nginx-network
 
   redis:
     image: redis
@@ -67,7 +67,7 @@ services:
     volumes:
       - redis-data:/data
     networks:
-      - nginx-network
+      - givu_nginx-network
 
   # ---------------------
   # App Containers (for local dev)
