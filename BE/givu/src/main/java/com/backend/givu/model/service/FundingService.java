@@ -8,15 +8,14 @@ import com.backend.givu.model.repository.ProductRepository;
 import com.backend.givu.model.repository.UserRepository;
 import com.backend.givu.model.requestDTO.FundingCreateDTO;
 import com.backend.givu.model.requestDTO.FundingUpdateDTO;
-import com.backend.givu.model.responseDTO.FundingDetailDTO;
-import com.backend.givu.model.responseDTO.FundingsDTO;
-import com.backend.givu.model.responseDTO.ProductsDTO;
+import com.backend.givu.model.responseDTO.*;
 import com.backend.givu.util.mapper.CategoryMapper;
 import com.backend.givu.util.mapper.ScopeMapper;
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import org.springframework.security.access.AccessDeniedException;
@@ -59,6 +58,26 @@ public class FundingService {
         return fundings.stream()
                 .map(FundingsDTO::new)
                 .toList();
+    }
+
+    /**
+     * 내가 만든 펀딩 리스트 조회
+     */
+    public ApiResponse<List<FundingsDTO>> findAllMyFunding(long userId){
+        List<Funding> fundings =  fundingRepository.findAllMyFundingWithUserAndProduct(userId);
+        return ApiResponse.success(fundings.stream()
+                .map(FundingsDTO::new)
+                .toList());
+    }
+
+    /**
+     * 내가 참여한 펀딩 리스트 조회
+     */
+    public ApiResponse<List<FundingsDTO>> findAllMyParticipantFunding(long userId){
+        List<Funding> fundings =  fundingRepository.findMyParticipantFunding(userId);
+        return ApiResponse.success(fundings.stream()
+                .map(FundingsDTO::new)
+                .toList());
     }
 
     /**
@@ -169,7 +188,7 @@ public class FundingService {
     /**
      * 펀딩 상세 보기
      */
-    public FundingDetailDTO fundingDetail (int fundingId){
+    public ApiResponse<FundingDetailDTO> fundingDetail (int fundingId){
 
         // 존재하는 펀딩인지 확인
         Funding funding = fundingRepository.findById(fundingId)
@@ -186,7 +205,10 @@ public class FundingService {
         List<Review> reviews = fundingRepository.findReviewByFundingIdWithUser(fundingId);
 
         // DTO 조립
-        return FundingDetailDTO.of(funding, writer, product, letters, reviews);
+        FundingDetailDTO dto = FundingDetailDTO.of(funding, writer, product, letters, reviews);
+
+
+        return ApiResponse.success(dto);
 
 
     }

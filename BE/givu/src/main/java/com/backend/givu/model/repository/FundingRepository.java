@@ -42,4 +42,24 @@ public interface FundingRepository extends JpaRepository<Funding, Integer> {
 """)
     List<Review> findReviewByFundingIdWithUser(@Param("fundingId") Integer fundingId);
 
+
+    @Query("""
+    SELECT  distinct f
+    FROM Funding f
+    JOIN FETCH f.user u
+    JOIN FETCH f.product p
+    WHERE u.id = :userId
+""")
+    List<Funding> findAllMyFundingWithUserAndProduct(@Param("userId") long userId);
+
+    @Query("""
+    SELECT DISTINCT f
+    FROM Participant p
+    JOIN p.funding f
+    JOIN FETCH f.user
+    JOIN FETCH f.product
+    WHERE p.user.id = :userId
+""")
+    List<Funding> findMyParticipantFunding(@Param("userId") Long userId);
+
 }
