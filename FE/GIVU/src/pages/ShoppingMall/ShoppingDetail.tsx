@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useParams, Link, useNavigate, useLocation, useSearchParams } from 'react-router-dom';
+import { useParams, Link, useNavigate, useSearchParams } from 'react-router-dom';
 import axios from 'axios';
 import { useSelector } from 'react-redux';
 import { RootState } from '../../store';
@@ -100,7 +100,7 @@ interface Review {
 const ShoppingProductDetail = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const location = useLocation();
+  // const location = useLocation();
   const [searchParams] = useSearchParams();
   const productIdFromUrl = searchParams.get('productId');
   const [product, setProduct] = useState<Product | null>(null);

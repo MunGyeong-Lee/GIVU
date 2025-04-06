@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { useLocation, useSearchParams } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
 import Step1Products from './Step1Products';
 import Step2BasicInfo from './Step2BasicInfo';
 import Step3PublicSettings from './Step3PublicSettings';
 import Preview from './Preview';
-import { Product } from '../../services/product.service';
+// import { Product } from '../../services/product.service';
 
 // 펀딩 생성 상태 타입 정의
 export interface FundingCreateState {
@@ -56,8 +56,8 @@ const FundingCreateContainer: React.FC = () => {
   
   // URL에서 파라미터와 state 가져오기
   const location = useLocation();
-  const [searchParams] = useSearchParams();
-  const productIdFromUrl = searchParams.get('productId');
+  // const [searchParams] = useSearchParams();
+  // const productIdFromUrl = searchParams.get('productId');
   const selectedProductFromState = location.state?.selectedProduct;
 
   // 상태 업데이트 함수
