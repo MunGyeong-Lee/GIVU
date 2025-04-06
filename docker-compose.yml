@@ -123,6 +123,7 @@ services:
 # ---------------------
 networks:
   givu_nginx-network:
+    name: givu_nginx-network
     driver: bridge
 
 volumes:
