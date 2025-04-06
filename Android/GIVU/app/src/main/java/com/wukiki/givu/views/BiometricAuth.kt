@@ -12,7 +12,7 @@ class BiometricAuth (
 ) {
     private val promptInfo = BiometricPrompt.PromptInfo.Builder()
         .setTitle("지문 인증")
-        .setSubtitle("결제를 위해 지문 인증이 필요합니다.")
+        .setSubtitle("결제를 위한 지문 인증이 필요합니다.")
         .setNegativeButtonText("취소")
         .build()
 

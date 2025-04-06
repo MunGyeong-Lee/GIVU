@@ -9,7 +9,7 @@ plugins {
 
 android {
     namespace = "com.wukiki.givu"
-    compileSdk = 34
+    compileSdk = 35
 
     defaultConfig {
         applicationId = "com.wukiki.givu"
