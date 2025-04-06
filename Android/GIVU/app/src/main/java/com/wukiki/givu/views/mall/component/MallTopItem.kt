@@ -85,8 +85,25 @@ fun MallItemPopular() {
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
-                    BestItemTag()
-                    NewItemTag()
+                    BestItemTag(
+                        modifier = Modifier
+                            .height(28.dp)
+                            .weight(1f)
+                            .background(
+                                color = Color(0xFFFFE100),
+                                shape = RoundedCornerShape(8.dp)
+                            ),
+                    )
+                    Spacer(Modifier.width(4.dp))
+                    NewItemTag(
+                        modifier = Modifier
+                            .height(28.dp)
+                            .weight(1f)
+                            .background(
+                                color = Color(0xFF00B2FF),
+                                shape = RoundedCornerShape(8.dp)
+                            ),
+                    )
                 }
 
                 Spacer(Modifier.height(8.dp))
@@ -146,15 +163,9 @@ fun MallItemPopular() {
 }
 
 @Composable
-private fun BestItemTag() {
+private fun BestItemTag(modifier: Modifier) {
     Row(
-        modifier = Modifier
-            .height(28.dp)
-//            .width(88.dp)
-            .background(
-                color = Color(0xFFFFE100),
-                shape = RoundedCornerShape(8.dp)
-            ),
+        modifier = modifier,
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.Center
     ) {
@@ -176,15 +187,9 @@ private fun BestItemTag() {
 }
 
 @Composable
-private fun NewItemTag() {
+private fun NewItemTag(modifier: Modifier) {
     Row(
-        modifier = Modifier
-            .height(28.dp)
-//            .width(88.dp)
-            .background(
-                color = Color(0xFF00B2FF),
-                shape = RoundedCornerShape(8.dp)
-            ),
+        modifier = modifier,
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.Center
     ) {

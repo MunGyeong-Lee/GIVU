@@ -30,7 +30,7 @@ class BiometricAuth (
             }
 
             override fun onAuthenticationFailed() {
-                Toast.makeText(activity, "지문이 일치하지 않습니다.", Toast.LENGTH_SHORT).show()
+//                Toast.makeText(activity, "지문이 일치하지 않습니다.", Toast.LENGTH_SHORT).show()
             }
         }
     )
