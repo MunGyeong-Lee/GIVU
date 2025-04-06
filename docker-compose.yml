@@ -124,7 +124,8 @@ services:
 networks:
   givu_nginx-network:
     name: givu_nginx-network
-    driver: bridge
+    external: true
+    #driver: bridge
 
 volumes:
   kafka-data:
