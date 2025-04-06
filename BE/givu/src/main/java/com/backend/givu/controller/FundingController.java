@@ -6,11 +6,10 @@ import com.backend.givu.model.entity.Funding;
 import com.backend.givu.model.repository.ProductRepository;
 import com.backend.givu.model.requestDTO.FundingCreateDTO;
 import com.backend.givu.model.requestDTO.FundingUpdateDTO;
-import com.backend.givu.model.responseDTO.ApiResponse;
-import com.backend.givu.model.responseDTO.FundingDetailDTO;
-import com.backend.givu.model.responseDTO.FundingsDTO;
-import com.backend.givu.model.responseDTO.ImageUploadResponseDTO;
+import com.backend.givu.model.responseDTO.*;
 import com.backend.givu.model.service.FundingService;
+import com.backend.givu.model.service.GivuTransferService;
+import com.backend.givu.model.service.KafkaProducer;
 import com.backend.givu.model.service.S3UploadService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.swagger.v3.oas.annotations.Operation;
@@ -22,6 +21,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -190,6 +190,19 @@ public class FundingController implements FundingControllerDocs {
     }
 
 
+
+    private final GivuTransferService givuTransferService;
+    @Operation(summary = "펀딩하기(결제)", description = "해당 펀딩에 펀딩을 합니다(기뷰페이 -> 펀딩)")
+    @PostMapping(value="/{fundingId}/transfer")
+    public ResponseEntity<ApiResponse<PaymentResultDTO>> givuTransfer(
+            @AuthenticationPrincipal CustomUserDetail userDetail,
+            @PathVariable int fundingId,
+            @RequestParam int amount,
+            HttpServletRequest request)throws IOException {
+        Long userId = userDetail.getId();
+        ApiResponse<PaymentResultDTO> fundingTransfer = givuTransferService.fundingTransfer(userId, fundingId, amount);
+        return ResponseEntity.ok(fundingTransfer);
+    }
 
 
 
