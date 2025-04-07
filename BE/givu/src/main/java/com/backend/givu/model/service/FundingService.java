@@ -1,24 +1,24 @@
 package com.backend.givu.model.service;
 
+import com.backend.givu.model.Document.FundingDocument;
 import com.backend.givu.model.Enum.FundingsStatus;
 import com.backend.givu.model.entity.*;
-import com.backend.givu.model.repository.FundingRepository;
-import com.backend.givu.model.repository.LetterRepository;
-import com.backend.givu.model.repository.ProductRepository;
-import com.backend.givu.model.repository.UserRepository;
+import com.backend.givu.model.repository.*;
 import com.backend.givu.model.requestDTO.FundingCreateDTO;
 import com.backend.givu.model.requestDTO.FundingUpdateDTO;
 import com.backend.givu.model.responseDTO.*;
 import com.backend.givu.util.mapper.CategoryMapper;
+import com.backend.givu.util.mapper.FundingMapper;
 import com.backend.givu.util.mapper.ScopeMapper;
 import jakarta.persistence.EntityNotFoundException;
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import org.springframework.security.access.AccessDeniedException;
+import org.springframework.transaction.annotation.Transactional;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -30,6 +30,7 @@ public class FundingService {
     private final LetterRepository letterRepository;
 
     private final FundingRepository fundingRepository;
+    private final FundingSearchRepository fundingSearchRepository;
     private final ProductRepository productRepository;
     private final UserRepository userRepository;
     private final S3UploadService s3UploadService;
@@ -61,6 +62,17 @@ public class FundingService {
     }
 
     /**
+     * 검색한 펀딩 리스트 조회
+     */
+    public ApiResponse<List<FundingsDTO>> findAllSearchFunding(String title){
+        List<FundingDocument> fundingDocuments = fundingSearchRepository.findByTitleContainingIgnoreCase(title);
+        return ApiResponse.success(fundingDocuments.stream()
+                .map(FundingsDTO::new)
+                .toList());
+    }
+
+
+    /**
      * 내가 만든 펀딩 리스트 조회
      */
     public ApiResponse<List<FundingsDTO>> findAllMyFunding(long userId){
@@ -83,6 +95,7 @@ public class FundingService {
     /**
      * 펀딩 생성
      */
+    @Transactional
     public FundingsDTO saveFunding (Long userId, FundingCreateDTO fundingDTO, List<String > imageUrls){
         // 존재하는 유저인지 확인
         User user = userRepository.findById(userId)
@@ -91,6 +104,7 @@ public class FundingService {
         Product product = productRepository.findById(fundingDTO.getProductId())
                 .orElseThrow(()-> new EntityNotFoundException("상품을 찾을 수 없습니다."));
         Funding saveFunding = fundingRepository.save(Funding.from(user, product, fundingDTO, imageUrls));
+        indexFundingsToElasticsearch(saveFunding);
         return  Funding.toDTO(saveFunding);
 
     }
@@ -215,6 +229,23 @@ public class FundingService {
 
 
     }
+    @Transactional(readOnly = true)
+    public void indexAllFundingsToElasticsearch() {
+        List<Funding> fundings = fundingRepository.findAllWithUserAndProduct();
+
+        List<FundingDocument> documents = fundings.stream()
+                .map(FundingMapper::toDocument)
+                .toList();
+
+        fundingSearchRepository.saveAll(documents); // ES에 대량 색인
+    }
+
+    @Transactional(readOnly = true)
+    public void indexFundingsToElasticsearch(Funding funding){
+        FundingDocument fundingDocument = FundingMapper.toDocument(funding);
+        fundingSearchRepository.save(fundingDocument);
+    }
+
 
 
 
