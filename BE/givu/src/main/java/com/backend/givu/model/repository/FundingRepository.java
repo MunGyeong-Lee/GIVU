@@ -6,11 +6,14 @@ import com.backend.givu.model.entity.Review;
 import com.backend.givu.model.responseDTO.FundingsDTO;
 import com.backend.givu.model.responseDTO.ReviewsDTO;
 import io.lettuce.core.dynamic.annotation.Param;
+import jakarta.persistence.LockModeType;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface FundingRepository extends JpaRepository<Funding, Integer> {
@@ -22,6 +25,16 @@ public interface FundingRepository extends JpaRepository<Funding, Integer> {
     JOIN FETCH f.product p
 """)
     List<Funding> findAllWithUserAndProduct();
+
+
+    @Query("""
+    SELECT f
+    FROM Funding f
+    JOIN FETCH f.user u
+    JOIN FETCH f.product p
+    WHERE f.id = :fundingId
+""")
+    Optional<Funding> findByIdWithUserAndProduct (@Param("fundingId") Integer fundingId);
 
 
     // Letter + User fetch join
@@ -61,5 +74,9 @@ public interface FundingRepository extends JpaRepository<Funding, Integer> {
     WHERE p.user.id = :userId
 """)
     List<Funding> findMyParticipantFunding(@Param("userId") Long userId);
+
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("SELECT f FROM Funding f WHERE f.id = :fundingId")
+    Optional<Funding> findByIdForUpdate(@Param("fundingId") int fundingId);
 
 }

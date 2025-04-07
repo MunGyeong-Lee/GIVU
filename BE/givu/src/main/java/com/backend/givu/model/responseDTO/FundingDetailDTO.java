@@ -19,7 +19,7 @@ import java.util.List;
 public class FundingDetailDTO {
 
     private Integer fundingId;
-
+    private boolean creator; // 작성자면 true, 작성자 아니면 false
     private String title;
     private String description;
     private String category;
@@ -35,12 +35,13 @@ public class FundingDetailDTO {
     private UserSimpleInfoDTO writer;
     private ProductsSimpleInfoDTO product;
 
-    private List<LettersDTO> letters;
+    private List<LetterDetailDTO> letters;
     private List<ReviewsDTO> reviews;
 
-    public static FundingDetailDTO of(Funding f, User writer, Product p, List<Letter> letters, List<Review> reviews){
+    public static FundingDetailDTO of(Funding f, boolean creator, User writer, Product p, List<Letter> letters, List<Review> reviews, Long currentUserId){
         return new FundingDetailDTO(
                 f.getId(),
+                creator,
                 f.getTitle(),
                 f.getDescription(),
                 CategoryMapper.toClient(f.getCategory()),
@@ -56,7 +57,7 @@ public class FundingDetailDTO {
                 new UserSimpleInfoDTO(writer.getId(), writer.getNickname(), writer.getProfileImage()),
                 new ProductsSimpleInfoDTO(p),
 
-                letters.stream().map(LettersDTO::new).toList(),
+                letters.stream().map(letter -> new LetterDetailDTO(letter, currentUserId)).toList(),
                 reviews.stream().map(ReviewsDTO::new).toList()
         );
     }
