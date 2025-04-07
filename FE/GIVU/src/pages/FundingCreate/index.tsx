@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import Step1Products from './Step1Products';
 import Step2BasicInfo from './Step2BasicInfo';
 import Step3PublicSettings from './Step3PublicSettings';
 import Preview from './Preview';
+// import { Product } from '../../services/product.service';
 
 // 펀딩 생성 상태 타입 정의
 export interface FundingCreateState {
@@ -51,6 +53,12 @@ type StepType = 1 | 2 | 3 | 'preview';
 const FundingCreateContainer: React.FC = () => {
   const [currentStep, setCurrentStep] = useState<StepType>(1);
   const [fundingState, setFundingState] = useState<FundingCreateState>(initialState);
+  
+  // URL에서 파라미터와 state 가져오기
+  const location = useLocation();
+  // const [searchParams] = useSearchParams();
+  // const productIdFromUrl = searchParams.get('productId');
+  const selectedProductFromState = location.state?.selectedProduct;
 
   // 상태 업데이트 함수
   const updateState = (key: keyof FundingCreateState, value: any) => {
@@ -126,6 +134,32 @@ const FundingCreateContainer: React.FC = () => {
       window.fundingCreateContext.updateCurrentStep(currentStep);
     }
   }, []);
+
+  // 쇼핑몰에서 선택한 상품 정보 처리
+  useEffect(() => {
+    if (selectedProductFromState) {
+      console.log('쇼핑몰에서 선택한 상품:', selectedProductFromState);
+      
+      // 상품 데이터 형식을 FundingCreateState에 맞게 변환
+      const product = {
+        id: selectedProductFromState.id?.toString(),
+        productName: selectedProductFromState.productName,
+        price: selectedProductFromState.price,
+        image: selectedProductFromState.image,
+        category: selectedProductFromState.category
+      };
+      
+      // 상품 정보 업데이트
+      updateState('selectedProduct', product);
+      
+      // 자동으로 기본 정보 초기값 설정 (선택사항)
+      updateState('basicInfo', {
+        ...fundingState.basicInfo,
+        title: `${selectedProductFromState.productName} 펀딩`,
+        targetAmount: selectedProductFromState.price || 0
+      });
+    }
+  }, [selectedProductFromState]);
 
   // 단계에 따른 컴포넌트 렌더링
   const renderStep = () => {

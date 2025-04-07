@@ -6,46 +6,46 @@ import axios from "axios";
 
 
 // 임시 펀딩 데이터
-const MY_FUNDINGS = [
-  {
-    id: 1,
-    title: "도현이 점심 펀딩",
-    progress: 45, // 달성률 수정
-    tag: "45% 달성",
-    imageUrl: "https://via.placeholder.com/300x200?text=펀딩이미지1",
-  },
-  {
-    id: 2,
-    title: "도현이 아침 펀딩",
-    progress: 28,
-    tag: "28% 달성",
-    imageUrl: "https://via.placeholder.com/300x200?text=펀딩이미지2",
-  },
-  {
-    id: 3,
-    title: "도현이 저녁 펀딩",
-    progress: 72,
-    tag: "72% 달성",
-    imageUrl: "https://via.placeholder.com/300x200?text=펀딩이미지3",
-  },
-];
+// const MY_FUNDINGS = [
+//   {
+//     id: 1,
+//     title: "도현이 점심 펀딩",
+//     progress: 45, // 달성률 수정
+//     tag: "45% 달성",
+//     imageUrl: "https://via.placeholder.com/300x200?text=펀딩이미지1",
+//   },
+//   {
+//     id: 2,
+//     title: "도현이 아침 펀딩",
+//     progress: 28,
+//     tag: "28% 달성",
+//     imageUrl: "https://via.placeholder.com/300x200?text=펀딩이미지2",
+//   },
+//   {
+//     id: 3,
+//     title: "도현이 저녁 펀딩",
+//     progress: 72,
+//     tag: "72% 달성",
+//     imageUrl: "https://via.placeholder.com/300x200?text=펀딩이미지3",
+//   },
+// ];
 
-const PARTICIPATED_FUNDINGS = [
-  {
-    id: 4,
-    title: "오늘 도현이의 패션",
-    progress: 66,
-    tag: "66% 달성",
-    imageUrl: "https://via.placeholder.com/300x200?text=패션이미지",
-  },
-  {
-    id: 5,
-    title: "도현이 팬티 펀딩",
-    progress: 89,
-    tag: "89% 달성",
-    imageUrl: "https://via.placeholder.com/300x200?text=팬티이미지",
-  },
-];
+// const PARTICIPATED_FUNDINGS = [
+//   {
+//     id: 4,
+//     title: "오늘 도현이의 패션",
+//     progress: 66,
+//     tag: "66% 달성",
+//     imageUrl: "https://via.placeholder.com/300x200?text=패션이미지",
+//   },
+//   {
+//     id: 5,
+//     title: "도현이 팬티 펀딩",
+//     progress: 89,
+//     tag: "89% 달성",
+//     imageUrl: "https://via.placeholder.com/300x200?text=팬티이미지",
+//   },
+// ];
 
 // 임시 후기 데이터 - 더 많은 데이터 추가 (페이지네이션 테스트용)
 const MY_REVIEWS = [
@@ -130,7 +130,7 @@ const TransactionModal: React.FC<{
   type: TransactionType;
   updateUserData?: (data: UserData) => void;
   onTransactionSuccess?: (responseData: any) => void;
-}> = ({ isOpen, onClose, type, updateUserData, onTransactionSuccess }) => {
+}> = ({ isOpen, onClose, type, onTransactionSuccess }) => {
   const [amount, setAmount] = useState<string>('');
   const [password, setPassword] = useState<string>('');
   const [loading, setLoading] = useState(false);
@@ -1632,6 +1632,7 @@ const MyPage = () => {
   }, [navigate]);
 
   // 계좌 생성 제출 핸들러
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const handleAccountCreation = async (password: string) => {
     try {
       console.log('계좌 생성 시작 - 비밀번호:', password);

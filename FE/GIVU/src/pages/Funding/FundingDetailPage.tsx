@@ -111,7 +111,7 @@ const FundingDetailPage = () => {
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [fundingData, setFundingData] = useState<FundingDetail | null>(null);
-  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  // const [, setCurrentImageIndex] = useState(0);
   const [selectedAmount, setSelectedAmount] = useState<number | null>(null);
   const [customAmount, setCustomAmount] = useState<string>('');
   const [isCustomInput, setIsCustomInput] = useState(false);
@@ -240,6 +240,7 @@ const FundingDetailPage = () => {
   }, []);
 
   // 이미지 슬라이더 제어 함수
+  /* 현재 사용되지 않는 함수들 - 나중에 여러 이미지 지원시 활성화
   const nextImage = () => {
     if (!fundingData || !fundingData.image) return;
     
@@ -259,6 +260,7 @@ const FundingDetailPage = () => {
     // 임시로 단일 이미지만 처리
     setCurrentImageIndex(0);
   };
+  */
 
   // 금액 옵션 선택 함수 수정
   const selectAmount = (amount: number) => {

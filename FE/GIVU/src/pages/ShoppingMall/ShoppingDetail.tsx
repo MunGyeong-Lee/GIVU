@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useParams, Link, useNavigate } from 'react-router-dom';
+import { useParams, Link, useNavigate, useSearchParams } from 'react-router-dom';
 import axios from 'axios';
 import { useSelector } from 'react-redux';
 import { RootState } from '../../store';
@@ -100,6 +100,9 @@ interface Review {
 const ShoppingProductDetail = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  // const location = useLocation();
+  const [searchParams] = useSearchParams();
+  const productIdFromUrl = searchParams.get('productId');
   const [product, setProduct] = useState<Product | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -208,6 +211,19 @@ const ShoppingProductDetail = () => {
       checkFavoriteStatus();
     }
   }, [id, isLoggedIn, user]);
+
+  // 컴포넌트 마운트 시 자동으로 상품 선택
+  useEffect(() => {
+    if (product || productIdFromUrl) {
+      // 상품을 자동으로 선택하는 로직
+      // 만약 상품 목록이 이미 로드되어 있다면 해당 상품을 선택 상태로 변경
+      // 아직 로드되지 않았다면 로드 후 자동 선택하도록 설정
+      
+      // 예: 
+      // setSelectedProductId(productIdFromUrl || product.id);
+      // handleProductSelect(product);
+    }
+  }, [product, productIdFromUrl]);
 
   if (loading) {
     return (
@@ -615,7 +631,11 @@ const ShoppingProductDetail = () => {
               상품 구매하기
             </button>
             <Link
-              to="/funding/create"
+              to={{
+                pathname: "/funding/create",
+                search: `?productId=${product.id}`
+              }}
+              state={{ selectedProduct: product }}
               className="py-3 px-4 bg-pink-500 text-white rounded-md hover:bg-pink-600 transition-colors text-center w-[45%]"
             >
               이 상품으로 펀딩 만들기
