@@ -1,4 +1,5 @@
 import apiClient from './index';
+import { FundingItem } from '../types/funding';
 
 // 펀딩 관련 타입 정의
 export interface Funding {
@@ -46,6 +47,11 @@ export const fundingApi = {
   // 펀딩 삭제
   deleteFunding: (id: number) => {
     return apiClient.delete(`/fundings/${id}`);
+  },
+
+  // 메인 화면용 펀딩 목록 조회
+  getFundingList: async () => {
+    return apiClient.get<FundingItem[]>('/fundings/list');
   },
 };
 
