@@ -138,6 +138,32 @@ const Step1Products: React.FC<Step1ProductsProps> = ({
     }
   };
 
+  // 쇼핑몰에서 전달된 상품 자동 선택
+  useEffect(() => {
+    // URL의 쿼리 파라미터에서 productId를 가져오기
+    const urlParams = new URLSearchParams(window.location.search);
+    const productIdFromUrl = urlParams.get('productId');
+
+    if (productIdFromUrl && allProducts.length > 0) {
+      // 해당 ID를 가진 상품 찾기
+      const productToSelect = allProducts.find(p => p.id.toString() === productIdFromUrl);
+      
+      if (productToSelect && !selectedProduct.id) {
+        console.log("URL에서 받은 상품 자동 선택:", productToSelect.productName);
+        updateSelectedProduct(productToSelect);
+        
+        // 선택된 상품이 현재 페이지에 없다면 해당 상품이 있는 페이지로 이동
+        const productIndex = filteredProducts.findIndex(p => p.id.toString() === productIdFromUrl);
+        if (productIndex !== -1) {
+          const pageToGo = Math.floor(productIndex / ITEMS_PER_PAGE) + 1;
+          if (pageToGo !== currentPage) {
+            handlePageChange(pageToGo);
+          }
+        }
+      }
+    }
+  }, [allProducts, filteredProducts, selectedProduct.id]);
+
   // 카테고리 스크롤 함수
   const scrollCategory = (direction: 'left' | 'right') => {
     if (categoryRef.current) {

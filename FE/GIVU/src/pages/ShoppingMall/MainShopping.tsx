@@ -577,22 +577,23 @@ const MainShopping = () => {
   const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
 
   // 계좌 관련 상태 추가
-  const [hasAccount, setHasAccount] = useState<boolean>(false);
-  const [, setAccountNumber] = useState<string>('');
-  const [, setAccountBalance] = useState<number>(0);
-  const [, setBankBalance] = useState<number>(0); // 연동계좌 잔액 상태 추가
-  const [, setIsAccountModalOpen] = useState<boolean>(false);
-  const [, setIsChargeModalOpen] = useState<boolean>(false);
+  // const [hasAccount] = useState<boolean>(false);
+  // const [, setAccountNumber] = useState<string>('');
+  // const [, setAccountBalance] = useState<number>(0);
+  // const [, setBankBalance] = useState<number>(0); // 연동계좌 잔액 상태 추가
+  // const [, setIsAccountModalOpen] = useState<boolean>(false);
+  // const [, setIsChargeModalOpen] = useState<boolean>(false);
 
   // 충전하기 버튼 클릭 핸들러 추가
-  const handleChargeClick = () => {
-    if (!hasAccount) {
-      setIsAccountModalOpen(true);
-      return;
-    }
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  // const handleChargeClick = () => {
+  //   if (!hasAccount) {
+  //     setIsAccountModalOpen(true);
+  //     return;
+  //   }
     
-    setIsChargeModalOpen(true);
-  };
+  //   setIsChargeModalOpen(true);
+  // };
 
   // 필터 적용 함수 - 카테고리와 가격대 필터를 모두 적용
   const applyFilters = (allProducts: Product[]) => {
@@ -1006,332 +1007,333 @@ const MainShopping = () => {
   };
 
   // 계좌 생성 제출 핸들러
-  const handleAccountCreation = async (password: string) => {
-    try {
-      console.log('계좌 생성 시작 - 비밀번호:', password);
-      const token = localStorage.getItem('auth_token');
+  // eslint-disable-next-line no-unused-vars, @typescript-eslint/no-unused-vars
+  // const handleAccountCreation = async (password: string) => {
+  //   try {
+  //     console.log('계좌 생성 시작 - 비밀번호:', password);
+  //     const token = localStorage.getItem('auth_token');
       
-      if (!token) {
-        alert('로그인이 필요합니다.');
-        return;
-      }
+  //     if (!token) {
+  //       alert('로그인이 필요합니다.');
+  //       return;
+  //     }
       
-      // 로딩 표시 추가
-      const loadingToast = document.createElement('div');
-      loadingToast.className = 'fixed bottom-4 right-4 bg-black text-white px-4 py-2 rounded-md shadow-lg z-50';
-      loadingToast.textContent = '계좌를 생성 중입니다...';
-      document.body.appendChild(loadingToast);
+  //     // 로딩 표시 추가
+  //     const loadingToast = document.createElement('div');
+  //     loadingToast.className = 'fixed bottom-4 right-4 bg-black text-white px-4 py-2 rounded-md shadow-lg z-50';
+  //     loadingToast.textContent = '계좌를 생성 중입니다...';
+  //     document.body.appendChild(loadingToast);
       
-      // 계좌 생성 API 호출
-      const accountResponse = await axios.post(
-        `https://j12d107.p.ssafy.io/api/mypage/account/create`,
-        { password },
-        {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json'
-          }
-        }
-      );
+  //     // 계좌 생성 API 호출
+  //     const accountResponse = await axios.post(
+  //       `https://j12d107.p.ssafy.io/api/mypage/account/create`,
+  //       { password },
+  //       {
+  //         headers: {
+  //           'Authorization': `Bearer ${token}`,
+  //           'Content-Type': 'application/json'
+  //         }
+  //       }
+  //     );
       
-      console.log('계좌 생성 응답:', accountResponse.data);
+  //     console.log('계좌 생성 응답:', accountResponse.data);
       
-      if (accountResponse.data && accountResponse.data.code === 'SUCCESS') {
-        // 2차 비밀번호 설정 API 호출
-        const passwordResponse = await axios.post(
-          `https://j12d107.p.ssafy.io/api/users/setPassword`,
-          { password },
-          {
-            headers: {
-              'Authorization': `Bearer ${token}`,
-              'Content-Type': 'application/json'
-            }
-          }
-        );
+  //     if (accountResponse.data && accountResponse.data.code === 'SUCCESS') {
+  //       // 2차 비밀번호 설정 API 호출
+  //       const passwordResponse = await axios.post(
+  //         `https://j12d107.p.ssafy.io/api/users/setPassword`,
+  //         { password },
+  //         {
+  //           headers: {
+  //             'Authorization': `Bearer ${token}`,
+  //             'Content-Type': 'application/json'
+  //           }
+  //         }
+  //       );
         
-        console.log('2차 비밀번호 설정 응답:', passwordResponse.data);
+  //       console.log('2차 비밀번호 설정 응답:', passwordResponse.data);
         
-        // 로딩 토스트 제거
-        document.body.removeChild(loadingToast);
+  //       // 로딩 토스트 제거
+  //       document.body.removeChild(loadingToast);
         
-        if (passwordResponse.data && passwordResponse.data.code === 'SUCCESS') {
-          // 성공 토스트 표시
-          const successToast = document.createElement('div');
-          successToast.className = 'fixed bottom-4 right-4 bg-green-600 text-white px-4 py-2 rounded-md shadow-lg z-50';
-          successToast.textContent = '계좌가 성공적으로 생성되었습니다!';
-          document.body.appendChild(successToast);
+  //       if (passwordResponse.data && passwordResponse.data.code === 'SUCCESS') {
+  //         // 성공 토스트 표시
+  //         const successToast = document.createElement('div');
+  //         successToast.className = 'fixed bottom-4 right-4 bg-green-600 text-white px-4 py-2 rounded-md shadow-lg z-50';
+  //         successToast.textContent = '계좌가 성공적으로 생성되었습니다!';
+  //         document.body.appendChild(successToast);
           
-          // 2초 후 성공 토스트 제거
-          setTimeout(() => {
-            document.body.removeChild(successToast);
-          }, 2000);
+  //         // 2초 후 성공 토스트 제거
+  //         setTimeout(() => {
+  //           document.body.removeChild(successToast);
+  //         }, 2000);
           
-          // 계좌 정보 업데이트
-          setHasAccount(true);
-          setIsAccountModalOpen(false);
+  //         // 계좌 정보 업데이트
+  //         setHasAccount(true);
+  //         setIsAccountModalOpen(false);
           
-          // 계좌 정보 새로고침
-          await refreshBalances();
-        } else {
-          throw new Error(passwordResponse.data?.message || '2차 비밀번호 설정에 실패했습니다.');
-        }
-      } else {
-        // 로딩 토스트 제거
-        document.body.removeChild(loadingToast);
-        throw new Error(accountResponse.data?.message || '계좌 생성에 실패했습니다.');
-      }
-    } catch (error: any) {
-      console.error('계좌 생성 오류:', error);
+  //         // 계좌 정보 새로고침
+  //         await refreshBalances();
+  //       } else {
+  //         throw new Error(passwordResponse.data?.message || '2차 비밀번호 설정에 실패했습니다.');
+  //       }
+  //     } else {
+  //       // 로딩 토스트 제거
+  //       document.body.removeChild(loadingToast);
+  //       throw new Error(accountResponse.data?.message || '계좌 생성에 실패했습니다.');
+  //     }
+  //   } catch (error: any) {
+  //     console.error('계좌 생성 오류:', error);
       
-      // 로딩 토스트 제거
-      const loadingToast = document.querySelector('.bottom-4.right-4.bg-black');
-      if (loadingToast && loadingToast.parentNode) {
-        loadingToast.parentNode.removeChild(loadingToast);
-      }
+  //     // 로딩 토스트 제거
+  //     const loadingToast = document.querySelector('.bottom-4.right-4.bg-black');
+  //     if (loadingToast && loadingToast.parentNode) {
+  //       loadingToast.parentNode.removeChild(loadingToast);
+  //     }
       
-      // 에러 토스트 표시
-      const errorToast = document.createElement('div');
-      errorToast.className = 'fixed bottom-4 right-4 bg-red-600 text-white px-4 py-2 rounded-md shadow-lg z-50';
-      errorToast.textContent = error.message || '계좌 생성 중 오류가 발생했습니다';
-      document.body.appendChild(errorToast);
+  //     // 에러 토스트 표시
+  //     const errorToast = document.createElement('div');
+  //     errorToast.className = 'fixed bottom-4 right-4 bg-red-600 text-white px-4 py-2 rounded-md shadow-lg z-50';
+  //     errorToast.textContent = error.message || '계좌 생성 중 오류가 발생했습니다';
+  //     document.body.appendChild(errorToast);
       
-      // 2초 후 에러 토스트 제거
-      setTimeout(() => {
-        document.body.removeChild(errorToast);
-      }, 2000);
-    }
-  };
+  //     // 2초 후 에러 토스트 제거
+  //     setTimeout(() => {
+  //       document.body.removeChild(errorToast);
+  //     }, 2000);
+  //   }
+  // };
   
-  // 잔액 새로고침 함수 수정
-  const refreshBalances = async () => {
-    console.log('잔액 정보 새로고침 시작');
-    const token = localStorage.getItem('auth_token');
-    if (!token) {
-      alert('로그인 정보가 없습니다.');
-      return;
-    }
+  // // 잔액 새로고침 함수 수정
+  // const refreshBalances = async () => {
+  //   console.log('잔액 정보 새로고침 시작');
+  //   const token = localStorage.getItem('auth_token');
+  //   if (!token) {
+  //     alert('로그인 정보가 없습니다.');
+  //     return;
+  //   }
     
-    // 로딩 표시 추가
-    const loadingToast = document.createElement('div');
-    loadingToast.className = 'fixed bottom-4 right-4 bg-black text-white px-4 py-2 rounded-md shadow-lg z-50';
-    loadingToast.textContent = '잔액 정보를 불러오는 중...';
-    document.body.appendChild(loadingToast);
+  //   // 로딩 표시 추가
+  //   const loadingToast = document.createElement('div');
+  //   loadingToast.className = 'fixed bottom-4 right-4 bg-black text-white px-4 py-2 rounded-md shadow-lg z-50';
+  //   loadingToast.textContent = '잔액 정보를 불러오는 중...';
+  //   document.body.appendChild(loadingToast);
     
-    try {
-      // 1. 사용자 정보 조회 API (마이페이지와 동일)
-      try {
-        const userInfoResponse = await axios.get(
-          `${import.meta.env.VITE_API_BASE_URL}/users/info`,
-          {
-            headers: {
-              'Authorization': `Bearer ${token}`
-            }
-          }
-        );
+  //   try {
+  //     // 1. 사용자 정보 조회 API (마이페이지와 동일)
+  //     try {
+  //       const userInfoResponse = await axios.get(
+  //         `${import.meta.env.VITE_API_BASE_URL}/users/info`,
+  //         {
+  //           headers: {
+  //             'Authorization': `Bearer ${token}`
+  //           }
+  //         }
+  //       );
         
-        console.log('사용자 정보 조회 응답:', userInfoResponse.data);
+  //       console.log('사용자 정보 조회 응답:', userInfoResponse.data);
         
-        if (userInfoResponse.data && userInfoResponse.data.balance !== undefined) {
-          const givupayBalance = Number(userInfoResponse.data.balance);
-          console.log('기뷰페이 잔액 (users/info API):', givupayBalance);
-          setAccountBalance(givupayBalance);
-        } else {
-          // 2번째 대체 방법으로 기뷰페이 잔액 조회
-          await fetchGivupayBalance(token);
-        }
-      } catch (error) {
-        console.error('사용자 정보 조회 오류:', error);
-        // 대체 방법으로 잔액 조회
-        await fetchGivupayBalance(token);
-      }
+  //       if (userInfoResponse.data && userInfoResponse.data.balance !== undefined) {
+  //         const givupayBalance = Number(userInfoResponse.data.balance);
+  //         console.log('기뷰페이 잔액 (users/info API):', givupayBalance);
+  //         setAccountBalance(givupayBalance);
+  //       } else {
+  //         // 2번째 대체 방법으로 기뷰페이 잔액 조회
+  //         await fetchGivupayBalance(token);
+  //       }
+  //     } catch (error) {
+  //       console.error('사용자 정보 조회 오류:', error);
+  //       // 대체 방법으로 잔액 조회
+  //       await fetchGivupayBalance(token);
+  //     }
       
-      // 연동 계좌 잔액 조회
-      try {
-        const accountResponse = await axios.get(
-          `${import.meta.env.VITE_API_BASE_URL}/mypage/checkAccount`,
-          {
-            headers: {
-              'Authorization': `Bearer ${token}`
-            }
-          }
-        );
+  //     // 연동 계좌 잔액 조회
+  //     try {
+  //       const accountResponse = await axios.get(
+  //         `${import.meta.env.VITE_API_BASE_URL}/mypage/checkAccount`,
+  //         {
+  //           headers: {
+  //             'Authorization': `Bearer ${token}`
+  //           }
+  //         }
+  //       );
         
-        console.log('연동 계좌 조회 응답:', accountResponse.data);
+  //       console.log('연동 계좌 조회 응답:', accountResponse.data);
         
-        if (accountResponse.data && accountResponse.data.code === 'SUCCESS') {
-          // 계좌가 존재하는 경우
-          setHasAccount(true);
+  //       if (accountResponse.data && accountResponse.data.code === 'SUCCESS') {
+  //         // 계좌가 존재하는 경우
+  //         setHasAccount(true);
           
-          if (accountResponse.data.data) {
-            // 연동 계좌 번호 설정
-            if (accountResponse.data.data.accountNo) {
-              setAccountNumber(accountResponse.data.data.accountNo);
-            }
+  //         if (accountResponse.data.data) {
+  //           // 연동 계좌 번호 설정
+  //           if (accountResponse.data.data.accountNo) {
+  //             setAccountNumber(accountResponse.data.data.accountNo);
+  //           }
             
-            // 연동 계좌 잔액 설정
-            if (accountResponse.data.data.balance !== undefined) {
-              const bankBalanceValue = Number(accountResponse.data.data.balance);
-              console.log('연동 계좌 잔액 새로고침:', bankBalanceValue);
-              setBankBalance(bankBalanceValue);
-            }
-          }
-        } else {
-          setHasAccount(false);
-        }
-      } catch (error) {
-        console.error('연동 계좌 정보 조회 오류:', error);
-      }
+  //           // 연동 계좌 잔액 설정
+  //           if (accountResponse.data.data.balance !== undefined) {
+  //             const bankBalanceValue = Number(accountResponse.data.data.balance);
+  //             console.log('연동 계좌 잔액 새로고침:', bankBalanceValue);
+  //             setBankBalance(bankBalanceValue);
+  //           }
+  //         }
+  //       } else {
+  //         setHasAccount(false);
+  //       }
+  //     } catch (error) {
+  //       console.error('연동 계좌 정보 조회 오류:', error);
+  //     }
       
-      console.log('잔액 새로고침 완료');
+  //     console.log('잔액 새로고침 완료');
       
-      // 로딩 토스트 제거
-      document.body.removeChild(loadingToast);
+  //     // 로딩 토스트 제거
+  //     document.body.removeChild(loadingToast);
       
-      // 완료 토스트 표시
-      const successToast = document.createElement('div');
-      successToast.className = 'fixed bottom-4 right-4 bg-green-600 text-white px-4 py-2 rounded-md shadow-lg z-50';
-      successToast.textContent = '잔액 정보가 업데이트되었습니다';
-      document.body.appendChild(successToast);
+  //     // 완료 토스트 표시
+  //     const successToast = document.createElement('div');
+  //     successToast.className = 'fixed bottom-4 right-4 bg-green-600 text-white px-4 py-2 rounded-md shadow-lg z-50';
+  //     successToast.textContent = '잔액 정보가 업데이트되었습니다';
+  //     document.body.appendChild(successToast);
       
-      // 2초 후 완료 토스트 제거
-      setTimeout(() => {
-        document.body.removeChild(successToast);
-      }, 2000);
+  //     // 2초 후 완료 토스트 제거
+  //     setTimeout(() => {
+  //       document.body.removeChild(successToast);
+  //     }, 2000);
       
-    } catch (error) {
-      console.error('잔액 새로고침 전체 오류:', error);
+  //   } catch (error) {
+  //     console.error('잔액 새로고침 전체 오류:', error);
       
-      // 로딩 토스트 제거
-      if (document.body.contains(loadingToast)) {
-        document.body.removeChild(loadingToast);
-      }
+  //     // 로딩 토스트 제거
+  //     if (document.body.contains(loadingToast)) {
+  //       document.body.removeChild(loadingToast);
+  //     }
       
-      // 에러 토스트 표시
-      const errorToast = document.createElement('div');
-      errorToast.className = 'fixed bottom-4 right-4 bg-red-600 text-white px-4 py-2 rounded-md shadow-lg z-50';
-      errorToast.textContent = '잔액 정보 업데이트 중 오류가 발생했습니다';
-      document.body.appendChild(errorToast);
+  //     // 에러 토스트 표시
+  //     const errorToast = document.createElement('div');
+  //     errorToast.className = 'fixed bottom-4 right-4 bg-red-600 text-white px-4 py-2 rounded-md shadow-lg z-50';
+  //     errorToast.textContent = '잔액 정보 업데이트 중 오류가 발생했습니다';
+  //     document.body.appendChild(errorToast);
       
-      // 2초 후 에러 토스트 제거
-      setTimeout(() => {
-        document.body.removeChild(errorToast);
-      }, 2000);
-    }
-  };
+  //     // 2초 후 에러 토스트 제거
+  //     setTimeout(() => {
+  //       document.body.removeChild(errorToast);
+  //     }, 2000);
+  //   }
+  // };
 
-  // 기뷰페이 잔액 조회를 위한 보조 함수
-  const fetchGivupayBalance = async (token: string) => {
-    try {
-      const givupayResponse = await axios.get(
-        `${import.meta.env.VITE_API_BASE_URL}/mypage/getUserBalance`,
-        {
-          headers: {
-            'Authorization': `Bearer ${token}`
-          }
-        }
-      );
+  // // 기뷰페이 잔액 조회를 위한 보조 함수
+  // const fetchGivupayBalance = async (token: string) => {
+  //   try {
+  //     const givupayResponse = await axios.get(
+  //       `${import.meta.env.VITE_API_BASE_URL}/mypage/getUserBalance`,
+  //       {
+  //         headers: {
+  //           'Authorization': `Bearer ${token}`
+  //         }
+  //       }
+  //     );
       
-      console.log('기뷰페이 잔액 조회 응답:', givupayResponse.data);
+  //     console.log('기뷰페이 잔액 조회 응답:', givupayResponse.data);
       
-      if (givupayResponse.data && givupayResponse.data.code === 'SUCCESS' &&
-          givupayResponse.data.data && givupayResponse.data.data.balance !== undefined) {
-        const balance = Number(givupayResponse.data.data.balance);
-        console.log('기뷰페이 잔액 새로고침:', balance);
+  //     if (givupayResponse.data && givupayResponse.data.code === 'SUCCESS' &&
+  //         givupayResponse.data.data && givupayResponse.data.data.balance !== undefined) {
+  //       const balance = Number(givupayResponse.data.data.balance);
+  //       console.log('기뷰페이 잔액 새로고침:', balance);
         
-        setAccountBalance(balance);
-        return true;
-      }
-    } catch (error) {
-      console.error('기뷰페이 잔액 조회 API 오류:', error);
-    }
-    return false;
-  };
+  //       setAccountBalance(balance);
+  //       return true;
+  //     }
+  //   } catch (error) {
+  //     console.error('기뷰페이 잔액 조회 API 오류:', error);
+  //   }
+  //   return false;
+  // };
 
-  // 컴포넌트 마운트 시 계좌 정보 확인
-  useEffect(() => {
-    const checkAccountInfo = async () => {
-      const token = localStorage.getItem('auth_token');
-      if (!token) return;
+  // // 컴포넌트 마운트 시 계좌 정보 확인
+  // useEffect(() => {
+  //   const checkAccountInfo = async () => {
+  //     const token = localStorage.getItem('auth_token');
+  //     if (!token) return;
       
-      // 먼저 사용자 정보와 잔액을 가져옵니다 (계좌 확인과 별개로)
-      try {
-        const userInfoResponse = await axios.get(
-          `${import.meta.env.VITE_API_BASE_URL}/users/info`,
-          {
-            headers: {
-              'Authorization': `Bearer ${token}`
-            }
-          }
-        );
+  //     // 먼저 사용자 정보와 잔액을 가져옵니다 (계좌 확인과 별개로)
+  //     try {
+  //       const userInfoResponse = await axios.get(
+  //         `${import.meta.env.VITE_API_BASE_URL}/users/info`,
+  //         {
+  //           headers: {
+  //             'Authorization': `Bearer ${token}`
+  //           }
+  //         }
+  //       );
         
-        console.log('사용자 정보 조회 응답:', userInfoResponse.data);
+  //       console.log('사용자 정보 조회 응답:', userInfoResponse.data);
         
-        if (userInfoResponse.data && userInfoResponse.data.balance !== undefined) {
-          const givupayBalance = Number(userInfoResponse.data.balance);
-          console.log('기뷰페이 잔액 (users/info API):', givupayBalance);
-          setAccountBalance(givupayBalance);
-        } else {
-          // 대체 API로 기뷰페이 잔액 조회
-          const givupayResponse = await axios.get(
-            `${import.meta.env.VITE_API_BASE_URL}/mypage/getUserBalance`,
-            {
-              headers: {
-                'Authorization': `Bearer ${token}`
-              }
-            }
-          );
+  //       if (userInfoResponse.data && userInfoResponse.data.balance !== undefined) {
+  //         const givupayBalance = Number(userInfoResponse.data.balance);
+  //         console.log('기뷰페이 잔액 (users/info API):', givupayBalance);
+  //         setAccountBalance(givupayBalance);
+  //       } else {
+  //         // 대체 API로 기뷰페이 잔액 조회
+  //         const givupayResponse = await axios.get(
+  //           `${import.meta.env.VITE_API_BASE_URL}/mypage/getUserBalance`,
+  //           {
+  //             headers: {
+  //               'Authorization': `Bearer ${token}`
+  //             }
+  //           }
+  //         );
           
-          if (givupayResponse.data && givupayResponse.data.code === 'SUCCESS' &&
-              givupayResponse.data.data && givupayResponse.data.data.balance !== undefined) {
-            const balance = Number(givupayResponse.data.data.balance);
-            console.log('기뷰페이 잔액 (대체 API):', balance);
-            setAccountBalance(balance);
-          }
-        }
-      } catch (error) {
-        console.error('사용자 정보/잔액 조회 오류:', error);
-      }
+  //         if (givupayResponse.data && givupayResponse.data.code === 'SUCCESS' &&
+  //             givupayResponse.data.data && givupayResponse.data.data.balance !== undefined) {
+  //           const balance = Number(givupayResponse.data.data.balance);
+  //           console.log('기뷰페이 잔액 (대체 API):', balance);
+  //           setAccountBalance(balance);
+  //         }
+  //       }
+  //     } catch (error) {
+  //       console.error('사용자 정보/잔액 조회 오류:', error);
+  //     }
       
-      // 계좌 정보 조회
-      try {
-        const accountResponse = await axios.get(
-          `${import.meta.env.VITE_API_BASE_URL}/mypage/checkAccount`,
-          {
-            headers: {
-              'Authorization': `Bearer ${token}`
-            }
-          }
-        );
+  //     // 계좌 정보 조회
+  //     try {
+  //       const accountResponse = await axios.get(
+  //         `${import.meta.env.VITE_API_BASE_URL}/mypage/checkAccount`,
+  //         {
+  //           headers: {
+  //             'Authorization': `Bearer ${token}`
+  //           }
+  //         }
+  //       );
         
-        console.log('계좌 조회 응답:', accountResponse.data);
+  //       console.log('계좌 조회 응답:', accountResponse.data);
         
-        if (accountResponse.data && accountResponse.data.code === 'SUCCESS') {
-          setHasAccount(true);
+  //       if (accountResponse.data && accountResponse.data.code === 'SUCCESS') {
+  //         setHasAccount(true);
           
-          if (accountResponse.data.data) {
-            // 연동 계좌 번호 설정
-            if (accountResponse.data.data.accountNo) {
-              setAccountNumber(accountResponse.data.data.accountNo);
-            }
+  //         if (accountResponse.data.data) {
+  //           // 연동 계좌 번호 설정
+  //           if (accountResponse.data.data.accountNo) {
+  //             setAccountNumber(accountResponse.data.data.accountNo);
+  //           }
             
-            // 연동 계좌 잔액 설정
-            if (accountResponse.data.data.balance !== undefined) {
-              const bankBalanceValue = Number(accountResponse.data.data.balance);
-              console.log('연동 계좌 잔액:', bankBalanceValue);
-              setBankBalance(bankBalanceValue);
-            }
-          }
-        } else {
-          setHasAccount(false);
-        }
-      } catch (error) {
-        console.error('계좌 정보 조회 오류:', error);
-      }
-    };
+  //           // 연동 계좌 잔액 설정
+  //           if (accountResponse.data.data.balance !== undefined) {
+  //             const bankBalanceValue = Number(accountResponse.data.data.balance);
+  //             console.log('연동 계좌 잔액:', bankBalanceValue);
+  //             setBankBalance(bankBalanceValue);
+  //           }
+  //         }
+  //       } else {
+  //         setHasAccount(false);
+  //       }
+  //     } catch (error) {
+  //       console.error('계좌 정보 조회 오류:', error);
+  //     }
+  //   };
     
-    // 페이지 로드 시 바로 계좌 정보 확인 함수 호출
-    checkAccountInfo();
-  }, []);
+  //   // 페이지 로드 시 바로 계좌 정보 확인 함수 호출
+  //   checkAccountInfo();
+  // }, []);
 
   return (
     <div className="w-full">
