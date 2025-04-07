@@ -205,7 +205,7 @@ public class FundingService {
     public ApiResponse<FundingDetailDTO> fundingDetail (Long userId, int fundingId){
 
         // 존재하는 펀딩인지 확인
-        Funding funding = fundingRepository.findById(fundingId)
+        Funding funding = fundingRepository.findByIdWithUserAndProduct(fundingId)
                 .orElseThrow(() -> new EntityNotFoundException("펀딩을 찾을 수 없습니다,"));
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new EntityNotFoundException("유저를 찾을 수 없습니다."));
@@ -214,7 +214,7 @@ public class FundingService {
         //  연관된 상품, 작성자 정보, 작성자 == 조회하는 유저 인지
         Product product = funding.getProduct();
         User writer = funding.getUser();
-        boolean isCreator = user.getId().equals(funding.getUser().getId());
+        boolean isCreator = user.getId().equals(writer.getId());
 
         // 편지 리스트 (User 포함 fetch join)
         List<Letter> letters = fundingRepository.findLetterByFundingIdWithUser(fundingId);
