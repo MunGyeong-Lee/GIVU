@@ -5,6 +5,7 @@ import com.backend.givu.model.entity.CustomUserDetail;
 import com.backend.givu.model.repository.ReviewRepository;
 import com.backend.givu.model.requestDTO.FundingCreateDTO;
 import com.backend.givu.model.requestDTO.ReviewCreateDTO;
+import com.backend.givu.model.responseDTO.ApiResponse;
 import com.backend.givu.model.responseDTO.FundingsDTO;
 import com.backend.givu.model.responseDTO.ImageUploadResponseDTO;
 import com.backend.givu.model.responseDTO.ReviewsDTO;
@@ -69,7 +70,20 @@ public class ReviewController implements ReviewControllerDocs {
 
     }
 
-    @Operation(summary = "펀딩 후기 삭제", description = "펀딩을 수정 합니다.")
+//    @Operation(summary = "펀딩 후기 리스트 조회", description = "펀딩 후기 리스트를 조회합니다.")
+//    @GetMapping(value = "")
+//    public ResponseEntity<ApiResponse<ReviewsDTO>> reviewList (
+//            @AuthenticationPrincipal CustomUserDetail userDetail,
+//            HttpServletRequest request) throws IOException{
+//
+//        Long userId = userDetail.getId();
+//
+//        ApiResponse<ReviewsDTO> reviewList = reviewService.reviewList;
+//        return
+//    }
+
+
+    @Operation(summary = "펀딩 후기 삭제", description = "펀딩 후기를 수정 합니다.")
     @DeleteMapping(value = "/{reviewId}")
     public ResponseEntity<Void> deleteReview(
             @AuthenticationPrincipal CustomUserDetail userDetail,
