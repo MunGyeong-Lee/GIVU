@@ -7,10 +7,10 @@ import com.backend.givu.model.requestDTO.DepositRequestDTO;
 import com.backend.givu.model.requestDTO.WithdrawalRequestDTO;
 import com.backend.givu.model.responseDTO.*;
 import com.backend.givu.util.ErrorResponseParser;
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.reactive.function.client.WebClientResponseException;
 
