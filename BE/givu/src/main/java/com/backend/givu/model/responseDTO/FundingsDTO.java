@@ -1,6 +1,5 @@
 package com.backend.givu.model.responseDTO;
 
-import com.backend.givu.model.Document.FundingDocument;
 import com.backend.givu.model.Enum.FundingsCategory;
 import com.backend.givu.model.Enum.FundingsScope;
 import com.backend.givu.model.Enum.FundingsStatus;
@@ -80,25 +79,6 @@ public class FundingsDTO {
         this.user = new UserSimpleInfoDTO(funding.getUser());
         // product 정보
         this.product = new ProductsSimpleInfoDTO(funding.getProduct());
-    }
-
-    public FundingsDTO(FundingDocument funding){
-        this.fundingId = funding.getFundingId();
-        this.title = funding.getTitle();
-        this.description = funding.getDescription();
-        this.category = CategoryMapper.toClient(FundingsCategory.valueOf(funding.getCategory()));
-        this.categoryName = funding.getCategoryName();
-        this.scope = ScopeMapper.toClient(FundingsScope.valueOf(funding.getScope()));
-        this.status = StatusMapper.toClient(FundingsStatus.valueOf(funding.getStatus()));
-        this.participantsNumber = funding.getParticipantsNumber();
-        this.fundedAmount = funding.getFundedAmount();
-        this.image = funding.getImage();
-        this.createdAt = DateTimeUtil.parseIsoString(funding.getCreatedAt());
-        this.updatedAt = DateTimeUtil.parseIsoString(funding.getUpdatedAt());
-        // user 정보
-        this.user = new UserSimpleInfoDTO(funding.getUserId(),funding.getUserNickname(),funding.getUserImage());
-        // product 정보
-        this.product = new ProductsSimpleInfoDTO(funding.getProductId(), funding.getProductName(), funding.getProductPrice(), funding.getProductImage());
     }
 
 }
