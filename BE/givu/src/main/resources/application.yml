@@ -95,3 +95,9 @@ springdoc:
     operations-sorter: alpha
   default-consumes-media-type: application/json;charset=UTF-8
   default-produces-media-type: application/json;charset=UTF-8
+
+#Spring Boot 애플리케이션이 출력하는 로그의 레벨을 조절
+logging:
+  level:
+    org.apache.kafka.clients.NetworkClient: ERROR  #오류(ERROR) 이상만 출력
+    org.apache.kafka: ERROR  # Kafka 관련 모든 로그 패키지들  ERROR 이상만 출력
