@@ -132,6 +132,14 @@ const Step1Products: React.FC<Step1ProductsProps> = ({
     // 이전 선택 상품과 다른 경우에만 처리
     if (selectedProduct.id !== product.id) {
       updateSelectedProduct(product);
+
+      // 선택된 상품 정보 영역으로 스크롤
+      setTimeout(() => {
+        const selectedProductInfoElement = document.querySelector('.selected-product-info');
+        if (selectedProductInfoElement) {
+          selectedProductInfoElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      }, 100);
     } else {
       // 이미 선택된 상품 선택 취소
       updateSelectedProduct({} as Product);
@@ -147,11 +155,11 @@ const Step1Products: React.FC<Step1ProductsProps> = ({
     if (productIdFromUrl && allProducts.length > 0) {
       // 해당 ID를 가진 상품 찾기
       const productToSelect = allProducts.find(p => p.id.toString() === productIdFromUrl);
-      
+
       if (productToSelect && !selectedProduct.id) {
         console.log("URL에서 받은 상품 자동 선택:", productToSelect.productName);
         updateSelectedProduct(productToSelect);
-        
+
         // 선택된 상품이 현재 페이지에 없다면 해당 상품이 있는 페이지로 이동
         const productIndex = filteredProducts.findIndex(p => p.id.toString() === productIdFromUrl);
         if (productIndex !== -1) {
@@ -537,7 +545,7 @@ const Step1Products: React.FC<Step1ProductsProps> = ({
 
       {/* 선택된 상품 정보 */}
       {selectedProduct.id && (
-        <div className="border border-primary-color/20 rounded-lg p-6 mb-8 bg-primary-color/5 shadow-sm">
+        <div className="border border-primary-color/20 rounded-lg p-6 mb-8 bg-primary-color/5 shadow-sm selected-product-info">
           <h3 className="text-lg font-bold mb-4 text-primary-color">선택된 상품 정보</h3>
           <div className="flex flex-col md:flex-row items-start">
             <div className="w-full md:w-24 h-24 bg-gray-100 flex items-center justify-center mr-6 mb-4 md:mb-0 rounded-md overflow-hidden">
