@@ -31,16 +31,16 @@ interface FundingItem {
 }
 
 // API 응답 타입 정의
-interface ReviewResponse {
-  content?: ReviewItem[];
-  totalPages?: number;
-  totalElements?: number;
-  last?: boolean;
-  size?: number;
-  number?: number;
-  // API 응답에 맞게 추가 필드 허용
-  [key: string]: any;
-}
+// interface ReviewResponse {
+//   content?: ReviewItem[];
+//   totalPages?: number;
+//   totalElements?: number;
+//   last?: boolean;
+//   size?: number;
+//   number?: number;
+//   // API 응답에 맞게 추가 필드 허용
+//   [key: string]: any;
+// }
 
 // 후기 유형 필터 옵션
 const REVIEW_TYPES: ReviewType[] = ['전체', '배송/포장', '제품 품질', '고객 서비스'];
