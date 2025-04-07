@@ -65,7 +65,7 @@ public class FundingService {
      * 검색한 펀딩 리스트 조회
      */
     public ApiResponse<List<FundingsDTO>> findAllSearchFunding(String title){
-        List<FundingDocument> fundingDocuments = fundingSearchRepository.findByTitleContainingIgnoreCase(title);
+        List<FundingDocument> fundingDocuments = fundingSearchRepository.searchFundingByKeyword(title);
         return ApiResponse.success(fundingDocuments.stream()
                 .map(FundingsDTO::new)
                 .toList());

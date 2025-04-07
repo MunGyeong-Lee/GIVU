@@ -22,11 +22,13 @@ import java.time.LocalDateTime;
 public class ProductDocument {
     @Id
     private Integer id;
+    @Field(type = FieldType.Text, analyzer = "custom_ngram_analyzer", searchAnalyzer = "standard")
     private String productName;
     private int price;
     private String image;
     private int favorite;
     private double star;
+    @Field(type = FieldType.Text, analyzer = "custom_ngram_analyzer", searchAnalyzer = "standard")
     private String description;
 
     @Field(type = FieldType.Date, format = DateFormat.date_time)
