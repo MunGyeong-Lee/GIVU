@@ -121,7 +121,7 @@ const HowToUseSection = () => {
 
     if (isVisible) {
       // 각 단계별로 별도의 타이머 설정
-      steps.forEach((step, index) => {
+      steps.forEach((_, index) => {
         // 2단계(index=1)의 이미지 전환은 별도 효과로 처리되므로 제외
         if (index !== 1) {
           imageIntervals[index] = window.setInterval(() => {

@@ -367,7 +367,6 @@ const GiftBoxEffect = ({
     const scrollOffset = Math.max(dreiScrollOffset, domScrollOffset);
 
     // 스크롤 기반 계산 파라미터
-    const scrollThreshold = 0.2;
     const maxScrollScale = 3.5;
     const maxZoomOffset = 4.0;
 
