@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import axios from 'axios';
+// import axios from 'axios';
 
 type ReviewType = '배송/포장' | '제품 품질' | '고객 서비스' | '전체';
 
@@ -74,7 +74,7 @@ function FundingReviewDetailPage() {
   const [error, setError] = useState<string | null>(null);
 
   // API 호출 함수
-  const fetchReviewDetail = async (reviewId: string) => {
+  const fetchReviewDetail = async () => {
     try {
       setLoading(true);
       setError(null);
@@ -92,7 +92,7 @@ function FundingReviewDetailPage() {
 
   useEffect(() => {
     if (id) {
-      fetchReviewDetail(id);
+      fetchReviewDetail();
     }
   }, [id]);
 
