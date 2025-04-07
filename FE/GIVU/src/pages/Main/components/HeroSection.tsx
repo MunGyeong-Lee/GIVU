@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo, useRef, Suspense, useCallback } from "react";
 import { Canvas, useFrame, ThreeEvent } from "@react-three/fiber";
-import { Preload, useTexture, Text } from "@react-three/drei";
+import { Preload, useTexture, Text, ScrollControls, useScroll } from "@react-three/drei";
 import * as THREE from "three";
 import axios from "axios";
 import { HeroFundingItem } from "../../../types/funding";
@@ -54,6 +54,7 @@ const fragmentShader = `
   uniform sampler2D atlasTexture;
   uniform vec2 singleImageUVSize;
   uniform float time; // 시간 유니폼 추가 (향후 셰이더 내 애니메이션에 사용 가능)
+  uniform float opacity; // 투명도 유니폼 추가
   
   // 버텍스 셰이더에서 전달받은 값들
   varying vec2 vUv;
@@ -71,10 +72,13 @@ const fragmentShader = `
     );
     
     // 아틀라스 텍스처에서 해당 픽셀 색상 가져오기
-    gl_FragColor = texture2D(atlasTexture, atlasUV);
+    vec4 texColor = texture2D(atlasTexture, atlasUV);
     
     // 알파값이 너무 낮은 픽셀은 렌더링하지 않음 (투명도 최적화)
-    if (gl_FragColor.a < 0.1) discard;
+    if (texColor.a < 0.1) discard;
+    
+    // 전체 투명도 적용
+    gl_FragColor = vec4(texColor.rgb, texColor.a * opacity);
   }
 `;
 
@@ -129,17 +133,22 @@ const FeaturedFunding = ({
 const GiftBoxEffect = ({
   fundingItems,
   onItemHover,
-  onItemLeave
+  onItemLeave,
+  scrollY = 0 // 실제 DOM 스크롤 위치 추가
 }: {
   fundingItems: HeroFundingItem[];
   onItemHover: (item: HeroFundingItem, screenPos: { x: number, y: number }) => void;
   onItemLeave: () => void;
+  scrollY?: number; // 실제 DOM 스크롤 위치 추가
 }) => {
   const groupRef = useRef<THREE.Group>(null!);
   const meshRef = useRef<THREE.InstancedMesh>(null!);
   const geometryRef = useRef<THREE.PlaneGeometry>(null!);
   const materialRef = useRef<THREE.ShaderMaterial>(null!);
   const numPoints = 3584;
+
+  // --- ScrollControls에서 제공하는 스크롤 정보 가져오기 ---
+  const scroll = useScroll();
 
   // --- Texture Atlas 로드 ---
   const atlasTexture = useTexture('/atlas.png');
@@ -183,7 +192,8 @@ const GiftBoxEffect = ({
   const uniforms = useMemo(() => ({
     atlasTexture: { value: atlasTexture },
     singleImageUVSize: { value: singleImageUVSize },
-    time: { value: 0 }
+    time: { value: 0 },
+    opacity: { value: 1.0 } // 투명도 유니폼 추가
   }), [atlasTexture, singleImageUVSize]);
 
   // --- 각 인스턴스의 초기 스케일만 저장 (회전값은 빌보딩으로 대체) ---
@@ -340,16 +350,69 @@ const GiftBoxEffect = ({
     meshRef.current.instanceMatrix.needsUpdate = true;
   }, [points, initialScales, numPoints]);
 
-  // --- 빌보딩, 애니메이션 및 회전 ---
+  // --- 빌보딩, 애니메이션 및 회전 - 스크롤 효과 추가 ---
   useFrame((state) => {
     if (!meshRef.current || points.length === 0 || initialScales.length === 0) return;
 
     const time = state.clock.getElapsedTime();
-    const cameraPosition = state.camera.position; // 현재 카메라 위치
+    const cameraPosition = state.camera.position;
+
+    // drei의 스크롤 위치와 실제 DOM 스크롤 위치 모두 활용
+    const dreiScrollOffset = scroll.offset;
+
+    // scrollY가 0부터 window.innerHeight까지의 값일 때 0~1 범위로 정규화
+    const domScrollOffset = Math.min(scrollY / window.innerHeight, 1);
+
+    // 두 스크롤 값 중 큰 값을 사용 (더 빠른 반응을 위해)
+    const scrollOffset = Math.max(dreiScrollOffset, domScrollOffset);
+
+    // 스크롤 기반 계산 파라미터
+    const maxScrollScale = 3.5;
+    const maxZoomOffset = 4.0;
+
+    // 부드러운 전환을 위해 smoothstep 사용
+    const smoothScroll = THREE.MathUtils.smootherstep(scrollOffset, 0, 1);
+
+    // 투명도 계산: 스크롤이 0.6을 넘어가면 점진적으로 투명해짐
+    // 0.6 ~ 0.9 사이에서 1 ~ 0으로 변경
+    const fadeThreshold = 0.6; // 투명도가 감소하기 시작하는 스크롤 위치
+    const fadeEnd = 0.9;      // 완전히 투명해지는 스크롤 위치
+
+    let opacity = 1.0;
+    if (scrollOffset > fadeThreshold) {
+      // fadeThreshold와 fadeEnd 사이에서 1.0에서 0.0으로 선형 감소
+      opacity = 1.0 - THREE.MathUtils.smoothstep(
+        (scrollOffset - fadeThreshold) / (fadeEnd - fadeThreshold),
+        0, 1
+      );
+    }
+
+    // 투명도 설정
+    if (materialRef.current) {
+      // opacity 유니폼 값이 없으면 생성
+      if (materialRef.current.uniforms.opacity === undefined) {
+        materialRef.current.uniforms.opacity = { value: 1.0 };
+      }
+      materialRef.current.uniforms.opacity.value = opacity;
+
+      // 캔버스 전체 투명도 설정 (완전히 투명해지면 렌더링 중지하여 성능 향상)
+      if (opacity < 0.01) {
+        meshRef.current.visible = false;
+      } else {
+        meshRef.current.visible = true;
+      }
+    }
+
+    // 스크롤에 따른 터널 효과를 위한 카메라 FOV 변화
+    // 기본 40도에서 스크롤에 따라 50도까지 증가 (원근감 강화)
+    if (state.camera instanceof THREE.PerspectiveCamera) {
+      state.camera.fov = THREE.MathUtils.lerp(40, 50, smoothScroll);
+      state.camera.updateProjectionMatrix(); // 중요: 투영 행렬 업데이트
+    }
 
     // 깊이 계산에 필요한 상수들 - 비대칭 상자 크기와 일치시킴
     const boxDims = { x: 6, y: 3.5, z: 4.5 }; // 포인트 생성 로직의 boxDims와 일치
-    const maxDepthEffect = 1.2; // 깊이에 따른 최대 스케일 변화 정도 (훨씬 더 강한 효과)
+    const maxDepthEffect = 1.2; // 깊이에 따른 최대 스케일 변화 정도
 
     // 재사용할 임시 객체들
     const lookAtQuaternion = new THREE.Quaternion();
@@ -357,12 +420,12 @@ const GiftBoxEffect = ({
     const worldPosition = new THREE.Vector3();
 
     // 카메라 효과 계수 계산 (카메라 위치에 따라 효과 강도 조절)
-    // 카메라가 멀수록 원근감이 약해지고, 가까울수록 강해짐
     const cameraDist = cameraPosition.length();
-    const cameraEffectFactor = THREE.MathUtils.clamp(12 / cameraDist, 0.5, 2.0); // 효과 상한 더 증가
+    const cameraEffectFactor = THREE.MathUtils.clamp(12 / cameraDist, 0.5, 2.0);
 
     // 회전 속도 (비대칭 형태의 특성을 살리기 위해 속도 조절)
-    const rotationYSpeed = ANIMATION_CONFIG.ROTATION_SPEED;
+    // 스크롤에 따라 회전 속도도 증가 - 빨려들어가는 효과 강화
+    const rotationYSpeed = ANIMATION_CONFIG.ROTATION_SPEED * (1 + smoothScroll * 0.5);
 
     // 개별 인스턴스 애니메이션 및 빌보딩
     for (let i = 0; i < Math.min(points.length, numPoints); i++) {
@@ -377,9 +440,11 @@ const GiftBoxEffect = ({
       tempPosition.copy(point);
 
       // 각 축에 다른 사인/코사인 함수와 오프셋 적용하여 더 복잡한 움직임 생성
-      tempPosition.x += Math.sin(time * speed * 1.1 + offset * 1.5) * amplitude * ANIMATION_CONFIG.X_AXIS_RATIO;
-      tempPosition.y += Math.sin(time * speed + offset) * amplitude * ANIMATION_CONFIG.Y_AXIS_RATIO;
-      tempPosition.z += Math.cos(time * speed * 0.9 + offset * 2.0) * amplitude * ANIMATION_CONFIG.Z_AXIS_RATIO;
+      // 스크롤에 따라 진폭 점점 감소 (빨려들어가면서 더 안정적으로)
+      const scrollAmpFactor = 1 - smoothScroll * 0.7; // 진폭 감소 팩터
+      tempPosition.x += Math.sin(time * speed * 1.1 + offset * 1.5) * amplitude * ANIMATION_CONFIG.X_AXIS_RATIO * scrollAmpFactor;
+      tempPosition.y += Math.sin(time * speed + offset) * amplitude * ANIMATION_CONFIG.Y_AXIS_RATIO * scrollAmpFactor;
+      tempPosition.z += Math.cos(time * speed * 0.9 + offset * 2.0) * amplitude * ANIMATION_CONFIG.Z_AXIS_RATIO * scrollAmpFactor;
 
       // 3. 중심점 주위로 회전 (전체 회전 효과)
       // Y축 회전 - 비대칭 형태를 더 잘 보여주기 위해 속도 조절
@@ -403,14 +468,42 @@ const GiftBoxEffect = ({
       // 4. 월드 위치 저장 (깊이 계산용)
       worldPosition.copy(tempPosition);
 
-      // 5. 위치 설정
-      dummy.position.copy(tempPosition);
+      // 5. 빨려 들어가는 효과: 각 객체의 위치를 원점(중심)을 향해 스크롤 정도에 따라 이동
+      // 원점과의 거리와 방향 계산
+      const dirToCenter = worldPosition.clone().negate().normalize(); // 월드 위치에서 원점(0,0,0)을 향하는 방향
+      const distToCenter = worldPosition.length(); // 원점과의 거리
 
-      // 6. 빌보딩: 카메라를 바라보도록 회전 설정
+      // 빨려들어가는 강도 계산 - 중심에서 멀수록 더 강하게 당겨짐 (터널 효과)
+      const pullFactor = THREE.MathUtils.lerp(
+        0,
+        Math.min(distToCenter * 1.2, maxZoomOffset), // 거리에 비례, 최대값 제한
+        smoothScroll
+      );
+
+      // 객체 위치를 중심 방향으로 이동 (스크롤에 따라 강도 증가)
+      worldPosition.add(dirToCenter.multiplyScalar(pullFactor));
+
+      // 원근감 강화: 화면 바깥쪽 객체는 더 빠르게 중심으로 이동
+      // 객체가 화면 중심에서 멀수록 더 많이 이동 (돌리 줌 효과 강화)
+      const screenDistFactor = Math.sqrt(
+        Math.pow(worldPosition.x / boxDims.x, 2) +
+        Math.pow(worldPosition.y / boxDims.y, 2)
+      );
+
+      // 화면 가장자리 객체 추가 이동 (vignette 효과처럼)
+      if (screenDistFactor > 0.3) { // 중심에서 30% 이상 떨어진 객체만 적용
+        const edgePullFactor = (screenDistFactor - 0.3) * smoothScroll * 2.0;
+        worldPosition.add(dirToCenter.multiplyScalar(edgePullFactor));
+      }
+
+      // 6. 위치 설정
+      dummy.position.copy(worldPosition);
+
+      // 7. 빌보딩: 카메라를 바라보도록 회전 설정
       dummy.lookAt(cameraPosition);
       lookAtQuaternion.copy(dummy.quaternion); // 회전값 저장
 
-      // 7. 깊이에 따른 스케일 배율 계산
+      // 8. 깊이에 따른 스케일 배율 계산
       // 카메라와의 실제 거리 계산 (보다 정확한 원근감을 위해)
       const distanceToCamera = worldPosition.distanceTo(cameraPosition);
 
@@ -421,20 +514,19 @@ const GiftBoxEffect = ({
       const objectDir = worldPosition.clone().normalize();
 
       // 객체가 카메라와 얼마나 같은 방향에 있는지 계산 (-1 ~ 1)
-      // 1에 가까울수록 카메라 방향, -1에 가까울수록 카메라 반대 방향
       const dotProduct = cameraDir.dot(objectDir);
 
-      // 방향성을 고려한 깊이 팩터 계산 (-1 ~ 1 범위)
-      // 비대칭 형태에 맞게 계산 조정
+      // 방향성을 고려한 깊이 팩터 계산
       const maxDim = Math.max(boxDims.x, boxDims.y, boxDims.z) / 2;
       const depthFactor = THREE.MathUtils.clamp(dotProduct, -1, 1);
 
       // 깊이와 거리를 모두 고려한 스케일 배율 계산
-      // 앞쪽은 크게, 뒤쪽은 작게
+      // 스크롤에 따라 깊이 효과 강화
+      const enhancedDepthEffect = maxDepthEffect * (1 + smoothScroll * 0.5);
       const scaleMultiplier = THREE.MathUtils.lerp(
-        1.0 - maxDepthEffect,      // 최소값 (뒤쪽): 1.0 - 1.2 = -0.2배 (매우 작게)
-        1.0 + maxDepthEffect * 0.8, // 최대값 (앞쪽): 1.0 + 0.96 = 1.96배 (거의 2배로 크게)
-        THREE.MathUtils.smootherstep((depthFactor + 1) * 0.5, 0, 1)  // 더 부드러운 전환
+        1.0 - enhancedDepthEffect,   // 최소값 (뒤쪽): 더 작게
+        1.0 + enhancedDepthEffect,   // 최대값 (앞쪽): 더 크게
+        THREE.MathUtils.smootherstep((depthFactor + 1) * 0.5, 0, 1)
       );
 
       // 카메라 거리에 따른 추가 조정
@@ -443,26 +535,26 @@ const GiftBoxEffect = ({
         scaleMultiplier,
         scaleMultiplier * 0.5, // 멀리 있는 객체는 50% 더 작게
         distanceEffect
-      ) * cameraEffectFactor; // 카메라 위치에 따른 전체 효과 조절
+      ) * cameraEffectFactor;
 
-      // Z 방향으로 더 가까이 다가오는 효과 - 3D 느낌 강화
-      // 앞쪽에 있는 객체(depthFactor > 0)는 원래 위치보다 카메라 쪽으로 더 가깝게 이동
-      if (depthFactor > 0) {
-        const zShift = depthFactor * 0.8; // 최대 0.8 유닛 앞으로 이동
-        const shiftVector = new THREE.Vector3().copy(cameraDir).multiplyScalar(zShift);
-        worldPosition.add(shiftVector);
-        dummy.position.copy(worldPosition);
-      }
+      // 9. 최종 스케일 계산
+      const scrollScaleMultiplier = THREE.MathUtils.lerp(
+        1.0,
+        maxScrollScale * (1.0 + screenDistFactor * 0.5), // 가장자리 객체는 더 크게 확대 (터널 효과)
+        smoothScroll
+      );
 
-      // 8. 최종 스케일 계산 (초기 스케일 * 깊이 기반 배율)
-      finalScale.copy(initialScales[i]).multiplyScalar(cameraAdjustedMultiplier);
+      // 초기 스케일 * 깊이 배율 * 스크롤 배율
+      finalScale.copy(initialScales[i])
+        .multiplyScalar(cameraAdjustedMultiplier)
+        .multiplyScalar(scrollScaleMultiplier);
 
-      // 9. 최종 매트릭스 구성
+      // 10. 최종 매트릭스 구성
       dummy.position.copy(worldPosition);
       dummy.quaternion.copy(lookAtQuaternion);
       dummy.scale.copy(finalScale);
 
-      // 10. 매트릭스 업데이트 및 적용
+      // 11. 매트릭스 업데이트 및 적용
       dummy.updateMatrix();
       meshRef.current.setMatrixAt(i, dummy.matrix);
     }
@@ -525,7 +617,10 @@ const GiftBoxEffect = ({
     <group ref={groupRef}>
       <instancedMesh
         ref={meshRef}
-        args={[undefined, undefined, numPoints]}
+        args={[null!, null!, numPoints]}
+        frustumCulled={false}
+        castShadow
+        receiveShadow
         onPointerMove={handlePointerMove}
         onPointerLeave={onItemLeave}
         raycast={new THREE.Mesh().raycast}
@@ -565,6 +660,59 @@ const HeroSection = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [hoveredItem, setHoveredItem] = useState<HeroFundingItem | null>(null);
   const [hoveredPosition, setHoveredPosition] = useState<{ x: number, y: number } | null>(null);
+
+  // 실제 DOM 스크롤 위치를 추적하는 state
+  const [scrollY, setScrollY] = useState(0);
+
+  // Canvas 가시성 제어 (스크롤 위치에 따라)
+  const [canvasVisible, setCanvasVisible] = useState(true);
+  const [canvasOpacity, setCanvasOpacity] = useState(1);
+
+  // 컴포넌트 DOM 요소 참조
+  const sectionRef = useRef<HTMLDivElement>(null);
+
+  // 스크롤 이벤트 리스너 설정
+  useEffect(() => {
+    const handleScroll = () => {
+      if (!sectionRef.current) return;
+
+      const currentScrollY = window.scrollY;
+      setScrollY(currentScrollY);
+
+      // Hero 섹션의 높이
+      const sectionHeight = sectionRef.current.offsetHeight;
+
+      // 섹션이 절반 이상 스크롤되면 Canvas 투명도 조절 시작
+      const fadeStartOffset = sectionHeight * 0.5;
+      const fadeEndOffset = sectionHeight * 0.8;
+
+      if (currentScrollY < fadeStartOffset) {
+        // 상단 영역에서는 완전히 표시
+        setCanvasOpacity(1);
+        setCanvasVisible(true);
+      } else if (currentScrollY >= fadeStartOffset && currentScrollY <= fadeEndOffset) {
+        // 중간 영역에서는 투명도 점진적 감소
+        const opacity = 1 - (currentScrollY - fadeStartOffset) / (fadeEndOffset - fadeStartOffset);
+        setCanvasOpacity(opacity);
+        setCanvasVisible(true);
+      } else {
+        // 하단 영역에서는 완전히 숨김
+        setCanvasOpacity(0);
+        setCanvasVisible(false);
+      }
+    };
+
+    // 스크롤 이벤트 리스너 등록
+    window.addEventListener('scroll', handleScroll);
+
+    // 초기 스크롤 위치에 맞춰 상태 설정
+    handleScroll();
+
+    // 컴포넌트 언마운트 시 이벤트 리스너 제거
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+    };
+  }, []);
 
   // 컴포넌트 마운트 시 API 호출하여 펀딩 데이터 로드
   useEffect(() => {
@@ -607,36 +755,73 @@ const HeroSection = () => {
   // --- ---
 
   return (
-    <div className="relative h-screen w-full overflow-hidden bg-white">
-      <Canvas camera={{ position: [0, 0, 13], fov: 40 }}>
-        {/* 조명 설정 - 더 밝게 조정 */}
-        <ambientLight intensity={1.8} /> {/* 전체적인 주변광 강도 상향 */}
-        <pointLight position={[10, 10, 10]} intensity={4.0} color={0xffffff} />
-        <pointLight position={[-10, -10, -10]} intensity={2.5} color={0xffffff} />
-        <pointLight position={[0, 5, 5]} intensity={2.5} color={0xffffff} /> {/* 추가 조명 강화 */}
+    <div
+      ref={sectionRef}
+      className="relative w-full bg-white"
+      style={{
+        height: '100vh', // 화면 높이만큼 영역 확보
+        minHeight: '600px', // 최소 높이 설정
+        overflow: 'hidden', // 이 컨테이너의 스크롤바 숨김
+        position: 'relative' // 확실하게 relative 적용
+      }}
+    >
+      {/* Canvas 컴포넌트 - DOM 스크롤에 따라 가시성 및 투명도 제어 */}
+      {canvasVisible && (
+        <div
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            width: '100%',
+            height: '100%',
+            opacity: canvasOpacity,
+            transition: 'opacity 0.3s ease',
+            zIndex: 1,
+            overflow: 'hidden' // Canvas 컨테이너도 overflow 숨김
+          }}
+        >
+          <Canvas
+            camera={{ position: [0, 0, 13], fov: 40 }}
+            style={{
+              display: 'block', // 블록 레벨로 설정
+              outline: 'none' // 포커스 아웃라인 제거
+            }}
+          >
+            <ScrollControls
+              damping={0.25}
+              pages={1}
+              distance={1}
+            >
+              {/* 조명 설정 */}
+              <ambientLight intensity={1.8} />
+              <pointLight position={[10, 10, 10]} intensity={4.0} color={0xffffff} />
+              <pointLight position={[-10, -10, -10]} intensity={2.5} color={0xffffff} />
+              <pointLight position={[0, 5, 5]} intensity={2.5} color={0xffffff} />
+              <primitive
+                object={new THREE.HemisphereLight(0xffffff, 0x404040, 2.0)}
+                position={[0, 10, 0]}
+              />
 
-        {/* THREE.HemisphereLight 사용 */}
-        <primitive
-          object={new THREE.HemisphereLight(0xffffff, 0x404040, 2.0)}
-          position={[0, 10, 0]}
-        />
-
-        <Suspense fallback={
-          <Text color="black" anchorX="center" anchorY="middle" fontSize={0.5}>Loading 3D...</Text>
-        }>
-          {/* 로딩 상태 및 데이터 유무에 따른 조건부 렌더링 */}
-          {isLoading ? null : fundingItems.length > 0 ? (
-            <GiftBoxEffect
-              fundingItems={fundingItems}
-              onItemHover={handleItemHover}
-              onItemLeave={handleItemLeave}
-            />
-          ) : (
-            <Text color="grey" anchorX="center" anchorY="middle" fontSize={0.4} maxWidth={5} textAlign="center">No funding available.</Text>
-          )}
-        </Suspense>
-        <Preload all />
-      </Canvas>
+              <Suspense fallback={
+                <Text color="black" anchorX="center" anchorY="middle" fontSize={0.5}>Loading 3D...</Text>
+              }>
+                {/* 로딩 상태 및 데이터 유무에 따른 조건부 렌더링 */}
+                {isLoading ? null : fundingItems.length > 0 ? (
+                  <GiftBoxEffect
+                    fundingItems={fundingItems}
+                    onItemHover={handleItemHover}
+                    onItemLeave={handleItemLeave}
+                    scrollY={scrollY} // 실제 스크롤 위치 전달
+                  />
+                ) : (
+                  <Text color="grey" anchorX="center" anchorY="middle" fontSize={0.4} maxWidth={5} textAlign="center">No funding available.</Text>
+                )}
+              </Suspense>
+              <Preload all />
+            </ScrollControls>
+          </Canvas>
+        </div>
+      )}
 
       {/* 로딩 중일 때 표시될 스피너 (캔버스 위에 오버레이) */}
       {isLoading && (
@@ -647,6 +832,22 @@ const HeroSection = () => {
 
       {/* 호버 시 상세 정보 표시 컴포넌트 (캔버스 외부에 렌더링) */}
       <FeaturedFunding item={hoveredItem} screenPosition={hoveredPosition} />
+
+      {/* 스크롤바 숨김을 위한 스타일 적용 - 컴포넌트 마운트 시 실행 */}
+      <style dangerouslySetInnerHTML={{
+        __html: `
+          /* 스크롤바 숨김 스타일 */
+          ::-webkit-scrollbar {
+            width: 0 !important;
+            display: none;
+          }
+          body {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+            scroll-behavior: smooth;
+          }
+        `
+      }} />
     </div>
   );
 };
