@@ -77,6 +77,65 @@ export const fetchProductsList = async (params: ProductListParams = {}) => {
   }
 };
 
+// 상품 검색 API 함수
+export const searchProducts = async (query: string) => {
+  try {
+    // 검색어가 없으면 빈 배열 반환
+    if (!query || query.trim() === '') {
+      return [];
+    }
+
+    // 인증 토큰 가져오기
+    const token = localStorage.getItem('auth_token');
+    
+    // API 요청 헤더 구성
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+      'Accept': 'application/json'
+    };
+    
+    // 토큰이 있는 경우 헤더에 추가
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+
+    // encodeURIComponent를 사용하지 않고 params 객체로 전달
+    const response = await axios.get(
+      `${API_BASE_URL}/products/search`,
+      {
+        params: { keyword: query },
+        headers,
+        withCredentials: true
+      }
+    );
+
+    // API 응답 데이터 확인
+    const productsData = response.data?.data || [];
+
+    if (!Array.isArray(productsData)) {
+      return [];
+    }
+
+    // 상품 데이터 변환 (API 응답 형식에 맞게)
+    const formattedProducts = productsData.map((product: any) => ({
+      id: product.id.toString(),
+      productName: product.productName,
+      price: product.price,
+      image: product.image || '/placeholder.png',
+      category: CATEGORY_MAPPING[product.category] || '기타',
+      favorite: product.favorite,
+      star: product.star,
+      description: product.description,
+      createdAt: product.createdAt
+    }));
+
+    return formattedProducts;
+  } catch (error) {
+    console.error('상품 검색 중 오류가 발생했습니다:', error);
+    throw error;
+  }
+};
+
 // 상품 상세 조회 API 함수
 export const fetchProductDetail = async (productId: string) => {
   try {
