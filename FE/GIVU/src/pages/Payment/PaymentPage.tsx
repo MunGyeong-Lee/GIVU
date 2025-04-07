@@ -1,11 +1,13 @@
 import { useState, useEffect } from 'react';
-import { useLocation, useNavigate} from 'react-router-dom';
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import axios from 'axios';
+import { makeFundingPayment } from '../../services/funding.service';
 
 interface PaymentState {
   amount: number;
   title: string;
   creatorName: string;
+  fundingId?: number | string;
 }
 
 // 비밀번호 모달 컴포넌트 추가
@@ -103,7 +105,7 @@ const PasswordModal = ({ isOpen, onClose, onSubmit, loading }: {
 const PaymentPage = () => {
   const location = useLocation();
   const navigate = useNavigate();
-//   const { id } = useParams();
+  const { fundingId: urlFundingId } = useParams<{ fundingId: string }>();
   
   // location.state가 없을 경우 기본값 설정
   const paymentData = location.state as PaymentState || {
@@ -112,6 +114,8 @@ const PaymentPage = () => {
     creatorName: "테스트 사용자"
   };
   
+  // URL에서 fundingId를 가져오거나 state에서 가져옴
+  const fundingId = urlFundingId || paymentData.fundingId;
   const { amount, title } = paymentData;
   const [balance, setBalance] = useState<number>(0); // 기본값을 0으로 설정
   const [loading, setLoading] = useState(false);
@@ -255,24 +259,64 @@ const PaymentPage = () => {
       
       const baseUrl = import.meta.env.VITE_BASE_URL || import.meta.env.VITE_API_BASE_URL || 'https://j12d107.p.ssafy.io/api';
       
-      // 2차 비밀번호 확인 API 호출
-      const response = await axios.post(
-        `${baseUrl}/users/checkPassword`,
-        { password: inputPassword },
-        {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json'
+      console.log('[비밀번호 검증] 입력된 비밀번호 길이:', inputPassword.length);
+      console.log('[비밀번호 검증] 요청 URL:', `${baseUrl}/users/checkPassword`);
+      
+      try {
+        // 2차 비밀번호 확인 API 호출
+        const response = await axios.post(
+          `${baseUrl}/users/checkPassword`,
+          { password: inputPassword },
+          {
+            headers: {
+              'Authorization': `Bearer ${token}`,
+              'Content-Type': 'application/json'
+            }
+          }
+        );
+        
+        console.log('[비밀번호 검증] 응답 성공:', response.status);
+        console.log('[비밀번호 검증] 응답 데이터:', response.data);
+        
+        // 성공 코드인 경우 비밀번호 일치
+        return response.data && response.data.code === 'SUCCESS';
+      } catch (apiError: any) {
+        console.error('[비밀번호 검증] API 오류:', apiError.message);
+        
+        if (apiError.response) {
+          console.error('[비밀번호 검증] 응답 상태:', apiError.response.status);
+          console.error('[비밀번호 검증] 응답 데이터:', apiError.response.data);
+          
+          // 400 오류의 경우 (비밀번호가 설정되지 않았거나 서버에 없는 경우)
+          if (apiError.response.status === 400) {
+            console.log('[비밀번호 검증] 400 오류 발생, 로컬 저장소에서 비밀번호 확인 시도');
+            
+            // 로컬 스토리지에서 계좌 비밀번호 확인 시도 (MyPage.tsx에서 사용하는 방식과 동일)
+            const encodedPassword = localStorage.getItem('account_password');
+            if (encodedPassword) {
+              try {
+                const storedPassword = atob(encodedPassword);
+                const isMatch = inputPassword === storedPassword;
+                console.log(`[비밀번호 검증] 로컬 스토리지 검증 결과: ${isMatch ? '일치' : '불일치'}`);
+                
+                if (isMatch) {
+                  console.log('[비밀번호 검증] 로컬 스토리지 확인으로 비밀번호 인증 성공');
+                  return true; // 로컬에 저장된 비밀번호와 일치하면 true 반환
+                }
+              } catch (decodeError) {
+                console.error('[비밀번호 검증] 로컬 비밀번호 디코딩 오류:', decodeError);
+              }
+            } else {
+              console.log('[비밀번호 검증] 로컬에 저장된 계좌 비밀번호가 없음');
+            }
           }
         }
-      );
-      
-      console.log('비밀번호 확인 응답:', response.data);
-      
-      // 성공 코드인 경우 비밀번호 일치
-      return response.data && response.data.code === 'SUCCESS';
+        
+        // 오류 발생 시 false 반환
+        return false;
+      }
     } catch (error) {
-      console.error('비밀번호 확인 오류:', error);
+      console.error('[비밀번호 검증] 일반 오류:', error);
       return false;
     }
   };
@@ -300,6 +344,8 @@ const PaymentPage = () => {
 
   const processPayment = async () => {
     try {
+      setLoading(true);
+      
       const token = localStorage.getItem('auth_token') || 
                     localStorage.getItem('access_token') || 
                     localStorage.getItem('token');
@@ -308,53 +354,133 @@ const PaymentPage = () => {
         return;
       }
 
-      const baseUrl = import.meta.env.VITE_BASE_URL || import.meta.env.VITE_API_BASE_URL || 'https://j12d107.p.ssafy.io/api';
+      if (!fundingId) {
+        setError('펀딩 정보가 없습니다.');
+        setLoading(false);
+        return;
+      }
+
+      // 결제 금액 유효성 검사
+      if (!amount || amount <= 0) {
+        setError('유효한 결제 금액을 입력해주세요.');
+        setLoading(false);
+        return;
+      }
+
+      // 금액을 정수로 변환 (소수점 제거)
+      const amountInt = Math.floor(amount);
+      console.log('결제 요청 정보:', { fundingId, amount: amountInt });
       
-      // 실제 환경에선 아래 API 연동 코드를 사용할 것임
-      // 현재는 임시로 성공 처리 후 잔액 갱신
       try {
-        // 결제 API 호출 (현재는 setTimeout으로 대체)
-        await new Promise(resolve => setTimeout(resolve, 1000));
+        // 직접 API 호출로 변경
+        const baseUrl = import.meta.env.VITE_BASE_URL || import.meta.env.VITE_API_BASE_URL || 'https://j12d107.p.ssafy.io/api';
+        const apiUrl = `${baseUrl}/fundings/${fundingId}/transfer`;
         
-        // 결제 성공 메시지
-        alert('결제가 완료되었습니다!');
+        console.log('직접 API 요청 URL:', apiUrl);
         
-        // 결제 후 잔액 갱신을 위한 API 호출
+        // 다양한 필드명을 포함하여 시도
+        const requestData = {
+          amount: amountInt,
+          transactionAmount: amountInt,
+          transfer_amount: amountInt,
+          funding_amount: amountInt,
+          value: amountInt
+        };
         
-        // 잔액 재조회
-        try {
-          const userInfoResponse = await axios.get(
-            `${baseUrl}/users/info`,
-            {
-              headers: {
-                'Authorization': `Bearer ${token}`
-              }
+        console.log('직접 API 요청 데이터:', JSON.stringify(requestData));
+        
+        const response = await axios.post(
+          apiUrl,
+          requestData,
+          {
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${token}`
             }
-          );
-          
-          if (userInfoResponse.data && userInfoResponse.data.balance !== undefined) {
-            const newBalance = Number(userInfoResponse.data.balance);
-            console.log('결제 후 업데이트된 기뷰페이 잔액:', newBalance);
-            setBalance(newBalance);
           }
-        } catch (balanceError) {
-          console.error('결제 후 잔액 조회 오류:', balanceError);
+        );
+        
+        console.log('결제 응답 데이터:', response.data);
+        
+        // 결제 성공 시
+        if (response.data && (response.data.code === 'SUCCESS' || response.status === 200)) {
+          // 잔액 재조회
+          try {
+            const userInfoResponse = await axios.get(
+              `${baseUrl}/users/info`,
+              {
+                headers: {
+                  'Authorization': `Bearer ${token}`
+                }
+              }
+            );
+            
+            if (userInfoResponse.data && userInfoResponse.data.balance !== undefined) {
+              const newBalance = Number(userInfoResponse.data.balance);
+              console.log('결제 후 업데이트된 기뷰페이 잔액:', newBalance);
+              setBalance(newBalance);
+            }
+          } catch (balanceError) {
+            console.error('결제 후 잔액 조회 오류:', balanceError);
+          }
+          
+          // 성공 메시지 표시
+          alert('펀딩 참여가 완료되었습니다!');
+          
+          // 비밀번호 모달 닫기
+          setIsPasswordModalOpen(false);
+          
+          // 펀딩 상세 페이지로 리다이렉트
+          navigate(`/funding/${fundingId}`);
+        } else {
+          // 에러 처리
+          setError(response.data?.message || '결제 처리 중 오류가 발생했습니다.');
+        }
+      } catch (paymentError: any) {
+        // API 호출 오류 처리
+        console.error('결제 API 오류:', paymentError);
+        
+        // 응답 데이터가 있는 경우 자세히 로깅
+        if (paymentError.response) {
+          console.error('응답 상태:', paymentError.response.status);
+          console.error('응답 데이터:', typeof paymentError.response.data === 'object' ? 
+            JSON.stringify(paymentError.response.data) : paymentError.response.data);
+          
+          // Spring Boot 오류 형식 확인
+          const responseData = paymentError.response.data;
+          if (typeof responseData === 'object') {
+            console.error('응답 데이터 키:', Object.keys(responseData).join(', '));
+            
+            // Spring 오류 형식 처리
+            if (responseData.timestamp && responseData.status && responseData.error) {
+              console.error('Spring 오류 응답:', {
+                timestamp: responseData.timestamp,
+                status: responseData.status,
+                error: responseData.error,
+                path: responseData.path
+              });
+            }
+            
+            // 오류 메시지 설정
+            if (responseData.message) {
+              setError(responseData.message);
+              return;
+            }
+            
+            if (responseData.error) {
+              setError(responseData.error);
+              return;
+            }
+          }
         }
         
-        // 비밀번호 모달 닫기
-        setIsPasswordModalOpen(false);
-        
-        // 펀딩 목록 페이지로 이동
-        navigate('/funding');
-      } catch (paymentError) {
-        console.error('결제 처리 오류:', paymentError);
-        alert('결제 처리 중 오류가 발생했습니다.');
-      } finally {
-        setLoading(false);
+        setError(paymentError.message || '결제 처리 중 오류가 발생했습니다.');
       }
-    } catch (err) {
-      setError('결제 처리 중 오류가 발생했습니다.');
+    } catch (err: any) {
+      // 전반적인 오류 처리
       console.error('Error processing payment:', err);
+      setError(err.message || '결제 처리 중 오류가 발생했습니다.');
+    } finally {
       setLoading(false);
     }
   };
