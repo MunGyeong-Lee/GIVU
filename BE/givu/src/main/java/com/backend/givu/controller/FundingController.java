@@ -79,19 +79,6 @@ public class FundingController implements FundingControllerDocs {
         return ResponseEntity.ok(fundingList);
     }
 
-    @Operation(summary = "검색한 펀딩 리스트 조회", description = "검색한 펀딩 리스트를 조회합니다.")
-    @GetMapping(value = "/search")
-    public ResponseEntity<ApiResponse<List<FundingsDTO>>> findAll(@RequestParam String title){
-        ApiResponse<List<FundingsDTO>> response = fundingService.findAllSearchFunding(title);
-        return ResponseEntity.ok(response);
-    }
-
-    @PostMapping("/reindex")
-    public ResponseEntity<String> reindexAllProducts() {
-        fundingService.indexAllFundingsToElasticsearch();
-        return ResponseEntity.ok("✅ 모든 상품을 Elasticsearch에 색인 완료!");
-    }
-
     /**
      * 펀딩생성
      */
