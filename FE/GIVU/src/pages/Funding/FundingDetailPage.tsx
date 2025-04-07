@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import axios from "axios";
+import { isFundingCreator } from "../../services/review.service";
 
 // 펀딩 데이터 타입 정의
 interface FundingDetail {
@@ -126,6 +127,10 @@ const FundingDetailPage = () => {
   const [showBalanceInfo, setShowBalanceInfo] = useState<boolean>(false);
   const [balanceLoading, setBalanceLoading] = useState<boolean>(false);
 
+  // 펀딩 생성자 확인 상태 추가
+  const [isCreator, setIsCreator] = useState<boolean>(false);
+  const [creatorCheckLoading, setCreatorCheckLoading] = useState<boolean>(false);
+
   // 현재 URL 출력
   useEffect(() => {
     console.log('현재 URL:', window.location.href);
@@ -234,6 +239,35 @@ const FundingDetailPage = () => {
     fetchFundingDetail();
   }, [fundingId, navigate]); // fundingId가 변경될 때마다 API 다시 호출
 
+  // 펀딩 생성자 확인 함수 추가
+  useEffect(() => {
+    const checkFundingCreator = async () => {
+      if (!fundingId) return;
+      
+      try {
+        setCreatorCheckLoading(true);
+        console.log('펀딩 생성자 확인 시작, ID:', fundingId);
+        
+        // API를 통한 생성자 확인
+        const result = await isFundingCreator(fundingId);
+        console.log('API로 확인한 생성자 여부:', result);
+        
+        // 결과 설정
+        setIsCreator(result);
+      } catch (error) {
+        console.error('펀딩 생성자 확인 중 오류:', error);
+        setIsCreator(false);
+      } finally {
+        setCreatorCheckLoading(false);
+      }
+    };
+
+    // 펀딩 데이터가 로드된 후 생성자 확인
+    if (fundingData) {
+      checkFundingCreator();
+    }
+  }, [fundingId, fundingData]);
+
   // 컴포넌트가 마운트될 때 스크롤을 맨 위로 이동
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -307,7 +341,8 @@ const FundingDetailPage = () => {
       state: { 
         amount,
         title: fundingData.title,
-        creatorName: fundingData.writer.nickName
+        creatorName: fundingData.writer.nickName,
+        fundingId: fundingData.fundingId
       }
     });
   };
@@ -388,6 +423,13 @@ const FundingDetailPage = () => {
       console.error('잔액 정보 조회 중 오류 발생:', error);
     } finally {
       setBalanceLoading(false);
+    }
+  };
+
+  // 후기 작성 페이지로 이동하는 함수
+  const handleReviewWrite = () => {
+    if (fundingId) {
+      navigate(`/funding/review/write/${fundingId}`);
     }
   };
 
@@ -792,13 +834,11 @@ const FundingDetailPage = () => {
         </div>
       </section>
 
-      {/* 디버깅 정보 (개발 중에만 표시) */}
-      {import.meta.env.MODE === 'development' && (
-        <div className="mt-8 p-4 bg-gray-100 rounded-lg text-xs">
-          <h4 className="font-bold mb-2">디버깅 정보</h4>
-          <pre className="overflow-auto">{JSON.stringify({ fundingId, loading, error }, null, 2)}</pre>
-        </div>
-      )}
+      {/* 푸터 안내 */}
+      <footer className="text-center text-sm text-gray-500 mt-10 pb-6">
+        <p>모든 펀딩 정보는 실제 정보와 다를 수 있습니다.</p>
+        <p className="mt-1">© 2025 GIVU. All rights reserved.</p>
+      </footer>
     </div>
   );
 };
