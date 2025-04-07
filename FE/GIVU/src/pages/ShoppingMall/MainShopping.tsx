@@ -1,8 +1,11 @@
 import React, { useState, useRef, useEffect } from "react";
 import { Link } from "react-router-dom";
 import axios from 'axios';
+// import { useAuthStore } from '../../store/auth.store';
+import { searchProducts } from '../../services/product.service';
 
 // .env 파일에서 기본 URL 가져오기
+const API_BASE_URL = import.meta.env.VITE_BASE_URL;
 
 // API 응답 타입에 맞게 수정된 상품 인터페이스
 interface Product {
@@ -90,461 +93,6 @@ const ProductImage = ({
   );
 };
 
-// // 계좌 생성 모달 컴포넌트 수정
-// const AccountCreationModal: React.FC<{
-//   isOpen: boolean;
-//   onClose: () => void;
-//   onSubmit: (password: string) => Promise<void>;
-// }> = ({ isOpen, onClose, onSubmit }) => {
-//   const [password, setPassword] = useState<string>('');
-//   const [confirmPassword, setConfirmPassword] = useState<string>('');
-//   const [error, setError] = useState<string | null>(null);
-//   const [step, setStep] = useState<number>(1); // 1: 비밀번호 입력, 2: 비밀번호 확인
-
-//   const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-//     const value = e.target.value.replace(/[^0-9]/g, '').slice(0, 6);
-//     setPassword(value);
-//   };
-
-//   const handleConfirmPasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-//     const value = e.target.value.replace(/[^0-9]/g, '').slice(0, 6);
-//     setConfirmPassword(value);
-//   };
-
-//   const handleNextStep = () => {
-//     if (password.length !== 6) {
-//       setError('비밀번호는 6자리 숫자여야 합니다.');
-//       return;
-//     }
-//     setError(null);
-//     setStep(2);
-//   };
-
-//   const handleSubmit = () => {
-//     if (password !== confirmPassword) {
-//       setError('비밀번호가 일치하지 않습니다.');
-//       return;
-//     }
-//     onSubmit(password);
-//   };
-
-//   const resetModal = () => {
-//     setPassword('');
-//     setConfirmPassword('');
-//     setError(null);
-//     setStep(1);
-//   };
-
-//   useEffect(() => {
-//     if (!isOpen) {
-//       resetModal();
-//     }
-//   }, [isOpen]);
-
-//   if (!isOpen) return null;
-
-//   return (
-//     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-//       <div className="bg-white rounded-2xl p-8 w-full max-w-md">
-//         <h2 className="text-2xl font-bold mb-6 text-center">
-//           {step === 1 ? '기뷰페이 계좌 생성' : '비밀번호 확인'}
-//         </h2>
-        
-//         <div className="mb-6">
-//           <p className="text-gray-600 text-center mb-4">
-//             {step === 1 
-//               ? '계좌 이용을 위한 6자리 비밀번호를 입력해주세요.' 
-//               : '비밀번호를 한번 더 입력해주세요.'}
-//           </p>
-          
-//           {step === 1 ? (
-//             <div className="flex justify-center mb-3">
-//               <div className="flex gap-2">
-//                 {[...Array(6)].map((_, i) => (
-//                   <div 
-//                     key={i} 
-//                     className="w-10 h-12 border-2 border-gray-300 rounded-md flex items-center justify-center text-xl font-bold"
-//                   >
-//                     {password[i] ? '•' : ''}
-//                   </div>
-//                 ))}
-//               </div>
-//             </div>
-//           ) : (
-//             <div className="flex justify-center mb-3">
-//               <div className="flex gap-2">
-//                 {[...Array(6)].map((_, i) => (
-//                   <div 
-//                     key={i} 
-//                     className="w-10 h-12 border-2 border-gray-300 rounded-md flex items-center justify-center text-xl font-bold"
-//                   >
-//                     {confirmPassword[i] ? '•' : ''}
-//                   </div>
-//                 ))}
-//               </div>
-//             </div>
-//           )}
-          
-//           {step === 1 ? (
-//             <input
-//               type="password"
-//               value={password}
-//               onChange={handlePasswordChange}
-//               placeholder="6자리 비밀번호 입력"
-//               className="w-full px-4 py-3 border border-gray-300 rounded-lg text-center text-xl tracking-widest"
-//               maxLength={6}
-//               autoFocus
-//             />
-//           ) : (
-//             <input
-//               type="password"
-//               value={confirmPassword}
-//               onChange={handleConfirmPasswordChange}
-//               placeholder="비밀번호 확인"
-//               className="w-full px-4 py-3 border border-gray-300 rounded-lg text-center text-xl tracking-widest"
-//               maxLength={6}
-//               autoFocus
-//             />
-//           )}
-          
-//           {error && (
-//             <p className="text-red-500 text-sm mt-2 text-center">{error}</p>
-//           )}
-//         </div>
-        
-//         <div className="flex justify-center gap-4">
-//           <button
-//             onClick={onClose}
-//             className="px-6 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 transition-colors"
-//           >
-//             취소
-//           </button>
-          
-//           {step === 1 ? (
-//             <button
-//               onClick={handleNextStep}
-//               disabled={password.length !== 6}
-//               className={`px-6 py-2 ${
-//                 password.length === 6 
-//                   ? 'bg-pink-500 hover:bg-pink-600 text-white' 
-//                   : 'bg-gray-300 text-gray-500 cursor-not-allowed'
-//               } rounded-md transition-colors`}
-//             >
-//               다음
-//             </button>
-//           ) : (
-//             <button
-//               onClick={handleSubmit}
-//               disabled={confirmPassword.length !== 6}
-//               className={`px-6 py-2 ${
-//                 confirmPassword.length === 6 
-//                   ? 'bg-pink-500 hover:bg-pink-600 text-white' 
-//                   : 'bg-gray-300 text-gray-500 cursor-not-allowed'
-//               } rounded-md transition-colors`}
-//             >
-//               계좌 생성
-//             </button>
-//           )}
-//         </div>
-//       </div>
-//     </div>
-//   );
-// };
-
-// // 마이페이지와 동일한 비밀번호 검증 함수 추가
-// const verifyAccountPassword = async (inputPassword: string): Promise<boolean> => {
-//   try {
-//     const token = localStorage.getItem('auth_token');
-//     if (!token) {
-//       alert('로그인이 필요합니다.');
-//       return false;
-//     }
-    
-//     console.log('2차 비밀번호 검증 시작:', inputPassword);
-    
-//     // 2차 비밀번호 확인 API 호출 - 하드코딩된 URL 사용
-//     const response = await axios.post(
-//       `https://j12d107.p.ssafy.io/api/users/checkPassword`,
-//       { password: inputPassword },
-//       {
-//         headers: {
-//           'Authorization': `Bearer ${token}`,
-//           'Content-Type': 'application/json'
-//         }
-//       }
-//     );
-    
-//     console.log('비밀번호 확인 응답:', response.data);
-    
-//     // 성공 코드인 경우 비밀번호 일치
-//     return response.data && response.data.code === 'SUCCESS';
-//   } catch (error) {
-//     console.error('비밀번호 확인 오류:', error);
-//     return false;
-//   }
-// };
-
-// // 충전 모달 컴포넌트 추가
-// const ChargeModal: React.FC<{
-//   isOpen: boolean;
-//   onClose: () => void;
-//   onRefresh: () => Promise<void>; // 새로고침 함수 prop 추가
-// }> = ({ isOpen, onClose, onRefresh }) => {
-//   const [amount, setAmount] = useState<string>('');
-//   const [password, setPassword] = useState<string>('');
-//   const [loading, setLoading] = useState(false);
-//   const [error, setError] = useState<string | null>(null);
-//   const [step, setStep] = useState<number>(1); // 1: 금액 입력, 2: 비밀번호 입력
-
-//   const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-//     // 숫자만 입력 가능
-//     const value = e.target.value.replace(/[^0-9]/g, '');
-//     setAmount(value);
-//   };
-
-//   const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-//     // 숫자만 입력 가능하고 6자리로 제한
-//     const value = e.target.value.replace(/[^0-9]/g, '').slice(0, 6);
-//     setPassword(value);
-//   };
-
-//   const handleNextStep = () => {
-//     if (!amount || Number(amount) <= 0) {
-//       setError('유효한 금액을 입력해주세요.');
-//       return;
-//     }
-//     setError(null);
-//     setStep(2);
-//   };
-
-//   const handleSubmit = async () => {
-//     if (password.length !== 6) {
-//       setError('비밀번호는 6자리 숫자여야 합니다.');
-//       return;
-//     }
-    
-//     setLoading(true);
-//     setError(null);
-
-//     try {
-//       // 서버에서 비밀번호 검증
-//       const isPasswordValid = await verifyAccountPassword(password);
-//       if (!isPasswordValid) {
-//         setError('2차 비밀번호가 일치하지 않습니다.');
-//         setLoading(false);
-//         return;
-//       }
-
-//       const token = localStorage.getItem('auth_token');
-//       if (!token) {
-//         throw new Error('로그인이 필요합니다.');
-//       }
-      
-//       // 로딩 표시 추가
-//       const loadingToast = document.createElement('div');
-//       loadingToast.className = 'fixed bottom-4 right-4 bg-black text-white px-4 py-2 rounded-md shadow-lg z-50';
-//       loadingToast.textContent = '충전 처리 중입니다...';
-//       document.body.appendChild(loadingToast);
-      
-//       // API 호출
-//       const response = await axios.post(
-//         `https://j12d107.p.ssafy.io/api/mypage/account/withdrawal`,
-//         { 
-//           amount: Number(amount),
-//           password: password
-//         },
-//         {
-//           headers: {
-//             'Authorization': `Bearer ${token}`,
-//             'Content-Type': 'application/json'
-//           }
-//         }
-//       );
-      
-//       console.log('충전 응답:', response.data);
-      
-//       // 로딩 토스트 제거
-//       document.body.removeChild(loadingToast);
-      
-//       if (response.data && response.data.code === 'SUCCESS') {
-//         // 성공 토스트 표시
-//         const successToast = document.createElement('div');
-//         successToast.className = 'fixed bottom-4 right-4 bg-green-600 text-white px-4 py-2 rounded-md shadow-lg z-50';
-//         successToast.textContent = '충전이 완료되었습니다.';
-//         document.body.appendChild(successToast);
-        
-//         // 2초 후 성공 토스트 제거
-//         setTimeout(() => {
-//           document.body.removeChild(successToast);
-//         }, 2000);
-        
-//         // 잔액 새로고침
-//         await onRefresh();
-        
-//         resetModal();
-//         onClose();
-//       } else {
-//         throw new Error(response.data?.message || '충전에 실패했습니다.');
-//       }
-//     } catch (err: any) {
-//       console.error('충전 오류:', err);
-      
-//       // 에러 토스트 표시
-//       const errorToast = document.createElement('div');
-//       errorToast.className = 'fixed bottom-4 right-4 bg-red-600 text-white px-4 py-2 rounded-md shadow-lg z-50';
-//       errorToast.textContent = err.message || '충전 중 오류가 발생했습니다';
-//       document.body.appendChild(errorToast);
-      
-//       // 2초 후 에러 토스트 제거
-//       setTimeout(() => {
-//         document.body.removeChild(errorToast);
-//       }, 2000);
-      
-//       setError(err.message || '충전 중 오류가 발생했습니다.');
-//     } finally {
-//       setLoading(false);
-//     }
-//   };
-
-//   const resetModal = () => {
-//     setAmount('');
-//     setPassword('');
-//     setError(null);
-//     setStep(1);
-//   };
-
-//   useEffect(() => {
-//     if (!isOpen) {
-//       resetModal();
-//     }
-//   }, [isOpen]);
-
-//   if (!isOpen) return null;
-
-//   return (
-//     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-//       <div className="bg-white rounded-2xl p-6 w-full max-w-md">
-//         <h2 className="text-2xl font-bold mb-6 text-center">충전하기</h2>
-        
-//         {step === 1 ? (
-//           // 금액 입력 단계
-//           <div className="space-y-4">
-//             <div>
-//               <label className="block text-sm font-medium text-gray-700 mb-1">
-//                 충전 금액
-//               </label>
-//               <div className="relative">
-//                 <input
-//                   type="text"
-//                   value={amount}
-//                   onChange={handleAmountChange}
-//                   placeholder="금액을 입력하세요"
-//                   className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-500"
-//                   autoFocus
-//                 />
-//                 <span className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-500">
-//                   원
-//                 </span>
-//               </div>
-//             </div>
-
-//             {error && (
-//               <div className="text-red-500 text-sm py-2">
-//                 {error}
-//               </div>
-//             )}
-
-//             <div className="flex gap-3 mt-6">
-//               <button
-//                 type="button"
-//                 onClick={onClose}
-//                 className="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-100 transition-colors"
-//               >
-//                 취소
-//               </button>
-//               <button
-//                 type="button"
-//                 onClick={handleNextStep}
-//                 disabled={!amount || Number(amount) <= 0}
-//                 className={`flex-1 px-4 py-2 rounded-lg text-white ${
-//                   !amount || Number(amount) <= 0
-//                     ? 'bg-pink-300 cursor-not-allowed' 
-//                     : 'bg-pink-500 hover:bg-pink-600'
-//                 } transition-colors`}
-//               >
-//                 다음
-//               </button>
-//             </div>
-//           </div>
-//         ) : (
-//           // 비밀번호 입력 단계
-//           <div className="space-y-4">
-//             <div>
-//               <p className="text-lg font-medium mb-2 text-center">
-//                 충전을 위해 계좌 비밀번호를 입력해주세요.
-//               </p>
-//               <p className="text-gray-600 mb-4 text-center">
-//                 금액: <span className="font-bold text-gray-800">{Number(amount).toLocaleString()}원</span>
-//               </p>
-              
-//               <div className="flex justify-center mb-3">
-//                 <div className="flex gap-2">
-//                   {[...Array(6)].map((_, i) => (
-//                     <div 
-//                       key={i} 
-//                       className="w-10 h-12 border-2 border-gray-300 rounded-md flex items-center justify-center text-xl font-bold"
-//                     >
-//                       {password[i] ? '•' : ''}
-//                     </div>
-//                   ))}
-//                 </div>
-//               </div>
-              
-//               <input
-//                 type="password"
-//                 value={password}
-//                 onChange={handlePasswordChange}
-//                 placeholder="6자리 비밀번호 입력"
-//                 className="w-full px-4 py-3 border border-gray-300 rounded-lg text-center text-xl tracking-widest"
-//                 maxLength={6}
-//                 autoFocus
-//               />
-//             </div>
-
-//             {error && (
-//               <div className="text-red-500 text-sm py-2 text-center">
-//                 {error}
-//               </div>
-//             )}
-
-//             <div className="flex gap-3 mt-6">
-//               <button
-//                 type="button"
-//                 onClick={() => setStep(1)}
-//                 className="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-100 transition-colors"
-//               >
-//                 이전
-//               </button>
-//               <button
-//                 type="button"
-//                 onClick={handleSubmit}
-//                 disabled={password.length !== 6 || loading}
-//                 className={`flex-1 px-4 py-2 rounded-lg text-white ${
-//                   password.length !== 6 || loading
-//                     ? 'bg-pink-300 cursor-not-allowed' 
-//                     : 'bg-pink-500 hover:bg-pink-600'
-//                 } transition-colors`}
-//               >
-//                 {loading ? '처리중...' : '충전하기'}
-//               </button>
-//             </div>
-//           </div>
-//         )}
-//       </div>
-//     </div>
-//   );
-// };
-
 const MainShopping = () => {
   // 상태 관리
   const [products, setProducts] = useState<Product[]>([]);
@@ -557,10 +105,15 @@ const MainShopping = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   
+  // 검색 관련 상태 추가
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchResults, setSearchResults] = useState<Product[]>([]);
+  const [isSearching, setIsSearching] = useState(false);
+  
   // 무한 스크롤을 위한 상태
   const [page, setPage] = useState(1);
   const [itemsPerPage] = useState(8); // 한 번에 보여줄 상품 수
-  const [hasMore,setHasMore] = useState(true);
+  const [hasMore, setHasMore] = useState(true);
   
   // ref 정의
   const bestProductsRef = useRef<HTMLDivElement>(null);
@@ -575,25 +128,6 @@ const MainShopping = () => {
 
   // 현재 필터링된 상품을 저장하는 상태 추가
   const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
-
-  // 계좌 관련 상태 추가
-  // const [hasAccount] = useState<boolean>(false);
-  // const [, setAccountNumber] = useState<string>('');
-  // const [, setAccountBalance] = useState<number>(0);
-  // const [, setBankBalance] = useState<number>(0); // 연동계좌 잔액 상태 추가
-  // const [, setIsAccountModalOpen] = useState<boolean>(false);
-  // const [, setIsChargeModalOpen] = useState<boolean>(false);
-
-  // 충전하기 버튼 클릭 핸들러 추가
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  // const handleChargeClick = () => {
-  //   if (!hasAccount) {
-  //     setIsAccountModalOpen(true);
-  //     return;
-  //   }
-    
-  //   setIsChargeModalOpen(true);
-  // };
 
   // 필터 적용 함수 - 카테고리와 가격대 필터를 모두 적용
   const applyFilters = (allProducts: Product[]) => {
@@ -631,7 +165,7 @@ const MainShopping = () => {
       setError(null);
       
       const response = await axios.get(
-        `${import.meta.env.VITE_BASE_URL}/products/list`,
+        `${API_BASE_URL}/products/list`,
         {
           params: {
             page: pageNum,
@@ -728,7 +262,7 @@ const MainShopping = () => {
     // 스크롤을 상품 목록 위치로 이동
     allProductsRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
-  
+
   // 가격대 선택 핸들러
   const handlePriceRangeSelect = (priceRangeId: number | null) => {
     setSelectedPriceRange(priceRangeId);
@@ -745,7 +279,7 @@ const MainShopping = () => {
     // 스크롤을 상품 목록 위치로 이동
     allProductsRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
-  
+
   // 모든 필터 초기화
   const resetAllFilters = () => {
     setSelectedCategory(null);
@@ -756,7 +290,7 @@ const MainShopping = () => {
     setHasMore(products.length > itemsPerPage);
     setPage(1);
   };
-  
+
   // 더 많은 상품 로드하기 - 수정
   const loadMoreProducts = () => {
     if (!hasMore || loading) return;
@@ -786,6 +320,71 @@ const MainShopping = () => {
       setHasMore(endIndex < filteredProducts.length);
       setLoading(false);
     }, 500);
+  };
+
+  // 검색 처리 함수
+  const handleSearch = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!searchQuery.trim()) return;
+    
+    setIsSearching(true);
+    setLoading(true);
+    setError(null);
+    
+    try {
+      const results = await searchProducts(searchQuery);
+      
+      // 검색 결과가 없는 경우
+      if (results.length === 0) {
+        setFilteredProducts([]);
+        setDisplayedProducts([]);
+        setHasMore(false);
+        setError('검색 결과가 없습니다.');
+      } else {
+        // API 결과를 로컬 Product 타입으로 변환
+        const formattedResults = results.map(item => ({
+          id: Number(item.id),
+          productName: item.productName,
+          price: item.price,
+          image: item.image,
+          favorite: item.favorite || false,
+          star: item.star || 0,
+          views: 0, // 기본값 설정
+          description: item.description || '',
+          createdAt: item.createdAt || '',
+          payments: [],
+          category: item.category
+        }));
+        
+        setSearchResults(formattedResults);
+        setFilteredProducts(formattedResults);
+        setDisplayedProducts(formattedResults.slice(0, itemsPerPage));
+        setHasMore(formattedResults.length > itemsPerPage);
+        setPage(1);
+      }
+    } catch (err) {
+      setFilteredProducts([]);
+      setDisplayedProducts([]);
+      setHasMore(false);
+      setError('상품 검색 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.');
+      console.error('검색 오류:', err);
+    } finally {
+      setLoading(false);
+      setIsSearching(true);
+      
+      // 결과 영역으로 스크롤
+      allProductsRef.current?.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
+
+  // 검색창 초기화
+  const clearSearch = () => {
+    setSearchQuery('');
+    setIsSearching(false);
+    setSearchResults([]);
+    
+    // 필터 초기화
+    resetAllFilters();
   };
 
   // 인터섹션 옵저버 설정 (무한 스크롤용)
@@ -913,7 +512,7 @@ const MainShopping = () => {
       setTrendingProducts(updatedTrendingProducts);
 
       await axios.patch(
-        `${import.meta.env.VITE_API_BASE_URL}/products/${productId}/like`,
+        `${API_BASE_URL}/products/${productId}/like`,
         null,
         {
           headers: {
@@ -970,7 +569,7 @@ const MainShopping = () => {
       });
     }
   };
-  
+
   // 카테고리 스크롤 함수
   const scrollCategory = (direction: 'left' | 'right') => {
     if (categoryRef.current) {
@@ -992,7 +591,7 @@ const MainShopping = () => {
     const category = CATEGORIES.find(cat => cat.value === categoryValue);
     return category ? category.name : categoryValue; // 매칭되지 않는 경우 원래 값 반환
   };
-  
+
   // 필터 상태 텍스트 가져오기
   const getFilterStatusText = () => {
     if (selectedCategory && selectedPriceRange) {
@@ -1006,337 +605,8 @@ const MainShopping = () => {
     }
   };
 
-  // 계좌 생성 제출 핸들러
-  // eslint-disable-next-line no-unused-vars, @typescript-eslint/no-unused-vars
-  // const handleAccountCreation = async (password: string) => {
-  //   try {
-  //     console.log('계좌 생성 시작 - 비밀번호:', password);
-  //     const token = localStorage.getItem('auth_token');
-      
-  //     if (!token) {
-  //       alert('로그인이 필요합니다.');
-  //       return;
-  //     }
-      
-  //     // 로딩 표시 추가
-  //     const loadingToast = document.createElement('div');
-  //     loadingToast.className = 'fixed bottom-4 right-4 bg-black text-white px-4 py-2 rounded-md shadow-lg z-50';
-  //     loadingToast.textContent = '계좌를 생성 중입니다...';
-  //     document.body.appendChild(loadingToast);
-      
-  //     // 계좌 생성 API 호출
-  //     const accountResponse = await axios.post(
-  //       `https://j12d107.p.ssafy.io/api/mypage/account/create`,
-  //       { password },
-  //       {
-  //         headers: {
-  //           'Authorization': `Bearer ${token}`,
-  //           'Content-Type': 'application/json'
-  //         }
-  //       }
-  //     );
-      
-  //     console.log('계좌 생성 응답:', accountResponse.data);
-      
-  //     if (accountResponse.data && accountResponse.data.code === 'SUCCESS') {
-  //       // 2차 비밀번호 설정 API 호출
-  //       const passwordResponse = await axios.post(
-  //         `https://j12d107.p.ssafy.io/api/users/setPassword`,
-  //         { password },
-  //         {
-  //           headers: {
-  //             'Authorization': `Bearer ${token}`,
-  //             'Content-Type': 'application/json'
-  //           }
-  //         }
-  //       );
-        
-  //       console.log('2차 비밀번호 설정 응답:', passwordResponse.data);
-        
-  //       // 로딩 토스트 제거
-  //       document.body.removeChild(loadingToast);
-        
-  //       if (passwordResponse.data && passwordResponse.data.code === 'SUCCESS') {
-  //         // 성공 토스트 표시
-  //         const successToast = document.createElement('div');
-  //         successToast.className = 'fixed bottom-4 right-4 bg-green-600 text-white px-4 py-2 rounded-md shadow-lg z-50';
-  //         successToast.textContent = '계좌가 성공적으로 생성되었습니다!';
-  //         document.body.appendChild(successToast);
-          
-  //         // 2초 후 성공 토스트 제거
-  //         setTimeout(() => {
-  //           document.body.removeChild(successToast);
-  //         }, 2000);
-          
-  //         // 계좌 정보 업데이트
-  //         setHasAccount(true);
-  //         setIsAccountModalOpen(false);
-          
-  //         // 계좌 정보 새로고침
-  //         await refreshBalances();
-  //       } else {
-  //         throw new Error(passwordResponse.data?.message || '2차 비밀번호 설정에 실패했습니다.');
-  //       }
-  //     } else {
-  //       // 로딩 토스트 제거
-  //       document.body.removeChild(loadingToast);
-  //       throw new Error(accountResponse.data?.message || '계좌 생성에 실패했습니다.');
-  //     }
-  //   } catch (error: any) {
-  //     console.error('계좌 생성 오류:', error);
-      
-  //     // 로딩 토스트 제거
-  //     const loadingToast = document.querySelector('.bottom-4.right-4.bg-black');
-  //     if (loadingToast && loadingToast.parentNode) {
-  //       loadingToast.parentNode.removeChild(loadingToast);
-  //     }
-      
-  //     // 에러 토스트 표시
-  //     const errorToast = document.createElement('div');
-  //     errorToast.className = 'fixed bottom-4 right-4 bg-red-600 text-white px-4 py-2 rounded-md shadow-lg z-50';
-  //     errorToast.textContent = error.message || '계좌 생성 중 오류가 발생했습니다';
-  //     document.body.appendChild(errorToast);
-      
-  //     // 2초 후 에러 토스트 제거
-  //     setTimeout(() => {
-  //       document.body.removeChild(errorToast);
-  //     }, 2000);
-  //   }
-  // };
-  
-  // // 잔액 새로고침 함수 수정
-  // const refreshBalances = async () => {
-  //   console.log('잔액 정보 새로고침 시작');
-  //   const token = localStorage.getItem('auth_token');
-  //   if (!token) {
-  //     alert('로그인 정보가 없습니다.');
-  //     return;
-  //   }
-    
-  //   // 로딩 표시 추가
-  //   const loadingToast = document.createElement('div');
-  //   loadingToast.className = 'fixed bottom-4 right-4 bg-black text-white px-4 py-2 rounded-md shadow-lg z-50';
-  //   loadingToast.textContent = '잔액 정보를 불러오는 중...';
-  //   document.body.appendChild(loadingToast);
-    
-  //   try {
-  //     // 1. 사용자 정보 조회 API (마이페이지와 동일)
-  //     try {
-  //       const userInfoResponse = await axios.get(
-  //         `${import.meta.env.VITE_API_BASE_URL}/users/info`,
-  //         {
-  //           headers: {
-  //             'Authorization': `Bearer ${token}`
-  //           }
-  //         }
-  //       );
-        
-  //       console.log('사용자 정보 조회 응답:', userInfoResponse.data);
-        
-  //       if (userInfoResponse.data && userInfoResponse.data.balance !== undefined) {
-  //         const givupayBalance = Number(userInfoResponse.data.balance);
-  //         console.log('기뷰페이 잔액 (users/info API):', givupayBalance);
-  //         setAccountBalance(givupayBalance);
-  //       } else {
-  //         // 2번째 대체 방법으로 기뷰페이 잔액 조회
-  //         await fetchGivupayBalance(token);
-  //       }
-  //     } catch (error) {
-  //       console.error('사용자 정보 조회 오류:', error);
-  //       // 대체 방법으로 잔액 조회
-  //       await fetchGivupayBalance(token);
-  //     }
-      
-  //     // 연동 계좌 잔액 조회
-  //     try {
-  //       const accountResponse = await axios.get(
-  //         `${import.meta.env.VITE_API_BASE_URL}/mypage/checkAccount`,
-  //         {
-  //           headers: {
-  //             'Authorization': `Bearer ${token}`
-  //           }
-  //         }
-  //       );
-        
-  //       console.log('연동 계좌 조회 응답:', accountResponse.data);
-        
-  //       if (accountResponse.data && accountResponse.data.code === 'SUCCESS') {
-  //         // 계좌가 존재하는 경우
-  //         setHasAccount(true);
-          
-  //         if (accountResponse.data.data) {
-  //           // 연동 계좌 번호 설정
-  //           if (accountResponse.data.data.accountNo) {
-  //             setAccountNumber(accountResponse.data.data.accountNo);
-  //           }
-            
-  //           // 연동 계좌 잔액 설정
-  //           if (accountResponse.data.data.balance !== undefined) {
-  //             const bankBalanceValue = Number(accountResponse.data.data.balance);
-  //             console.log('연동 계좌 잔액 새로고침:', bankBalanceValue);
-  //             setBankBalance(bankBalanceValue);
-  //           }
-  //         }
-  //       } else {
-  //         setHasAccount(false);
-  //       }
-  //     } catch (error) {
-  //       console.error('연동 계좌 정보 조회 오류:', error);
-  //     }
-      
-  //     console.log('잔액 새로고침 완료');
-      
-  //     // 로딩 토스트 제거
-  //     document.body.removeChild(loadingToast);
-      
-  //     // 완료 토스트 표시
-  //     const successToast = document.createElement('div');
-  //     successToast.className = 'fixed bottom-4 right-4 bg-green-600 text-white px-4 py-2 rounded-md shadow-lg z-50';
-  //     successToast.textContent = '잔액 정보가 업데이트되었습니다';
-  //     document.body.appendChild(successToast);
-      
-  //     // 2초 후 완료 토스트 제거
-  //     setTimeout(() => {
-  //       document.body.removeChild(successToast);
-  //     }, 2000);
-      
-  //   } catch (error) {
-  //     console.error('잔액 새로고침 전체 오류:', error);
-      
-  //     // 로딩 토스트 제거
-  //     if (document.body.contains(loadingToast)) {
-  //       document.body.removeChild(loadingToast);
-  //     }
-      
-  //     // 에러 토스트 표시
-  //     const errorToast = document.createElement('div');
-  //     errorToast.className = 'fixed bottom-4 right-4 bg-red-600 text-white px-4 py-2 rounded-md shadow-lg z-50';
-  //     errorToast.textContent = '잔액 정보 업데이트 중 오류가 발생했습니다';
-  //     document.body.appendChild(errorToast);
-      
-  //     // 2초 후 에러 토스트 제거
-  //     setTimeout(() => {
-  //       document.body.removeChild(errorToast);
-  //     }, 2000);
-  //   }
-  // };
-
-  // // 기뷰페이 잔액 조회를 위한 보조 함수
-  // const fetchGivupayBalance = async (token: string) => {
-  //   try {
-  //     const givupayResponse = await axios.get(
-  //       `${import.meta.env.VITE_API_BASE_URL}/mypage/getUserBalance`,
-  //       {
-  //         headers: {
-  //           'Authorization': `Bearer ${token}`
-  //         }
-  //       }
-  //     );
-      
-  //     console.log('기뷰페이 잔액 조회 응답:', givupayResponse.data);
-      
-  //     if (givupayResponse.data && givupayResponse.data.code === 'SUCCESS' &&
-  //         givupayResponse.data.data && givupayResponse.data.data.balance !== undefined) {
-  //       const balance = Number(givupayResponse.data.data.balance);
-  //       console.log('기뷰페이 잔액 새로고침:', balance);
-        
-  //       setAccountBalance(balance);
-  //       return true;
-  //     }
-  //   } catch (error) {
-  //     console.error('기뷰페이 잔액 조회 API 오류:', error);
-  //   }
-  //   return false;
-  // };
-
-  // // 컴포넌트 마운트 시 계좌 정보 확인
-  // useEffect(() => {
-  //   const checkAccountInfo = async () => {
-  //     const token = localStorage.getItem('auth_token');
-  //     if (!token) return;
-      
-  //     // 먼저 사용자 정보와 잔액을 가져옵니다 (계좌 확인과 별개로)
-  //     try {
-  //       const userInfoResponse = await axios.get(
-  //         `${import.meta.env.VITE_API_BASE_URL}/users/info`,
-  //         {
-  //           headers: {
-  //             'Authorization': `Bearer ${token}`
-  //           }
-  //         }
-  //       );
-        
-  //       console.log('사용자 정보 조회 응답:', userInfoResponse.data);
-        
-  //       if (userInfoResponse.data && userInfoResponse.data.balance !== undefined) {
-  //         const givupayBalance = Number(userInfoResponse.data.balance);
-  //         console.log('기뷰페이 잔액 (users/info API):', givupayBalance);
-  //         setAccountBalance(givupayBalance);
-  //       } else {
-  //         // 대체 API로 기뷰페이 잔액 조회
-  //         const givupayResponse = await axios.get(
-  //           `${import.meta.env.VITE_API_BASE_URL}/mypage/getUserBalance`,
-  //           {
-  //             headers: {
-  //               'Authorization': `Bearer ${token}`
-  //             }
-  //           }
-  //         );
-          
-  //         if (givupayResponse.data && givupayResponse.data.code === 'SUCCESS' &&
-  //             givupayResponse.data.data && givupayResponse.data.data.balance !== undefined) {
-  //           const balance = Number(givupayResponse.data.data.balance);
-  //           console.log('기뷰페이 잔액 (대체 API):', balance);
-  //           setAccountBalance(balance);
-  //         }
-  //       }
-  //     } catch (error) {
-  //       console.error('사용자 정보/잔액 조회 오류:', error);
-  //     }
-      
-  //     // 계좌 정보 조회
-  //     try {
-  //       const accountResponse = await axios.get(
-  //         `${import.meta.env.VITE_API_BASE_URL}/mypage/checkAccount`,
-  //         {
-  //           headers: {
-  //             'Authorization': `Bearer ${token}`
-  //           }
-  //         }
-  //       );
-        
-  //       console.log('계좌 조회 응답:', accountResponse.data);
-        
-  //       if (accountResponse.data && accountResponse.data.code === 'SUCCESS') {
-  //         setHasAccount(true);
-          
-  //         if (accountResponse.data.data) {
-  //           // 연동 계좌 번호 설정
-  //           if (accountResponse.data.data.accountNo) {
-  //             setAccountNumber(accountResponse.data.data.accountNo);
-  //           }
-            
-  //           // 연동 계좌 잔액 설정
-  //           if (accountResponse.data.data.balance !== undefined) {
-  //             const bankBalanceValue = Number(accountResponse.data.data.balance);
-  //             console.log('연동 계좌 잔액:', bankBalanceValue);
-  //             setBankBalance(bankBalanceValue);
-  //           }
-  //         }
-  //       } else {
-  //         setHasAccount(false);
-  //       }
-  //     } catch (error) {
-  //       console.error('계좌 정보 조회 오류:', error);
-  //     }
-  //   };
-    
-  //   // 페이지 로드 시 바로 계좌 정보 확인 함수 호출
-  //   checkAccountInfo();
-  // }, []);
-
   return (
-    <div className="w-full">
+    <div className="min-h-screen bg-gray-50">
       {/* 초기 로딩 인디케이터 */}
       {loading && products.length === 0 && (
         <div className="fixed inset-0 bg-white bg-opacity-80 z-50 flex items-center justify-center">
@@ -1356,79 +626,49 @@ const MainShopping = () => {
       <header className="py-4 border-b border-gray-200 bg-white w-full">
         <div className="container mx-auto px-4 flex justify-between items-center">
           <h1 className="text-2xl font-bold text-pink-500">GIVUMALL</h1>
-          <div className="relative w-64 md:w-96">
+          <form onSubmit={handleSearch} className="relative w-64 md:w-96 flex">
             <input 
               type="text"
               placeholder="상품명 또는 브랜드 입력"
               className="w-full py-2 px-4 border border-gray-300 rounded-md"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
             />
-            <button className="absolute right-2 top-1/2 transform -translate-y-1/2">
+            {searchQuery && (
+              <button 
+                type="button"
+                onClick={clearSearch}
+                className="absolute right-10 top-1/2 transform -translate-y-1/2"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            )}
+            <button 
+              type="submit"
+              className="absolute right-2 top-1/2 transform -translate-y-1/2"
+            >
               <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
               </svg>
             </button>
-          </div>
+          </form>
         </div>
       </header>
       
-      {/* 계좌 정보 영역 (연동계좌 잔액 추가)
-      <div className="bg-gradient-to-r from-pink-500 to-purple-600 py-6">
-        <div className="container mx-auto px-4">
-          <div className="max-w-3xl mx-auto bg-white rounded-xl shadow-lg p-6">
-            {hasAccount ? (
-              <div className="flex flex-col md:flex-row items-center justify-between">
-                <div className="mb-4 md:mb-0">
-                  <p className="text-gray-500 text-sm mb-1">내 기뷰페이 계좌</p>
-                  <p className="text-lg font-bold">{accountNumber}</p>
-                </div>
-                <div className="flex flex-col md:flex-row items-center space-y-3 md:space-y-0 md:space-x-6">
-                  <div className="text-center md:text-left">
-                    <p className="text-gray-500 text-sm mb-1">기뷰페이 잔액</p>
-                    <p className="text-xl font-bold text-pink-600">{accountBalance.toLocaleString()}원</p>
-                  </div>
-                  <div className="text-center md:text-left">
-                    <p className="text-gray-500 text-sm mb-1">연동계좌 잔액</p>
-                    <p className="text-xl font-bold text-green-600">{bankBalance.toLocaleString()}원</p>
-                  </div>
-                  <div className="flex space-x-2">
-                    <button 
-                      onClick={refreshBalances}
-                      className="px-3 py-1.5 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-md transition-colors flex items-center"
-                    >
-                      <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                      </svg>
-                      새로고침
-                    </button>
-                  <button 
-                    onClick={handleChargeClick}
-                    className="bg-pink-500 hover:bg-pink-600 text-white px-4 py-2 rounded-md transition-colors"
-                  >
-                    충전하기
-                  </button>
-                  </div>
-                </div>
-              </div>
-            ) : (
-              <div className="flex flex-col items-center justify-center py-6">
-                <div className="w-16 h-16 rounded-full bg-pink-100 flex items-center justify-center mb-4">
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-pink-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                  </svg>
-                </div>
-                <h3 className="text-lg font-bold mb-2">기뷰페이 계좌가 없습니다</h3>
-                <p className="text-gray-500 mb-4 text-center">쇼핑과 펀딩을 편리하게 이용하려면<br />기뷰페이 계좌를 만들어보세요!</p>
-                <button 
-                  onClick={() => setIsAccountModalOpen(true)}
-                  className="bg-pink-500 hover:bg-pink-600 text-white px-6 py-2 rounded-full transition-colors"
-                >
-                  계좌 만들기
-                </button>
-              </div>
-            )}
-          </div>
+      {/* 검색 결과 표시 영역 */}
+      {isSearching && (
+        <div className="py-2 px-4 bg-pink-50 text-pink-800 text-sm border-b border-pink-200">
+          <span className="font-medium">"{searchQuery}"</span> 검색 결과: {searchResults.length}개의 상품
+          <button 
+            onClick={clearSearch}
+            className="ml-2 text-pink-600 hover:text-pink-800 font-medium"
+          >
+            검색 취소
+          </button>
         </div>
-      </div> */}
+      )}
       
       {/* 카테고리 영역 - 한 줄 가로 스크롤 */}
       <div className="bg-white py-4 border-b border-gray-200 sticky top-0 z-30 shadow-sm">
@@ -1480,7 +720,7 @@ const MainShopping = () => {
       </div>
 
       {/* 베스트 상품 영역 - 가로 스크롤 */}
-      {bestProducts.length > 0 && (
+      {bestProducts.length > 0 && !isSearching && (
         <div className="py-10 w-full">
           <div className="container mx-auto px-4">
             <div className="flex items-center justify-between mb-6">
@@ -1574,28 +814,30 @@ const MainShopping = () => {
       )}
 
       {/* 가격대별 필터 */}
-      <div className="py-8 bg-gray-50 w-full">
-        <div className="container mx-auto px-4">
-          <div className="flex flex-wrap gap-4 mb-4">
-            {PRICE_RANGES.map(range => (
-              <button 
-                key={range.id}
-                className={`px-4 py-1 border rounded-md text-sm transition-colors ${
-                  selectedPriceRange === range.id 
-                    ? 'bg-pink-100 text-pink-600 border-pink-300 font-medium shadow-sm' 
-                    : 'bg-white border-gray-200 hover:bg-gray-50'
-                }`}
-                onClick={() => handlePriceRangeSelect(range.id === 1 ? null : range.id)}
-              >
-                {range.name}
-              </button>
-            ))}
+      {!isSearching && (
+        <div className="py-8 bg-gray-50 w-full">
+          <div className="container mx-auto px-4">
+            <div className="flex flex-wrap gap-4 mb-4">
+              {PRICE_RANGES.map(range => (
+                <button 
+                  key={range.id}
+                  className={`px-4 py-1 border rounded-md text-sm transition-colors ${
+                    selectedPriceRange === range.id 
+                      ? 'bg-pink-100 text-pink-600 border-pink-300 font-medium shadow-sm' 
+                      : 'bg-white border-gray-200 hover:bg-gray-50'
+                  }`}
+                  onClick={() => handlePriceRangeSelect(range.id === 1 ? null : range.id)}
+                >
+                  {range.name}
+                </button>
+              ))}
+            </div>
           </div>
         </div>
-      </div>
+      )}
 
       {/* 지금 뜨는 상품 섹션 */}
-      {trendingProducts.length > 0 && (
+      {trendingProducts.length > 0 && !isSearching && (
         <div className="py-12 w-full border-b border-gray-100">
           <div className="container mx-auto px-4">
             <div className="flex items-center justify-between mb-6">
@@ -1706,8 +948,12 @@ const MainShopping = () => {
           {/* 필터 상태 표시 */}
           <div className="flex justify-between items-center mb-6">
             <div>
-              <h3 className="text-xl font-bold">모든 상품</h3>
-              {(selectedCategory || selectedPriceRange) && (
+              {isSearching ? (
+                <h3 className="text-xl font-bold">"{searchQuery}" 검색 결과</h3>
+              ) : (
+                <h3 className="text-xl font-bold">모든 상품</h3>
+              )}
+              {!isSearching && (selectedCategory || selectedPriceRange) && (
                 <div className="mt-2 text-sm text-gray-600 flex items-center">
                   <span>현재 필터: {getFilterStatusText()}</span>
                   <button 
@@ -1722,7 +968,7 @@ const MainShopping = () => {
             
             {/* 필터링된 상품 개수 표시 */}
             <div className="text-sm text-gray-500">
-              총 {products.length}개 상품
+              {isSearching ? `${displayedProducts.length}개의 상품` : `총 ${products.length}개 상품`}
             </div>
           </div>
 
@@ -1831,19 +1077,32 @@ const MainShopping = () => {
         </svg>
       </button>
 
-      {/* 계좌 생성 모달 */}
-      {/* <AccountCreationModal 
-        isOpen={isAccountModalOpen}
-        onClose={() => setIsAccountModalOpen(false)}
-        onSubmit={handleAccountCreation}
-      /> */}
-      
-      {/* 충전 모달 */}
-      {/* <ChargeModal
-        isOpen={isChargeModalOpen}
-        onClose={() => setIsChargeModalOpen(false)}
-        onRefresh={refreshBalances}
-      /> */}
+      {/* 상품 목록이 없거나 로딩 상태가 아닐 때 표시 */}
+      {!loading && filteredProducts.length === 0 && (
+        <div className="container mx-auto py-20 px-4 text-center">
+          <div className="inline-block bg-gray-100 p-8 rounded-lg">
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-16 w-16 mx-auto text-gray-400 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+            </svg>
+            <h3 className="text-xl font-bold text-gray-700 mb-2">
+              {isSearching ? '검색 결과가 없습니다' : '상품이 없습니다'}
+            </h3>
+            <p className="text-gray-500 mb-4">
+              {isSearching 
+                ? '다른 검색어로 다시 시도해보세요.' 
+                : '다른 카테고리나 필터를 선택해보세요.'}
+            </p>
+            {isSearching && (
+              <button 
+                onClick={clearSearch}
+                className="px-4 py-2 bg-pink-500 text-white rounded-md hover:bg-pink-600 transition-colors"
+              >
+                검색 취소하기
+              </button>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 };
