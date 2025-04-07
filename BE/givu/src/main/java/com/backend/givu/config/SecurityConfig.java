@@ -66,7 +66,8 @@ public class SecurityConfig {
                                 "/users/test",        // 테스트
                                 "/products-review/**",
                                 "/fundings/**",
-                                "/mypage/**"
+                                "/mypage/**",
+                                "/kafka/**"
                         ).authenticated())
 
                 /**

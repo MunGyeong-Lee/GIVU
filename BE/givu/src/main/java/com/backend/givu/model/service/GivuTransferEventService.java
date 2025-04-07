@@ -32,11 +32,13 @@ public class GivuTransferEventService {
 
     @Transactional
     @KafkaListener(
+            id = "transferListener",
             topics= "transfer-request",     // 구독중인 토픽명
             groupId = "transfer-group",     // 해당하는 group
             concurrency = "3",              // 동시에 실행될 Consumer 쓰레드 수 (동시성 처리용)
-            containerFactory = "kafkaListenerContainerFactory" // 커스텀 Kafka 설정을 적용한 리스너 팩토리 bean 이름
-            )
+            containerFactory = "kafkaListenerContainerFactory",  // 커스텀 Kafka 설정을 적용한 리스너 팩토리 bean 이름
+            autoStartup = "false"           // 추가: 애플리케이션 시작 시 자동 실행 안 함
+    )
     public void TransferEvent(GivuTransferEventDTO event){
 
         log.info("📥 KafkaListener 동작 시작!");
