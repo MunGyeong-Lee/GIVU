@@ -53,7 +53,8 @@ public class SecurityConfig {
                                 "/images/**",
                                 "/products/**",
                                 "/fundings/list",
-                                "/kafka/send"
+                                "/kafka/send",
+                                "/kafka/**"
 
                         ).permitAll()
                         .requestMatchers(
@@ -66,8 +67,7 @@ public class SecurityConfig {
                                 "/users/test",        // 테스트
                                 "/products-review/**",
                                 "/fundings/**",
-                                "/mypage/**",
-                                "/kafka/**"
+                                "/mypage/**"
                         ).authenticated())
 
                 /**

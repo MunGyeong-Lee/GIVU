@@ -18,6 +18,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.kafka.shaded.com.google.protobuf.Api;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -70,17 +71,17 @@ public class ReviewController implements ReviewControllerDocs {
 
     }
 
-//    @Operation(summary = "펀딩 후기 리스트 조회", description = "펀딩 후기 리스트를 조회합니다.")
-//    @GetMapping(value = "")
-//    public ResponseEntity<ApiResponse<ReviewsDTO>> reviewList (
-//            @AuthenticationPrincipal CustomUserDetail userDetail,
-//            HttpServletRequest request) throws IOException{
-//
-//        Long userId = userDetail.getId();
-//
-//        ApiResponse<ReviewsDTO> reviewList = reviewService.reviewList;
-//        return
-//    }
+    @Operation(summary = "펀딩 후기 리스트 조회", description = "펀딩 후기 리스트를 조회합니다.")
+    @GetMapping(value = "")
+    public ResponseEntity<ApiResponse<List<ReviewsDTO>>> reviewList (
+            @AuthenticationPrincipal CustomUserDetail userDetail,
+            HttpServletRequest request) throws IOException{
+
+        Long userId = userDetail.getId();
+        List<ReviewsDTO> reviewList = reviewService.reviewList();
+
+        return ResponseEntity.ok(ApiResponse.success(reviewList));
+    }
 
 
     @Operation(summary = "펀딩 후기 삭제", description = "펀딩 후기를 수정 합니다.")
