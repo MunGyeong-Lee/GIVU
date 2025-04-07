@@ -18,6 +18,7 @@ import FundingCreateLayout from "../components/Layout/FundingCreateLayout";
 import PaymentPage from '../pages/Payment/PaymentPage';
 import Complete from "../pages/FundingCreate/Complete";
 import ShoppingReviewEdit from '../pages/ShoppingMall/ShoppingReviewEdit';
+import SearchPage from "../pages/Search/SearchPage";
 // import NotFound from "../pages/NotFound/NotFound";
 
 const routes = [
@@ -33,6 +34,10 @@ const routes = [
       {
         path: "funding",
         children: [
+          {
+            index: true,
+            element: <FundingListPage />,
+          },
           {
             path: "list",
             element: <FundingListPage />,
@@ -90,6 +95,10 @@ const routes = [
       {
         path: "payment/:id",
         element: <PaymentPage />,
+      },
+      {
+        path: "search",
+        element: <SearchPage />,
       },
     ],
   },

@@ -160,17 +160,40 @@ const TransactionModal: React.FC<{
 
   // 로컬에 저장된 계좌 비밀번호 검증 함수
   const verifyAccountPassword = (inputPassword: string): boolean => {
-    const encodedPassword = localStorage.getItem('account_password');
-    if (!encodedPassword) {
-      alert('저장된 계좌 비밀번호가 없습니다. 계좌를 다시 생성해주세요.');
+    console.log('[verifyAccountPassword] 계좌 비밀번호 검증 시작');
+    
+    // 입력 비밀번호 유효성 확인
+    if (!inputPassword || inputPassword.length !== 6 || !/^\d+$/.test(inputPassword)) {
+      console.error('[verifyAccountPassword] 유효하지 않은 비밀번호 형식');
       return false;
     }
     
-    // 저장된 암호화된 비밀번호 디코딩
-    const storedPassword = atob(encodedPassword);
+    // 로컬 스토리지에서 비밀번호 확인
+    const encodedPassword = localStorage.getItem('account_password');
+    if (!encodedPassword) {
+      console.error('[verifyAccountPassword] 저장된 계좌 비밀번호가 없습니다.');
+      
+      // 사용자에게 비밀번호 분실 안내 추가
+      alert('저장된 계좌 비밀번호를 찾을 수 없습니다. 계좌 비밀번호를 확인해주세요.');
+      
+      return false;
+    }
     
-    // 입력된 비밀번호와 저장된 비밀번호 비교
-    return inputPassword === storedPassword;
+    try {
+      // 저장된 암호화된 비밀번호 디코딩
+      const storedPassword = atob(encodedPassword);
+      
+      // 입력된 비밀번호와 저장된 비밀번호 비교
+      const isMatch = inputPassword === storedPassword;
+      
+      // 결과 로깅 (실제 비밀번호는 로깅하지 않음)
+      console.log(`[verifyAccountPassword] 비밀번호 검증 결과: ${isMatch ? '일치' : '불일치'}`);
+      
+      return isMatch;
+    } catch (error) {
+      console.error('[verifyAccountPassword] 비밀번호 디코딩 오류:', error);
+      return false;
+    }
   };
 
   const handleSubmit = async () => {
@@ -211,15 +234,24 @@ const TransactionModal: React.FC<{
         : `${import.meta.env.VITE_API_BASE_URL}/mypage/account/deposit`; // 출금: 기뷰페이→계좌
       
       console.log(`거래 요청 시작: ${type}`);
+      console.log(`거래 엔드포인트: ${endpoint}`);
+      
+      // 요청 데이터 구성 - 원래 API 명세에 맞게 password 필드 사용
+      const requestData = {
+        amount: numericAmount,
+        password: password // 비밀번호 필드명 확인
+      };
+      
+      console.log('요청 데이터 구조:', JSON.stringify({
+        amount: numericAmount,
+        password: '******' // 실제 비밀번호는 로그에 남기지 않음
+      }));
       
       // 계좌 비밀번호와 금액을 함께 서버로 전송
       // 서버에서 비밀번호 검증 후 처리
       const response = await axios.post(
         endpoint,
-        { 
-          amount: numericAmount,
-          password: password // 계좌 비밀번호 전송 (API 요구사항에 따라 필드명 조정 필요)
-        },
+        requestData,
         {
           headers: {
             'Authorization': `Bearer ${token}`,
@@ -229,8 +261,10 @@ const TransactionModal: React.FC<{
       );
       
       console.log(`거래 응답 수신`);
+      console.log('응답 상태:', response.status);
+      console.log('응답 데이터:', response.data);
       
-      if (response.data.code === 'SUCCESS') {
+      if (response.data.code === 'SUCCESS' || response.data.success === true) {
         // 트랜잭션 성공 콜백 호출 - 가장 먼저 호출
         if (onTransactionSuccess) {
           console.log('트랜잭션 성공 콜백 호출');
@@ -247,6 +281,23 @@ const TransactionModal: React.FC<{
       }
     } catch (err: any) {
       console.error(`거래 오류:`, err);
+      
+      // 응답 오류 상세 로깅
+      if (err.response) {
+        console.error('응답 상태:', err.response.status);
+        console.error('응답 데이터:', err.response.data);
+        // 오류 응답 구조 파악
+        if (typeof err.response.data === 'object') {
+          console.error('오류 응답 데이터 키:', Object.keys(err.response.data));
+          if (err.response.data.message) {
+            console.error('오류 메시지:', err.response.data.message);
+          }
+          if (err.response.data.error) {
+            console.error('오류 코드:', err.response.data.error);
+          }
+        }
+      }
+      
       // 비밀번호 오류 메시지를 더 명확하게 사용자에게 안내
       if (err.response && err.response.data && err.response.data.message) {
         if (err.response.data.message.includes('비밀번호') || 
@@ -417,15 +468,20 @@ const AccountCreationModal: React.FC<{
   const [confirmPassword, setConfirmPassword] = useState<string>('');
   const [error, setError] = useState<string | null>(null);
   const [step, setStep] = useState<number>(1); // 1: 비밀번호 입력, 2: 비밀번호 확인
+  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
 
   const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value.replace(/[^0-9]/g, '').slice(0, 6);
     setPassword(value);
+    // 비밀번호 변경 시 에러 초기화
+    if (error) setError(null);
   };
 
   const handleConfirmPasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value.replace(/[^0-9]/g, '').slice(0, 6);
     setConfirmPassword(value);
+    // 확인 비밀번호 변경 시 에러 초기화
+    if (error) setError(null);
   };
 
   const handleNextStep = () => {
@@ -437,12 +493,31 @@ const AccountCreationModal: React.FC<{
     setStep(2);
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (password !== confirmPassword) {
       setError('비밀번호가 일치하지 않습니다.');
       return;
     }
-    onSubmit(password);
+    
+    try {
+      setIsSubmitting(true);
+      setError(null);
+      
+      // 비밀번호 전송 전 로깅 (실제 비밀번호는 로깅하지 않음)
+      console.log('계좌 생성 비밀번호 제출 준비 완료:', {
+        length: password.length,
+        isNumeric: /^\d+$/.test(password),
+        matches: password === confirmPassword
+      });
+      
+      // onSubmit은 비동기 함수일 수 있으므로 await 추가
+      await onSubmit(password);
+    } catch (err: any) {
+      console.error('계좌 생성 제출 오류:', err);
+      setError(err.message || '계좌 생성 중 오류가 발생했습니다.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const resetModal = () => {
@@ -450,6 +525,7 @@ const AccountCreationModal: React.FC<{
     setConfirmPassword('');
     setError(null);
     setStep(1);
+    setIsSubmitting(false);
   };
 
   useEffect(() => {
@@ -480,7 +556,9 @@ const AccountCreationModal: React.FC<{
                 {[...Array(6)].map((_, i) => (
                   <div 
                     key={i} 
-                    className="w-10 h-12 border-2 border-gray-300 rounded-md flex items-center justify-center text-xl font-bold"
+                    className={`w-10 h-12 border-2 ${
+                      password[i] ? 'border-cusBlue' : 'border-gray-300'
+                    } rounded-md flex items-center justify-center text-xl font-bold`}
                   >
                     {password[i] ? '•' : ''}
                   </div>
@@ -493,7 +571,9 @@ const AccountCreationModal: React.FC<{
                 {[...Array(6)].map((_, i) => (
                   <div 
                     key={i} 
-                    className="w-10 h-12 border-2 border-gray-300 rounded-md flex items-center justify-center text-xl font-bold"
+                    className={`w-10 h-12 border-2 ${
+                      confirmPassword[i] ? 'border-cusBlue' : 'border-gray-300'
+                    } rounded-md flex items-center justify-center text-xl font-bold`}
                   >
                     {confirmPassword[i] ? '•' : ''}
                   </div>
@@ -503,36 +583,47 @@ const AccountCreationModal: React.FC<{
           )}
           
           {step === 1 ? (
-            <input
-              type="password"
-              value={password}
-              onChange={handlePasswordChange}
-              placeholder="6자리 비밀번호 입력"
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg text-center text-xl tracking-widest"
-              maxLength={6}
-              autoFocus
-            />
+            <div>
+              <input
+                type="password"
+                value={password}
+                onChange={handlePasswordChange}
+                placeholder="6자리 비밀번호 입력"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg text-center text-xl tracking-widest"
+                maxLength={6}
+                autoFocus
+              />
+              <p className="text-xs text-gray-500 mt-2 text-center">
+                비밀번호는 숫자 6자리로 설정해주세요. 이 비밀번호는 기뷰페이 충전/출금 시 필요합니다.
+              </p>
+            </div>
           ) : (
-            <input
-              type="password"
-              value={confirmPassword}
-              onChange={handleConfirmPasswordChange}
-              placeholder="비밀번호 확인"
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg text-center text-xl tracking-widest"
-              maxLength={6}
-              autoFocus
-            />
+            <div>
+              <input
+                type="password"
+                value={confirmPassword}
+                onChange={handleConfirmPasswordChange}
+                placeholder="비밀번호 확인"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg text-center text-xl tracking-widest"
+                maxLength={6}
+                autoFocus
+              />
+              <p className="text-xs text-gray-500 mt-2 text-center">
+                입력한 비밀번호를 한번 더 입력해주세요.
+              </p>
+            </div>
           )}
           
           {error && (
-            <p className="text-red-500 text-sm mt-2 text-center">{error}</p>
+            <p className="text-red-500 text-sm mt-3 text-center font-medium">{error}</p>
           )}
         </div>
         
         <div className="flex justify-center gap-4">
           <button
             onClick={onClose}
-            className="px-6 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 transition-colors"
+            disabled={isSubmitting}
+            className="px-6 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 transition-colors disabled:opacity-50"
           >
             취소
           </button>
@@ -552,14 +643,14 @@ const AccountCreationModal: React.FC<{
           ) : (
             <button
               onClick={handleSubmit}
-              disabled={confirmPassword.length !== 6}
+              disabled={confirmPassword.length !== 6 || isSubmitting}
               className={`px-6 py-2 ${
-                confirmPassword.length === 6 
+                confirmPassword.length === 6 && !isSubmitting
                   ? 'bg-cusBlue hover:bg-cusBlue-dark text-white' 
                   : 'bg-gray-300 text-gray-500 cursor-not-allowed'
               } rounded-md transition-colors`}
             >
-              계좌 생성
+              {isSubmitting ? '계좌 생성 중...' : '계좌 생성'}
             </button>
           )}
         </div>
@@ -1244,7 +1335,7 @@ const MyPage = () => {
         try {
           console.log('대체 API로 계좌 정보 조회 시도');
           const altAccountResponse = await axios.get(
-            `${import.meta.env.VITE_API_BASE_URL}/mypage/account/balance`,
+            `${import.meta.env.VITE_API_BASE_URL}/mypage/checkAccount`,
             {
               headers: {
                 'Authorization': `Bearer ${token}`
@@ -1632,10 +1723,9 @@ const MyPage = () => {
   }, [navigate]);
 
   // 계좌 생성 제출 핸들러
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const handleAccountCreation = async (password: string) => {
     try {
-      console.log('계좌 생성 시작 - 비밀번호:', password);
+      console.log('계좌 생성 시작 - 비밀번호 길이:', password.length);
       const token = localStorage.getItem('auth_token');
       
       if (!token) {
@@ -1649,10 +1739,32 @@ const MyPage = () => {
       loadingToast.textContent = '계좌를 생성 중입니다...';
       document.body.appendChild(loadingToast);
       
-      // 계좌 생성 API 호출
+      // 비밀번호 로컬 스토리지에 저장 (암호화)
+      localStorage.setItem('account_password', btoa(password));
+      
+      // 1. 2차 비밀번호 설정 API 호출 (새로 추가)
+      try {
+        console.log('2차 비밀번호 설정 API 호출');
+        await axios.post(
+          `${import.meta.env.VITE_API_BASE_URL}/users/setPassword`,
+          { password: password }, // PaymentPasswordRequestDTO 형식으로 전송
+          {
+            headers: {
+              'Authorization': `Bearer ${token}`,
+              'Content-Type': 'application/json'
+            }
+          }
+        );
+        console.log('2차 비밀번호 설정 완료');
+      } catch (passwordError) {
+        console.error('2차 비밀번호 설정 오류:', passwordError);
+        // 비밀번호 설정 실패해도 계좌 생성은 시도
+      }
+      
+      // 2. 계좌 생성 API 호출
       const response = await axios.post(
-        `${import.meta.env.VITE_API_BASE_URL}/mypage/account/create`,
-        { password },
+        `${import.meta.env.VITE_API_BASE_URL}/mypage/createAccount`,
+        { password: password }, // 비밀번호 명확하게 전송
         {
           headers: {
             'Authorization': `Bearer ${token}`,
@@ -1666,7 +1778,14 @@ const MyPage = () => {
       // 로딩 토스트 제거
       document.body.removeChild(loadingToast);
       
-      if (response.data && response.data.code === 'SUCCESS') {
+      if (response.data && (response.data.code === 'SUCCESS' || response.data.success === true)) {
+        // 계좌 번호 저장 (API 응답에서 제공하는 경우)
+        if (response.data.data && response.data.data.accountNo) {
+          const accountNo = response.data.data.accountNo;
+          setAccountNumber(accountNo);
+          localStorage.setItem('account_number', accountNo);
+        }
+        
         // 성공 토스트 표시
         const successToast = document.createElement('div');
         successToast.className = 'fixed bottom-4 right-4 bg-green-600 text-white px-4 py-2 rounded-md shadow-lg z-50';
@@ -1690,10 +1809,16 @@ const MyPage = () => {
     } catch (error: any) {
       console.error('계좌 생성 오류:', error);
       
+      // API 응답 상세 로깅 추가
+      if (error.response) {
+        console.error('응답 상태:', error.response.status);
+        console.error('응답 데이터:', error.response.data);
+      }
+      
       // 에러 토스트 표시
       const errorToast = document.createElement('div');
       errorToast.className = 'fixed bottom-4 right-4 bg-red-600 text-white px-4 py-2 rounded-md shadow-lg z-50';
-      errorToast.textContent = error.message || '계좌 생성 중 오류가 발생했습니다';
+      errorToast.textContent = error.response?.data?.message || error.message || '계좌 생성 중 오류가 발생했습니다';
       document.body.appendChild(errorToast);
       
       // 2초 후 에러 토스트 제거
