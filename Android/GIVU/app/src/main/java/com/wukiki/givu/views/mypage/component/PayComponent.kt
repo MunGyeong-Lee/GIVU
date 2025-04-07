@@ -152,8 +152,8 @@ fun PayComponent(
                 Text(
                     text = "충전",
                     fontFamily = suit,
-                    fontWeight = FontWeight.ExtraBold,
-                    fontSize = 22.sp
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 20.sp
                 )
             }
 
@@ -181,8 +181,8 @@ fun PayComponent(
                 Text(
                     text = "송금",
                     fontFamily = suit,
-                    fontWeight = FontWeight.ExtraBold,
-                    fontSize = 22.sp
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 20.sp
                 )
             }
             Spacer(Modifier.width(24.dp))

@@ -92,7 +92,14 @@ fun DetailPresentScreen(
                     .fillMaxSize()
                     .padding(bottom = 68.dp)
             ) {
-                StoreDetailTopBar()
+                StoreDetailTopBar(
+                    onBackClick = {
+                        navController.popBackStack()
+                    },
+                    onHomeClick = {
+                        xmlNavController.navigate(R.id.fragment_home)
+                    }
+                )
 
                 LazyColumn(
                     modifier = Modifier.fillMaxWidth()

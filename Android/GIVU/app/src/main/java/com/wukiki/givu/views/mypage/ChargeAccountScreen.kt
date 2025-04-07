@@ -51,7 +51,8 @@ import kotlinx.coroutines.launch
 @Composable
 fun ChargeAccountScreen(
     homeViewModel: HomeViewModel,
-    navController: NavController
+    navController: NavController,
+    xmlNavController: NavController
 ) {
     val context = LocalContext.current
     val user by homeViewModel.user.collectAsState()
@@ -105,8 +106,12 @@ fun ChargeAccountScreen(
         topBar = {
             CommonTopBar(
                 stringResource(R.string.title_charge_account),
-                onBackClick = {},
-                onHomeClick = {}
+                onBackClick = {
+                    navController.popBackStack()
+                },
+                onHomeClick = {
+                    xmlNavController.navigate(R.id.fragment_home)
+                }
             )
         },
         containerColor = Color(0xFFF3F4F6),
