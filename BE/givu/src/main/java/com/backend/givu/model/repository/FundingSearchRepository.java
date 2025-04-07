@@ -7,6 +7,5 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 
 @Repository
-public interface FundingSearchRepository extends ElasticsearchRepository<FundingDocument, Integer> {
-    List<FundingDocument> findByTitleContainingIgnoreCase(String title);
+public interface FundingSearchRepository extends ElasticsearchRepository<FundingDocument, Integer>, FundingSearchRepositoryCustom {
 }

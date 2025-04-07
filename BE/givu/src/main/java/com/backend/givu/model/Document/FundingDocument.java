@@ -28,9 +28,10 @@ public class FundingDocument {
     private String productName;
     private Integer productPrice;
     private String productImage;
+    @Field(type = FieldType.Text, analyzer = "custom_ngram_analyzer", searchAnalyzer = "standard")
     private String title;
 
-    @Field(type = FieldType.Text)
+    @Field(type = FieldType.Text, analyzer = "custom_ngram_analyzer", searchAnalyzer = "standard")
     private String description;
 
     @Field(type = FieldType.Keyword)

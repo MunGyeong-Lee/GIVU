@@ -7,6 +7,6 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 
 @Repository
-public interface ProductSearchRepository extends ElasticsearchRepository<ProductDocument, Integer> {
-    List<ProductDocument> findByProductNameContainingOrDescriptionContaining(String name, String description);
+public interface ProductSearchRepository extends ElasticsearchRepository<ProductDocument, Integer>, ProductSearchRepositoryCustom {
+
 }
