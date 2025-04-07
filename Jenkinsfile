@@ -132,11 +132,13 @@ pipeline {
                     if [ "${nginxExists}" = "nginx" ]; then
                         docker restart nginx
                     else
-                        docker run -d --name nginx \\
-                            --network ${NETWORK} \\
-                            -p 80:80 \\
-                            -v ${nginxConfPath}:/etc/nginx/nginx.conf:ro \\
-                            nginx
+                        docker run -d --name nginx \
+                            --network ${NETWORK} \
+                            -p 80:80 -p 443:443 \
+                            -v ${nginxConfPath}:/etc/nginx/nginx.conf:ro \
+                            -v /home/ubuntu/nginx/empty:/etc/nginx/conf.d:ro \
+                            -v /etc/letsencrypt:/etc/letsencrypt:ro \
+                            nginx:latest
                     fi
                     """
 
