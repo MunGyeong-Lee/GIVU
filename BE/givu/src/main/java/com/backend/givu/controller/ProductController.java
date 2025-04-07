@@ -38,7 +38,7 @@ public class ProductController {
     @Operation(summary = "검색 상품 조회", description = "해당 검색어가 이름 또는 설명에 포함된 모든 상품을 조회합니다.")
     @GetMapping("/search")
     public ResponseEntity<ApiResponse<List<ProductsDTO>>> searchProducts(@RequestParam String keyword){
-        ApiResponse<List<ProductsDTO>> response = productService.findAllSearchProduct(keyword, keyword);
+        ApiResponse<List<ProductsDTO>> response = productService.findAllSearchProduct(keyword);
         return ResponseEntity.ok(response);
     }
 
