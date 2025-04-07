@@ -51,22 +51,27 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavController
 import coil.compose.SubcomposeAsyncImage
 import com.wukiki.domain.model.ProductReview
 import com.wukiki.givu.R
 import com.wukiki.givu.ui.pretendard
 import com.wukiki.givu.ui.suit
 import com.wukiki.givu.util.CommonUtils
-import com.wukiki.givu.util.StoreDetailBottomButton
 import com.wukiki.givu.util.StoreDetailTopBar
+import com.wukiki.givu.views.MainViewModel
 import com.wukiki.givu.views.mall.component.ReviewComponent
 import com.wukiki.givu.views.mall.viewmodel.MallViewModel
+import com.wukiki.givu.views.register.viewmodel.RegisterViewModel
 
 @Composable
 fun ProductDetailScreen(
     productId: String?,
-    mallViewModel: MallViewModel
+    mallViewModel: MallViewModel,
+    registerViewModel: RegisterViewModel,
+    mainViewModel: MainViewModel,
+    navController: NavController,
+    xmlNavController: NavController
 ) {
     val productInfo by mallViewModel.selectedProduct.collectAsState()
     var productReviewList by remember { mutableStateOf(emptyList<ProductReview>()) }
@@ -262,6 +267,11 @@ fun ProductDetailScreen(
                     Button(
                         onClick = {
                             // 펀딩 생성 화면으로 이동
+                            mainViewModel.selectProduct(it)
+                            Log.d("ProductDetailScreen", "상품: ${it}")
+
+                            registerViewModel.setFromMall(true)
+                            xmlNavController.navigate(R.id.fragment_register_funding)
 
                         },
                         modifier = Modifier

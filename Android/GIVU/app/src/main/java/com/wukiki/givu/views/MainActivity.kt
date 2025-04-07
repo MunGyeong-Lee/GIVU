@@ -29,7 +29,7 @@ class MainActivity : BaseActivity<ActivityMainBinding>(ActivityMainBinding::infl
     private val homeViewModel: HomeViewModel by viewModels()
     private val communityViewModel: CommunityViewModel by viewModels()
     private val fundingViewModel: FundingViewModel by viewModels()
-//    private val registerViewModel: RegisterViewModel by viewModels()
+    private val registerViewModel: RegisterViewModel by viewModels()
     private val searchViewModel: SearchViewModel by viewModels()
     private val mallViewModel: MallViewModel by viewModels()
     private lateinit var navController: NavController

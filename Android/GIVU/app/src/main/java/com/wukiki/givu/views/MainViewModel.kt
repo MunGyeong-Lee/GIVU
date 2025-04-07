@@ -2,6 +2,7 @@ package com.wukiki.givu.views
 
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
+import com.wukiki.domain.model.Product
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -18,4 +19,12 @@ class MainViewModel @Inject constructor(
     fun setBnvState(isVisible: Boolean) {
         _bnvState.value = isVisible
     }
+
+    private val _selectedProduct = MutableStateFlow<Product?>(null)
+    val selectedProduct = _selectedProduct.asStateFlow()
+
+    fun selectProduct(product: Product) {
+        _selectedProduct.value = product
+    }
+
 }
