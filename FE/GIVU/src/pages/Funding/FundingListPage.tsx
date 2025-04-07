@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import axios from 'axios';
 import FundingGrid from './components/FundingGrid';
 import CategoryTabs from './components/CategoryTabs';
@@ -9,6 +9,7 @@ import LoadingSpinner from './components/LoadingSpinner';
 import StatusFilter from './components/StatusFilter';
 import { FundingItem as FundingGridItem } from './components/FundingGrid';
 import { HighlightItem } from './components/FundingHighlights';
+import { FaSearch } from 'react-icons/fa';
 
 
 // API 응답 인터페이스 정의
@@ -102,8 +103,12 @@ const mapToHighlightItem = (item: FundingItemAPI, badgeType: 'popular' | 'achiev
 };
 
 function FundingListPage() {
-  // 추가: useNavigate 훅 사용
+  // URL 쿼리 파라미터 처리를 위한 훅 추가
+  const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
+
+  // 검색어 상태 관리 추가
+  const [searchTerm, setSearchTerm] = useState<string>('');
 
   // API에서 가져온 전체 펀딩 데이터
   const [fundings, setFundings] = useState<FundingItemAPI[]>([]);
@@ -237,6 +242,14 @@ function FundingListPage() {
     fetchFundings();
   }, [fetchFundings]);
 
+  // 컴포넌트 마운트 시 URL에서 검색어 파라미터 가져오기
+  useEffect(() => {
+    const queryParam = searchParams.get('q');
+    if (queryParam) {
+      setSearchTerm(queryParam);
+    }
+  }, [searchParams]);
+
   // 카테고리 변경 핸들러
   const handleCategoryChange = (categoryId: string) => {
     setSelectedCategory(categoryId);
@@ -315,12 +328,25 @@ function FundingListPage() {
     }
   };
 
-  // 필터링 및 정렬 적용
+  // 추가: 검색어 필터링 함수
+  const filterBySearchTerm = (items: FundingItemAPI[]) => {
+    if (!searchTerm.trim()) return items;
+
+    return items.filter(item =>
+      (item.title && item.title.toLowerCase().includes(searchTerm.toLowerCase())) ||
+      (item.description && item.description.toLowerCase().includes(searchTerm.toLowerCase()))
+    );
+  };
+
+  // 필터링 및 정렬 적용 부분 수정
   const filteredByStatus = filterByStatus(fundings || []);
 
+  // 검색어 필터링 추가
+  const filteredBySearch = filterBySearchTerm(filteredByStatus);
+
   // 카테고리 필터링
-  const filteredItems = Array.isArray(filteredByStatus)
-    ? filteredByStatus.filter(item =>
+  const filteredItems = Array.isArray(filteredBySearch)
+    ? filteredBySearch.filter(item =>
       item && (selectedCategory === 'all' || item.category === selectedCategory)
     )
     : [];
@@ -390,6 +416,25 @@ function FundingListPage() {
     navigate(`/funding/${id}`);
   };
 
+  // 검색 제출 핸들러 추가
+  const handleSearchSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+
+    // 검색어가 변경되었을 때만 URL 파라미터 업데이트
+    if (searchTerm.trim()) {
+      // URL 파라미터에 검색어 추가
+      setSearchParams({ q: searchTerm.trim(), ...Object.fromEntries(searchParams.entries()) });
+    } else {
+      // 검색어가 비어있으면 q 파라미터 제거
+      const newParams = new URLSearchParams(searchParams);
+      newParams.delete('q');
+      setSearchParams(newParams);
+    }
+
+    // 리스트 초기화
+    resetPagination();
+  };
+
   return (
     <div className="w-full p-0 m-0 overflow-hidden relative">
       {/* 상단 하이라이트 섹션 - 와디즈 스타일로 풀스크린 너비로 변경 */}
@@ -417,6 +462,33 @@ function FundingListPage() {
             selectedCategory={selectedCategory}
             onCategoryChange={handleCategoryChange}
           />
+        </div>
+
+        {/* 검색바 추가 */}
+        <div className="mb-6">
+          <form onSubmit={handleSearchSubmit} className="relative max-w-md mx-auto">
+            <div className="relative flex items-center">
+              <input
+                type="text"
+                placeholder="원하는 펀딩을 검색해보세요"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full border border-gray-300 rounded-full px-5 py-2.5 pr-10 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all placeholder-gray-400 text-sm"
+              />
+              <button
+                type="submit"
+                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-primary transition-colors"
+                aria-label="검색"
+              >
+                <FaSearch className="h-4 w-4" />
+              </button>
+            </div>
+            {searchTerm && (
+              <div className="text-xs text-gray-500 mt-1 ml-2">
+                &ldquo;{searchTerm}&rdquo; 검색 결과
+              </div>
+            )}
+          </form>
         </div>
 
         {/* 필터 및 정렬 영역 */}
@@ -450,7 +522,7 @@ function FundingListPage() {
           )}
           {!isLoading && !hasMore && mappedFundings.length === 0 && (
             <div className="text-gray-500 text-sm my-3 p-8 text-center w-full">
-              해당 조건에 맞는 펀딩이 없습니다.
+              {searchTerm ? `'${searchTerm}'에 대한 검색 결과가 없습니다.` : '해당 조건에 맞는 펀딩이 없습니다.'}
             </div>
           )}
         </div>
