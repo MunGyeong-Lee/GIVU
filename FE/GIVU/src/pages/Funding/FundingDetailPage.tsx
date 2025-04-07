@@ -128,8 +128,8 @@ const FundingDetailPage = () => {
   const [balanceLoading, setBalanceLoading] = useState<boolean>(false);
 
   // 펀딩 생성자 확인 상태 추가
-  const [isCreator, setIsCreator] = useState<boolean>(false);
-  const [creatorCheckLoading, setCreatorCheckLoading] = useState<boolean>(false);
+  const [, setIsCreator] = useState<boolean>(false);
+  const [, setCreatorCheckLoading] = useState<boolean>(false);
 
   // 현재 URL 출력
   useEffect(() => {
@@ -427,11 +427,11 @@ const FundingDetailPage = () => {
   };
 
   // 후기 작성 페이지로 이동하는 함수
-  const handleReviewWrite = () => {
-    if (fundingId) {
-      navigate(`/funding/review/write/${fundingId}`);
-    }
-  };
+  // const handleReviewWrite = () => {
+  //   if (fundingId) {
+  //     navigate(`/funding/review/write/${fundingId}`);
+  //   }
+  // };
 
   // 로딩 중 표시
   if (loading) {

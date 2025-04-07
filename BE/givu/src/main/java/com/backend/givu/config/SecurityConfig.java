@@ -52,7 +52,9 @@ public class SecurityConfig {
                                 "/users/generate",              // jwt 수동 발급
                                 "/images/**",
                                 "/products/**",
-                                "/fundings/list"
+                                "/fundings/list",
+                                "/kafka/send",
+                                "/kafka/**"
 
                         ).permitAll()
                         .requestMatchers(
