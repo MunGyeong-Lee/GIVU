@@ -1,246 +1,182 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useNavigate, useLocation } from 'react-router-dom';
-import axios from 'axios';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
+import { createReview, ReviewType } from '../../services/review.service';
 
-function FundingReviewWritePage() {
+const FundingReviewWritePage = () => {
   const navigate = useNavigate();
-  const location = useLocation();
-  const queryParams = new URLSearchParams(location.search);
-  const fundingId = queryParams.get('fundingId');
+  const [searchParams] = useSearchParams();
+  const fundingId = searchParams.get('fundingId');
+  
+  const [formData, setFormData] = useState({
+    title: '',
+    content: '',
+    rating: 5,
+    type: '전체' as ReviewType,
+    images: [] as File[]
+  });
 
-  const [title, setTitle] = useState('');
-  const [content, setContent] = useState('');
-  const [images, setImages] = useState<File[]>([]);
-  const [imagePreviewUrls, setImagePreviewUrls] = useState<string[]>([]);
-  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // 페이지 로드 시 fundingId 확인
   useEffect(() => {
     if (!fundingId) {
-      alert('펀딩 정보가 없습니다. 펀딩 목록 페이지로 이동합니다.');
       navigate('/funding');
     }
   }, [fundingId, navigate]);
 
-  // 이미지 파일 선택 핸들러
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    e.preventDefault();
-
-    const files = e.target.files;
-    if (!files) {
-      return;
-    }
-
-    const newImages: File[] = [...images];
-    const newImagePreviewUrls: string[] = [...imagePreviewUrls];
-
-    for (let i = 0; i < files.length; i++) {
-      const file = files[i];
-      newImages.push(file);
-
-      // 이미지 미리보기 URL 생성
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        if (typeof reader.result === 'string') {
-          newImagePreviewUrls.push(reader.result);
-          setImagePreviewUrls([...newImagePreviewUrls]);
-        }
-      };
-      reader.readAsDataURL(file);
-    }
-
-    setImages(newImages);
-  };
-
-  // 이미지 제거 핸들러
-  const removeImage = (index: number) => {
-    const newImages = [...images];
-    const newImagePreviewUrls = [...imagePreviewUrls];
-
-    newImages.splice(index, 1);
-    newImagePreviewUrls.splice(index, 1);
-
-    setImages(newImages);
-    setImagePreviewUrls(newImagePreviewUrls);
-  };
-
-  // 폼 제출 핸들러
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
+    
     if (!fundingId) {
-      alert('펀딩 정보가 없습니다.');
-      return;
-    }
-
-    if (!content.trim()) {
-      alert('내용을 입력해주세요');
+      setError('펀딩 ID가 없습니다.');
       return;
     }
 
     try {
-      setLoading(true);
+      setIsSubmitting(true);
+      setError(null);
 
-      // FormData 객체 생성
-      const formData = new FormData();
-      
-      // 댓글 데이터 추가
-      const reviewData = {
-        comment: content
-      };
-      
-      formData.append('data', new Blob([JSON.stringify(reviewData)], { type: 'application/json' }));
-      
-      // 이미지 파일 추가 (첫 번째 이미지만 사용)
-      if (images.length > 0) {
-        formData.append('image', images[0]);
-      }
+      await createReview({
+        ...formData,
+        fundingId: parseInt(fundingId)
+      });
 
-      // 인증 토큰 가져오기
-      const token = localStorage.getItem('auth_token');
-      if (!token) {
-        alert('로그인이 필요합니다.');
-        navigate('/login');
-        return;
-      }
-      
-      // API 호출
-      await axios.post(
-        `${import.meta.env.VITE_API_BASE_URL}/fundings/reviews/${fundingId}`,
-        formData,
-        {
-          headers: {
-            'Content-Type': 'multipart/form-data',
-            'Authorization': `Bearer ${token}`
-          }
-        }
-      );
-
-      alert('후기가 성공적으로 등록되었습니다.');
+      // 후기 작성 성공 시 후기 목록 페이지로 이동
       navigate('/funding/review');
-    } catch (error) {
-      console.error('후기 등록 중 오류가 발생했습니다:', error);
-      if (axios.isAxiosError(error) && error.response?.status === 403) {
-        alert('로그인이 필요합니다. 로그인 페이지로 이동합니다.');
-        navigate('/login');
-      } else {
-        alert('후기 등록에 실패했습니다. 다시 시도해주세요.');
-      }
+    } catch (err: any) {
+      setError(err.message || '후기 작성 중 오류가 발생했습니다.');
     } finally {
-      setLoading(false);
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files.length > 0) {
+      setFormData(prev => ({
+        ...prev,
+        images: [e.target.files![0]]
+      }));
     }
   };
 
   return (
-    <div className="max-w-4xl mx-auto py-8 px-4">
-      {/* 헤더 */}
-      <div className="border-b border-gray-200 pb-4 mb-6">
-        <h1 className="text-2xl font-bold">펀딩 후기 작성</h1>
-        <p className="text-gray-600 mt-1">
-          받은 선물과 펀딩 경험에 대한 후기를 남겨주세요.
-        </p>
-      </div>
+    <div className="max-w-4xl mx-auto px-4 py-8">
+      <h1 className="text-3xl font-bold text-gray-800 mb-8">펀딩 후기 작성</h1>
 
-      {/* 후기 작성 폼 */}
-      <form onSubmit={handleSubmit}>
-        {/* 제목 입력 */}
-        <div className="mb-6">
-          <label htmlFor="title" className="block mb-2 font-medium">
-            제목 <span className="text-red-500">*</span>
+      {error && (
+        <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-md mb-6">
+          {error}
+        </div>
+      )}
+
+      <form onSubmit={handleSubmit} className="space-y-6">
+        {/* 제목 */}
+        <div>
+          <label htmlFor="title" className="block text-sm font-medium text-gray-700 mb-1">
+            제목
           </label>
           <input
             type="text"
             id="title"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            className="w-full p-3 border border-gray-300 rounded-md"
-            placeholder="제목을 입력해주세요"
+            value={formData.title}
+            onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
+            className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-rose-500 focus:border-rose-500"
+            required
+          />
+        </div>
+
+        {/* 후기 유형 */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            후기 유형
+          </label>
+          <select
+            value={formData.type}
+            onChange={(e) => setFormData(prev => ({ ...prev, type: e.target.value as ReviewType }))}
+            className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-rose-500 focus:border-rose-500"
+          >
+            <option value="전체">전체</option>
+            <option value="배송/포장">배송/포장</option>
+            <option value="제품 품질">제품 품질</option>
+            <option value="고객 서비스">고객 서비스</option>
+          </select>
+        </div>
+
+        {/* 별점 */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            별점
+          </label>
+          <div className="flex items-center space-x-2">
+            {[1, 2, 3, 4, 5].map((star) => (
+              <button
+                key={star}
+                type="button"
+                onClick={() => setFormData(prev => ({ ...prev, rating: star }))}
+                className="focus:outline-none"
+              >
+                <svg
+                  className={`w-8 h-8 ${
+                    star <= formData.rating ? 'text-yellow-400' : 'text-gray-300'
+                  }`}
+                  fill="currentColor"
+                  viewBox="0 0 20 20"
+                >
+                  <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                </svg>
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* 내용 */}
+        <div>
+          <label htmlFor="content" className="block text-sm font-medium text-gray-700 mb-1">
+            내용
+          </label>
+          <textarea
+            id="content"
+            value={formData.content}
+            onChange={(e) => setFormData(prev => ({ ...prev, content: e.target.value }))}
+            rows={6}
+            className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-rose-500 focus:border-rose-500"
             required
           />
         </div>
 
         {/* 이미지 업로드 */}
-        <div className="mb-6">
-          <label className="block mb-2 font-medium">
-            이미지 첨부
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            이미지 업로드
           </label>
-          <div className="border-2 border-dashed border-gray-300 p-6 rounded-md text-center">
-            <input
-              type="file"
-              id="image-upload"
-              onChange={handleImageChange}
-              className="hidden"
-              accept="image/*"
-              multiple
-            />
-            <label htmlFor="image-upload" className="cursor-pointer">
-              <div className="flex flex-col items-center">
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12 text-gray-400 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                </svg>
-                <p className="text-gray-500">이미지를 드래그하거나 클릭하여 업로드</p>
-                <p className="text-gray-400 text-sm mt-1">최대 5MB, JPG, PNG 파일</p>
-              </div>
-            </label>
-          </div>
-
-          {/* 이미지 미리보기 */}
-          {imagePreviewUrls.length > 0 && (
-            <div className="mt-4 grid grid-cols-2 sm:grid-cols-3 gap-4">
-              {imagePreviewUrls.map((url, index) => (
-                <div key={index} className="relative">
-                  <img
-                    src={url}
-                    alt={`미리보기 ${index + 1}`}
-                    className="w-full h-32 object-cover rounded-md"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => removeImage(index)}
-                    className="absolute top-2 right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center"
-                  >
-                    ×
-                  </button>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-
-        {/* 내용 입력 */}
-        <div className="mb-6">
-          <label htmlFor="content" className="block mb-2 font-medium">
-            내용 <span className="text-red-500">*</span>
-          </label>
-          <textarea
-            id="content"
-            value={content}
-            onChange={(e) => setContent(e.target.value)}
-            className="w-full p-3 border border-gray-300 rounded-md min-h-[200px]"
-            placeholder="펀딩 경험과 받은 선물에 대한 후기를 작성해주세요"
-            required
-          ></textarea>
+          <input
+            type="file"
+            accept="image/*"
+            onChange={handleImageChange}
+            className="w-full px-4 py-2 border border-gray-300 rounded-md focus:ring-rose-500 focus:border-rose-500"
+          />
         </div>
 
         {/* 제출 버튼 */}
-        <div className="flex justify-end gap-2">
-          <Link
-            to="/funding/review"
-            className="px-6 py-2 border border-gray-300 rounded-md hover:bg-gray-50 transition"
+        <div className="flex justify-end space-x-4">
+          <button
+            type="button"
+            onClick={() => navigate(-1)}
+            className="px-6 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
           >
             취소
-          </Link>
+          </button>
           <button
             type="submit"
-            disabled={loading}
-            className="px-6 py-2 bg-black text-white rounded-md hover:bg-gray-800 transition disabled:bg-gray-400"
+            disabled={isSubmitting}
+            className="px-6 py-2 bg-rose-500 text-white rounded-md hover:bg-rose-600 disabled:opacity-50"
           >
-            {loading ? '등록 중...' : '등록하기'}
+            {isSubmitting ? '작성 중...' : '작성하기'}
           </button>
         </div>
       </form>
     </div>
   );
-}
+};
 
 export default FundingReviewWritePage; 
