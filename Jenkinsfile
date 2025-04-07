@@ -26,7 +26,9 @@ pipeline {
 
                 stage('Start Infra Services') {
             steps {
-                sh "docker-compose -f ${COMPOSE_FILE} up -d postgres redis"
+                 sh "docker network create givu_nginx-network || true"
+                 sh "docker-compose -f ${COMPOSE_FILE} up -d postgres redis kafka kafka-ui elasticsearch kibana"
+
             }
         }
 
@@ -34,9 +36,11 @@ pipeline {
             steps {
                 dir('BE/givu') {
                     sh 'chmod +x gradlew'
-                    sh './gradlew build -Dspring.profiles.active=test --no-daemon'
+                    //sh './gradlew build -Dspring.profiles.active=test --no-daemon'
+                    sh './gradlew build -x test -Dspring.profiles.active=test --no-daemon'
                 }
                 sh "docker build -t ${SPRING_IMAGE} -f BE/givu/Dockerfile BE/givu"
+                
             }
         }
 
@@ -90,14 +94,14 @@ pipeline {
                             -p ${backendPort}:8080 \
                             ${SPRING_IMAGE}
 
-                        docker rm -f ${frontendNew} || true
-                        docker run -d --name ${frontendNew} \
-                            --network ${NETWORK} \
-                            -p ${frontendPort}:80 \
-                            ${REACT_IMAGE}
+                            docker run -d --name ${frontendNew} \
+                                --network ${NETWORK} \
+                                -p ${frontendPort}:80 \
+                                -v /home/ubuntu/nginx/front-nginx/react-default.conf:/etc/nginx/conf.d/default.conf:ro \
+                                ${REACT_IMAGE}
                     """
 
-                    sleep time: 5, unit: 'SECONDS'
+                    sleep time: 15, unit: 'SECONDS'
 
                     // nginx.conf 생성
                     def sedCommand = """
@@ -106,6 +110,21 @@ pipeline {
                             ${nginxTemplatePath} > ${nginxConfPath}
                     """
                     sh script: sedCommand
+
+                    // DNS가 등록될 때까지 대기 (최대 10번 시도)
+                    sh """
+                    for i in {1..10}; do
+                    docker run --rm --network ${NETWORK} busybox ping -c 1 ${backendNew} && break
+                    echo "[⏳] ${backendNew} not ready, retrying..."
+                    sleep 2
+                    done
+
+                    for i in {1..10}; do
+                    docker run --rm --network ${NETWORK} busybox ping -c 1 ${frontendNew} && break
+                    echo "[⏳] ${frontendNew} not ready, retrying..."
+                    sleep 2
+                    done
+                    """
                     
                     def nginxExists = sh(script: "docker ps -a --format '{{.Names}}' | grep nginx || true", returnStdout: true).trim()
 
@@ -113,11 +132,13 @@ pipeline {
                     if [ "${nginxExists}" = "nginx" ]; then
                         docker restart nginx
                     else
-                        docker run -d --name nginx \\
-                            --network ${NETWORK} \\
-                            -p 80:80 \\
-                            -v ${nginxConfPath}:/etc/nginx/nginx.conf:ro \\
-                            nginx
+                        docker run -d --name nginx \
+                            --network ${NETWORK} \
+                            -p 80:80 -p 443:443 \
+                            -v ${nginxConfPath}:/etc/nginx/nginx.conf:ro \
+                            -v /home/ubuntu/nginx/empty:/etc/nginx/conf.d:ro \
+                            -v /etc/letsencrypt:/etc/letsencrypt:ro \
+                            nginx:latest
                     fi
                     """
 

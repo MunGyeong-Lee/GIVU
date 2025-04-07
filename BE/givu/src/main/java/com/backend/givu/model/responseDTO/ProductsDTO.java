@@ -1,5 +1,6 @@
 package com.backend.givu.model.responseDTO;
 
+import com.backend.givu.model.Document.ProductDocument;
 import com.backend.givu.model.Enum.ProductsCategory;
 import com.backend.givu.model.entity.Product;
 import com.backend.givu.util.DateTimeUtil;
@@ -34,4 +35,16 @@ public class ProductsDTO {
         this.createdAt = DateTimeUtil.toLocalDateTime(product.getCreatedAt());
         this.description = product.getDescription();
     }
+    public ProductsDTO(ProductDocument product){
+        this.id = product.getId();
+        this.productName = product.getProductName();
+        this.category = product.getCategory();
+        this.price = product.getPrice();
+        this.image = product.getImage();
+        this.favorite = product.getFavorite();
+        this.star = product.getStar();
+        this.createdAt = DateTimeUtil.parseIsoString(product.getCreatedAt());
+        this.description = product.getDescription();
+    }
+
 }
