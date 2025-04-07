@@ -16,6 +16,7 @@ import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 
 @Service
@@ -46,6 +47,17 @@ public class ReviewService {
         Review saveReview = reviewRepository.save(Review.from(user,funding, reviewdto));
         return Review.toDTO(saveReview);
     }
+
+    /**
+     * 후기 리스트
+     */
+    public List<ReviewsDTO> reviewList(){
+        List<Review> reviews = reviewRepository.findAllWithUser();
+        return reviews.stream()
+                .map(ReviewsDTO::new) // 생성자로 매핑
+                .collect(Collectors.toList());
+    }
+
 
     /**
      *  후기 삭제
