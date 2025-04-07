@@ -51,22 +51,27 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavController
 import coil.compose.SubcomposeAsyncImage
 import com.wukiki.domain.model.ProductReview
 import com.wukiki.givu.R
 import com.wukiki.givu.ui.pretendard
 import com.wukiki.givu.ui.suit
 import com.wukiki.givu.util.CommonUtils
-import com.wukiki.givu.util.StoreDetailBottomButton
 import com.wukiki.givu.util.StoreDetailTopBar
+import com.wukiki.givu.views.MainViewModel
 import com.wukiki.givu.views.mall.component.ReviewComponent
 import com.wukiki.givu.views.mall.viewmodel.MallViewModel
+import com.wukiki.givu.views.register.viewmodel.RegisterViewModel
 
 @Composable
 fun ProductDetailScreen(
     productId: String?,
-    mallViewModel: MallViewModel
+    mallViewModel: MallViewModel,
+    registerViewModel: RegisterViewModel,
+    mainViewModel: MainViewModel,
+    navController: NavController,
+    xmlNavController: NavController
 ) {
     val productInfo by mallViewModel.selectedProduct.collectAsState()
     var productReviewList by remember { mutableStateOf(emptyList<ProductReview>()) }
@@ -98,7 +103,7 @@ fun ProductDetailScreen(
             Column(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(bottom = 68.dp)
+                    .padding(bottom = 76.dp)
 //                    .verticalScroll(rememberScrollState())
             ) {
                 StoreDetailTopBar()
@@ -224,12 +229,11 @@ fun ProductDetailScreen(
 
             // 하단 바
             Row(
-                modifier =
-                Modifier
+                modifier = Modifier
                     .fillMaxWidth()
-                    .height(68.dp)
+                    .height(72.dp)
+                    .padding(bottom = 16.dp)
                     .align(Alignment.BottomCenter)
-//                    .background(Color.LightGray)
                 ,
                 verticalAlignment = Alignment.CenterVertically
             ) {
@@ -250,12 +254,11 @@ fun ProductDetailScreen(
                             modifier = Modifier.fillMaxSize()
                         )
                     }
-                    Spacer(Modifier.height(4.dp))
                     Text(
                         text = it.favorite,
                         fontFamily = pretendard,
                         fontWeight = FontWeight.Medium,
-                        fontSize = 14.sp
+                        fontSize = 12.sp
 
                     )
                 }
@@ -264,6 +267,11 @@ fun ProductDetailScreen(
                     Button(
                         onClick = {
                             // 펀딩 생성 화면으로 이동
+                            mainViewModel.selectProduct(it)
+                            Log.d("ProductDetailScreen", "상품: ${it}")
+
+                            registerViewModel.setFromMall(true)
+                            xmlNavController.navigate(R.id.fragment_register_funding)
 
                         },
                         modifier = Modifier

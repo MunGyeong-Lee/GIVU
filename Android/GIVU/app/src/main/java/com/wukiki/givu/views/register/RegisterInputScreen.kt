@@ -61,6 +61,7 @@ import com.wukiki.givu.ui.pretendard
 import com.wukiki.givu.ui.suit
 import com.wukiki.givu.util.CommonBottomButton
 import com.wukiki.givu.util.CommonTopBar
+import com.wukiki.givu.util.CommonUtils
 import com.wukiki.givu.views.register.component.RegisterFundingImagePager
 import com.wukiki.givu.views.register.viewmodel.RegisterUiEvent
 import com.wukiki.givu.views.register.viewmodel.RegisterViewModel
@@ -119,6 +120,7 @@ fun RegisterInputScreen(
                 else -> {}
             }
         }
+        registerViewModel.setFromMall(false)
     }
 
     Scaffold(
@@ -133,7 +135,7 @@ fun RegisterInputScreen(
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(68.dp),
-                    text = "선물 선택하기",
+                    text = "이 선물로 펀딩 생성",
                     enabled = registerUiState.isRegisterButton
                 ) {
                     if (registerUiState.isRegisterButton) {
@@ -212,7 +214,7 @@ fun RegisterInputScreen(
                             )
                             Spacer(Modifier.weight(1f))
                             Text(
-                                text = it.price,
+                                text = CommonUtils.makeCommaPrice(it.price.toInt()),
                                 fontFamily = pretendard,
                                 fontWeight = FontWeight.Medium,
                                 fontSize = 17.sp,

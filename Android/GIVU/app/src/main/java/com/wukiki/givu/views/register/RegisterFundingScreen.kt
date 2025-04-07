@@ -42,6 +42,7 @@ import com.wukiki.givu.R
 import com.wukiki.givu.ui.pretendard
 import com.wukiki.givu.ui.suit
 import com.wukiki.givu.util.CommonTopBar
+import com.wukiki.givu.util.CommonUtils
 import com.wukiki.givu.views.register.viewmodel.RegisterViewModel
 
 @Composable
@@ -180,7 +181,7 @@ fun RegisterFundingScreen(
                         )
                         Spacer(Modifier.height(6.dp))
                         Text(
-                            text = it.price,
+                            text = CommonUtils.makeCommaPrice(it.price.toInt()),
                             fontFamily = pretendard,
                             fontWeight = FontWeight.Medium,
                             fontSize = 19.sp,

@@ -9,7 +9,7 @@ plugins {
 
 android {
     namespace = "com.wukiki.givu"
-    compileSdk = 34
+    compileSdk = 35
 
     defaultConfig {
         applicationId = "com.wukiki.givu"
@@ -132,6 +132,9 @@ dependencies {
 
     // Timber
     implementation("com.jakewharton.timber:timber:5.0.1")
+
+    // Biometric
+    implementation("androidx.biometric:biometric:1.4.0-alpha02")
 
     // Test
     testImplementation(libs.junit)

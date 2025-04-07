@@ -67,7 +67,7 @@ fun GiftListItem(
             modifier = Modifier
                 .fillMaxHeight()
                 .padding(start = 16.dp)
-                .padding(vertical = 8.dp),
+                .padding(vertical = 12.dp),
             verticalArrangement = Arrangement.Center
         ) {
 
@@ -98,10 +98,10 @@ fun GiftListItem(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = product.price,
+                    text = CommonUtils.makeCommaPrice(product.price.toInt()),
                     fontFamily = pretendard,
                     fontWeight = FontWeight.Black,
-                    fontSize = 16.sp,
+                    fontSize = 18.sp,
                     color = colorResource(R.color.main_secondary)
                 )
                 Spacer(Modifier.weight(1f))

@@ -70,6 +70,14 @@ class RegisterViewModel @Inject constructor(
     private val _fundingImageMultiparts = MutableStateFlow<List<MultipartBody.Part>>(emptyList())
     val fundingImageMultiparts = _fundingImageMultiparts.asStateFlow()
 
+    // Mall Fragment에서 넘어온 경우 확인
+    private val _isFromMall = MutableStateFlow(false)
+    val isFromMall = _isFromMall.asStateFlow()
+
+    fun setFromMall(isFrom: Boolean) {
+        _isFromMall.value = isFrom
+    }
+
     init {
         initProducts()
     }

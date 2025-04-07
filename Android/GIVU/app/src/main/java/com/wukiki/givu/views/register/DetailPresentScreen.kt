@@ -152,7 +152,6 @@ fun DetailPresentScreen(
                                     fontFamily = suit,
                                     fontWeight = FontWeight.Medium,
                                     fontSize = 16.sp,
-                                    //                        color = colorResource(R.color.main_secondary)
                                 )
                                 Spacer(Modifier.height(4.dp))
                                 Text(
@@ -191,7 +190,6 @@ fun DetailPresentScreen(
                                         fontWeight = FontWeight.Medium,
                                         fontSize = 16.sp,
                                         modifier = Modifier.padding(12.dp)
-                                        //                        color = colorResource(R.color.main_secondary)
                                     )
                                 }
                             }

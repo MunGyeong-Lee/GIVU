@@ -38,7 +38,8 @@ import com.wukiki.givu.views.participate.component.PaymentBalancePager
 fun ParticipateFundingScreen(
     fundingViewModel: FundingViewModel,
     navController: NavController,
-    xmlNavController: NavController
+    xmlNavController: NavController,
+    onRequestFingerprint: () -> Unit
 ) {
     val funding by fundingViewModel.selectedFunding.collectAsState()
 
@@ -72,7 +73,10 @@ fun ParticipateFundingScreen(
                     IdentityVerificationPager()
                     PaymentBalancePager(fundingViewModel)
                     Button(
-                        onClick = { navController.navigate("WriteLetter") },
+                        onClick = {
+//                            navController.navigate("WriteLetter")
+                            onRequestFingerprint()
+                        },
                         modifier = Modifier
                             .fillMaxSize()
                             .height(56.dp),

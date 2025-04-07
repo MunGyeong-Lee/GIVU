@@ -1,7 +1,12 @@
 package com.wukiki.givu.views.register
 
+import android.annotation.SuppressLint
 import android.os.Bundle
+import android.util.Log
 import android.view.View
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -25,6 +30,7 @@ class RegisterFundingFragment :
     private val viewModelMall: MallViewModel by activityViewModels()
     private val mainViewModel: MainViewModel by activityViewModels()
 
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
@@ -33,11 +39,26 @@ class RegisterFundingFragment :
 
         binding.composeRegisterFunding.setContent {
             val navController = rememberNavController()
+
+
+            val selectedProduct by mainViewModel.selectedProduct.collectAsState()
+            val isFromMall by viewModel.isFromMall.collectAsState()
+
+            val startDestination = if (isFromMall && selectedProduct != null) "RegisterInputStep2" else "RegisterStep1"
+//            var startDestination = "RegisterStep1"
+
+            LaunchedEffect(selectedProduct, isFromMall) {
+                Log.d("RegisterFragment", "쇼핑몰에서 왔니: ${isFromMall}, ${selectedProduct}")
+                if (isFromMall && selectedProduct != null) {
+                    viewModel.selectProduct(selectedProduct!!)
+                }
+            }
             NavHost(
                 navController = navController,
-                startDestination = "RegisterStep1"
+                startDestination = startDestination
             ) {
                 composable("RegisterStep1") {
+
                     RegisterFundingScreen(viewModel, navController, findNavController())
                 }
 
