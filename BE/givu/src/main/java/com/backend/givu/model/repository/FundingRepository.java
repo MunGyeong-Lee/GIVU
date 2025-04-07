@@ -27,6 +27,16 @@ public interface FundingRepository extends JpaRepository<Funding, Integer> {
     List<Funding> findAllWithUserAndProduct();
 
 
+    @Query("""
+    SELECT f
+    FROM Funding f
+    JOIN FETCH f.user u
+    JOIN FETCH f.product p
+    WHERE f.id = :fundingId
+""")
+    Optional<Funding> findByIdWithUserAndProduct (@Param("fundingId") Integer fundingId);
+
+
     // Letter + User fetch join
     @Query("""
     SELECT l
