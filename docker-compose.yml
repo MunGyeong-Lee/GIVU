@@ -42,6 +42,34 @@ services:
       - givu_nginx-network
 
   # ---------------------
+  # Elasticsearch + Kibana
+  # ---------------------
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.12.2
+    container_name: elasticsearch
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+    ports:
+      - "9200:9200"
+    volumes:
+      - esdata:/usr/share/elasticsearch/data
+    networks:
+      - givu_nginx-network
+
+  kibana:
+    image: docker.elastic.co/kibana/kibana:8.12.2
+    container_name: kibana
+    ports:
+      - "5601:5601"
+    environment:
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+    depends_on:
+      - elasticsearch
+    networks:
+      - givu_nginx-network
+
+  # ---------------------
   # DB & Cache
   # ---------------------
   postgres:
@@ -124,10 +152,10 @@ services:
 networks:
   givu_nginx-network:
     name: givu_nginx-network
-    # external: true
-    driver: bridge
+    external: true
 
 volumes:
   kafka-data:
   pgdata:
   redis-data:
+  esdata:

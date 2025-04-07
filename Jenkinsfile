@@ -27,7 +27,7 @@ pipeline {
                 stage('Start Infra Services') {
             steps {
                  sh "docker network create givu_nginx-network || true"
-                 sh "docker-compose -f ${COMPOSE_FILE} up -d postgres redis kafka kafka-ui"
+                 sh "docker-compose -f ${COMPOSE_FILE} up -d postgres redis kafka kafka-ui elasticsearch kibana"
 
             }
         }
@@ -101,7 +101,7 @@ pipeline {
                                 ${REACT_IMAGE}
                     """
 
-                    sleep time: 5, unit: 'SECONDS'
+                    sleep time: 15, unit: 'SECONDS'
 
                     // nginx.conf 생성
                     def sedCommand = """
@@ -110,6 +110,21 @@ pipeline {
                             ${nginxTemplatePath} > ${nginxConfPath}
                     """
                     sh script: sedCommand
+
+                    // DNS가 등록될 때까지 대기 (최대 10번 시도)
+                    sh """
+                    for i in {1..10}; do
+                    docker run --rm --network ${NETWORK} busybox ping -c 1 ${backendNew} && break
+                    echo "[⏳] ${backendNew} not ready, retrying..."
+                    sleep 2
+                    done
+
+                    for i in {1..10}; do
+                    docker run --rm --network ${NETWORK} busybox ping -c 1 ${frontendNew} && break
+                    echo "[⏳] ${frontendNew} not ready, retrying..."
+                    sleep 2
+                    done
+                    """
                     
                     def nginxExists = sh(script: "docker ps -a --format '{{.Names}}' | grep nginx || true", returnStdout: true).trim()
 
@@ -117,11 +132,13 @@ pipeline {
                     if [ "${nginxExists}" = "nginx" ]; then
                         docker restart nginx
                     else
-                        docker run -d --name nginx \\
-                            --network ${NETWORK} \\
-                            -p 80:80 \\
-                            -v ${nginxConfPath}:/etc/nginx/nginx.conf:ro \\
-                            nginx
+                        docker run -d --name nginx \
+                            --network ${NETWORK} \
+                            -p 80:80 -p 443:443 \
+                            -v ${nginxConfPath}:/etc/nginx/nginx.conf:ro \
+                            -v /home/ubuntu/nginx/empty:/etc/nginx/conf.d:ro \
+                            -v /etc/letsencrypt:/etc/letsencrypt:ro \
+                            nginx:latest
                     fi
                     """
 
