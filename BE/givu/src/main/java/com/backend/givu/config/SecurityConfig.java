@@ -53,9 +53,10 @@ public class SecurityConfig {
                                 "/images/**",
                                 "/products/**",
                                 "/fundings/list",
-                                "/kafka/send",
+                                "/fundings/search",
+                                "/fundings/reindex",
+                                "/kafka/send"
                                 "/kafka/**"
-
                         ).permitAll()
                         .requestMatchers(
                                 "/users/info",
