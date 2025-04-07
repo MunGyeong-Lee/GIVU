@@ -1,8 +1,6 @@
 import React, { useState } from 'react';
-// 로컬 이미지 import
 import defaultImage from '../../../assets/images/default-funding-image.jpg';
-// React Icons 추가
-import { AiOutlineHeart, AiFillHeart } from 'react-icons/ai';
+// import { AiOutlineHeart, AiFillHeart } from 'react-icons/ai';
 
 // 펀딩 카드에 필요한 props 타입 정의
 interface FundingCardProps {
@@ -30,13 +28,13 @@ const FundingCard: React.FC<FundingCardProps> = ({
   onClick,
   status
 }) => {
-  // 찜하기 상태 관리
-  const [isLiked, setIsLiked] = useState(false);
+  // 찜하기 상태 관리 - 주석 처리 (아래 3줄)
+  // const [isLiked, setIsLiked] = useState(false);
   // 이미지 로딩 상태 관리
   const [imageError, setImageError] = useState(false);
-  // 애니메이션 상태 관리
-  const [isAnimating, setIsAnimating] = useState(false);
-  const [heartScale, setHeartScale] = useState(1);
+  // 애니메이션 상태 관리 - 주석 처리 (아래 2줄)
+  // const [isAnimating, setIsAnimating] = useState(false);
+  // const [heartScale, setHeartScale] = useState(1);
 
   // 펀딩 완료 상태 확인
   const isCompleted = status === 'COMPLETED';
@@ -47,7 +45,8 @@ const FundingCard: React.FC<FundingCardProps> = ({
     return Math.min(Math.round((currentAmount / targetAmount) * 100), 100);
   };
 
-  // 찜하기 토글 핸들러
+  // 찜하기 토글 핸들러 - 주석 처리 (아래 함수 전체)
+  /*
   const handleLikeToggle = (e: React.MouseEvent) => {
     e.stopPropagation();
 
@@ -70,6 +69,7 @@ const FundingCard: React.FC<FundingCardProps> = ({
       }, 200);
     }, 200);
   };
+  */
 
   // 이미지 로드 실패 핸들러
   const handleImageError = () => {
@@ -115,7 +115,8 @@ const FundingCard: React.FC<FundingCardProps> = ({
           </div>
         )}
 
-        {/* 찜하기 버튼 - 백그라운드 제거 및 아웃라인 유지 */}
+        {/* 찜하기 버튼 - 주석 처리 (아래 div 전체) */}
+        {/* 
         <div
           onClick={handleLikeToggle}
           className="absolute top-2 right-2 z-10 cursor-pointer transition-all"
@@ -134,6 +135,7 @@ const FundingCard: React.FC<FundingCardProps> = ({
             )}
           </div>
         </div>
+        */}
       </div>
 
       {/* 콘텐츠 영역 - 패딩 축소 */}
