@@ -18,4 +18,5 @@ public class ProductDetailDTO {
     private List<ProductReviewDTO> reviews;
     private Integer likeCount;
     private boolean likedByUser;
+    private boolean permission;
 }
