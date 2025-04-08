@@ -7,6 +7,8 @@ import com.wukiki.domain.model.Review
 import com.wukiki.domain.repository.ReviewRepository
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.withContext
 import okhttp3.MultipartBody
 import okhttp3.RequestBody
@@ -20,7 +22,8 @@ class ReviewRepositoryImpl @Inject constructor(
         fundingId: Int,
         file: MultipartBody.Part?,
         body: RequestBody
-    ): ApiResult<Review> =
+    ): Flow<ApiResult<Review>> = flow {
+        emit(ApiResult.loading(null))
         try {
             val response = withContext(CoroutineScope(Dispatchers.IO).coroutineContext) {
                 reviewRemoteDataSource.postFundingReview(fundingId.toString(), file, body)
@@ -30,13 +33,14 @@ class ReviewRepositoryImpl @Inject constructor(
             Log.d("ReviewRepositoryImpl", "Response: $responseBody")
             if (response.isSuccessful && (responseBody != null)) {
                 Log.d("ReviewRepositoryImpl", "registerFundingReview Success")
-                ApiResult.success(ReviewMapper(responseBody))
+                emit(ApiResult.success(ReviewMapper(responseBody)))
             } else {
                 Log.d("ReviewRepositoryImpl", "registerFundingReview Fail: ${response.code()}")
-                ApiResult.error(response.errorBody().toString(), null)
+                emit(ApiResult.error(response.errorBody().toString(), null))
             }
         } catch (e: Exception) {
             Log.e("ReviewRepositoryImpl", "registerFundingReview Error: $e")
-            ApiResult.fail()
+            emit(ApiResult.fail())
         }
+    }
 }
