@@ -64,7 +64,7 @@ fun MallScreen(
     )
     var selectedCategory by remember { mutableStateOf("전체") }
     val products by mallViewModel.filteredProducts.collectAsState()
-
+    val popularProducts = products.take(5)
 
     LaunchedEffect(Unit) {
         mallViewModel.mallUiEvent.collect { event ->
@@ -146,7 +146,7 @@ fun MallScreen(
                     fontWeight = FontWeight.Bold,
                     fontSize = 22.sp
                 )
-                PopularItemListPager()
+                PopularItemListPager(popularProducts)
             }
 
             item {

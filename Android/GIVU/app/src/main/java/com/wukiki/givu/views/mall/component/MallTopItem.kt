@@ -32,12 +32,15 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import coil.compose.SubcomposeAsyncImage
+import com.wukiki.domain.model.Product
 import com.wukiki.givu.R
 import com.wukiki.givu.ui.pretendard
 import com.wukiki.givu.ui.suit
+import com.wukiki.givu.util.CommonUtils
 
 @Composable
-fun MallItemPopular() {
+fun MallItemPopular(product: Product) {
     Card(
         modifier = Modifier
             .width(200.dp)
@@ -52,15 +55,14 @@ fun MallItemPopular() {
     ) {
         Column(modifier = Modifier.fillMaxWidth()) {
 
-            Image(
-                painter = painterResource(R.drawable.test_img_doll),
+            SubcomposeAsyncImage(
+                model = product.image,
                 contentDescription = null,
+                contentScale = ContentScale.Crop,
                 modifier = Modifier
                     .fillMaxWidth()
                     .aspectRatio(5f / 4f),
-                contentScale = ContentScale.Crop
             )
-
 
             Spacer(Modifier.height(8.dp))
 
@@ -71,12 +73,13 @@ fun MallItemPopular() {
             ) {
 
                 Text(
-                    text = "[카이스트특허기술] 그래비티 헤어리프팅 샴푸 엑스트라 버진",
+                    text = product.productName,
                     fontFamily = suit,
                     fontWeight = FontWeight.SemiBold,
                     fontSize = 16.sp,
                     maxLines = 2,
-                    overflow = TextOverflow.Ellipsis
+                    overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier.height(42.dp)
                 )
 
                 Spacer(Modifier.height(8.dp))
@@ -113,10 +116,10 @@ fun MallItemPopular() {
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = "10,000원",
+                        text = CommonUtils.makeCommaPrice(product.price.toInt()),
                         fontFamily = pretendard,
-                        fontWeight = FontWeight.ExtraBold,
-                        fontSize = 17.sp,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 18.sp,
                     )
 
                     Spacer(Modifier.weight(1f))
@@ -129,7 +132,7 @@ fun MallItemPopular() {
                         tint = colorResource(R.color.main_secondary)
                     )
                     Text(
-                        text = "4.9",
+                        text = product.star,
                         fontFamily = pretendard,
                         fontSize = 14.sp,
                         fontWeight = FontWeight.Normal
@@ -214,7 +217,7 @@ private fun NewItemTag(modifier: Modifier) {
 @Preview(showBackground = true)
 @Composable
 private fun PreviewMallItem() {
-    MallItemPopular()
+//    MallItemPopular()
 
 //    NewItemTag()
 }

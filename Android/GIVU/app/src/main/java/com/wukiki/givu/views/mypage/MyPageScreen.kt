@@ -44,7 +44,8 @@ import com.wukiki.givu.views.mypage.component.PayComponent
 @Composable
 fun MyPageScreen(
     homeViewModel: HomeViewModel,
-    navController: NavController
+    navController: NavController,
+    xmlNavController: NavController
 ) {
     val context = LocalContext.current
     val user by homeViewModel.user.collectAsState()
@@ -79,7 +80,7 @@ fun MyPageScreen(
                 .padding(top = 60.dp)
                 .verticalScroll(rememberScrollState())
         ) {
-            PayComponent(homeViewModel, navController)
+            PayComponent(homeViewModel, navController, xmlNavController)
             MyInfoComponent(navController)
             Spacer(modifier = Modifier.height(16.dp))
             if (user != null) {

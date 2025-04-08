@@ -43,7 +43,8 @@ import com.wukiki.givu.views.home.viewmodel.HomeViewModel
 @Composable
 fun PayComponent(
     homeViewModel: HomeViewModel,
-    navController: NavController
+    navController: NavController,
+    xmlNavController: NavController
 ) {
     val user by homeViewModel.user.collectAsState()
 
@@ -66,7 +67,12 @@ fun PayComponent(
                 .padding(8.dp)
                 .clip(shape = RoundedCornerShape(10.dp))
                 .clickable {
-                    navController.navigate("UserInfoScreen")
+                    if (user != null) {
+                        navController.navigate("UserInfoScreen")
+                    }
+                    else {
+                        xmlNavController.navigate(R.id.action_fragment_my_page_to_fragment_login)
+                    }
                 },
             verticalAlignment = Alignment.CenterVertically,
 
