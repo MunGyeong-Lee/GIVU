@@ -4,6 +4,7 @@ import com.wukiki.data.api.ProductApi
 import com.wukiki.data.entity.ProductDetailEntity
 import com.wukiki.data.entity.ProductEntity
 import com.wukiki.data.entity.ProductImageEntity
+import com.wukiki.data.entity.ProductSearchEntity
 import retrofit2.Response
 import javax.inject.Inject
 
@@ -25,4 +26,7 @@ class ProductRemoteDataSourceImpl @Inject constructor(
 
     override suspend fun getProducts(): Response<List<ProductDetailEntity>> =
         productApi.getProducts()
+
+    override suspend fun getProductsLike(): Response<ProductSearchEntity> =
+        productApi.getProductsLike()
 }
