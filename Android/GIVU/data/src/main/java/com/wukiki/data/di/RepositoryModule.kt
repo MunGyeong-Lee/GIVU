@@ -17,6 +17,8 @@ import com.wukiki.data.repository.productreview.ProductReviewRemoteDataSource
 import com.wukiki.data.repository.productreview.ProductReviewRepositoryImpl
 import com.wukiki.data.repository.review.ReviewRemoteDataSource
 import com.wukiki.data.repository.review.ReviewRepositoryImpl
+import com.wukiki.data.repository.transfer.TransferRemoteDataSource
+import com.wukiki.data.repository.transfer.TransferRepositoryImpl
 import com.wukiki.domain.repository.AuthRepository
 import com.wukiki.domain.repository.DataStoreRepository
 import com.wukiki.domain.repository.FundingRepository
@@ -25,6 +27,7 @@ import com.wukiki.domain.repository.MyPageRepository
 import com.wukiki.domain.repository.ProductRepository
 import com.wukiki.domain.repository.ProductReviewRepository
 import com.wukiki.domain.repository.ReviewRepository
+import com.wukiki.domain.repository.TransferRepository
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -75,6 +78,12 @@ object RepositoryModule {
     @Singleton
     fun provideMyPageRepository(myPageRemoteDataSource: MyPageRemoteDataSource): MyPageRepository {
         return MyPageRepositoryImpl(myPageRemoteDataSource)
+    }
+
+    @Provides
+    @Singleton
+    fun provideTransferRepository(transferRemoteDataSource: TransferRemoteDataSource): TransferRepository {
+        return TransferRepositoryImpl(transferRemoteDataSource)
     }
 
     @Provides

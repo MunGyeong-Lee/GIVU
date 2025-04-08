@@ -56,12 +56,6 @@ interface FundingApi {
         @Part file: MultipartBody.Part,
     ): Response<FundingImageEntity>
 
-    @POST("fundings/{fundingId}/transfer")
-    suspend fun postFundingTransfer(
-        @Path("fundingId") fundingId: String,
-        @Query("amount") amount: Int
-    ): Response<FundingTransferEntity>
-
     @GET("fundings/{paymentId}/transfer")
     suspend fun getFundingTransfer(
         @Path("paymentId") paymentId: Int
