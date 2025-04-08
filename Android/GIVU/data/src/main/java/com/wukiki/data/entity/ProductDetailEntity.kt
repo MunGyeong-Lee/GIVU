@@ -40,6 +40,4 @@ data class ProductDetailEntity(
 
     @Json(name = "description")
     val description: String
-
-
 )

@@ -4,9 +4,11 @@ import android.util.Log
 import com.wukiki.data.mapper.FundingDetailMapper
 import com.wukiki.data.mapper.FundingMapper
 import com.wukiki.data.mapper.FundingsMapper
+import com.wukiki.data.mapper.TransferMapper
 import com.wukiki.domain.model.ApiResult
 import com.wukiki.domain.model.Funding
 import com.wukiki.domain.model.FundingDetail
+import com.wukiki.domain.model.Transfer
 import com.wukiki.domain.repository.FundingRepository
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -106,6 +108,26 @@ class FundingRepositoryImpl @Inject constructor(
             ApiResult.fail()
         }
 
+    override suspend fun updateFundingComplete(fundingId: Int): ApiResult<Funding> =
+        try {
+            val response = withContext(CoroutineScope(Dispatchers.IO).coroutineContext) {
+                fundingRemoteDataSource.putFundingComplete(fundingId.toString())
+            }
+
+            val responseBody = response.body()
+            Log.d("FundingRepositoryImpl", "Response: $responseBody")
+            if (response.isSuccessful && (responseBody != null)) {
+                Log.d("FundingRepositoryImpl", "updateFundingComplete Success")
+                ApiResult.success(FundingMapper(responseBody))
+            } else {
+                Log.d("FundingRepositoryImpl", "updateFundingComplete Fail: ${response.code()}")
+                ApiResult.error(response.errorBody().toString(), null)
+            }
+        } catch (e: Exception) {
+            Log.e("FundingRepositoryImpl", "updateFundingComplete Error: $e")
+            ApiResult.fail()
+        }
+
     override suspend fun updateFundingImage(
         fundingId: Int,
         file: MultipartBody.Part
@@ -146,6 +168,46 @@ class FundingRepositoryImpl @Inject constructor(
             }
         } catch (e: Exception) {
             Log.e("FundingRepositoryImpl", "fetchFundings Error: $e")
+            ApiResult.fail()
+        }
+
+    override suspend fun transferFunding(fundingId: Int, amount: Int): ApiResult<Transfer> =
+        try {
+            val response = withContext(CoroutineScope(Dispatchers.IO).coroutineContext) {
+                fundingRemoteDataSource.postFundingTransfer(fundingId.toString(), amount)
+            }
+
+            val responseBody = response.body()
+            Log.d("FundingRepositoryImpl", "Response: $responseBody")
+            if (response.isSuccessful && (responseBody != null)) {
+                Log.d("FundingRepositoryImpl", "transferFunding Success")
+                ApiResult.success(TransferMapper(responseBody))
+            } else {
+                Log.d("FundingRepositoryImpl", "transferFunding Fail: ${response.code()}")
+                ApiResult.error(response.errorBody().toString(), null)
+            }
+        } catch (e: Exception) {
+            Log.e("FundingRepositoryImpl", "transferFunding Error: $e")
+            ApiResult.fail()
+        }
+
+    override suspend fun searchFundings(title: String): ApiResult<List<Funding>> =
+        try {
+            val response = withContext(CoroutineScope(Dispatchers.IO).coroutineContext) {
+                fundingRemoteDataSource.getFundingSearch(title)
+            }
+
+            val responseBody = response.body()
+            Log.d("FundingRepositoryImpl", "Response: $responseBody")
+            if (response.isSuccessful && (responseBody != null)) {
+                Log.d("FundingRepositoryImpl", "searchFundings Success")
+                ApiResult.success(FundingsMapper(responseBody.data))
+            } else {
+                Log.d("FundingRepositoryImpl", "searchFundings Fail: ${response.code()}")
+                ApiResult.error(response.errorBody().toString(), null)
+            }
+        } catch (e: Exception) {
+            Log.e("FundingRepositoryImpl", "searchFundings Error: $e")
             ApiResult.fail()
         }
 }
