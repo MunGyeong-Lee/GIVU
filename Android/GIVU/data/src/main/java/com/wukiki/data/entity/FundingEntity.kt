@@ -57,7 +57,7 @@ data class FundingUserEntity(
     val nickname: String,
 
     @Json(name = "image")
-    val image: String
+    val image: String?
 )
 
 @JsonClass(generateAdapter = true)

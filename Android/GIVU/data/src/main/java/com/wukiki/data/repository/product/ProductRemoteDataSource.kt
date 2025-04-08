@@ -11,5 +11,9 @@ interface ProductRemoteDataSource {
 
     suspend fun putProductImage(productId: Int): Response<ProductImageEntity>
 
+    suspend fun postProductLike(productId: Int): Response<Unit>
+
+    suspend fun postProductLikeCancel(productId: Int): Response<Unit>
+
     suspend fun getProducts(): Response<List<ProductDetailEntity>>
 }

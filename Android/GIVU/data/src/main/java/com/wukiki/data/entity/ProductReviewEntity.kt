@@ -15,7 +15,7 @@ data class ProductReviewEntity(
     val body: String,
 
     @Json(name = "image")
-    val image: String,
+    val image: String?,
 
     @Json(name = "star")
     val star: Double,
@@ -33,5 +33,5 @@ data class ProductReviewUserEntity(
     val nickname: String,
 
     @Json(name = "image")
-    val image: String
+    val image: String?
 )

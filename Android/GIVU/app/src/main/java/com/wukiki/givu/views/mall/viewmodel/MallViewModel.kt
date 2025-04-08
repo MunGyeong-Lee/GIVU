@@ -1,14 +1,11 @@
 package com.wukiki.givu.views.mall.viewmodel
 
 import android.app.Application
-import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.wukiki.domain.model.ApiStatus
 import com.wukiki.domain.model.Product
-import com.wukiki.domain.model.ProductReview
-import com.wukiki.domain.model.Review
-import com.wukiki.domain.usecase.GetProductReviewUseCase
+import com.wukiki.domain.model.ProductDetail
 import com.wukiki.domain.usecase.GetProductUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -22,8 +19,7 @@ import javax.inject.Inject
 @HiltViewModel
 class MallViewModel @Inject constructor(
     application: Application,
-    private val getProductUseCase: GetProductUseCase,
-    private val getProductReviewUseCase: GetProductReviewUseCase
+    private val getProductUseCase: GetProductUseCase
 ) : AndroidViewModel(application) {
 
     /*** Ui Event ***/
@@ -37,7 +33,7 @@ class MallViewModel @Inject constructor(
     private val _filteredProducts = MutableStateFlow<List<Product>>(emptyList())
     val filteredProducts = _filteredProducts.asStateFlow()
 
-    private val _selectedProduct = MutableStateFlow<Product?>(null)
+    private val _selectedProduct = MutableStateFlow<ProductDetail?>(null)
     val selectedProduct = _selectedProduct.asStateFlow()
 
 //    private val _productReviewList = MutableStateFlow<List<ProductReview>>(emptyList())
@@ -80,19 +76,54 @@ class MallViewModel @Inject constructor(
 
     fun getDetailProductInfo(productId: String) {
         viewModelScope.launch {
-            Log.d("Mall ViewModel", "아이디: ${productId.toInt()}")
             val response = getProductUseCase.getProductDetail(productId.toInt())
 
             when (response.status) {
                 ApiStatus.SUCCESS -> {
                     val productInfo = response.data
                     _selectedProduct.value = productInfo
-
-                    Timber.d("Product Info: ${_selectedProduct.value}")
                 }
 
                 else -> {
                     _mallUiEvent.emit(MallUiEvent.GoToProductDetail)
+                }
+            }
+        }
+    }
+
+    fun likeProduct() {
+        viewModelScope.launch {
+            val response = getProductUseCase.likeProduct(
+                productId = (_selectedProduct.value?.product?.productId ?: "-1").toInt()
+            )
+
+            when (response.status) {
+                ApiStatus.SUCCESS -> {
+                    getDetailProductInfo(_selectedProduct.value?.product?.productId ?: "-1")
+                    _mallUiEvent.emit(MallUiEvent.LikeProductSuccess)
+                }
+
+                else -> {
+                    _mallUiEvent.emit(MallUiEvent.LikeProductFail)
+                }
+            }
+        }
+    }
+
+    fun cancelLikeProduct() {
+        viewModelScope.launch {
+            val response = getProductUseCase.cancelLikeProduct(
+                productId = (_selectedProduct.value?.product?.productId ?: "-1").toInt()
+            )
+
+            when (response.status) {
+                ApiStatus.SUCCESS -> {
+                    getDetailProductInfo(_selectedProduct.value?.product?.productId ?: "-1")
+                    _mallUiEvent.emit(MallUiEvent.CancelLikeProductSuccess)
+                }
+
+                else -> {
+                    _mallUiEvent.emit(MallUiEvent.CancelLikeProductFail)
                 }
             }
         }

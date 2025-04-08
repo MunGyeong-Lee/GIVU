@@ -160,7 +160,7 @@ class FundingRepositoryImpl @Inject constructor(
             val responseBody = response.body()
             Log.d("FundingRepositoryImpl", "Response: $responseBody")
             if (response.isSuccessful && (responseBody != null)) {
-                Log.d("FundingRepositoryImpl", "fetchFundings Success")
+                Log.d("FundingRepositoryImpl", "fetchFundings Success: $responseBody")
                 ApiResult.success(FundingsMapper(responseBody))
             } else {
                 Log.d("FundingRepositoryImpl", "fetchFundings Fail: ${response.code()}")
@@ -175,6 +175,26 @@ class FundingRepositoryImpl @Inject constructor(
         try {
             val response = withContext(CoroutineScope(Dispatchers.IO).coroutineContext) {
                 fundingRemoteDataSource.postFundingTransfer(fundingId.toString(), amount)
+            }
+
+            val responseBody = response.body()
+            Log.d("FundingRepositoryImpl", "Response: $responseBody")
+            if (response.isSuccessful && (responseBody != null)) {
+                Log.d("FundingRepositoryImpl", "transferFunding Success")
+                ApiResult.success(TransferMapper(responseBody))
+            } else {
+                Log.d("FundingRepositoryImpl", "transferFunding Fail: ${response.code()}")
+                ApiResult.error(response.errorBody().toString(), null)
+            }
+        } catch (e: Exception) {
+            Log.e("FundingRepositoryImpl", "transferFunding Error: $e")
+            ApiResult.fail()
+        }
+
+    override suspend fun getPaymentOfFunding(paymentId: Int): ApiResult<Transfer> =
+        try {
+            val response = withContext(CoroutineScope(Dispatchers.IO).coroutineContext) {
+                fundingRemoteDataSource.getFundingTransfer(paymentId)
             }
 
             val responseBody = response.body()

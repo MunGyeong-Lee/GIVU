@@ -76,7 +76,7 @@ fun DetailPresentScreen(
 
     LaunchedEffect(productInfo) {
 
-        productReviewList = productInfo?.reviews ?: emptyList()
+        productReviewList = productInfo?.product?.reviews ?: emptyList()
 
         Log.d("Mall Detail Screen", "상품: ${productInfo}")
         Log.d("Mall Detail Screen", "리뷰: ${productReviewList}")
@@ -106,7 +106,7 @@ fun DetailPresentScreen(
                 ) {
                     item {
                         SubcomposeAsyncImage(
-                            model = it.image,
+                            model = it.product.image,
                             contentDescription = null,
                             contentScale = ContentScale.FillWidth,
                             loading = { CircularProgressIndicator() },
@@ -145,7 +145,7 @@ fun DetailPresentScreen(
                                     )
                                     Spacer(Modifier.width(4.dp))
                                     Text(
-                                        text = it.star,
+                                        text = it.product.star,
                                         fontFamily = pretendard,
                                         fontWeight = FontWeight.Bold,
                                         fontSize = 16.sp,
@@ -162,7 +162,7 @@ fun DetailPresentScreen(
                                 )
                                 Spacer(Modifier.height(4.dp))
                                 Text(
-                                    text = CommonUtils.makeCommaPrice(it.price.toInt()),
+                                    text = CommonUtils.makeCommaPrice(it.product.price.toInt()),
                                     fontFamily = pretendard,
                                     fontWeight = FontWeight.SemiBold,
                                     fontSize = 20.sp,
@@ -192,7 +192,7 @@ fun DetailPresentScreen(
                                         .border(1.dp, Color.Black, RoundedCornerShape(5.dp)),
                                 ) {
                                     Text(
-                                        text = it.description,
+                                        text = it.product.description,
                                         fontFamily = suit,
                                         fontWeight = FontWeight.Medium,
                                         fontSize = 16.sp,

@@ -14,7 +14,7 @@ object MyFundingMapper {
                     id = funding.fundingId,
                     userId = funding.user.userId,
                     userNickname = funding.user.nickname,
-                    userProfile = funding.user.image,
+                    userProfile = funding.user.image ?: "",
                     productId = funding.product.id,
                     productName = funding.product.productName,
                     productPrice = funding.product.price.toString(),

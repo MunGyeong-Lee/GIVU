@@ -48,6 +48,9 @@ class FundingRemoteDataSourceImpl @Inject constructor(
     ): Response<FundingTransferEntity> =
         fundingApi.postFundingTransfer(fundingId, amount)
 
+    override suspend fun getFundingTransfer(paymentId: Int): Response<FundingTransferEntity> =
+        fundingApi.getFundingTransfer(paymentId)
+
     override suspend fun getFundingSearch(title: String): Response<FundingSearchEntity> =
         fundingApi.getFundingSearch(title)
 }

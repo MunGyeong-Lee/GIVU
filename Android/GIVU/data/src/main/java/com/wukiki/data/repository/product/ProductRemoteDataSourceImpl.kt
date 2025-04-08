@@ -17,6 +17,12 @@ class ProductRemoteDataSourceImpl @Inject constructor(
     override suspend fun putProductImage(productId: Int): Response<ProductImageEntity> =
         productApi.putProductImage(productId)
 
+    override suspend fun postProductLike(productId: Int): Response<Unit> =
+        productApi.postProductLike(productId)
+
+    override suspend fun postProductLikeCancel(productId: Int): Response<Unit> =
+        productApi.postProductLikeCancel(productId)
+
     override suspend fun getProducts(): Response<List<ProductDetailEntity>> =
         productApi.getProducts()
 }

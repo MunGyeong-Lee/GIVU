@@ -128,7 +128,7 @@ class HomeViewModel @Inject constructor(
             childFundings
         )
         _fundings.value = newFundings
-        _popularFundings.value = allFundings.sortedByDescending { it.participantsNumber }.subList(0, 10)
+        _popularFundings.value = allFundings.sortedByDescending { it.participantsNumber }.subList(0, 5)
     }
 
     private fun makePayRequestBody(): RequestBody {

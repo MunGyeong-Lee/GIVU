@@ -16,10 +16,10 @@ object ProductReviewsMapper {
                     title = productReviewEntity.title,
                     body = productReviewEntity.body,
                     userId = productReviewEntity.user.userId,
-                    image = productReviewEntity.image,
+                    image = productReviewEntity.image ?: "",
                     nickname = productReviewEntity.user.nickname,
                     star = productReviewEntity.star,
-                    userImage = productReviewEntity.user.image,
+                    userImage = productReviewEntity.user.image ?: ""
                 )
             )
         }

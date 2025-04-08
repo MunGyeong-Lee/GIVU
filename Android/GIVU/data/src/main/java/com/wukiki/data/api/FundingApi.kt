@@ -62,6 +62,11 @@ interface FundingApi {
         @Query("amount") amount: Int
     ): Response<FundingTransferEntity>
 
+    @GET("fundings/{paymentId}/transfer")
+    suspend fun getFundingTransfer(
+        @Path("paymentId") paymentId: Int
+    ): Response<FundingTransferEntity>
+
     @GET("fundings/list")
     suspend fun getFundings(): Response<List<FundingEntity>>
 

@@ -37,5 +37,7 @@ interface FundingRemoteDataSource {
 
     suspend fun postFundingTransfer(fundingId: String, amount: Int): Response<FundingTransferEntity>
 
+    suspend fun getFundingTransfer(paymentId: Int): Response<FundingTransferEntity>
+
     suspend fun getFundingSearch(title: String): Response<FundingSearchEntity>
 }
