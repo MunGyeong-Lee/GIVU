@@ -3,12 +3,14 @@ package com.wukiki.givu.views.search.viewmodel
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import com.wukiki.domain.model.ApiResult
 import com.wukiki.domain.model.ApiStatus
 import com.wukiki.domain.model.Funding
 import com.wukiki.domain.usecase.GetFundingUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import timber.log.Timber
 import javax.inject.Inject
@@ -18,6 +20,11 @@ class SearchViewModel @Inject constructor(
     application: Application,
     private val getFundingUseCase: GetFundingUseCase
 ) : AndroidViewModel(application) {
+
+    /*** Ui State ***/
+    private val _fundingsState =
+        MutableStateFlow<ApiResult<List<Funding>>>(ApiResult.init())
+    val fundingsState = _fundingsState.asStateFlow()
 
     /*** Datas ***/
     private val _searchKeyword = MutableStateFlow<String>("")
@@ -64,16 +71,13 @@ class SearchViewModel @Inject constructor(
                 else -> {
                     val response = getFundingUseCase.searchFundings(keyword)
 
-                    when (response.status) {
-                        ApiStatus.SUCCESS -> {
-                            val newResult = response.data?.toMutableList()
+                    response.collectLatest { result ->
+                        _fundingsState.value = result
+                        if (_fundingsState.value.status == ApiStatus.SUCCESS) {
+                            val newResult = result.data?.toMutableList()
                                 ?: emptyList<Funding>().toMutableList()
                             newResult.sortByDescending { it.createdAt }
                             _searchResults.value = newResult
-                        }
-
-                        else -> {
-
                         }
                     }
                 }
