@@ -2,7 +2,7 @@ import axios from 'axios';
 import { getAuthToken } from './auth.service';
 
 // API Base URL
-const API_BASE_URL = import.meta.env.VITE_BASE_URL;
+// const API_BASE_URL = import.meta.env.VITE_BASE_URL;
 
 // 후기 데이터 인터페이스
 export interface ReviewData {
@@ -128,6 +128,7 @@ export const getFundingReviews = async (
   size: number = 10
 ) => {
   try {
+    console.log(`펀딩 ID ${fundingId}에 대한 후기 조회 시작`);
     const token = getAuthToken();
     
     const headers: Record<string, string> = {
@@ -144,13 +145,19 @@ export const getFundingReviews = async (
     
     console.log(`후기 목록 API 호출: ${endpoint}`);
     
+    const params: Record<string, any> = {
+      page,
+      size
+    };
+    
+    if (fundingId !== 'all') {
+      params.fundingId = fundingId;
+    }
+    
     const response = await axios.get(
       endpoint,
       {
-        params: {
-          page,
-          size
-        },
+        params,
         headers
       }
     );
