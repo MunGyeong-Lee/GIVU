@@ -1,246 +1,433 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useNavigate, useLocation } from 'react-router-dom';
-import axios from 'axios';
+import { useNavigate, useSearchParams } from 'react-router-dom';
+import { createReview } from '../../services/review.service';
+import { motion } from 'framer-motion';
 
-function FundingReviewWritePage() {
+const FundingReviewWritePage = () => {
   const navigate = useNavigate();
-  const location = useLocation();
-  const queryParams = new URLSearchParams(location.search);
-  const fundingId = queryParams.get('fundingId');
+  const [searchParams] = useSearchParams();
+  const fundingId = searchParams.get('fundingId');
+  
+  const [formData, setFormData] = useState({
+    title: '',
+    content: '',
+    rating: 5,
+    images: [] as File[]
+  });
 
-  const [title, setTitle] = useState('');
-  const [content, setContent] = useState('');
-  const [images, setImages] = useState<File[]>([]);
-  const [imagePreviewUrls, setImagePreviewUrls] = useState<string[]>([]);
-  const [loading, setLoading] = useState(false);
+  const [previewImage, setPreviewImage] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [step, setStep] = useState(1);
 
-  // 페이지 로드 시 fundingId 확인
   useEffect(() => {
     if (!fundingId) {
-      alert('펀딩 정보가 없습니다. 펀딩 목록 페이지로 이동합니다.');
       navigate('/funding');
     }
   }, [fundingId, navigate]);
 
-  // 이미지 파일 선택 핸들러
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    e.preventDefault();
-
-    const files = e.target.files;
-    if (!files) {
-      return;
-    }
-
-    const newImages: File[] = [...images];
-    const newImagePreviewUrls: string[] = [...imagePreviewUrls];
-
-    for (let i = 0; i < files.length; i++) {
-      const file = files[i];
-      newImages.push(file);
-
-      // 이미지 미리보기 URL 생성
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        if (typeof reader.result === 'string') {
-          newImagePreviewUrls.push(reader.result);
-          setImagePreviewUrls([...newImagePreviewUrls]);
-        }
-      };
-      reader.readAsDataURL(file);
-    }
-
-    setImages(newImages);
-  };
-
-  // 이미지 제거 핸들러
-  const removeImage = (index: number) => {
-    const newImages = [...images];
-    const newImagePreviewUrls = [...imagePreviewUrls];
-
-    newImages.splice(index, 1);
-    newImagePreviewUrls.splice(index, 1);
-
-    setImages(newImages);
-    setImagePreviewUrls(newImagePreviewUrls);
-  };
-
-  // 폼 제출 핸들러
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
+    
     if (!fundingId) {
-      alert('펀딩 정보가 없습니다.');
+      setError('펀딩 ID가 없습니다.');
       return;
     }
 
-    if (!content.trim()) {
-      alert('내용을 입력해주세요');
+    if (!formData.title.trim()) {
+      setError('제목을 입력해주세요.');
+      return;
+    }
+
+    if (!formData.content.trim()) {
+      setError('내용을 입력해주세요.');
       return;
     }
 
     try {
-      setLoading(true);
+      setIsSubmitting(true);
+      setError(null);
 
-      // FormData 객체 생성
-      const formData = new FormData();
+      await createReview({
+        ...formData,
+        fundingId: parseInt(fundingId)
+      });
+
+      showSuccessMessage();
       
-      // 댓글 데이터 추가
-      const reviewData = {
-        comment: content
+      setTimeout(() => {
+        navigate('/funding/review');
+      }, 1500);
+    } catch (err: any) {
+      setError(err.message || '후기 작성 중 오류가 발생했습니다.');
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files.length > 0) {
+      const file = e.target.files[0];
+      setFormData(prev => ({
+        ...prev,
+        images: [file]
+      }));
+      
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setPreviewImage(reader.result as string);
       };
-      
-      formData.append('data', new Blob([JSON.stringify(reviewData)], { type: 'application/json' }));
-      
-      // 이미지 파일 추가 (첫 번째 이미지만 사용)
-      if (images.length > 0) {
-        formData.append('image', images[0]);
-      }
+      reader.readAsDataURL(file);
+    }
+  };
+  
+  const goToNextStep = () => {
+    if (formData.title.trim() === '') {
+      setError('제목을 입력해주세요.');
+      return;
+    }
+    setError(null);
+    setStep(2);
+  };
+  
+  const goToPrevStep = () => {
+    setStep(1);
+  };
+  
+  const showSuccessMessage = () => {
+    console.log('후기가 성공적으로 등록되었습니다.');
+  };
 
-      // 인증 토큰 가져오기
-      const token = localStorage.getItem('auth_token');
-      if (!token) {
-        alert('로그인이 필요합니다.');
-        navigate('/login');
-        return;
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: { 
+      opacity: 1,
+      transition: { duration: 0.6 }
+    },
+    exit: { 
+      opacity: 0,
+      transition: { duration: 0.4 }
+    }
+  };
+  
+  const formVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: { 
+      opacity: 1, 
+      y: 0,
+      transition: { 
+        duration: 0.6,
+        staggerChildren: 0.1
       }
-      
-      // API 호출
-      await axios.post(
-        `${import.meta.env.VITE_API_BASE_URL}/fundings/reviews/${fundingId}`,
-        formData,
-        {
-          headers: {
-            'Content-Type': 'multipart/form-data',
-            'Authorization': `Bearer ${token}`
-          }
-        }
-      );
-
-      alert('후기가 성공적으로 등록되었습니다.');
-      navigate('/funding/review');
-    } catch (error) {
-      console.error('후기 등록 중 오류가 발생했습니다:', error);
-      if (axios.isAxiosError(error) && error.response?.status === 403) {
-        alert('로그인이 필요합니다. 로그인 페이지로 이동합니다.');
-        navigate('/login');
-      } else {
-        alert('후기 등록에 실패했습니다. 다시 시도해주세요.');
-      }
-    } finally {
-      setLoading(false);
+    }
+  };
+  
+  const itemVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: { 
+      opacity: 1, 
+      y: 0,
+      transition: { duration: 0.5 }
     }
   };
 
   return (
-    <div className="max-w-4xl mx-auto py-8 px-4">
-      {/* 헤더 */}
-      <div className="border-b border-gray-200 pb-4 mb-6">
-        <h1 className="text-2xl font-bold">펀딩 후기 작성</h1>
-        <p className="text-gray-600 mt-1">
-          받은 선물과 펀딩 경험에 대한 후기를 남겨주세요.
-        </p>
-      </div>
-
-      {/* 후기 작성 폼 */}
-      <form onSubmit={handleSubmit}>
-        {/* 제목 입력 */}
-        <div className="mb-6">
-          <label htmlFor="title" className="block mb-2 font-medium">
-            제목 <span className="text-red-500">*</span>
-          </label>
-          <input
-            type="text"
-            id="title"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            className="w-full p-3 border border-gray-300 rounded-md"
-            placeholder="제목을 입력해주세요"
-            required
-          />
-        </div>
-
-        {/* 이미지 업로드 */}
-        <div className="mb-6">
-          <label className="block mb-2 font-medium">
-            이미지 첨부
-          </label>
-          <div className="border-2 border-dashed border-gray-300 p-6 rounded-md text-center">
-            <input
-              type="file"
-              id="image-upload"
-              onChange={handleImageChange}
-              className="hidden"
-              accept="image/*"
-              multiple
-            />
-            <label htmlFor="image-upload" className="cursor-pointer">
-              <div className="flex flex-col items-center">
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12 text-gray-400 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                </svg>
-                <p className="text-gray-500">이미지를 드래그하거나 클릭하여 업로드</p>
-                <p className="text-gray-400 text-sm mt-1">최대 5MB, JPG, PNG 파일</p>
-              </div>
-            </label>
-          </div>
-
-          {/* 이미지 미리보기 */}
-          {imagePreviewUrls.length > 0 && (
-            <div className="mt-4 grid grid-cols-2 sm:grid-cols-3 gap-4">
-              {imagePreviewUrls.map((url, index) => (
-                <div key={index} className="relative">
-                  <img
-                    src={url}
-                    alt={`미리보기 ${index + 1}`}
-                    className="w-full h-32 object-cover rounded-md"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => removeImage(index)}
-                    className="absolute top-2 right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center"
-                  >
-                    ×
-                  </button>
-                </div>
-              ))}
+    <motion.div 
+      variants={containerVariants}
+      initial="hidden"
+      animate="visible"
+      exit="exit"
+      className="w-full min-h-screen bg-gray-50 py-12 px-4"
+    >
+      <div className="max-w-3xl mx-auto">
+        <div className="text-center mb-10">
+          <motion.div 
+            initial={{ scale: 0.8, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            transition={{ duration: 0.5 }}
+            className="inline-block mb-4"
+          >
+            <div className="w-20 h-20 mx-auto bg-rose-100 rounded-full flex items-center justify-center">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-10 w-10 text-rose-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+              </svg>
             </div>
-          )}
-        </div>
-
-        {/* 내용 입력 */}
-        <div className="mb-6">
-          <label htmlFor="content" className="block mb-2 font-medium">
-            내용 <span className="text-red-500">*</span>
-          </label>
-          <textarea
-            id="content"
-            value={content}
-            onChange={(e) => setContent(e.target.value)}
-            className="w-full p-3 border border-gray-300 rounded-md min-h-[200px]"
-            placeholder="펀딩 경험과 받은 선물에 대한 후기를 작성해주세요"
-            required
-          ></textarea>
-        </div>
-
-        {/* 제출 버튼 */}
-        <div className="flex justify-end gap-2">
-          <Link
-            to="/funding/review"
-            className="px-6 py-2 border border-gray-300 rounded-md hover:bg-gray-50 transition"
+          </motion.div>
+          <motion.h1 
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.1 }}
+            className="text-3xl font-bold text-gray-800 mb-2"
           >
-            취소
-          </Link>
-          <button
-            type="submit"
-            disabled={loading}
-            className="px-6 py-2 bg-black text-white rounded-md hover:bg-gray-800 transition disabled:bg-gray-400"
+            펀딩 후기 작성
+          </motion.h1>
+          <motion.p
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.6, delay: 0.2 }}
+            className="text-gray-600 max-w-md mx-auto"
           >
-            {loading ? '등록 중...' : '등록하기'}
-          </button>
+            펀딩을 통해 얻은 경험을 공유해주세요. 여러분의 솔직한 후기가 다른 사용자들에게 도움이 됩니다.
+          </motion.p>
         </div>
-      </form>
-    </div>
+        
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.3 }}
+          className="mb-8"
+        >
+          <div className="flex items-center justify-center">
+            <div className="flex items-center">
+              <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold ${
+                step >= 1 ? 'bg-rose-500 text-white' : 'bg-gray-200 text-gray-600'
+              }`}>
+                1
+              </div>
+              <div className={`w-16 h-1 ${
+                step >= 2 ? 'bg-rose-500' : 'bg-gray-200'
+              }`}></div>
+              <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold ${
+                step >= 2 ? 'bg-rose-500 text-white' : 'bg-gray-200 text-gray-600'
+              }`}>
+                2
+              </div>
+            </div>
+          </div>
+          <div className="flex justify-center mt-2">
+            <div className="text-xs text-gray-500 w-24 text-center">기본 정보</div>
+            <div className="text-xs text-gray-500 w-24 text-center">상세 내용</div>
+          </div>
+        </motion.div>
+
+        {error && (
+          <motion.div 
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3 }}
+            className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-xl mb-6 flex items-start"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2 mt-0.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <span>{error}</span>
+          </motion.div>
+        )}
+
+        {step === 1 && (
+          <motion.div
+            variants={formVariants}
+            initial="hidden"
+            animate="visible"
+            className="bg-white rounded-2xl p-8 shadow-sm"
+          >
+            <motion.div variants={itemVariants} className="mb-6">
+              <label htmlFor="title" className="block text-sm font-medium text-gray-700 mb-2">
+                제목 <span className="text-rose-500">*</span>
+              </label>
+              <input
+                type="text"
+                id="title"
+                value={formData.title}
+                onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
+                placeholder="후기의 제목을 입력해주세요"
+                className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-rose-500 focus:border-rose-500 transition-colors"
+                required
+              />
+            </motion.div>
+
+            <motion.div variants={itemVariants} className="mb-6">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                별점 <span className="text-rose-500">*</span>
+              </label>
+              <div className="flex items-center space-x-1">
+                {[1, 2, 3, 4, 5].map((star) => (
+                  <button
+                    key={star}
+                    type="button"
+                    onClick={() => setFormData(prev => ({ ...prev, rating: star }))}
+                    className="focus:outline-none transform hover:scale-110 transition-transform"
+                  >
+                    <svg
+                      className={`w-10 h-10 ${
+                        star <= formData.rating ? 'text-yellow-400' : 'text-gray-300'
+                      }`}
+                      fill="currentColor"
+                      viewBox="0 0 20 20"
+                    >
+                      <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                    </svg>
+                  </button>
+                ))}
+                <span className="ml-3 text-lg font-medium text-gray-700">
+                  {formData.rating}/5
+                </span>
+              </div>
+            </motion.div>
+
+            <motion.div variants={itemVariants} className="flex justify-end mt-8">
+              <button
+                type="button"
+                onClick={goToNextStep}
+                className="px-6 py-3 bg-rose-500 text-white rounded-xl hover:bg-rose-600 transition-colors shadow-sm hover:shadow-md flex items-center"
+              >
+                다음 단계
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
+              </button>
+            </motion.div>
+          </motion.div>
+        )}
+
+        {step === 2 && (
+          <motion.form 
+            onSubmit={handleSubmit}
+            variants={formVariants}
+            initial="hidden"
+            animate="visible"
+            className="bg-white rounded-2xl p-8 shadow-sm"
+          >
+            <motion.div variants={itemVariants} className="mb-6">
+              <label htmlFor="content" className="block text-sm font-medium text-gray-700 mb-2">
+                후기 내용 <span className="text-rose-500">*</span>
+              </label>
+              <textarea
+                id="content"
+                value={formData.content}
+                onChange={(e) => setFormData(prev => ({ ...prev, content: e.target.value }))}
+                placeholder="펀딩을 통해 얻은 경험과 느낌을 자세히 작성해주세요."
+                rows={8}
+                className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-rose-500 focus:border-rose-500 transition-colors"
+                required
+              />
+            </motion.div>
+
+            <motion.div variants={itemVariants} className="mb-6">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                이미지 업로드
+              </label>
+              
+              <div className="flex flex-col sm:flex-row gap-4 items-start">
+                <div 
+                  className={`border-2 border-dashed rounded-xl ${
+                    previewImage ? 'border-rose-300 bg-rose-50' : 'border-gray-300 hover:border-rose-300 bg-gray-50 hover:bg-rose-50'
+                  } transition-colors p-4 text-center cursor-pointer w-full sm:w-1/3 h-48 relative overflow-hidden`}
+                  onClick={() => document.getElementById('image-upload')?.click()}
+                >
+                  {previewImage ? (
+                    <img 
+                      src={previewImage} 
+                      alt="Preview" 
+                      className="w-full h-full object-cover rounded-lg"
+                    />
+                  ) : (
+                    <div className="flex flex-col items-center justify-center h-full">
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                      </svg>
+                      <p className="mt-2 text-sm text-gray-500">클릭하여 이미지 선택</p>
+                      <p className="text-xs text-gray-400">권장: 1200x800px</p>
+                    </div>
+                  )}
+                </div>
+                
+                <div className="flex-1">
+                  <input
+                    id="image-upload"
+                    type="file"
+                    accept="image/*"
+                    onChange={handleImageChange}
+                    className="hidden"
+                  />
+                  <p className="text-sm text-gray-600 mb-2">
+                    이미지는 후기의 신뢰도를 높여줍니다. 펀딩 상품의 사진을 공유해주세요.
+                  </p>
+                  
+                  {previewImage && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setPreviewImage(null);
+                        setFormData(prev => ({ ...prev, images: [] }));
+                      }}
+                      className="px-3 py-1 bg-gray-200 text-gray-700 rounded-lg text-sm hover:bg-gray-300 transition-colors"
+                    >
+                      이미지 삭제
+                    </button>
+                  )}
+                </div>
+              </div>
+            </motion.div>
+
+            <motion.div variants={itemVariants} className="flex justify-between mt-8">
+              <button
+                type="button"
+                onClick={goToPrevStep}
+                className="px-6 py-3 border border-gray-300 rounded-xl text-gray-700 hover:bg-gray-50 transition-colors flex items-center"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                </svg>
+                이전
+              </button>
+              
+              <div className="flex gap-3">
+                <button
+                  type="button"
+                  onClick={() => navigate(-1)}
+                  className="px-6 py-3 border border-gray-300 rounded-xl text-gray-700 hover:bg-gray-50 transition-colors"
+                >
+                  취소
+                </button>
+                <button
+                  type="submit"
+                  disabled={isSubmitting}
+                  className="px-8 py-3 bg-rose-500 text-white rounded-xl hover:bg-rose-600 transition-colors shadow-sm hover:shadow-md flex items-center disabled:opacity-70 disabled:cursor-not-allowed"
+                >
+                  {isSubmitting ? (
+                    <>
+                      <svg className="animate-spin -ml-1 mr-2 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      </svg>
+                      작성 중...
+                    </>
+                  ) : (
+                    <>
+                      작성 완료
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                      </svg>
+                    </>
+                  )}
+                </button>
+              </div>
+            </motion.div>
+          </motion.form>
+        )}
+        
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.7, duration: 0.6 }}
+          className="mt-8 bg-gray-50 rounded-xl p-4 border border-gray-200"
+        >
+          <h3 className="text-sm font-semibold text-gray-700 flex items-center">
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2 text-yellow-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            좋은 후기 작성 팁
+          </h3>
+          <ul className="mt-2 text-xs text-gray-600 space-y-1 pl-7 list-disc">
+            <li>펀딩 목표가 어떻게 달성되었는지 구체적으로 설명해주세요.</li>
+            <li>상품이나 서비스에 대한 솔직한 평가를 공유해주세요.</li>
+            <li>다른 사람들이 참고할 수 있는 유용한 정보를 포함해주세요.</li>
+            <li>개인정보나 민감한 내용은 포함하지 말아주세요.</li>
+          </ul>
+        </motion.div>
+      </div>
+    </motion.div>
   );
-}
+};
 
 export default FundingReviewWritePage; 
