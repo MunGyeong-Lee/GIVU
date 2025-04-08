@@ -38,10 +38,10 @@ export const useCreateFunding = () => {
 
   return useMutation<FundingResponse, Error, {
     fundingData: CreateFundingData;
-    mainImage: string;
+    mainImage?: string;
     additionalImages?: string[];
   }>({
-    mutationFn: async ({ fundingData, mainImage, additionalImages }) => {
+    mutationFn: async ({ fundingData, additionalImages }) => {
       // 토큰 확인
       const token = localStorage.getItem('auth_token');
       if (!token) {
@@ -56,7 +56,6 @@ export const useCreateFunding = () => {
           title: fundingData.title,
           productId: fundingData.productId,
           scope: fundingData.scope,
-          hasMainImage: !!mainImage,
           additionalImagesCount: additionalImages?.length || 0,
           hasToken: !!token
         });
@@ -82,7 +81,7 @@ export const useCreateFunding = () => {
       const token = localStorage.getItem('auth_token');
       console.log('[펀딩 생성 Mutation 시작]', {
         title: variables.fundingData.title,
-        hasImage: !!variables.mainImage,
+        hasImage: variables.additionalImages && variables.additionalImages.length > 0,
         isAuthenticated: !!token
       });
     },
