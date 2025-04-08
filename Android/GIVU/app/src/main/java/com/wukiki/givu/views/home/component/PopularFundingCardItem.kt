@@ -107,7 +107,7 @@ fun PopularFundingCardItem(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 SubcomposeAsyncImage(
-                    model = if (funding.images.isNotEmpty()) funding.images[0] else "",
+                    model = funding.userProfile,
                     contentDescription = "Profile Image",
                     contentScale = ContentScale.Crop,
                     modifier = Modifier
@@ -123,7 +123,7 @@ fun PopularFundingCardItem(
                     },
                     error = {
                         Image(
-                            painter = painterResource(id = R.drawable.ic_logo),
+                            painter = painterResource(id = R.drawable.ic_profile),
                             contentDescription = "Error",
                             modifier = Modifier
                                 .clip(RoundedCornerShape(10.dp))
@@ -163,7 +163,7 @@ fun PopularFundingCardItem(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = CommonUtils.makeCommaPrice(funding.fundedAmount),
+                        text = CommonUtils.makeCommaPrice(funding.productPrice.toInt()),
                         fontSize = 16.sp,
                         fontWeight = FontWeight.ExtraBold,
                         color = Color.Black,

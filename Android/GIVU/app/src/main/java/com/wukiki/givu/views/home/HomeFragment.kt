@@ -22,6 +22,8 @@ class HomeFragment : BaseFragment<FragmentHomeBinding>(R.layout.fragment_home) {
 
         binding.vm = viewModel
 
+        viewModel.initFundings()
+
         binding.composeHome.setContent {
             HomeScreen(viewModel, findNavController())
         }

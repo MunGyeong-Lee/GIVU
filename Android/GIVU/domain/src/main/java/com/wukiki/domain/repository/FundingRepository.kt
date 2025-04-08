@@ -31,8 +31,6 @@ interface FundingRepository {
 
     suspend fun fetchFundings(): Flow<ApiResult<List<Funding>>>
 
-    suspend fun transferFunding(fundingId: Int, amount: Int): Flow<ApiResult<Transfer>>
-
     suspend fun getPaymentOfFunding(paymentId: Int): Flow<ApiResult<Transfer>>
 
     suspend fun searchFundings(title: String): Flow<ApiResult<List<Funding>>>

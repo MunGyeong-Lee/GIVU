@@ -7,6 +7,7 @@ import com.wukiki.data.api.MyPageApi
 import com.wukiki.data.api.ProductApi
 import com.wukiki.data.api.ProductReviewApi
 import com.wukiki.data.api.ReviewApi
+import com.wukiki.data.api.TransferApi
 import com.wukiki.data.repository.auth.AuthRemoteDataSource
 import com.wukiki.data.repository.auth.AuthRemoteDataSourceImpl
 import com.wukiki.data.repository.funding.FundingRemoteDataSource
@@ -21,6 +22,8 @@ import com.wukiki.data.repository.productreview.ProductReviewRemoteDataSource
 import com.wukiki.data.repository.productreview.ProductReviewRemoteDataSourceImpl
 import com.wukiki.data.repository.review.ReviewRemoteDataSource
 import com.wukiki.data.repository.review.ReviewRemoteDataSourceImpl
+import com.wukiki.data.repository.transfer.TransferRemoteDataSource
+import com.wukiki.data.repository.transfer.TransferRemoteDataSourceImpl
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -71,5 +74,11 @@ object RemoteDataModule {
     @Singleton
     fun provideMyPageRemoteDataSource(myPageApi: MyPageApi): MyPageRemoteDataSource {
         return MyPageRemoteDataSourceImpl(myPageApi)
+    }
+
+    @Provides
+    @Singleton
+    fun provideTransferRemoteDataSource(transferApi: TransferApi): TransferRemoteDataSource {
+        return TransferRemoteDataSourceImpl(transferApi)
     }
 }

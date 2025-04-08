@@ -9,6 +9,7 @@ import com.wukiki.data.api.MyPageApi
 import com.wukiki.data.api.ProductApi
 import com.wukiki.data.api.ProductReviewApi
 import com.wukiki.data.api.ReviewApi
+import com.wukiki.data.api.TransferApi
 import com.wukiki.data.util.JwtInterceptor
 import dagger.Module
 import dagger.Provides
@@ -95,5 +96,11 @@ object NetworkModule {
     @Singleton
     fun provideMyPageApiService(@Named("Givu") retrofit: Retrofit): MyPageApi {
         return retrofit.create(MyPageApi::class.java)
+    }
+
+    @Provides
+    @Singleton
+    fun provideTransferApiService(@Named("Givu") retrofit: Retrofit): TransferApi {
+        return retrofit.create(TransferApi::class.java)
     }
 }

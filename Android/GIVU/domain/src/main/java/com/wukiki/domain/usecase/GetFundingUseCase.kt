@@ -37,9 +37,6 @@ class GetFundingUseCase @Inject constructor(
     suspend fun fetchFundings(): Flow<ApiResult<List<Funding>>> =
         fundingRepository.fetchFundings()
 
-    suspend fun transferFunding(fundingId: Int, amount: Int): Flow<ApiResult<Transfer>> =
-        fundingRepository.transferFunding(fundingId, amount)
-
     suspend fun fetchPaymentOfFunding(paymentId: Int): Flow<ApiResult<Transfer>> =
         fundingRepository.getPaymentOfFunding(paymentId)
 

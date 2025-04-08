@@ -21,6 +21,7 @@ import com.wukiki.domain.usecase.GetLetterUseCase
 import com.wukiki.domain.usecase.GetMyPageUseCase
 import com.wukiki.domain.usecase.GetProductUseCase
 import com.wukiki.domain.usecase.GetReviewUseCase
+import com.wukiki.domain.usecase.GetTransferUseCase
 import com.wukiki.givu.util.CheckState
 import com.wukiki.givu.util.InputValidState
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -48,7 +49,8 @@ class FundingViewModel @Inject constructor(
     private val getProductUseCase: GetProductUseCase,
     private val getReviewUseCase: GetReviewUseCase,
     private val getLetterUseCase: GetLetterUseCase,
-    private val getMyPageUseCase: GetMyPageUseCase
+    private val getMyPageUseCase: GetMyPageUseCase,
+    private val getTransferUseCase: GetTransferUseCase
 ) : AndroidViewModel(application) {
 
     /*** Ui State, Event ***/
@@ -466,7 +468,7 @@ class FundingViewModel @Inject constructor(
 
     fun transferFunding() {
         viewModelScope.launch {
-            val response = getFundingUseCase.transferFunding(
+            val response = getTransferUseCase.transferFunding(
                 fundingId = _selectedFunding.value?.id ?: -1,
                 amount = _charge.value
             )
