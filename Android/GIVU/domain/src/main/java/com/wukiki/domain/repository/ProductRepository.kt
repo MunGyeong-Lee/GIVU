@@ -16,4 +16,6 @@ interface ProductRepository {
     suspend fun postProductLikeCancel(productId: Int): Flow<ApiResult<Unit>>
 
     suspend fun getProducts(): Flow<ApiResult<List<Product>>>
+
+    suspend fun fetchProductsLike(): Flow<ApiResult<List<Product>>>
 }
