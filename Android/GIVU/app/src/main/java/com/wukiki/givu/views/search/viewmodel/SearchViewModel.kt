@@ -73,7 +73,7 @@ class SearchViewModel @Inject constructor(
 
                     response.collectLatest { result ->
                         _fundingsState.value = result
-                        if (_fundingsState.value.status == ApiStatus.SUCCESS) {
+                        if (result.status == ApiStatus.SUCCESS) {
                             val newResult = result.data?.toMutableList()
                                 ?: emptyList<Funding>().toMutableList()
                             newResult.sortByDescending { it.createdAt }

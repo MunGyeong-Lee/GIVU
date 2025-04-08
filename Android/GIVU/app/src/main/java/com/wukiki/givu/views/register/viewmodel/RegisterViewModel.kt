@@ -228,9 +228,9 @@ class RegisterViewModel @Inject constructor(
 
             response.collectLatest { result ->
                 _fundingState.value = result
-                if (_fundingState.value.status == ApiStatus.SUCCESS) {
+                if (result.status == ApiStatus.SUCCESS) {
                     _registerUiEvent.emit(RegisterUiEvent.RegisterFundingSuccess)
-                } else if ((_fundingState.value.status == ApiStatus.FAIL) || (_fundingState.value.status == ApiStatus.ERROR)) {
+                } else if ((result.status == ApiStatus.FAIL) || (result.status == ApiStatus.ERROR)) {
                     _registerUiEvent.emit(RegisterUiEvent.RegisterFundingFail)
                 }
             }
