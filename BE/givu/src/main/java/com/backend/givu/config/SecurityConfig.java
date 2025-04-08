@@ -57,6 +57,7 @@ public class SecurityConfig {
                                 "/fundings/list",
                                 "/fundings/search",
                                 "/fundings/reindex",
+                                "/fundings/*",
                                 "/kafka/send",
                                 "/kafka/**"
                         ).permitAll()
