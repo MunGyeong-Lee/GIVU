@@ -31,6 +31,7 @@ public class ProductService {
     private final ProductRepository productRepository;
     private final ProductReviewRepository productReviewRepository;
     private final ProductSearchRepository productSearchRepository;
+    private final PaymentService paymentService;
     private final UserRepository userRepository;
     private final RedisTemplate<String, String> redisTemplate;
 
@@ -86,8 +87,9 @@ public class ProductService {
         // Redis에서 좋아요 수 & 유저가 좋아요 했는지 여부 조회
         long likeCount = getLikeCount(productId);
         boolean likedByUser = (userId != null) && hasLiked(userId, productId);
+        boolean permission = (userId != null) && paymentService.checkPermission(userId,productId);
 
-        return new ProductDetailDTO(productsDTO, reviews, (int) likeCount, likedByUser);
+        return new ProductDetailDTO(productsDTO, reviews, (int) likeCount, likedByUser, permission);
     }
 
     public Product findProductEntity(int productId){
@@ -98,23 +100,40 @@ public class ProductService {
     public void saveProductEntity(Product product){
         productRepository.save(product);
     }
-    public ProductReviewDTO saveProductReview(long userId, int productId, ProductReviewCreateDTO reviewDTO){
+
+
+
+    public ProductReviewDTO saveProductReview(long userId, int productId, ProductReviewCreateDTO reviewDTO) throws AccessDeniedException {
         Product product = productRepository.findById(productId)
                 .orElseThrow(() -> new EntityNotFoundException("상품을 찾을 수 없습니다."));
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new EntityNotFoundException("유저를 찾을 수 없습니다."));
 
+        boolean permission = paymentService.checkPermission(userId,productId);
+        if(!permission) throw new AccessDeniedException("리뷰 작성 권한이 없습니다.");
+
+        if(reviewDTO.getStar() < 1 || reviewDTO.getStar() > 5){
+            throw new IllegalArgumentException("별점은 1점 이상 5점 이하만 가능합니다.");
+        }
         ProductReview savedReview = productReviewRepository.save(ProductReview.from(user,product,reviewDTO));
+
+        updateProductAverageStar(productId);
+
         return ProductReview.toDTO(savedReview);
     }
 
-    public ProductReviewDTO updateProductReview(Long userId, int reviewId, ProductReviewCreateDTO dto) throws AccessDeniedException {
+
+
+    public ProductReviewDTO updateProductReview(Long userId, int reviewId, ProductReviewCreateDTO dto, int productId) throws AccessDeniedException {
         ProductReview review = productReviewRepository.findById(reviewId)
                 .orElseThrow(() -> new NotFoundException("리뷰를 찾을 수 없습니다."));
 
         // 본인 리뷰인지 검증
         if (!review.getUser().getId().equals(userId)) {
             throw new AccessDeniedException("리뷰 수정 권한이 없습니다.");
+        }
+        if(review.getStar() < 1 || review.getStar() > 5){
+            throw new IllegalArgumentException("별점은 1점 이상 5점 이하만 가능합니다.");
         }
 
         review.setTitle(dto.getTitle());
@@ -124,19 +143,22 @@ public class ProductService {
         if (dto.getImage() != null) {
             review.setImage(dto.getImage());
         }
+        ProductReview savedReview = productReviewRepository.save(review);
 
-        return ProductReview.toDTO(productReviewRepository.save(review));
+        updateProductAverageStar(productId);
+
+        return ProductReview.toDTO(savedReview);
     }
 
-    public void deleteReview(long userId, int reviewId) throws AccessDeniedException {
+    public void deleteReview(long userId, int reviewId, int productId) throws AccessDeniedException {
         ProductReview review = productReviewRepository.findById(reviewId)
                 .orElseThrow(() -> new NotFoundException("리뷰를 찾을 수 없습니다."));
         // 본인 리뷰인지 검증
         if (!review.getUser().getId().equals(userId)) {
             throw new AccessDeniedException("리뷰 삭제 권한이 없습니다.");
         }
-
         productReviewRepository.deleteById(reviewId);
+        updateProductAverageStar(productId);
     }
 
 
@@ -190,6 +212,16 @@ public class ProductService {
     // 특정 상품을 좋아요한 유저 목록
     public Set<String> getProductLikedUsers(Integer productId) {
         return redisTemplate.opsForSet().members(getProductLikeKey(productId));
+    }
+
+    private void updateProductAverageStar(int productId) {
+        Double avg = productReviewRepository.findAverageStarByProductId(productId);
+        if (avg == null) avg = 0.0;
+
+        Product product = productRepository.findById(productId)
+                .orElseThrow(() -> new EntityNotFoundException("상품을 찾을 수 없습니다."));
+        product.setStar(avg);
+        productRepository.save(product);
     }
 
 

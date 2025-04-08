@@ -52,8 +52,9 @@ public class ProductReviewController implements ProductReviewControllerDocs {
         return ResponseEntity.ok(savedReview);
     }
 
-    @PatchMapping(value = "/{reviewId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PatchMapping(value = "/{productId}/{reviewId}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<ProductReviewDTO> updateProductReview(
+            @PathVariable int productId,
             @PathVariable int reviewId,
             @RequestPart("data") String data,
             @RequestPart(value = "image", required = false) MultipartFile imageFile,
@@ -69,17 +70,17 @@ public class ProductReviewController implements ProductReviewControllerDocs {
             dto.setImage(imageUrl);
         }
 
-        ProductReviewDTO updatedReview = productService.updateProductReview(userId, reviewId, dto);
+        ProductReviewDTO updatedReview = productService.updateProductReview(userId, reviewId, dto, productId);
         return ResponseEntity.ok(updatedReview);
     }
 
     @Operation(summary = "상품 리뷰 삭제", description = "해당 상품 리뷰를 삭제합니다.")
-    @DeleteMapping("/{reviewId}")
-    public ResponseEntity<Void> deleteReview(@PathVariable int reviewId, @AuthenticationPrincipal CustomUserDetail userDetail) throws AccessDeniedException {
+    @DeleteMapping("/{productId}/{reviewId}")
+    public ResponseEntity<Void> deleteReview(@PathVariable int productId, @PathVariable int reviewId, @AuthenticationPrincipal CustomUserDetail userDetail) throws AccessDeniedException {
 
         Long userId = userDetail.getId();
 
-        productService.deleteReview(userId, reviewId);
+        productService.deleteReview(userId, reviewId, productId);
 
         return ResponseEntity.noContent().build(); // 204
     }
