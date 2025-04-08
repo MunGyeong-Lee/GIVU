@@ -10,6 +10,9 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 
 public interface PaymentRepository extends JpaRepository<Payment, Integer> {
@@ -18,4 +21,8 @@ public interface PaymentRepository extends JpaRepository<Payment, Integer> {
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("SELECT p FROM Payment p WHERE p.id = :paymentId")
     Optional<Payment> findByIdForUpdate(@Param("paymentId") Integer paymentId);
+
+
+    List<Payment> findAllByStatusAndDateBefore(PaymentsStatus status, Instant date);
+
 }
