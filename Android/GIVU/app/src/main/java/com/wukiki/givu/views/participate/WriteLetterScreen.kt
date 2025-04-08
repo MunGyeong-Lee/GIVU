@@ -46,7 +46,8 @@ import com.wukiki.givu.views.participate.component.FundingInfoPager
 fun WriteLetterScreen(
     fundingViewModel: FundingViewModel,
     navController: NavController,
-    xmlNavController: NavController
+    xmlNavController: NavController,
+    onRequestFingerprint: () -> Unit
 ) {
     val context = LocalContext.current
     val funding by fundingViewModel.selectedFunding.collectAsState()
@@ -151,22 +152,23 @@ fun WriteLetterScreen(
 
                 Button(
                     onClick = {
-                        fundingViewModel.participateFunding()
+                        onRequestFingerprint()
+                        // fundingViewModel.participateFunding()
                     },
                     modifier = Modifier
                         .fillMaxSize()
                         .height(56.dp),
-                    enabled = true,
+                    enabled = writeLetter != "",
                     shape = RoundedCornerShape(10.dp),
                     border = BorderStroke(1.dp, Color(0xFFECECEC)),
-                    colors = ButtonDefaults.buttonColors(colorResource(R.color.main_primary)),
+                    colors = ButtonDefaults.buttonColors(if (writeLetter == "") Color.LightGray else colorResource(R.color.main_primary)),
                 ) {
                     Text(
                         text = stringResource(R.string.text_write_letter),
                         fontFamily = suit,
                         fontWeight = FontWeight.Bold,
                         fontSize = 18.sp,
-                        color = Color.White
+                        color = if (writeLetter == "") Color.DarkGray else Color.White
                     )
                 }
             }

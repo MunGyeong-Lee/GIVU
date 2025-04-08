@@ -2,7 +2,6 @@ package com.wukiki.givu.views.detail
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -21,7 +20,6 @@ import com.wukiki.givu.R
 import com.wukiki.givu.util.StoreDetailBottomButton
 import com.wukiki.givu.views.detail.component.DetailFundingContent
 import com.wukiki.givu.views.detail.viewmodel.FundingViewModel
-import timber.log.Timber
 
 @Composable
 fun DetailFundingScreen(
@@ -40,10 +38,9 @@ fun DetailFundingScreen(
                     shadowElevation = 16.dp,
                     color = Color.White
                 ) {
-                    if (it.writerId == (user?.id ?: "-1").toInt()) {
+                    if (it.isCreator) {
                         when (it.fundedAmount == it.productPrice.toInt()) {
                             true -> {
-                                Timber.d("내가 만든 완료된 펀딩")
                                 StoreDetailBottomButton(
                                     modifier = Modifier
                                         .fillMaxWidth()
@@ -55,29 +52,17 @@ fun DetailFundingScreen(
                             }
 
                             else -> {
-                                Timber.d("내가 만든 대기중인 펀딩")
-                                Row {
-                                    StoreDetailBottomButton(
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .height(68.dp),
-                                        text = stringResource(R.string.text_funding_update),
-                                        navController = navController,
-                                        actionId = R.id.action_detail_funding_to_update_funding
-                                    ) { }
-                                    StoreDetailBottomButton(
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .height(68.dp),
-                                        text = stringResource(R.string.text_funding_cancel),
-                                        navController = navController,
-                                        actionId = R.id.action_detail_funding_to_cancel_funding
-                                    ) { }
-                                }
+                                StoreDetailBottomButton(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .height(68.dp),
+                                    text = stringResource(R.string.text_funding_update),
+                                    navController = navController,
+                                    actionId = R.id.action_detail_funding_to_update_funding
+                                ) { }
                             }
                         }
                     } else {
-                        Timber.d("다른 사람의 펀딩")
                         StoreDetailBottomButton(
                             modifier = Modifier
                                 .fillMaxWidth()

@@ -1,5 +1,6 @@
 package com.wukiki.givu.views.participate
 
+import android.widget.Toast
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -14,10 +15,12 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -27,6 +30,8 @@ import androidx.navigation.NavController
 import com.wukiki.givu.R
 import com.wukiki.givu.ui.suit
 import com.wukiki.givu.util.CommonTopBar
+import com.wukiki.givu.views.community.viewmodel.CommunityUiEvent
+import com.wukiki.givu.views.detail.viewmodel.FundingUiEvent
 import com.wukiki.givu.views.detail.viewmodel.FundingViewModel
 import com.wukiki.givu.views.participate.component.FundingAmountSelectionPager
 import com.wukiki.givu.views.participate.component.FundingInfoPager
@@ -38,10 +43,31 @@ import com.wukiki.givu.views.participate.component.PaymentBalancePager
 fun ParticipateFundingScreen(
     fundingViewModel: FundingViewModel,
     navController: NavController,
-    xmlNavController: NavController,
-    onRequestFingerprint: () -> Unit
+    xmlNavController: NavController
 ) {
+    val context = LocalContext.current
+    val user by fundingViewModel.user.collectAsState()
     val funding by fundingViewModel.selectedFunding.collectAsState()
+    val charge by fundingViewModel.charge.collectAsState()
+    val fundingUiEvent = fundingViewModel.fundingUiEvent
+
+    LaunchedEffect(Unit) {
+        fundingUiEvent.collect { event ->
+            when (event) {
+                is FundingUiEvent.TransferFail -> {
+                    Toast.makeText(
+                        context,
+                        context.getString(R.string.message_transfer_fail),
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
+
+                else -> {
+
+                }
+            }
+        }
+    }
 
     Scaffold(
         topBar = {
@@ -69,28 +95,27 @@ fun ParticipateFundingScreen(
                 funding?.let {
                     FundingInfoPager(it)
                     FundingAmountSelectionPager(fundingViewModel)
-                    ParticipantInfoPager()
-                    IdentityVerificationPager()
+                    ParticipantInfoPager(user)
+                    // IdentityVerificationPager()
                     PaymentBalancePager(fundingViewModel)
                     Button(
                         onClick = {
-//                            navController.navigate("WriteLetter")
-                            onRequestFingerprint()
+                            navController.navigate("WriteLetter")
                         },
                         modifier = Modifier
                             .fillMaxSize()
                             .height(56.dp),
-                        enabled = true,
+                        enabled = charge > 0,
                         shape = RoundedCornerShape(10.dp),
                         border = BorderStroke(1.dp, Color(0xFFECECEC)),
-                        colors = ButtonDefaults.buttonColors(colorResource(R.color.main_primary)),
+                        colors = ButtonDefaults.buttonColors(if (charge == 0) Color.LightGray else colorResource(R.color.main_primary)),
                     ) {
                         Text(
                             text = stringResource(R.string.title_participate_funding),
                             fontFamily = suit,
                             fontWeight = FontWeight.Bold,
                             fontSize = 18.sp,
-                            color = Color.White
+                            color = if (charge == 0) Color.DarkGray else Color.White
                         )
                     }
                 }

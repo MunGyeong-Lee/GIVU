@@ -3,6 +3,7 @@ package com.wukiki.domain.model
 data class FundingDetail(
     val id: Int,
     val title: String,
+    val isCreator: Boolean,
     val description: String,
     val category: String,
     val categoryName: String,

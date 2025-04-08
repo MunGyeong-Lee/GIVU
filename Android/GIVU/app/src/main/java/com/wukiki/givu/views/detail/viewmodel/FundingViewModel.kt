@@ -74,6 +74,9 @@ class FundingViewModel @Inject constructor(
     private val _originalImages = MutableStateFlow<HashMap<String, Boolean>>(hashMapOf())
     val originalImages = _originalImages.asStateFlow()
 
+    private val _charge = MutableStateFlow<Int>(0)
+    val charge = _charge.asStateFlow()
+
     private val _fundingTitle = MutableStateFlow<String>("")
     val fundingTitle = _fundingTitle
 
@@ -215,6 +218,26 @@ class FundingViewModel @Inject constructor(
         emit(user)
     }
 
+    private fun participateFunding() {
+        viewModelScope.launch {
+            val response = getLetterUseCase.submitFundingLetter(
+                fundingId = _selectedFunding.value?.id.toString(),
+                image = null,
+                body = makeLetterRequestBody()
+            )
+
+            when (response.status) {
+                ApiStatus.SUCCESS -> {
+                    _fundingUiEvent.emit(FundingUiEvent.ParticipateFundingSuccess)
+                }
+
+                else -> {
+                    _fundingUiEvent.emit(FundingUiEvent.ParticipateFundingFail)
+                }
+            }
+        }
+    }
+
     fun initUserInfo() {
         viewModelScope.launch {
             val response = getAuthUseCase.fetchUserInfo()
@@ -279,6 +302,10 @@ class FundingViewModel @Inject constructor(
                 }
             }
         }
+    }
+
+    fun setCharge(money: Int) {
+        _charge.value = money
     }
 
     fun sortLetters(sortOption: String) {
@@ -386,21 +413,21 @@ class FundingViewModel @Inject constructor(
         }
     }
 
-    fun participateFunding() {
+    fun transferFunding() {
         viewModelScope.launch {
-            val response = getLetterUseCase.submitFundingLetter(
-                fundingId = _selectedFunding.value?.id.toString(),
-                image = null,
-                body = makeLetterRequestBody()
+            val response = getFundingUseCase.transferFunding(
+                fundingId = _selectedFunding.value?.id ?: -1,
+                amount = _charge.value
             )
 
             when (response.status) {
                 ApiStatus.SUCCESS -> {
-                    _fundingUiEvent.emit(FundingUiEvent.ParticipateFundingSuccess)
+                    _charge.value = 0
+                    participateFunding()
                 }
 
                 else -> {
-                    _fundingUiEvent.emit(FundingUiEvent.ParticipateFundingFail)
+                    _fundingUiEvent.emit(FundingUiEvent.TransferFail)
                 }
             }
         }

@@ -4,6 +4,10 @@ sealed class FundingUiEvent {
 
     data object GetProductsFail : FundingUiEvent()
 
+    data object TransferSuccess : FundingUiEvent()
+
+    data object TransferFail : FundingUiEvent()
+
     data object ParticipateFundingSuccess : FundingUiEvent()
 
     data object ParticipateFundingFail : FundingUiEvent()

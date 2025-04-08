@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.Card
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Text
@@ -28,6 +29,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.wukiki.givu.ui.suit
@@ -67,13 +69,19 @@ fun FundingAmountSelectionPager(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(16.dp)
-                        .clickable { selectedAmount = makeCommaPrice(amount) },
+                        .clickable {
+                            selectedAmount = makeCommaPrice(amount)
+                            fundingViewModel.setCharge(amount)
+                        },
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     RadioButton(
-                        enabled = (amount >= (user?.balance ?: "0").toInt()),
                         selected = selectedAmount == makeCommaPrice(amount),
-                        onClick = { selectedAmount = makeCommaPrice(amount) })
+                        onClick = {
+                            selectedAmount = makeCommaPrice(amount)
+                            fundingViewModel.setCharge(amount)
+                        }
+                    )
                     Spacer(modifier = Modifier.width(8.dp))
                     Column {
                         Text(
@@ -112,7 +120,11 @@ fun FundingAmountSelectionPager(
             ) {
                 RadioButton(
                     selected = selectedAmount == "직접 입력",
-                    onClick = { selectedAmount = "직접 입력" })
+                    onClick =  {
+                        selectedAmount = "직접 입력"
+                        fundingViewModel.setCharge(0)
+                    }
+                )
                 Spacer(modifier = Modifier.width(8.dp))
                 Column {
                     Text(
@@ -140,7 +152,10 @@ fun FundingAmountSelectionPager(
                             ) {
                                 BasicTextField(
                                     value = text,
-                                    onValueChange = { text = it },
+                                    onValueChange = {
+                                        text = it
+                                        fundingViewModel.setCharge(if (it == "") 0 else it.toInt())
+                                    },
                                     singleLine = true,
                                     textStyle = TextStyle(
                                         color = Color.Black,
@@ -150,13 +165,14 @@ fun FundingAmountSelectionPager(
                                     ),
                                     modifier = Modifier
                                         .fillMaxWidth()
-                                        .padding(horizontal = 2.dp, vertical = 1.dp)
+                                        .padding(horizontal = 2.dp, vertical = 1.dp),
+                                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                                 )
                             }
                         }
                         Spacer(modifier = Modifier.width(8.dp))
                         Text(
-                            text = "원" ,
+                            text = "원",
                             color = Color.Black,
                             fontSize = 18.sp,
                             fontFamily = suit,
