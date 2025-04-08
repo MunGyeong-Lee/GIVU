@@ -38,7 +38,13 @@ public class FundingDetailDTO {
     private List<LetterDetailDTO> letters;
     private List<ReviewsDTO> reviews;
 
-    public static FundingDetailDTO of(Funding f, boolean creator, User writer, Product p, List<Letter> letters, List<Review> reviews, Long currentUserId){
+    private List<UserSimpleInfoDTO> participants;
+
+
+
+    public static FundingDetailDTO of(
+            Funding f, boolean creator, User writer, Product p, List<Letter> letters,
+            List<Review> reviews, Long currentUserId, List<User> participants){
         return new FundingDetailDTO(
                 f.getId(),
                 creator,
@@ -58,7 +64,11 @@ public class FundingDetailDTO {
                 new ProductsSimpleInfoDTO(p),
 
                 letters.stream().map(letter -> new LetterDetailDTO(letter, currentUserId)).toList(),
-                reviews.stream().map(ReviewsDTO::new).toList()
+                reviews.stream().map(ReviewsDTO::new).toList(),
+
+                participants.stream()
+                        .map(u -> new UserSimpleInfoDTO(u.getId(), u.getNickname(), u.getProfileImage()))
+                        .toList()
         );
     }
 
