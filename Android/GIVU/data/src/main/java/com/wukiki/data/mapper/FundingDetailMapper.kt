@@ -48,6 +48,7 @@ object FundingDetailMapper {
         
         return FundingDetail(
             id = fundingDetailEntity.data.fundingId,
+            isCreator = fundingDetailEntity.data.isCreator,
             title = fundingDetailEntity.data.title,
             description = fundingDetailEntity.data.description,
             category = fundingDetailEntity.data.category ?: "",
