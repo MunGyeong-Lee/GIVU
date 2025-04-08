@@ -40,5 +40,20 @@ public class KafkaController {
         return "⏸️ Kafka Consumer Already Stopped";
     }
 
+    @PostMapping("/status")
+    public String checkKafkaListenerStatus() {
+        MessageListenerContainer container = registry.getListenerContainer("transferListener");
+
+        if (container == null) {
+            return "❌ 리스너 ID 'transferListener' 를 찾을 수 없습니다!";
+        }
+
+        return String.format("✅ 리스너 상태 - isRunning: %b, isPaused: %b", container.isRunning(), container.isContainerPaused());
+    }
+
+
+
+
+
 
 }
