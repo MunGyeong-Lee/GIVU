@@ -208,7 +208,7 @@ class FundingViewModel @Inject constructor(
             "scope" to when (_isFundingPublicState.value) {
                 true -> "공개"
 
-                else -> "비공개"
+                else -> "비밀"
             },
             "toDelete" to _originalImages.value.filter { it.value }.keys.toList()
         )
@@ -262,9 +262,9 @@ class FundingViewModel @Inject constructor(
 
             response.collectLatest { result ->
                 _letterState.value = result
-                if (_letterState.value.status == ApiStatus.SUCCESS) {
+                if (result.status == ApiStatus.SUCCESS) {
                     getPaymentOfFunding(paymentId)
-                } else if ((_letterState.value.status == ApiStatus.FAIL) || (_letterState.value.status == ApiStatus.ERROR)) {
+                } else if ((result.status == ApiStatus.FAIL) || (result.status == ApiStatus.ERROR)) {
                     _fundingUiEvent.emit(FundingUiEvent.ParticipateFundingFail)
                 }
             }
@@ -277,9 +277,9 @@ class FundingViewModel @Inject constructor(
 
             response.collectLatest { result ->
                 _transferState.value = result
-                if (_transferState.value.status == ApiStatus.SUCCESS) {
+                if (result.status == ApiStatus.SUCCESS) {
                     _fundingUiEvent.emit(FundingUiEvent.ParticipateFundingSuccess)
-                } else if ((_transferState.value.status == ApiStatus.FAIL) || (_transferState.value.status == ApiStatus.ERROR)) {
+                } else if ((result.status == ApiStatus.FAIL) || (result.status == ApiStatus.ERROR)) {
                     _fundingUiEvent.emit(FundingUiEvent.ParticipateFundingFail)
                 }
             }
@@ -292,8 +292,8 @@ class FundingViewModel @Inject constructor(
 
             response.collectLatest { result ->
                 _userState.value = result
-                if (_userState.value.status == ApiStatus.SUCCESS) {
-                    _user.value = _userState.value.data
+                if (result.status == ApiStatus.SUCCESS) {
+                    _user.value = result.data
                 }
             }
         }
@@ -306,7 +306,7 @@ class FundingViewModel @Inject constructor(
 
             response.collectLatest { result ->
                 _fundingDetailState.value = result
-                if (_fundingDetailState.value.status == ApiStatus.SUCCESS) {
+                if (result.status == ApiStatus.SUCCESS) {
                     _selectedFunding.value = result.data
                     setFundingInfo()
                 }
@@ -475,10 +475,10 @@ class FundingViewModel @Inject constructor(
 
             response.collectLatest { result ->
                 _transferState.value = result
-                if (_transferState.value.status == ApiStatus.SUCCESS) {
+                if (result.status == ApiStatus.SUCCESS) {
                     _charge.value = 0
                     participateFunding(result.data?.paymentId ?: -1)
-                } else if ((_transferState.value.status == ApiStatus.FAIL) || (_transferState.value.status == ApiStatus.ERROR)) {
+                } else if ((result.status == ApiStatus.FAIL) || (result.status == ApiStatus.ERROR)) {
                     _fundingUiEvent.emit(FundingUiEvent.TransferFail)
                 }
             }
@@ -495,9 +495,9 @@ class FundingViewModel @Inject constructor(
 
             response.collectLatest { result ->
                 _fundingState.value = result
-                if (_fundingState.value.status == ApiStatus.SUCCESS) {
+                if (result.status == ApiStatus.SUCCESS) {
                     _fundingUiEvent.emit(FundingUiEvent.UpdateFundingSuccess)
-                } else if ((_fundingState.value.status == ApiStatus.FAIL) || (_fundingState.value.status == ApiStatus.ERROR)) {
+                } else if ((result.status == ApiStatus.FAIL) || (result.status == ApiStatus.ERROR)) {
                     _fundingUiEvent.emit(FundingUiEvent.UpdateFundingFail)
                 }
             }

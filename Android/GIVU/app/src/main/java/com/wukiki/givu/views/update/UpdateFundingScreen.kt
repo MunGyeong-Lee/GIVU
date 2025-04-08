@@ -63,6 +63,7 @@ import com.wukiki.givu.ui.pretendard
 import com.wukiki.givu.ui.suit
 import com.wukiki.givu.util.CommonBottomButton
 import com.wukiki.givu.util.CommonTopBar
+import com.wukiki.givu.util.CommonUtils.makeCommaPrice
 import com.wukiki.givu.util.shimmerEffect
 import com.wukiki.givu.views.detail.viewmodel.FundingUiEvent
 import com.wukiki.givu.views.detail.viewmodel.FundingViewModel
@@ -184,7 +185,7 @@ fun UpdateFundingScreen(
                         modifier = Modifier.fillMaxWidth()
                     ) {
                         SubcomposeAsyncImage(
-                            model = if (it.images.isEmpty()) "" else it.images[0],
+                            model = it.productImage,
                             contentDescription = null,
                             modifier = Modifier
                                 .size(100.dp)
@@ -223,7 +224,7 @@ fun UpdateFundingScreen(
                             )
                             Spacer(Modifier.weight(1f))
                             Text(
-                                text = it.productPrice,
+                                text = makeCommaPrice(it.productPrice.toInt()),
                                 fontFamily = pretendard,
                                 fontWeight = FontWeight.Medium,
                                 fontSize = 17.sp,
