@@ -37,6 +37,7 @@ import androidx.navigation.NavController
 import com.wukiki.givu.R
 import com.wukiki.givu.ui.suit
 import com.wukiki.givu.util.CommonTopBar
+import com.wukiki.givu.util.CommonUtils.makeCommaPrice
 import com.wukiki.givu.util.InfoRow
 import com.wukiki.givu.views.detail.viewmodel.FundingUiEvent
 import com.wukiki.givu.views.detail.viewmodel.FundingViewModel
@@ -50,7 +51,9 @@ fun WriteLetterScreen(
     onRequestFingerprint: () -> Unit
 ) {
     val context = LocalContext.current
+    val user by fundingViewModel.user.collectAsState()
     val funding by fundingViewModel.selectedFunding.collectAsState()
+    val charge by fundingViewModel.charge.collectAsState()
     val writeLetter by fundingViewModel.writeLetter.collectAsState()
     val fundingUiEvent = fundingViewModel.fundingUiEvent
 
@@ -142,10 +145,10 @@ fun WriteLetterScreen(
                 Spacer(modifier = Modifier.height(16.dp))
 
                 Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                    InfoRow("이름", "김싸피")
-                    InfoRow("이메일", "kimssafy@ssafy.com")
-                    InfoRow("연락처", "010-0000-0000")
-                    InfoRow("금액", "1,000원")
+                    InfoRow("이름", user?.nickname ?: "김싸피")
+                    InfoRow("이메일", user?.email ?: "kimssafy@ssafy.com")
+                    InfoRow("상품", it.productName)
+                    InfoRow("금액", makeCommaPrice(charge))
                 }
 
                 Spacer(modifier = Modifier.height(16.dp))
