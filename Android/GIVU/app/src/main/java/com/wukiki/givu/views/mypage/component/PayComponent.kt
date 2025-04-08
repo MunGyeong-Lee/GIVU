@@ -149,7 +149,12 @@ fun PayComponent(
                         interactionSource = remember { MutableInteractionSource() },
                         indication = null,
                         onClick = {
-                            navController.navigate("ChargeAccount")
+                            if (user != null) {
+                                navController.navigate("ChargeAccount")
+                            }
+                            else {
+                                xmlNavController.navigate(R.id.action_fragment_my_page_to_fragment_login)
+                            }
                         }
                     ),
                 contentAlignment = Alignment.Center

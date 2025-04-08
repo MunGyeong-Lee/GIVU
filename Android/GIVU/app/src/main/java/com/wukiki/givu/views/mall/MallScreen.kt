@@ -146,7 +146,7 @@ fun MallScreen(
                     fontWeight = FontWeight.Bold,
                     fontSize = 22.sp
                 )
-                PopularItemListPager(popularProducts)
+                PopularItemListPager(popularProducts,navController)
             }
 
             item {
@@ -191,39 +191,6 @@ fun MallScreen(
     }
 }
 
-@Composable
-private fun FilterCategoryItemList(
-    mallViewModel: MallViewModel = hiltViewModel(),
-    selectedCategory: String
-) {
-    // 실제 상품 데이터를 가져오는 부분 (예시)
-    // val allProducts = remember { getSampleProducts() }
-    val allProducts by mallViewModel.products.collectAsState()
-
-    // 선택된 카테고리에 따라 상품 필터링
-    val filteredProducts = remember(selectedCategory) {
-        if (selectedCategory == "전체") {
-            allProducts
-        } else {
-            allProducts.filter { it.category == selectedCategory }
-        }
-    }
-
-    // 필터링된 상품 목록 표시
-    LazyColumn(
-        modifier = Modifier.fillMaxWidth(),
-        contentPadding = PaddingValues(horizontal = 16.dp),
-//        verticalArrangement = Arrangement.spacedBy(4.dp)
-    ) {
-        items(filteredProducts) { product ->
-            GiftListItem(product,
-                onProductClick = {
-//                    누르면 해당 아이템 상세 정보 화면으로 이동
-                }
-            )
-        }
-    }
-}
 
 @Preview(showBackground = true)
 @Composable
