@@ -7,6 +7,8 @@ import com.wukiki.domain.model.Letter
 import com.wukiki.domain.repository.LetterRepository
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.withContext
 import okhttp3.MultipartBody
 import okhttp3.RequestBody
@@ -20,8 +22,9 @@ class LetterRepositoryImpl @Inject constructor(
         fundingId: String,
         image: MultipartBody.Part?,
         body: RequestBody
-    ): ApiResult<Letter> =
+    ): Flow<ApiResult<Letter>> = flow {
         try {
+            emit(ApiResult.loading(null))
             val response = withContext(CoroutineScope(Dispatchers.IO).coroutineContext) {
                 letterRemoteDataSource.postFundingLetter(fundingId, image, body)
             }
@@ -30,33 +33,37 @@ class LetterRepositoryImpl @Inject constructor(
             Log.d("LetterRepositoryImpl", "Response: $responseBody")
             if (response.isSuccessful && (responseBody != null)) {
                 Log.d("LetterRepositoryImpl", "submitFundingLetter Success")
-                ApiResult.success(LetterRequestMapper(responseBody))
+                emit(ApiResult.success(LetterRequestMapper(responseBody)))
             } else {
                 Log.d("LetterRepositoryImpl", "submitFundingLetter Fail: ${response.code()}")
-                ApiResult.error(response.errorBody().toString(), null)
+                emit(ApiResult.error(response.errorBody().toString(), null))
             }
         } catch (e: Exception) {
             Log.e("LetterRepositoryImpl", "submitFundingLetter Error: $e")
-            ApiResult.fail()
+            emit(ApiResult.fail())
         }
+    }
 
-    override suspend fun deleteFundingLetter(fundingId: String): ApiResult<Unit> =
-        try {
-            val response = withContext(CoroutineScope(Dispatchers.IO).coroutineContext) {
-                letterRemoteDataSource.deleteFundingLetter(fundingId)
-            }
+    override suspend fun deleteFundingLetter(fundingId: String): Flow<ApiResult<Unit>> =
+        flow {
+            emit(ApiResult.loading(null))
+            try {
+                val response = withContext(CoroutineScope(Dispatchers.IO).coroutineContext) {
+                    letterRemoteDataSource.deleteFundingLetter(fundingId)
+                }
 
-            val responseBody = response.body()
-            Log.d("LetterRepositoryImpl", "Response: $responseBody")
-            if (response.isSuccessful) {
-                Log.d("LetterRepositoryImpl", "deleteFundingLetter Success")
-                ApiResult.success(responseBody)
-            } else {
-                Log.d("LetterRepositoryImpl", "deleteFundingLetter Fail: ${response.code()}")
-                ApiResult.error(response.errorBody().toString(), null)
+                val responseBody = response.body()
+                Log.d("LetterRepositoryImpl", "Response: $responseBody")
+                if (response.isSuccessful) {
+                    Log.d("LetterRepositoryImpl", "deleteFundingLetter Success")
+                    emit(ApiResult.success(responseBody))
+                } else {
+                    Log.d("LetterRepositoryImpl", "deleteFundingLetter Fail: ${response.code()}")
+                    emit(ApiResult.error(response.errorBody().toString(), null))
+                }
+            } catch (e: Exception) {
+                Log.e("LetterRepositoryImpl", "deleteFundingLetter Error: $e")
+                emit(ApiResult.fail())
             }
-        } catch (e: Exception) {
-            Log.e("LetterRepositoryImpl", "deleteFundingLetter Error: $e")
-            ApiResult.fail()
         }
 }

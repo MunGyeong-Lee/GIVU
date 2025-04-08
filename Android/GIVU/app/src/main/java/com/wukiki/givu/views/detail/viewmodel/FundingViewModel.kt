@@ -6,12 +6,14 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.gson.GsonBuilder
 import com.wukiki.domain.model.Account
+import com.wukiki.domain.model.ApiResult
 import com.wukiki.domain.model.ApiStatus
 import com.wukiki.domain.model.Funding
 import com.wukiki.domain.model.FundingDetail
 import com.wukiki.domain.model.Letter
 import com.wukiki.domain.model.Product
 import com.wukiki.domain.model.Review
+import com.wukiki.domain.model.Transfer
 import com.wukiki.domain.model.User
 import com.wukiki.domain.usecase.GetAuthUseCase
 import com.wukiki.domain.usecase.GetFundingUseCase
@@ -27,6 +29,7 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.update
@@ -54,6 +57,32 @@ class FundingViewModel @Inject constructor(
 
     private val _fundingUiEvent = MutableSharedFlow<FundingUiEvent>()
     val fundingUiEvent = _fundingUiEvent.asSharedFlow()
+
+    private val _userState = MutableStateFlow<ApiResult<User?>>(ApiResult.init())
+    val userState = _userState.asStateFlow()
+
+    private val _fundingState = MutableStateFlow<ApiResult<Funding?>>(ApiResult.init())
+    val fundingState = _fundingState.asStateFlow()
+
+    private val _fundingDetailState =
+        MutableStateFlow<ApiResult<FundingDetail?>>(ApiResult.init())
+    val fundingDetailState = _fundingDetailState.asStateFlow()
+
+    private val _transferState = MutableStateFlow<ApiResult<Transfer?>>(ApiResult.init())
+    val transferState = _transferState.asStateFlow()
+
+    private val _letterState = MutableStateFlow<ApiResult<Letter?>>(ApiResult.init())
+    val letterState = _letterState.asStateFlow()
+
+    private val _accountState = MutableStateFlow<ApiResult<Account?>>(ApiResult.init())
+    val accountState = _accountState.asStateFlow()
+
+    private val _productsState =
+        MutableStateFlow<ApiResult<List<Product>>>(ApiResult.init())
+    val productsState = _productsState.asStateFlow()
+
+    private val _reviewState = MutableStateFlow<ApiResult<Review?>>(ApiResult.init())
+    val reviewState = _reviewState.asStateFlow()
 
     /*** Datas ***/
     private val _user = MutableStateFlow<User?>(null)
@@ -229,12 +258,11 @@ class FundingViewModel @Inject constructor(
                 body = makeLetterRequestBody()
             )
 
-            when (response.status) {
-                ApiStatus.SUCCESS -> {
+            response.collectLatest { result ->
+                _letterState.value = result
+                if (_letterState.value.status == ApiStatus.SUCCESS) {
                     getPaymentOfFunding(paymentId)
-                }
-
-                else -> {
+                } else if ((_letterState.value.status == ApiStatus.FAIL) || (_letterState.value.status == ApiStatus.ERROR)) {
                     _fundingUiEvent.emit(FundingUiEvent.ParticipateFundingFail)
                 }
             }
@@ -245,12 +273,11 @@ class FundingViewModel @Inject constructor(
         viewModelScope.launch {
             val response = getFundingUseCase.fetchPaymentOfFunding(paymentId)
 
-            when (response.status) {
-                ApiStatus.SUCCESS -> {
+            response.collectLatest { result ->
+                _transferState.value = result
+                if (_transferState.value.status == ApiStatus.SUCCESS) {
                     _fundingUiEvent.emit(FundingUiEvent.ParticipateFundingSuccess)
-                }
-
-                else -> {
+                } else if ((_transferState.value.status == ApiStatus.FAIL) || (_transferState.value.status == ApiStatus.ERROR)) {
                     _fundingUiEvent.emit(FundingUiEvent.ParticipateFundingFail)
                 }
             }
@@ -261,13 +288,10 @@ class FundingViewModel @Inject constructor(
         viewModelScope.launch {
             val response = getAuthUseCase.fetchUserInfo()
 
-            when (response.status) {
-                ApiStatus.SUCCESS -> {
-                    _user.value = response.data
-                }
-
-                else -> {
-
+            response.collectLatest { result ->
+                _userState.value = result
+                if (_userState.value.status == ApiStatus.SUCCESS) {
+                    _user.value = _userState.value.data
                 }
             }
         }
@@ -278,14 +302,11 @@ class FundingViewModel @Inject constructor(
             _fundingId.value = fundingId
             val response = getFundingUseCase.fetchFundingDetail(fundingId)
 
-            when (response.status) {
-                ApiStatus.SUCCESS -> {
-                    _selectedFunding.value = response.data
+            response.collectLatest { result ->
+                _fundingDetailState.value = result
+                if (_fundingDetailState.value.status == ApiStatus.SUCCESS) {
+                    _selectedFunding.value = result.data
                     setFundingInfo()
-                }
-
-                else -> {
-
                 }
             }
         }
@@ -295,13 +316,12 @@ class FundingViewModel @Inject constructor(
         viewModelScope.launch {
             val response = getProductUseCase.getProducts()
 
-            when (response.status) {
-                ApiStatus.SUCCESS -> {
-                    val newProducts = response.data ?: emptyList()
+            response.collectLatest { result ->
+                _productsState.value = result
+                if (result.status == ApiStatus.SUCCESS) {
+                    val newProducts = result.data ?: emptyList()
                     _products.value = newProducts
-                }
-
-                else -> {
+                } else if ((result.status == ApiStatus.FAIL) || (result.status == ApiStatus.ERROR)) {
                     _fundingUiEvent.emit(FundingUiEvent.GetProductsFail)
                 }
             }
@@ -312,13 +332,10 @@ class FundingViewModel @Inject constructor(
         viewModelScope.launch {
             val response = getMyPageUseCase.fetchAccount()
 
-            when (response.status) {
-                ApiStatus.SUCCESS -> {
-                    _account.value = response.data
-                }
-
-                else -> {
-
+            response.collectLatest { result ->
+                _accountState.value = result
+                if (result.status == ApiStatus.SUCCESS) {
+                    _account.value = result.data
                 }
             }
         }
@@ -437,13 +454,10 @@ class FundingViewModel @Inject constructor(
         viewModelScope.launch {
             val response = getLetterUseCase.deleteFundingLetter(letterId)
 
-            when (response.status) {
-                ApiStatus.SUCCESS -> {
-                    initFunding(_fundingId.value)
+            response.collectLatest { result ->
+                if (result.status == ApiStatus.SUCCESS) {
                     _fundingUiEvent.emit(FundingUiEvent.DeleteLetterSuccess)
-                }
-
-                else -> {
+                } else if ((result.status == ApiStatus.FAIL) || (result.status == ApiStatus.ERROR)) {
                     _fundingUiEvent.emit(FundingUiEvent.DeleteLetterFail)
                 }
             }
@@ -457,13 +471,12 @@ class FundingViewModel @Inject constructor(
                 amount = _charge.value
             )
 
-            when (response.status) {
-                ApiStatus.SUCCESS -> {
+            response.collectLatest { result ->
+                _transferState.value = result
+                if (_transferState.value.status == ApiStatus.SUCCESS) {
                     _charge.value = 0
-                    participateFunding(response.data?.paymentId ?: -1)
-                }
-
-                else -> {
+                    participateFunding(result.data?.paymentId ?: -1)
+                } else if ((_transferState.value.status == ApiStatus.FAIL) || (_transferState.value.status == ApiStatus.ERROR)) {
                     _fundingUiEvent.emit(FundingUiEvent.TransferFail)
                 }
             }
@@ -478,12 +491,11 @@ class FundingViewModel @Inject constructor(
                 body = makeFundingRequestBody()
             )
 
-            when (response.status) {
-                ApiStatus.SUCCESS -> {
+            response.collectLatest { result ->
+                _fundingState.value = result
+                if (_fundingState.value.status == ApiStatus.SUCCESS) {
                     _fundingUiEvent.emit(FundingUiEvent.UpdateFundingSuccess)
-                }
-
-                else -> {
+                } else if ((_fundingState.value.status == ApiStatus.FAIL) || (_fundingState.value.status == ApiStatus.ERROR)) {
                     _fundingUiEvent.emit(FundingUiEvent.UpdateFundingFail)
                 }
             }
@@ -496,12 +508,10 @@ class FundingViewModel @Inject constructor(
                 fundingId = _selectedFunding.value?.id ?: -1
             )
 
-            when (response.status) {
-                ApiStatus.SUCCESS -> {
+            response.collectLatest { result ->
+                if (result.status == ApiStatus.SUCCESS) {
                     _fundingUiEvent.emit(FundingUiEvent.CancelFundingSuccess)
-                }
-
-                else -> {
+                } else if ((result.status == ApiStatus.FAIL) || (result.status == ApiStatus.ERROR)) {
                     _fundingUiEvent.emit(FundingUiEvent.CancelFundingFail)
                 }
             }
@@ -516,12 +526,11 @@ class FundingViewModel @Inject constructor(
                 body = makeReviewRequestBody()
             )
 
-            when (response.status) {
-                ApiStatus.SUCCESS -> {
+            response.collectLatest { result ->
+                _reviewState.value = result
+                if (result.status == ApiStatus.SUCCESS) {
                     _fundingUiEvent.emit(FundingUiEvent.FinishFundingSuccess)
-                }
-
-                else -> {
+                } else if ((result.status == ApiStatus.FAIL) || (result.status == ApiStatus.ERROR)) {
                     _fundingUiEvent.emit(FundingUiEvent.FinishFundingFail)
                 }
             }

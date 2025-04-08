@@ -2,6 +2,7 @@ package com.wukiki.domain.repository
 
 import com.wukiki.domain.model.ApiResult
 import com.wukiki.domain.model.Review
+import kotlinx.coroutines.flow.Flow
 import okhttp3.MultipartBody
 import okhttp3.RequestBody
 
@@ -11,5 +12,5 @@ interface ReviewRepository {
         fundingId: Int,
         file: MultipartBody.Part?,
         body: RequestBody
-    ): ApiResult<Review>
+    ): Flow<ApiResult<Review>>
 }

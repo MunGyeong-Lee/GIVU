@@ -3,10 +3,11 @@ package com.wukiki.givu.views.register.viewmodel
 import android.app.Application
 import android.net.Uri
 import androidx.lifecycle.AndroidViewModel
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.gson.GsonBuilder
+import com.wukiki.domain.model.ApiResult
 import com.wukiki.domain.model.ApiStatus
+import com.wukiki.domain.model.Funding
 import com.wukiki.domain.model.Product
 import com.wukiki.domain.usecase.GetFundingUseCase
 import com.wukiki.domain.usecase.GetProductUseCase
@@ -16,13 +17,13 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.MultipartBody
 import okhttp3.RequestBody
 import okhttp3.RequestBody.Companion.toRequestBody
-import timber.log.Timber
 import javax.inject.Inject
 
 @HiltViewModel
@@ -30,7 +31,7 @@ class RegisterViewModel @Inject constructor(
     private val application: Application,
     private val getProductUseCase: GetProductUseCase,
     private val getFundingUseCase: GetFundingUseCase
-) : ViewModel() {
+) : AndroidViewModel(application) {
 
     /*** Ui State, Event ***/
     private val _registerUiState = MutableStateFlow<RegisterUiState>(RegisterUiState())
@@ -38,6 +39,13 @@ class RegisterViewModel @Inject constructor(
 
     private val _registerUiEvent = MutableSharedFlow<RegisterUiEvent>()
     val registerUiEvent = _registerUiEvent.asSharedFlow()
+
+    private val _fundingState = MutableStateFlow<ApiResult<Funding?>>(ApiResult.init())
+    val fundingState = _fundingState.asStateFlow()
+
+    private val _productsState =
+        MutableStateFlow<ApiResult<List<Product>>>(ApiResult.init())
+    val productsState = _productsState.asStateFlow()
 
     /*** Datas ***/
     private val _products = MutableStateFlow<List<Product>>(emptyList())
@@ -86,14 +94,13 @@ class RegisterViewModel @Inject constructor(
         viewModelScope.launch {
             val response = getProductUseCase.getProducts()
 
-            when (response.status) {
-                ApiStatus.SUCCESS -> {
-                    val newProducts = response.data ?: emptyList()
+            response.collectLatest { result ->
+                _productsState.value = result
+                if (result.status == ApiStatus.SUCCESS) {
+                    val newProducts = result.data ?: emptyList()
                     _products.value = newProducts
                     _filteredProducts.value = _products.value
-                }
-
-                else -> {
+                } else if ((result.status == ApiStatus.FAIL) || (result.status == ApiStatus.ERROR)) {
                     _registerUiEvent.emit(RegisterUiEvent.GetProductsFail)
                 }
             }
@@ -219,12 +226,11 @@ class RegisterViewModel @Inject constructor(
                 body = makeNewFundingRequestBody()
             )
 
-            when (response.status) {
-                ApiStatus.SUCCESS -> {
+            response.collectLatest { result ->
+                _fundingState.value = result
+                if (_fundingState.value.status == ApiStatus.SUCCESS) {
                     _registerUiEvent.emit(RegisterUiEvent.RegisterFundingSuccess)
-                }
-
-                else -> {
+                } else if ((_fundingState.value.status == ApiStatus.FAIL) || (_fundingState.value.status == ApiStatus.ERROR)) {
                     _registerUiEvent.emit(RegisterUiEvent.RegisterFundingFail)
                 }
             }

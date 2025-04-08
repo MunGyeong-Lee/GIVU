@@ -2,6 +2,7 @@ package com.wukiki.domain.repository
 
 import com.wukiki.domain.model.ApiResult
 import com.wukiki.domain.model.Letter
+import kotlinx.coroutines.flow.Flow
 import okhttp3.MultipartBody
 import okhttp3.RequestBody
 
@@ -11,7 +12,7 @@ interface LetterRepository {
         fundingId: String,
         image: MultipartBody.Part?,
         body: RequestBody
-    ): ApiResult<Letter>
+    ): Flow<ApiResult<Letter>>
 
-    suspend fun deleteFundingLetter(fundingId: String): ApiResult<Unit>
+    suspend fun deleteFundingLetter(fundingId: String): Flow<ApiResult<Unit>>
 }

@@ -5,6 +5,7 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.gson.GsonBuilder
 import com.wukiki.domain.model.Account
+import com.wukiki.domain.model.ApiResult
 import com.wukiki.domain.model.ApiStatus
 import com.wukiki.domain.model.Funding
 import com.wukiki.domain.model.User
@@ -17,6 +18,7 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.launch
@@ -36,6 +38,15 @@ class HomeViewModel @Inject constructor(
     /*** UiState, UiEvent ***/
     private val _homeUiEvent = MutableSharedFlow<HomeUiEvent>()
     val homeUiEvent = _homeUiEvent.asSharedFlow()
+
+    private val _userState = MutableStateFlow<ApiResult<User?>>(ApiResult.init())
+    val userState = _userState.asStateFlow()
+
+    private val _fundingsState = MutableStateFlow<ApiResult<List<Funding>>>(ApiResult.init())
+    val fundingsState = _fundingsState.asStateFlow()
+
+    private val _accountState = MutableStateFlow<ApiResult<Account?>>(ApiResult.init())
+    val accountState = _accountState.asStateFlow()
 
     /*** Data ***/
     private val _user = MutableStateFlow<User?>(null)
@@ -79,14 +90,11 @@ class HomeViewModel @Inject constructor(
         viewModelScope.launch {
             val response = getFundingUseCase.fetchFundings()
 
-            when (response.status) {
-                ApiStatus.SUCCESS -> {
-                    val newFundings = response.data ?: emptyList()
+            response.collectLatest { result ->
+                _fundingsState.value = result
+                if (_fundingsState.value.status == ApiStatus.SUCCESS) {
+                    val newFundings = result.data ?: emptyList()
                     setFundings(newFundings)
-                }
-
-                else -> {
-
                 }
             }
         }
@@ -150,13 +158,10 @@ class HomeViewModel @Inject constructor(
         viewModelScope.launch {
             val response = getAuthUseCase.fetchUserInfo()
 
-            when (response.status) {
-                ApiStatus.SUCCESS -> {
-                    _user.value = response.data
-                }
-
-                else -> {
-                    _homeUiEvent.emit(HomeUiEvent.AutoLoginFail)
+            response.collectLatest { result ->
+                _userState.value = result
+                if (_userState.value.status == ApiStatus.SUCCESS) {
+                    _user.value = _userState.value.data
                 }
             }
         }
@@ -166,13 +171,10 @@ class HomeViewModel @Inject constructor(
         viewModelScope.launch {
             val response = getMyPageUseCase.fetchMyRegisterFundings()
 
-            when (response.status) {
-                ApiStatus.SUCCESS -> {
-                    _myRegisterFundings.value = response.data ?: emptyList()
-                }
-
-                else -> {
-
+            response.collectLatest { result ->
+                _fundingsState.value = result
+                if (_fundingsState.value.status == ApiStatus.SUCCESS) {
+                    _myRegisterFundings.value = result.data ?: emptyList()
                 }
             }
         }
@@ -182,13 +184,10 @@ class HomeViewModel @Inject constructor(
         viewModelScope.launch {
             val response = getMyPageUseCase.fetchMyParticipateFundings()
 
-            when (response.status) {
-                ApiStatus.SUCCESS -> {
-                    _myParticipateFundings.value = response.data ?: emptyList()
-                }
-
-                else -> {
-
+            response.collectLatest { result ->
+                _fundingsState.value = result
+                if (_fundingsState.value.status == ApiStatus.SUCCESS) {
+                    _myParticipateFundings.value = result.data ?: emptyList()
                 }
             }
         }
@@ -198,13 +197,10 @@ class HomeViewModel @Inject constructor(
         viewModelScope.launch {
             val response = getMyPageUseCase.fetchAccount()
 
-            when (response.status) {
-                ApiStatus.SUCCESS -> {
-                    _account.value = response.data
-                }
-
-                else -> {
-
+            response.collectLatest { result ->
+                _accountState.value = result
+                if (result.status == ApiStatus.SUCCESS) {
+                    _account.value = result.data
                 }
             }
         }
@@ -220,14 +216,12 @@ class HomeViewModel @Inject constructor(
                 body = makePayRequestBody()
             )
 
-            when (response.status) {
-                ApiStatus.SUCCESS -> {
+            response.collectLatest { result ->
+                if (result.status == ApiStatus.SUCCESS) {
                     _homeUiEvent.emit(HomeUiEvent.WithdrawalSuccess)
                     _charge.value = 0
                     initUserInfo()
-                }
-
-                else -> {
+                } else if (result.status == ApiStatus.FAIL) {
                     _homeUiEvent.emit(HomeUiEvent.WithdrawalFail)
                 }
             }
