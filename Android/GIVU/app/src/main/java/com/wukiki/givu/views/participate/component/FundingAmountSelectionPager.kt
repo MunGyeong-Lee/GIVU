@@ -32,13 +32,15 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.wukiki.domain.model.FundingDetail
 import com.wukiki.givu.ui.suit
 import com.wukiki.givu.util.CommonUtils.makeCommaPrice
 import com.wukiki.givu.views.detail.viewmodel.FundingViewModel
 
 @Composable
 fun FundingAmountSelectionPager(
-    fundingViewModel: FundingViewModel
+    fundingViewModel: FundingViewModel,
+    fundingDetail: FundingDetail
 ) {
     val user by fundingViewModel.user.collectAsState()
 
@@ -70,12 +72,15 @@ fun FundingAmountSelectionPager(
                         .fillMaxWidth()
                         .padding(16.dp)
                         .clickable {
-                            selectedAmount = makeCommaPrice(amount)
-                            fundingViewModel.setCharge(amount)
+                            if (amount <= (fundingDetail.productPrice.toInt() - fundingDetail.fundedAmount)) {
+                                selectedAmount = makeCommaPrice(amount)
+                                fundingViewModel.setCharge(amount)
+                            }
                         },
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     RadioButton(
+                        enabled = amount <= (fundingDetail.productPrice.toInt() - fundingDetail.fundedAmount),
                         selected = selectedAmount == makeCommaPrice(amount),
                         onClick = {
                             selectedAmount = makeCommaPrice(amount)

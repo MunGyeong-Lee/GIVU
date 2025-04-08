@@ -58,7 +58,7 @@ fun ParticipantInfoPager(
                     fontFamily = suit,
                     color = Color.Black
                 )
-                Spacer(modifier = Modifier.width(8.dp))
+                Spacer(modifier = Modifier.width(7.dp))
                 Text(
                     text = user.email,
                     fontSize = 18.sp,
@@ -70,13 +70,13 @@ fun ParticipantInfoPager(
             Spacer(modifier = Modifier.height(4.dp))
             Row {
                 Text(
-                    text = "연락처",
+                    text = "주소",
                     fontSize = 18.sp,
                     fontWeight = FontWeight.Bold,
                     fontFamily = suit,
                     color = Color.Black
                 )
-                Spacer(modifier = Modifier.width(8.dp))
+                Spacer(modifier = Modifier.width(16.dp))
                 Text(
                     text = user.address,
                     fontSize = 18.sp,
