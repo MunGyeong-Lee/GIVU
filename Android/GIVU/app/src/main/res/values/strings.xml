@@ -71,6 +71,8 @@
     <string name="title_participate_funding">펀딩 참여하기</string>
     <string name="message_participate_funding_success">펀딩에 참여했습니다.</string>
     <string name="message_participate_funding_fail">펀딩 참여에 실패했습니다.</string>
+    <string name="message_transfer_success">결제에 성공했습니다.</string>
+    <string name="message_transfer_fail">결제에 실패했습니다.</string>
 
     <!-- Write Letter -->
     <string name="label_write_letter">Write Letter</string>

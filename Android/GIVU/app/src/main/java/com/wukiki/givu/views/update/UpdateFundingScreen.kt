@@ -1,6 +1,7 @@
 package com.wukiki.givu.views.update
 
 import android.widget.Toast
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -56,12 +57,13 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import coil.compose.AsyncImage
+import coil.compose.SubcomposeAsyncImage
 import com.wukiki.givu.R
 import com.wukiki.givu.ui.pretendard
 import com.wukiki.givu.ui.suit
 import com.wukiki.givu.util.CommonBottomButton
 import com.wukiki.givu.util.CommonTopBar
+import com.wukiki.givu.util.shimmerEffect
 import com.wukiki.givu.views.detail.viewmodel.FundingUiEvent
 import com.wukiki.givu.views.detail.viewmodel.FundingViewModel
 import com.wukiki.givu.views.update.component.UpdateFundingImagePager
@@ -181,12 +183,29 @@ fun UpdateFundingScreen(
                     Row(
                         modifier = Modifier.fillMaxWidth()
                     ) {
-                        AsyncImage(
-                            model = it.images[0],
+                        SubcomposeAsyncImage(
+                            model = if (it.images.isEmpty()) "" else it.images[0],
                             contentDescription = null,
                             modifier = Modifier
                                 .size(100.dp)
-                                .clip(shape = RoundedCornerShape(10.dp))
+                                .clip(shape = RoundedCornerShape(10.dp)),
+                            loading = {
+                                Box(
+                                    modifier = Modifier
+                                        .matchParentSize()
+                                        .clip(RoundedCornerShape(10.dp))
+                                        .shimmerEffect()
+                                )
+                            },
+                            error = {
+                                Image(
+                                    painter = painterResource(id = R.drawable.ic_logo),
+                                    contentDescription = "Error",
+                                    modifier = Modifier
+                                        .clip(RoundedCornerShape(10.dp))
+                                        .size(24.dp)
+                                )
+                            }
                         )
                         Column(
                             modifier = Modifier

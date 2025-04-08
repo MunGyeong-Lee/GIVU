@@ -2,11 +2,8 @@ package com.wukiki.givu.views.participate
 
 import android.os.Bundle
 import android.view.View
-import android.widget.Toast
-import androidx.biometric.BiometricPrompt
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateOf
-import androidx.core.content.ContextCompat
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -24,8 +21,6 @@ class ParticipateFundingFragment :
     BaseFragment<FragmentParticipateFundingBinding>(R.layout.fragment_participate_funding) {
 
     private val viewModel: FundingViewModel by activityViewModels()
-
-    // 생체 인증 결과
     private var biometricAuthResult = mutableStateOf(false)
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -36,11 +31,10 @@ class ParticipateFundingFragment :
         binding.composeParticipateFunding.setContent {
             val navController = rememberNavController()
 
-            // 인증이 완료되면 이동
             if (biometricAuthResult.value) {
                 LaunchedEffect(Unit) {
-                    biometricAuthResult.value = false // 초기화
-                    navController.navigate("WriteLetter")
+                    biometricAuthResult.value = false
+                    viewModel.transferFunding()
                 }
             }
 
@@ -49,7 +43,11 @@ class ParticipateFundingFragment :
                 startDestination = "ParticipateFunding"
             ) {
                 composable("ParticipateFunding") {
-                    ParticipateFundingScreen(viewModel, navController, findNavController(),
+                    ParticipateFundingScreen(viewModel, navController, findNavController())
+                }
+
+                composable("WriteLetter") {
+                    WriteLetterScreen(viewModel, navController, findNavController(),
                         onRequestFingerprint = {
                             BiometricAuth(
                                 activity = requireActivity(),
@@ -58,15 +56,9 @@ class ParticipateFundingFragment :
                                 },
                                 onFailure = {
                                     // 실패 시 처리
-
                                 }
                             ).authenticate()
-                        }
-                    )
-                }
-
-                composable("WriteLetter") {
-                    WriteLetterScreen(viewModel, navController, findNavController())
+                        })
                 }
 
                 composable("CompleteParticipate") {

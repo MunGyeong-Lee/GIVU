@@ -20,6 +20,9 @@ data class FundingInfoEntity(
     @Json(name = "fundingId")
     val fundingId: Int,
 
+    @Json(name = "creator")
+    val isCreator: Boolean,
+
     @Json(name = "title")
     val title: String,
 
