@@ -1,6 +1,7 @@
 package com.backend.givu.model.repository;
 
 import com.backend.givu.model.entity.Review;
+import io.lettuce.core.dynamic.annotation.Param;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
@@ -20,5 +21,13 @@ public interface ReviewRepository extends JpaRepository<Review, Integer> {
     JOIN FETCH r.user
     """)
     List<Review> findAllWithUser();
+
+    @Query("""
+    SELECT r
+    FROM Review r
+    JOIN FETCH r.user
+    WHERE r.id = :reviewId
+    """)
+    Optional<Review> findByIdWithUser(@Param("reviewId") Integer reviewId);
 
 }
