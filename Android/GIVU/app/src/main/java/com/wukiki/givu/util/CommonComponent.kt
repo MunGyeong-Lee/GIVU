@@ -202,6 +202,7 @@ fun StoreDetailBottomButton(
     text: String,
     navController: NavController,
     actionId: Int,
+    isAllFunded: Boolean,
     onClick: () -> Unit
 ) {
     Box(
@@ -245,10 +246,10 @@ fun StoreDetailBottomButton(
                     onClick = { if (actionId != -1) navController.navigate(actionId) else onClick() },
                     modifier = Modifier.weight(1F)
                         .fillMaxHeight(),
-                    enabled = true,
+                    enabled = !isAllFunded,
                     shape = RoundedCornerShape(5.dp),
                     border = BorderStroke(1.dp, Color(0xFFECECEC)),
-                    colors = ButtonDefaults.buttonColors(colorResource(R.color.main_primary)),
+                    colors = ButtonDefaults.buttonColors(if (isAllFunded) Color.LightGray else colorResource(R.color.main_primary)),
                     elevation = ButtonDefaults.elevation(0.dp)
                 ) {
                     Text(
@@ -256,7 +257,7 @@ fun StoreDetailBottomButton(
                         fontFamily = suit,
                         fontWeight = FontWeight.Bold,
                         fontSize = 18.sp,
-                        color = Color.White
+                        color = if (isAllFunded) Color.DarkGray else Color.White
                     )
                 }
 
