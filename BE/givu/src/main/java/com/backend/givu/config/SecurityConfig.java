@@ -73,6 +73,7 @@ public class SecurityConfig {
                                 "/mypage/**",
                                 "/friends/**",
                                 "/transfer/**"
+                        ).authenticated())
 
                 /**
                  * JWT 필터 추가(인증 처리)
