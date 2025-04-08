@@ -12,6 +12,9 @@ class GetReviewUseCase @Inject constructor(
     private val reviewRepository: ReviewRepository
 ) {
 
+    suspend fun fetchFundingReviews(): Flow<ApiResult<List<Review>>> =
+        reviewRepository.fetchFundingReviews()
+
     suspend fun finishReview(
         fundingId: Int,
         file: MultipartBody.Part?,

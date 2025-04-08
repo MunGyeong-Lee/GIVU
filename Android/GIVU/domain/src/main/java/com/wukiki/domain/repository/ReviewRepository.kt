@@ -8,6 +8,8 @@ import okhttp3.RequestBody
 
 interface ReviewRepository {
 
+    suspend fun fetchFundingReviews(): Flow<ApiResult<List<Review>>>
+
     suspend fun registerFundingReview(
         fundingId: Int,
         file: MultipartBody.Part?,
