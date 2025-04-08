@@ -10,6 +10,7 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.Optional;
 
 public interface PaymentRepository extends JpaRepository<Payment, Integer> {
@@ -20,4 +21,8 @@ public interface PaymentRepository extends JpaRepository<Payment, Integer> {
     Optional<Payment> findByIdForUpdate(@Param("paymentId") Integer paymentId);
 
     boolean existsByUserIdAndRelatedProductId(Long userId, Integer productId);
+
+    @Query("SELECT p FROM Payment p JOIN FETCH p.relatedProduct WHERE p.user.id = :userId")
+    List<Payment> findByUserIdWithProduct(@Param("userId") Long userId);
+
 }

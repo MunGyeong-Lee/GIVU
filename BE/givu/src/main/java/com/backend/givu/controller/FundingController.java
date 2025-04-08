@@ -37,8 +37,6 @@ import java.util.List;
 @RequiredArgsConstructor
 @Slf4j
 public class FundingController implements FundingControllerDocs {
-    private final ProductRepository productRepository;
-
     private final S3UploadService s3UploadService;
     private final FundingService fundingService;
 

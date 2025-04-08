@@ -3,15 +3,14 @@ package com.backend.givu.controller;
 
 import com.amazonaws.Response;
 import com.backend.givu.model.entity.CustomUserDetail;
+import com.backend.givu.model.entity.Payment;
 import com.backend.givu.model.entity.User;
 import com.backend.givu.model.repository.UserRepository;
 import com.backend.givu.model.requestDTO.AmountDTO;
-import com.backend.givu.model.responseDTO.ApiResponse;
-import com.backend.givu.model.responseDTO.ChargeResultDTO;
-import com.backend.givu.model.responseDTO.FundingsDTO;
-import com.backend.givu.model.responseDTO.UserAccountDTO;
+import com.backend.givu.model.responseDTO.*;
 import com.backend.givu.model.service.FundingService;
 import com.backend.givu.model.service.MyPageService;
+import com.backend.givu.model.service.PaymentService;
 import com.backend.givu.model.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -31,6 +30,7 @@ public class MyPageController {
     private final MyPageService myPageService;
     private final UserService userService;
     private final FundingService fundingService;
+    private final PaymentService paymentService;
 
     @Operation(summary = "유저 연동계좌 생성", description = "해당 유저의 연동계좌를 생성합니다.")
     @PostMapping("/createAccount")
@@ -92,5 +92,12 @@ public class MyPageController {
     public ResponseEntity<ApiResponse<List<FundingsDTO>>> selectMyParticipantFundings(@AuthenticationPrincipal CustomUserDetail customUserDetail){
         long userId = customUserDetail.getId();
         return ResponseEntity.ok(fundingService.findAllMyParticipantFunding(userId));
+    }
+
+    @Operation(summary = "내가 구매한 상품 리스트 조회", description = "내가 구매한 상품 리스트를 조회합니다.")
+    @GetMapping("/myPurchasedproducts/")
+    public ResponseEntity<ApiResponse<List<ProductsDTO>>> selectMyPurchasedFundings(@AuthenticationPrincipal CustomUserDetail customUserDetail){
+        long userId = customUserDetail.getId();
+        return ResponseEntity.ok(paymentService.getPurchasedProducts(userId));
     }
 }
