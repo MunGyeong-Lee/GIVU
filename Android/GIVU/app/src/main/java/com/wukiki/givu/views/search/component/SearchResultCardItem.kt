@@ -1,5 +1,6 @@
 package com.wukiki.givu.views.search.component
 
+import android.os.Bundle
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -31,7 +32,8 @@ import coil.compose.AsyncImage
 import com.wukiki.domain.model.Funding
 import com.wukiki.givu.R
 import com.wukiki.givu.ui.suit
-import com.wukiki.givu.views.home.component.CategoryTag
+import com.wukiki.givu.util.CommonUtils.makePercentage
+import com.wukiki.givu.views.home.component.CategoryTagItem
 
 @Composable
 fun SearchResultCardItem(
@@ -42,7 +44,12 @@ fun SearchResultCardItem(
         modifier = Modifier
             .fillMaxWidth()
             .wrapContentHeight()
-            .clickable { navController.navigate(R.id.action_search_to_detail_funding) },
+            .clickable {
+                val bundle = Bundle().apply {
+                    putInt("fundingId", funding.id)
+                }
+                navController.navigate(R.id.action_search_to_detail_funding, bundle)
+            },
         colors = CardDefaults.cardColors(containerColor = Color.White),
         shape = RoundedCornerShape(16.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 6.dp)
@@ -68,7 +75,7 @@ fun SearchResultCardItem(
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Text(
-                        text = funding.userId.toString(),
+                        text = funding.userNickname,
                         fontSize = 16.sp,
                         fontWeight = FontWeight.SemiBold,
                         fontFamily = suit,
@@ -89,7 +96,7 @@ fun SearchResultCardItem(
 
                 Spacer(modifier = Modifier.height(8.dp))
 
-                CategoryTag()
+                CategoryTagItem(funding.category)
 
                 Spacer(modifier = Modifier.height(24.dp))
 
@@ -97,21 +104,21 @@ fun SearchResultCardItem(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Icon(
-                        painter = painterResource(id = R.drawable.ic_like),
+                        painter = painterResource(id = R.drawable.ic_private_open),
                         contentDescription = null,
                         tint = Color(0xFFE74343),
                         modifier = Modifier.size(16.dp)
                     )
                     Spacer(modifier = Modifier.width(4.dp))
                     Text(
-                        text = "1,234",
+                        text = funding.participantsNumber,
                         fontSize = 14.sp,
                         fontFamily = suit,
                         fontWeight = FontWeight.SemiBold
                     )
                     Spacer(modifier = Modifier.weight(1F))
                     Text(
-                        text = "58%",
+                        text = "${makePercentage(funding.fundedAmount, funding.productPrice.toInt())}%",
                         fontSize = 14.sp,
                         fontFamily = suit,
                         fontWeight = FontWeight.SemiBold
