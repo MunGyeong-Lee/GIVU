@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import './Step1Products.css'; // CSS 파일 추가
-import { useProductsList } from '../../hooks/useProductQueries';
+import { useProductsList, useWishlistProducts } from '../../hooks/useProductQueries';
 import { Product } from '../../services/product.service';
 
 interface Step1ProductsProps {
@@ -48,6 +48,22 @@ const Step1Products: React.FC<Step1ProductsProps> = ({
     error: queryError
   } = useProductsList();
 
+  // 위시리스트 상품 데이터 불러오기
+  const {
+    data: wishlistProducts = [],
+    isLoading: wishlistLoading,
+    error: wishlistError,
+    refetch: refetchWishlist
+  } = useWishlistProducts();
+
+  // 로그 추가
+  useEffect(() => {
+    console.log('위시리스트 상태:', isWishlist);
+    console.log('위시리스트 로딩 상태:', wishlistLoading);
+    console.log('위시리스트 데이터:', wishlistProducts);
+    console.log('위시리스트 에러:', wishlistError);
+  }, [isWishlist, wishlistLoading, wishlistProducts, wishlistError]);
+
   // 검색어, 카테고리, 위시리스트 필터링을 위한 상태
   const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
   const [totalPages, setTotalPages] = useState(1);
@@ -63,6 +79,12 @@ const Step1Products: React.FC<Step1ProductsProps> = ({
     }
   }, [queryError]);
 
+  useEffect(() => {
+    if (wishlistError) {
+      console.error('위시리스트를 불러오는데 실패했습니다:', wishlistError);
+    }
+  }, [wishlistError]);
+
   // React Query 데이터 초기 설정
   useEffect(() => {
     if (allProducts.length > 0) {
@@ -72,37 +94,79 @@ const Step1Products: React.FC<Step1ProductsProps> = ({
     }
   }, [allProducts]);
 
-  // 검색어와 카테고리에 따라 상품 필터링
+  // 검색어와 카테고리, 위시리스트에 따라 상품 필터링
   useEffect(() => {
-    if (allProducts.length === 0) return;
+    console.log('필터링 시작 - 위시리스트 상태:', isWishlist);
+    console.log('필터링 시작 - 위시리스트 데이터 길이:', wishlistProducts?.length);
 
-    let filtered = [...allProducts];
-
-    // 검색어 필터링
-    if (searchQuery) {
-      filtered = filtered.filter(product =>
-        product.productName.toLowerCase().includes(searchQuery.toLowerCase())
-      );
-    }
-
-    // 카테고리 필터링
-    if (selectedCategory !== '전체') {
-      filtered = filtered.filter(product =>
-        product.category === selectedCategory
-      );
-    }
-
-    // 위시리스트만 보기 (실제 API 연동 필요)
     if (isWishlist) {
-      // 임시로 즐겨찾기된 상품만 필터링
-      filtered = filtered.filter(product => product.favorite);
-    }
+      if (wishlistLoading) {
+        console.log('위시리스트 로딩 중...');
+        return;
+      }
 
-    setFilteredProducts(filtered);
-    setCurrentPage(1); // 필터링 시 첫 페이지로 이동
-    setTotalPages(Math.ceil(filtered.length / ITEMS_PER_PAGE));
-    setDisplayedProducts(filtered.slice(0, ITEMS_PER_PAGE));
-  }, [searchQuery, selectedCategory, isWishlist, allProducts]);
+      // 위시리스트 상품으로 필터링
+      let filtered = [...wishlistProducts];
+      console.log('위시리스트 필터링 전 상품 수:', filtered.length);
+
+      // 위시리스트에서도 검색어 적용
+      if (searchQuery) {
+        filtered = filtered.filter(product =>
+          product.productName.toLowerCase().includes(searchQuery.toLowerCase())
+        );
+        console.log('검색어 적용 후 위시리스트 상품 수:', filtered.length);
+      }
+
+      // 위시리스트에서도 카테고리 필터링 적용
+      if (selectedCategory !== '전체') {
+        filtered = filtered.filter(product =>
+          product.category === selectedCategory
+        );
+        console.log('카테고리 적용 후 위시리스트 상품 수:', filtered.length);
+      }
+
+      setFilteredProducts(filtered);
+      setCurrentPage(1);
+      setTotalPages(Math.ceil(filtered.length / ITEMS_PER_PAGE));
+      setDisplayedProducts(filtered.slice(0, ITEMS_PER_PAGE));
+      console.log('위시리스트 표시할 상품 수:', filtered.slice(0, ITEMS_PER_PAGE).length);
+
+    } else if (allProducts.length > 0) {
+      // 일반 상품 필터링 (기존 로직)
+      let filtered = [...allProducts];
+
+      // 검색어 필터링
+      if (searchQuery) {
+        filtered = filtered.filter(product =>
+          product.productName.toLowerCase().includes(searchQuery.toLowerCase())
+        );
+      }
+
+      // 카테고리 필터링
+      if (selectedCategory !== '전체') {
+        filtered = filtered.filter(product =>
+          product.category === selectedCategory
+        );
+      }
+
+      setFilteredProducts(filtered);
+      setCurrentPage(1); // 필터링 시 첫 페이지로 이동
+      setTotalPages(Math.ceil(filtered.length / ITEMS_PER_PAGE));
+      setDisplayedProducts(filtered.slice(0, ITEMS_PER_PAGE));
+    }
+  }, [searchQuery, selectedCategory, isWishlist, allProducts, wishlistProducts, wishlistLoading]);
+
+  // 위시리스트 토글 시 데이터 새로고침
+  useEffect(() => {
+    if (isWishlist) {
+      console.log('위시리스트 새로고침 시작');
+      refetchWishlist().then(result => {
+        console.log('위시리스트 새로고침 결과:', result);
+      }).catch(err => {
+        console.error('위시리스트 새로고침 에러:', err);
+      });
+    }
+  }, [isWishlist, refetchWishlist]);
 
   // 페이지 변경 핸들러
   const handlePageChange = (page: number) => {
@@ -291,6 +355,90 @@ const Step1Products: React.FC<Step1ProductsProps> = ({
     );
   };
 
+  // 위시리스트 체크박스에 로딩 상태 표시 
+  const renderWishlistCheckbox = () => {
+    return (
+      <div
+        className={`flex items-center px-4 py-2 rounded-lg cursor-pointer transition-all ${isWishlist ? 'bg-primary-color/10 border border-primary-color text-primary-color' : 'bg-white border border-gray-200 hover:bg-gray-50 text-gray-700'
+          }`}
+        onClick={(e) => {
+          e.preventDefault(); // 이벤트 기본 동작 방지
+          console.log('위시리스트 체크박스 클릭, 현재 상태:', isWishlist);
+
+          // 로딩 중이면 중복 클릭 방지
+          if (wishlistLoading) {
+            console.log('이미 로딩 중입니다. 잠시 후 다시 시도하세요.');
+            return;
+          }
+
+          // 위시리스트 모드 전환
+          const newWishlistMode = !isWishlist;
+
+          // 위시리스트 모드로 전환하는 경우
+          if (newWishlistMode) {
+            // 먼저 위시리스트 데이터 불러오기
+            refetchWishlist().then(() => {
+              console.log('위시리스트 데이터 로드 성공');
+              // 새로운 필터링 상태를 적용하기 위해 상태 업데이트
+              setIsWishlist(newWishlistMode);
+            }).catch(err => {
+              console.error('위시리스트 로드 실패:', err);
+              alert('위시리스트를 불러오는데 실패했습니다.');
+            });
+          } else {
+            // 위시리스트 모드에서 나가는 경우 바로 상태 업데이트
+            setIsWishlist(newWishlistMode);
+          }
+        }}
+      >
+        <input
+          type="checkbox"
+          className="sr-only"
+          checked={isWishlist}
+          readOnly
+        />
+        {wishlistLoading ? (
+          <div className="mr-2 h-5 w-5 animate-spin rounded-full border-2 border-primary-color border-t-transparent"></div>
+        ) : (
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            className={`h-5 w-5 mr-2 ${isWishlist ? 'text-primary-color' : 'text-gray-400'}`}
+            fill={isWishlist ? "currentColor" : "none"}
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={isWishlist ? 0 : 2}
+              d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
+            />
+          </svg>
+        )}
+        내 위시리스트만 보기
+      </div>
+    );
+  };
+
+  // 위시리스트 상태가 변경될 때만 데이터 다시 로드
+  useEffect(() => {
+    // 필터링된 상태 초기화 (페이지 이동 방지)
+    if (isWishlist) {
+      setCurrentPage(1);
+      console.log('위시리스트 모드 활성화');
+    } else {
+      setCurrentPage(1);
+      console.log('위시리스트 모드 비활성화');
+    }
+
+    // filteredProducts 상태 초기화
+    if (isWishlist) {
+      setFilteredProducts(wishlistProducts);
+    } else {
+      setFilteredProducts(allProducts);
+    }
+  }, [isWishlist, wishlistProducts, allProducts]);
+
   return (
     <div className="p-6">
       {/* 헤더 영역 */}
@@ -383,31 +531,7 @@ const Step1Products: React.FC<Step1ProductsProps> = ({
 
           {/* 위시리스트 체크박스 */}
           <div>
-            <label
-              className={`flex items-center px-4 py-2 rounded-lg cursor-pointer transition-all ${isWishlist ? 'bg-primary-color/10 border border-primary-color text-primary-color' : 'bg-white border border-gray-200 hover:bg-gray-50 text-gray-700'}`}
-            >
-              <input
-                type="checkbox"
-                className="sr-only"
-                checked={isWishlist}
-                onChange={() => setIsWishlist(!isWishlist)}
-              />
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className={`h-5 w-5 mr-2 ${isWishlist ? 'text-primary-color' : 'text-gray-400'}`}
-                fill={isWishlist ? "currentColor" : "none"}
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={isWishlist ? 0 : 2}
-                  d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
-                />
-              </svg>
-              내 위시리스트만 보기
-            </label>
+            {renderWishlistCheckbox()}
           </div>
         </div>
       </div>
@@ -415,7 +539,9 @@ const Step1Products: React.FC<Step1ProductsProps> = ({
       {/* 상품 목록 */}
       <div className="mb-8 product-list">
         <div className="flex justify-between items-center mb-4">
-          <h3 className="text-lg font-medium">상품 목록</h3>
+          <h3 className="text-lg font-medium">
+            {isWishlist ? '내 위시리스트 상품' : '상품 목록'}
+          </h3>
           {!initialLoading && filteredProducts.length > 0 && (
             <p className="text-sm text-gray-500">
               총 {filteredProducts.length}개 상품 중 {Math.min(currentPage * ITEMS_PER_PAGE, filteredProducts.length)}개 표시
@@ -423,7 +549,7 @@ const Step1Products: React.FC<Step1ProductsProps> = ({
           )}
         </div>
 
-        {initialLoading ? (
+        {initialLoading || (isWishlist && wishlistLoading) ? (
           <div className="flex justify-center items-center py-20 bg-gray-50 rounded-lg">
             <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary-color"></div>
             <span className="ml-3 text-gray-600">상품을 불러오는 중...</span>
@@ -446,8 +572,12 @@ const Step1Products: React.FC<Step1ProductsProps> = ({
             <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12 mx-auto text-gray-400 mb-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
             </svg>
-            <p className="text-lg font-medium">상품이 없습니다</p>
-            <p className="mt-2 text-sm">다른 카테고리를 선택하거나 검색어를 변경해보세요.</p>
+            <p className="text-lg font-medium">{isWishlist ? '위시리스트에 상품이 없습니다' : '상품이 없습니다'}</p>
+            <p className="mt-2 text-sm">
+              {isWishlist
+                ? '쇼핑몰에서 마음에 드는 상품을 찜해보세요.'
+                : '다른 카테고리를 선택하거나 검색어를 변경해보세요.'}
+            </p>
           </div>
         ) : (
           <>

@@ -37,5 +37,9 @@ export const useWishlistProducts = () => {
   return useQuery({
     queryKey: ['products', 'wishlist'],
     queryFn: fetchWishlistProducts,
+    staleTime: 1000 * 60 * 5, // 5분 캐시
+    gcTime: 1000 * 60 * 10, // 10분 캐시
+    retry: 1, // 실패 시 1번만 재시도
+    refetchOnWindowFocus: false, // 창 포커스 시 재요청 안함
   });
 }; 
