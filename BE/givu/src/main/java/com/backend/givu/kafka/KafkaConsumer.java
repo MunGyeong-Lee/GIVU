@@ -1,4 +1,4 @@
-package com.backend.givu.model.service;
+package com.backend.givu.kafka;
 
 import lombok.RequiredArgsConstructor;
 import org.apache.kafka.clients.consumer.ConsumerRecord;

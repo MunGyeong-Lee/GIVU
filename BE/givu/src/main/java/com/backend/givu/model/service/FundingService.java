@@ -58,6 +58,11 @@ public class FundingService {
         return fundings.stream()
                 .map(FundingsDTO::new)
                 .toList();
+
+        // 친구인지 아닌지
+        //----> 비공개 펀딩을 보여줄지 말지를 결정
+
+
     }
 
     /**
@@ -217,6 +222,8 @@ public class FundingService {
 
         // 편지 리스트 (User 포함 fetch join)
         List<Letter> letters = fundingRepository.findLetterByFundingIdWithUser(fundingId);
+        // 작성자 본인이 접속했을때는 비밀글 보이게
+        // 작성자 본인이 아니면 비밀글 안보이게 필터링
 
         // 후기 리스트 (User 포함 fetch join)
         List<Review> reviews = fundingRepository.findReviewByFundingIdWithUser(fundingId);
