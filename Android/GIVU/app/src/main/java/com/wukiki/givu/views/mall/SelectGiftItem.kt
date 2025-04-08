@@ -112,7 +112,7 @@ fun GiftListItem(
 
                 Spacer(Modifier.width(4.dp))
                 Text(
-                    text = product.favorite,
+                    text = "15",
                     fontFamily = pretendard,
                     fontWeight = FontWeight.Normal,
                     fontSize = 14.sp

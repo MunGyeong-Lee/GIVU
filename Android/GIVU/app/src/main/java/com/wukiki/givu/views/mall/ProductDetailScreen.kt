@@ -3,10 +3,7 @@ package com.wukiki.givu.views.mall
 import android.content.Intent
 import android.util.Log
 import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -20,12 +17,9 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Button
 import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.Divider
@@ -50,7 +44,6 @@ import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
@@ -81,20 +74,14 @@ fun ProductDetailScreen(
     val context = LocalContext.current
 
     LaunchedEffect(Unit) {
-
         productId?.let {
             mallViewModel.getDetailProductInfo(productId)
-            Log.d("Mall Detail Screen", "아이디: ${productId}")
 
         }
     }
 
     LaunchedEffect(productInfo) {
-
-        productReviewList = productInfo?.reviews ?: emptyList()
-
-        Log.d("Mall Detail Screen", "상품: ${productInfo}")
-        Log.d("Mall Detail Screen", "리뷰: ${productReviewList}")
+        productReviewList = productInfo?.product?.reviews ?: emptyList()
     }
 
     productInfo?.let {
@@ -124,7 +111,7 @@ fun ProductDetailScreen(
                 ) {
                     item {
                         SubcomposeAsyncImage(
-                            model = it.image,
+                            model = it.product.image,
                             contentDescription = null,
                             contentScale = ContentScale.FillWidth,
                             loading = { CircularProgressIndicator() },
@@ -135,10 +122,10 @@ fun ProductDetailScreen(
                     }
 
                     item {
-                        Column() {
+                        Column {
                             Spacer(Modifier.height(16.dp))
                             Text(
-                                text = it.productName,
+                                text = it.product.productName,
                                 fontFamily = pretendard,
                                 fontWeight = FontWeight.Bold,
                                 fontSize = 22.sp,
@@ -159,7 +146,7 @@ fun ProductDetailScreen(
                                 )
                                 Spacer(Modifier.width(4.dp))
                                 Text(
-                                    text = it.star,
+                                    text = it.product.star,
                                     fontFamily = pretendard,
                                     fontWeight = FontWeight.Bold,
                                     fontSize = 16.sp,
@@ -177,7 +164,7 @@ fun ProductDetailScreen(
                             )
                             Spacer(Modifier.height(4.dp))
                             Text(
-                                text = CommonUtils.makeCommaPrice(it.price.toInt()),
+                                text = CommonUtils.makeCommaPrice(it.product.price.toInt()),
                                 fontFamily = pretendard,
                                 fontWeight = FontWeight.SemiBold,
                                 fontSize = 20.sp,
@@ -204,7 +191,7 @@ fun ProductDetailScreen(
                                     .border(1.dp, Color.Black, RoundedCornerShape(5.dp)),
                             ) {
                                 Text(
-                                    text = it.description,
+                                    text = it.product.description,
                                     fontFamily = suit,
                                     fontWeight = FontWeight.Medium,
                                     fontSize = 16.sp,
@@ -256,20 +243,31 @@ fun ProductDetailScreen(
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     IconButton(
-                        onClick = {},
+                        onClick = {
+                            when (it.isLiked) {
+                                true -> {
+                                    mallViewModel.cancelLikeProduct()
+                                }
+
+                                else -> {
+                                    mallViewModel.likeProduct()
+                                }
+                            }
+                        },
                         modifier = Modifier.size(24.dp)
                     ) {
                         Icon(
-                            painter = painterResource(R.drawable.ic_heart_outline), null,
-                            modifier = Modifier.fillMaxSize()
+                            painter = painterResource(if (it.isLiked) R.drawable.ic_heart_fill else R.drawable.ic_heart_outline),
+                            contentDescription = null,
+                            modifier = Modifier.fillMaxSize(),
+                            tint = Color.Unspecified
                         )
                     }
                     Text(
-                        text = it.favorite,
+                        text = it.likeCount.toString(),
                         fontFamily = pretendard,
                         fontWeight = FontWeight.Medium,
                         fontSize = 12.sp
-
                     )
                 }
 
@@ -277,8 +275,7 @@ fun ProductDetailScreen(
                     Button(
                         onClick = {
                             // 펀딩 생성 화면으로 이동
-                            mainViewModel.selectProduct(it)
-                            Log.d("ProductDetailScreen", "상품: ${it}")
+                            mainViewModel.selectProduct(it.product)
 
                             registerViewModel.setFromMall(true)
                             xmlNavController.navigate(R.id.fragment_register_funding)
@@ -330,16 +327,7 @@ fun ProductDetailScreen(
                         )
                     }
                 }
-
             }
-
         }
     }
-}
-
-
-@Preview(showBackground = true)
-@Composable
-private fun pdetail() {
-//    ProductDetailScreen()
 }

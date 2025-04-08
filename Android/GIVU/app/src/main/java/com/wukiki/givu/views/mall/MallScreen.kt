@@ -76,6 +76,10 @@ fun MallScreen(
                 MallUiEvent.GoToProductDetail -> {
 
                 }
+
+                else -> {
+
+                }
             }
         }
     }
