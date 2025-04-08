@@ -1,5 +1,6 @@
 package com.wukiki.givu.views.detail
 
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -9,16 +10,19 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import com.wukiki.givu.R
 import com.wukiki.givu.util.StoreDetailBottomButton
 import com.wukiki.givu.views.detail.component.DetailFundingContent
+import com.wukiki.givu.views.detail.viewmodel.FundingUiEvent
 import com.wukiki.givu.views.detail.viewmodel.FundingViewModel
 
 @Composable
@@ -26,9 +30,37 @@ fun DetailFundingScreen(
     fundingViewModel: FundingViewModel,
     navController: NavController
 ) {
+    val context = LocalContext.current
     val user by fundingViewModel.user.collectAsState()
     val funding by fundingViewModel.selectedFunding.collectAsState()
     val letters by fundingViewModel.selectedFundingLetter.collectAsState()
+    val fundingUiEvent = fundingViewModel.fundingUiEvent
+
+    LaunchedEffect(Unit) {
+        fundingUiEvent.collect { event ->
+            when (event) {
+                is FundingUiEvent.DeleteLetterSuccess -> {
+                    Toast.makeText(
+                        context,
+                        context.getString(R.string.message_delete_letter_success),
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
+
+                is FundingUiEvent.DeleteLetterFail -> {
+                    Toast.makeText(
+                        context,
+                        context.getString(R.string.message_delete_letter_fail),
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
+
+                else -> {
+
+                }
+            }
+        }
+    }
 
     funding?.let {
         Scaffold(

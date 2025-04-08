@@ -62,6 +62,9 @@ class FundingViewModel @Inject constructor(
     private val _account = MutableStateFlow<Account?>(null)
     val account = _account.asStateFlow()
 
+    private val _fundingId = MutableStateFlow<Int>(-1)
+    val fundingId = _fundingId.asStateFlow()
+
     private val _fundings = MutableStateFlow<List<Funding>>(emptyList())
     val fundings = _fundings.asStateFlow()
 
@@ -218,13 +221,29 @@ class FundingViewModel @Inject constructor(
         emit(user)
     }
 
-    private fun participateFunding() {
+    private fun participateFunding(paymentId: Int) {
         viewModelScope.launch {
             val response = getLetterUseCase.submitFundingLetter(
                 fundingId = _selectedFunding.value?.id.toString(),
                 image = null,
                 body = makeLetterRequestBody()
             )
+
+            when (response.status) {
+                ApiStatus.SUCCESS -> {
+                    getPaymentOfFunding(paymentId)
+                }
+
+                else -> {
+                    _fundingUiEvent.emit(FundingUiEvent.ParticipateFundingFail)
+                }
+            }
+        }
+    }
+
+    private fun getPaymentOfFunding(paymentId: Int) {
+        viewModelScope.launch {
+            val response = getFundingUseCase.fetchPaymentOfFunding(paymentId)
 
             when (response.status) {
                 ApiStatus.SUCCESS -> {
@@ -256,6 +275,7 @@ class FundingViewModel @Inject constructor(
 
     fun initFunding(fundingId: Int) {
         viewModelScope.launch {
+            _fundingId.value = fundingId
             val response = getFundingUseCase.fetchFundingDetail(fundingId)
 
             when (response.status) {
@@ -413,6 +433,23 @@ class FundingViewModel @Inject constructor(
         }
     }
 
+    fun deleteLetter(letterId: String) {
+        viewModelScope.launch {
+            val response = getLetterUseCase.deleteFundingLetter(letterId)
+
+            when (response.status) {
+                ApiStatus.SUCCESS -> {
+                    initFunding(_fundingId.value)
+                    _fundingUiEvent.emit(FundingUiEvent.DeleteLetterSuccess)
+                }
+
+                else -> {
+                    _fundingUiEvent.emit(FundingUiEvent.DeleteLetterFail)
+                }
+            }
+        }
+    }
+
     fun transferFunding() {
         viewModelScope.launch {
             val response = getFundingUseCase.transferFunding(
@@ -423,7 +460,7 @@ class FundingViewModel @Inject constructor(
             when (response.status) {
                 ApiStatus.SUCCESS -> {
                     _charge.value = 0
-                    participateFunding()
+                    participateFunding(response.data?.paymentId ?: -1)
                 }
 
                 else -> {

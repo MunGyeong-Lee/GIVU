@@ -9,10 +9,11 @@ object LetterMapper {
     operator fun invoke(letterEntity: LetterEntity): Letter {
         return Letter(
             letterId = letterEntity.letterId.toString(),
+            isCreator = letterEntity.isCreator,
             fundingId = letterEntity.fundingId.toString(),
             userId = letterEntity.user.userId,
             userNickname = letterEntity.user.nickname,
-            userProfile = letterEntity.user.image,
+            userProfile = letterEntity.user.image ?: "",
             comment = letterEntity.comment,
             image = letterEntity.image ?: "",
             access = letterEntity.access ?: "",
