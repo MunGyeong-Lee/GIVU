@@ -1,8 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-// import axios from 'axios';
-
-type ReviewType = '배송/포장' | '제품 품질' | '고객 서비스' | '전체';
+import axios from 'axios';
 
 interface ReviewDetail {
   id: number;
@@ -11,7 +9,6 @@ interface ReviewDetail {
   date: string;
   views: number;
   rating: number;
-  type: ReviewType;  // 후기 유형 추가
   authorFundingCount: number;  // 작성자의 펀딩 참여 수 추가
   content: string;
   images: string[];
@@ -32,7 +29,6 @@ const REVIEW_DETAILS: ReviewDetail = {
   date: "2025.03.10",
   views: 235,
   rating: 4.5,  // 별점 추가
-  type: "제품 품질",  // 후기 유형 추가
   authorFundingCount: 5,  // 펀딩 참여 수 추가
   content: `
     안녕하세요! 저는 이번에 GIVU에서 펀딩에 참여하여 멋진 선물을 받게 되었습니다.
@@ -79,11 +75,67 @@ function FundingReviewDetailPage() {
       setLoading(true);
       setError(null);
 
-      // API 호출 대신 더미 데이터 사용 (1초 지연으로 로딩 시뮬레이션)
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      setReview(REVIEW_DETAILS);
-    } catch (err) {
-      setError('후기를 불러오는데 실패했습니다. 다시 시도해주세요.');
+      if (!id) {
+        setError('후기 ID가 잘못되었습니다.');
+        return;
+      }
+
+      // API 기본 URL 가져오기
+      const API_BASE_URL = import.meta.env.VITE_BASE_URL || import.meta.env.VITE_API_BASE_URL;
+      if (!API_BASE_URL) {
+        throw new Error('API BASE URL이 설정되지 않았습니다.');
+      }
+
+      // 토큰이 있으면 사용
+      const token = localStorage.getItem('auth_token');
+      const headers: Record<string, string> = {
+        'Content-Type': 'application/json'
+      };
+      
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+
+      console.log(`후기 상세 조회 API 호출: ${API_BASE_URL}/fundings/reviews/${id}`);
+      
+      // 실제 API 호출
+      const response = await axios.get(
+        `${API_BASE_URL}/fundings/reviews/${id}`,
+        { headers }
+      );
+
+      console.log('후기 상세 조회 응답:', response.data);
+
+      if (!response.data || response.data.code !== 'SUCCESS') {
+        throw new Error(response.data?.message || '후기 조회에 실패했습니다.');
+      }
+
+      // API 응답을 ReviewDetail 형식으로 변환
+      const reviewData = response.data.data;
+      
+      // 백엔드 응답에서 필요한 정보 매핑
+      const reviewDetail: ReviewDetail = {
+        id: reviewData.reviewId,
+        title: `펀딩 후기 #${reviewData.reviewId}`, // 백엔드에서 제공하지 않는 경우 기본값
+        author: reviewData.user?.nickName || '익명',
+        date: new Date(reviewData.createdAt).toLocaleDateString(),
+        views: reviewData.visit || 0,
+        rating: 5, // 백엔드에서 제공하지 않는 경우 기본값
+        authorFundingCount: 1, // 백엔드에서 제공하지 않는 경우 기본값
+        content: reviewData.comment || '',
+        images: reviewData.image ? [reviewData.image] : [],
+        relatedFunding: {
+          id: reviewData.fundingId,
+          title: '관련 펀딩', // 백엔드에서 제공하지 않는 경우 기본값
+          amount: 150000, // 백엔드에서 제공하지 않는 경우 기본값
+          target: 300000, // 백엔드에서 제공하지 않는 경우 기본값
+          percentage: 50 // 백엔드에서 제공하지 않는 경우 기본값
+        }
+      };
+
+      setReview(reviewDetail);
+    } catch (err: any) {
+      setError(err.message || '후기를 불러오는데 실패했습니다. 다시 시도해주세요.');
       console.error('Error fetching review:', err);
     } finally {
       setLoading(false);
@@ -147,11 +199,6 @@ function FundingReviewDetailPage() {
           <span>{review.date}</span>
           <span>•</span>
           <span>조회 {review.views}</span>
-          <span>•</span>
-          {/* 후기 유형 태그 */}
-          <span className="px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded-full">
-            {review.type}
-          </span>
         </div>
       </div>
 
