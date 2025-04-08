@@ -87,7 +87,7 @@ fun LetterListPager(
 
             else -> {
                 letters.forEach { letter ->
-                    LetterItem(letter)
+                    LetterItem(letter, fundingViewModel)
                     DottedDivider()
                 }
             }
