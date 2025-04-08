@@ -190,17 +190,18 @@ public class FundingController implements FundingControllerDocs {
 
 
     @Operation(summary = "펀딩 상세보기", description = "해당 펀딩 상세를 보여줍니다.")
-    @GetMapping(value="/{fundingId}")
+    @GetMapping(value = "/{fundingId}")
     public ResponseEntity<ApiResponse<FundingDetailDTO>> fundingDetail(
             @AuthenticationPrincipal CustomUserDetail userDetail,
             @PathVariable int fundingId,
-            HttpServletRequest request) throws IOException{
+            HttpServletRequest request) throws IOException {
 
-        Long userId = userDetail.getId();
+        Long userId = (userDetail != null) ? userDetail.getId() : null;
 
-        ApiResponse<FundingDetailDTO> fundingDetail  = fundingService.fundingDetail(userId, fundingId);
+        ApiResponse<FundingDetailDTO> fundingDetail = fundingService.fundingDetail(userId, fundingId);
         return ResponseEntity.ok(fundingDetail);
     }
+
 
 
 //

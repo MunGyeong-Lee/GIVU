@@ -59,25 +59,22 @@ public class FundingService {
                 ? friendRepository.findByUserWithFriend(userId).stream()
                 .map(f -> f.getFriend().getId())
                 .toList()
-                : List.of(); // 비로그인 시 빈 리스트
+                : List.of();
 
         return fundings.stream()
-                .filter(funding -> {
-                    if (funding.getScope() == FundingsScope.PUBLIC) {
-                        return true;
-                    }
-
-                    // PRIVATE인 경우
-                    if (userId == null) {
-                        return false; // 로그인 안 했으면 비공개 펀딩 안 보여줌
-                    }
-
+                .map(funding -> {
                     Long ownerId = funding.getUser().getId();
-                    return ownerId.equals(userId) || friendIds.contains(ownerId);
+
+                    boolean hidden = false;
+                    if (funding.getScope() == FundingsScope.PRIVATE) {
+                        hidden = userId == null || !(ownerId.equals(userId) || friendIds.contains(ownerId));
+                    }
+
+                    return new FundingsDTO(funding, hidden);
                 })
-                .map(FundingsDTO::new)
                 .toList();
     }
+
 
 
 
@@ -91,24 +88,24 @@ public class FundingService {
                 ? friendRepository.findByUserWithFriend(userId).stream()
                 .map(f -> f.getFriend().getId())
                 .toList()
-                : List.of(); // 로그인 안 했으면 비어있는 리스트
+                : List.of();
 
-        List<FundingDocument> filtered = fundingDocuments.stream()
-                .filter(doc -> {
-                    if (doc.getScope().equals(String.valueOf(FundingsScope.PUBLIC))) {
-                        return true;
-                    } else {
-                        return userId != null && (
-                                friendIds.contains(doc.getUserId()) || doc.getUserId().equals(userId)
-                        );
+        List<FundingsDTO> result = fundingDocuments.stream()
+                .map(doc -> {
+                    Long ownerId = doc.getUserId();
+
+                    boolean hidden = false;
+                    if (FundingsScope.valueOf(doc.getScope()) == FundingsScope.PRIVATE) {
+                        hidden = userId == null || !(ownerId.equals(userId) || friendIds.contains(ownerId));
                     }
+
+                    return new FundingsDTO(doc, hidden);
                 })
                 .toList();
 
-        return ApiResponse.success(filtered.stream()
-                .map(FundingsDTO::new)
-                .toList());
+        return ApiResponse.success(result);
     }
+
 
 
 
@@ -243,35 +240,36 @@ public class FundingService {
     /**
      * 펀딩 상세 보기
      */
-    public ApiResponse<FundingDetailDTO> fundingDetail (Long userId, int fundingId){
+    public ApiResponse<FundingDetailDTO> fundingDetail(Long userId, int fundingId) {
 
-        // 존재하는 펀딩인지 확인
+        // 펀딩 + 유저 + 상품 가져오기
         Funding funding = fundingRepository.findByIdWithUserAndProduct(fundingId)
-                .orElseThrow(() -> new EntityNotFoundException("펀딩을 찾을 수 없습니다,"));
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new EntityNotFoundException("유저를 찾을 수 없습니다."));
+                .orElseThrow(() -> new EntityNotFoundException("펀딩을 찾을 수 없습니다."));
 
-
-        //  연관된 상품, 작성자 정보, 작성자 == 조회하는 유저 인지
         Product product = funding.getProduct();
         User writer = funding.getUser();
-        boolean isCreator = user.getId().equals(writer.getId());
 
-        // 편지 리스트 (User 포함 fetch join)
+        boolean isCreator = false;
+        Long viewerId = null;
+
+        if (userId != null) {
+            // 로그인 유저일 경우에만 조회
+            User user = userRepository.findById(userId)
+                    .orElseThrow(() -> new EntityNotFoundException("유저를 찾을 수 없습니다."));
+            isCreator = user.getId().equals(writer.getId());
+            viewerId = user.getId();
+        }
+
+        // 편지 + 후기
         List<Letter> letters = fundingRepository.findLetterByFundingIdWithUser(fundingId);
-        // 작성자 본인이 접속했을때는 비밀글 보이게
-        // 작성자 본인이 아니면 비밀글 안보이게 필터링
-
-        // 후기 리스트 (User 포함 fetch join)
         List<Review> reviews = fundingRepository.findReviewByFundingIdWithUser(fundingId);
 
         // DTO 조립
-        FundingDetailDTO dto = FundingDetailDTO.of(funding, isCreator, writer, product, letters, reviews, user.getId());
+        FundingDetailDTO dto = FundingDetailDTO.of(funding, isCreator, writer, product, letters, reviews, viewerId);
 
         return ApiResponse.success(dto);
-
-
     }
+
 
     /**
      * 펀딩 결제 확인
