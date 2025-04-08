@@ -2,6 +2,7 @@ package com.wukiki.domain.model
 
 data class Letter(
     val letterId: String,
+    val isCreator: Boolean,
     val fundingId: String,
     val userId: Int,
     val userNickname: String,

@@ -16,4 +16,7 @@ class GetLetterUseCase @Inject constructor(
         image: MultipartBody.Part?,
         body: RequestBody
     ): ApiResult<Letter> = letterRepository.submitFundingLetter(fundingId, image, body)
+
+    suspend fun deleteFundingLetter(fundingId: String): ApiResult<Unit> =
+        letterRepository.deleteFundingLetter(fundingId)
 }
