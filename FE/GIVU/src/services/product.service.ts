@@ -159,15 +159,70 @@ export const fetchProductDetail = async (productId: string) => {
   }
 };
 
-// 위시리스트 상품 조회 API 함수 (나중에 필요하면 구현)
+// 위시리스트 상품 조회 API 함수
 export const fetchWishlistProducts = async () => {
   try {
-    // 위시리스트 API가 있다면 해당 API 호출
-    // 현재는 임시로 상품 목록에서 favorite이 true인 항목만 필터링
-    const products = await fetchProductsList();
-    return products.filter(product => product.favorite);
+    console.log('위시리스트 상품 조회 API 호출 시작');
+    
+    // 로컬 스토리지에서 토큰 가져오기
+    const token = localStorage.getItem('auth_token');
+    console.log('토큰 존재 여부:', !!token);
+    
+    if (!token) {
+      console.log('로그인되지 않은 상태, 빈 배열 반환');
+      return [];
+    }
+    
+    // API 요청 헤더 설정
+    const headers = {
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json',
+      'Accept': 'application/json'
+    };
+    
+    // 실제 위시리스트 API 호출
+    console.log('실제 API 호출: /products/search/likeProduct');
+    const response = await axios.get(
+      `${API_BASE_URL}/products/search/likeProduct`,
+      {
+        headers,
+        withCredentials: true
+      }
+    );
+    
+    console.log('위시리스트 API 응답:', response.data);
+    
+    // API 응답 구조 확인 (코드 예시에 맞춤)
+    if (response.data && response.data.code === 'SUCCESS' && Array.isArray(response.data.data)) {
+      const productsData = response.data.data;
+      console.log('위시리스트 상품 데이터 수:', productsData.length);
+      
+      // 상품 데이터 변환 (API 응답 형식에 맞게)
+      const formattedProducts = productsData.map((product: any) => ({
+        id: product.id.toString(),
+        productName: product.productName,
+        price: product.price,
+        image: product.image || '/placeholder.png',
+        category: CATEGORY_MAPPING[product.category] || '기타',
+        favorite: true, // 위시리스트에 있는 상품은 favorite이 true
+        star: product.star,
+        description: product.description,
+        createdAt: product.createdAt
+      }));
+      
+      console.log('위시리스트 변환된 상품 데이터:', formattedProducts);
+      return formattedProducts;
+    }
+    
+    // API 응답이 예상 형식이 아닌 경우 빈 배열 반환
+    console.log('위시리스트 API 응답이 예상 형식이 아님, 빈 배열 반환');
+    return [];
+    
   } catch (error) {
     console.error('위시리스트 상품을 불러오는 중 오류가 발생했습니다:', error);
-    throw error;
+    console.error('오류 세부 정보:', error instanceof Error ? error.message : '알 수 없는 오류');
+    
+    // 오류 발생 시 빈 배열 반환
+    return [];
   }
 }; 
