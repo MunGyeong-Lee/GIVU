@@ -218,6 +218,18 @@ public class FundingController implements FundingControllerDocs {
         return ResponseEntity.ok(fundingTransfer);
     }
 
+    @Operation(summary = "펀딩결제 현황 조회", description = "해당 펀딩 결제 현황을 조회합니다.")
+    @GetMapping(value="/{paymentId}/transfer")
+    public ResponseEntity<ApiResponse<PaymentResultDTO>> paymentResult(
+            @AuthenticationPrincipal CustomUserDetail userDetail,
+            @PathVariable int paymentId,
+            HttpServletRequest request)throws IOException {
+        Long userId = userDetail.getId();
+        PaymentResultDTO fundingTransfer = fundingService.paymentResult(userId, paymentId);
+
+        return ResponseEntity.ok(ApiResponse.success(fundingTransfer));
+    }
+
 
 
 
