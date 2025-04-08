@@ -5,10 +5,7 @@ import com.backend.givu.model.entity.CustomUserDetail;
 import com.backend.givu.model.repository.ReviewRepository;
 import com.backend.givu.model.requestDTO.FundingCreateDTO;
 import com.backend.givu.model.requestDTO.ReviewCreateDTO;
-import com.backend.givu.model.responseDTO.ApiResponse;
-import com.backend.givu.model.responseDTO.FundingsDTO;
-import com.backend.givu.model.responseDTO.ImageUploadResponseDTO;
-import com.backend.givu.model.responseDTO.ReviewsDTO;
+import com.backend.givu.model.responseDTO.*;
 import com.backend.givu.model.service.ReviewService;
 import com.backend.givu.model.service.S3UploadService;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -83,6 +80,20 @@ public class ReviewController implements ReviewControllerDocs {
         return ResponseEntity.ok(ApiResponse.success(reviewList));
     }
 
+    @Operation(summary = "펀딩 후기 상세조회", description = "해당 펀딩 후기 상세보기를 조회 합니다.")
+    @GetMapping(value = "/{reviewId}")
+    public ResponseEntity<ApiResponse<ReviewDetailDTO>> reviewDetail(
+            @AuthenticationPrincipal CustomUserDetail userDetail,
+            @PathVariable int reviewId,
+            HttpServletRequest request) throws IOException{
+
+        Long userId = userDetail.getId();
+
+        ReviewDetailDTO reviewDetailDTO = reviewService.revieDetail(userId, reviewId);
+        return ResponseEntity.ok(ApiResponse.success(reviewDetailDTO));
+
+    }
+
 
     @Operation(summary = "펀딩 후기 삭제", description = "펀딩 후기를 수정 합니다.")
     @DeleteMapping(value = "/{reviewId}")
@@ -102,9 +113,6 @@ public class ReviewController implements ReviewControllerDocs {
 
 
 
-//    @Operation(summary = "펀딩 후기 조회", description = "해당 펀딩의 후기를 조회합니다.")
-//    @GetMapping(value = "/{fundingId}")
-//    public ResponseEntity<ReviewsDTO>
 
 
 
