@@ -16,7 +16,7 @@ object ReviewMapper {
             updatedAt = reviewEntity.updatedAt ?: "",
             visit = reviewEntity.visit.toString(),
             userNickname = reviewEntity.user.nickname,
-            userProfile = reviewEntity.user.image
+            userProfile = reviewEntity.user.image ?: ""
         )
     }
 }

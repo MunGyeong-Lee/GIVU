@@ -18,7 +18,6 @@ object ProductsMapper {
                     category = productEntity.category,
                     price = productEntity.price.toString(),
                     image = productEntity.image,
-                    favorite = productEntity.favorite.toString(),
                     star = productEntity.star.toString(),
                     createdAt = formatDateTime(productEntity.createdAt),
                     description = productEntity.description,

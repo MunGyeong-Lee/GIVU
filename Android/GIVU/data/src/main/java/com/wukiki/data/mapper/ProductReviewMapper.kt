@@ -11,11 +11,11 @@ object ProductReviewMapper {
             reviewId = productReviewEntity.reviewId,
             title = productReviewEntity.title,
             body = productReviewEntity.body,
-            image = productReviewEntity.image,
+            image = productReviewEntity.image ?: "",
             star = productReviewEntity.star,
             userId = productReviewEntity.user.userId,
             nickname = productReviewEntity.user.nickname,
-            userImage = productReviewEntity.user.image
+            userImage = productReviewEntity.user.image ?: ""
         )
     }
 }
