@@ -110,6 +110,10 @@ fun ChargeAccountScreen(
                     navController.popBackStack()
                 },
                 onHomeClick = {
+                    xmlNavController.popBackStack(
+                        xmlNavController.graph.startDestinationId,
+                        true // inclusive
+                    )
                     xmlNavController.navigate(R.id.fragment_home)
                 }
             )
