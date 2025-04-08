@@ -2,17 +2,13 @@ import axios from 'axios';
 import { getAuthToken } from './auth.service';
 
 // API Base URL
-const API_BASE_URL = import.meta.env.VITE_BASE_URL;
-
-// 후기 유형 정의
-export type ReviewType = '배송/포장' | '제품 품질' | '고객 서비스' | '전체';
+// const API_BASE_URL = import.meta.env.VITE_BASE_URL;
 
 // 후기 데이터 인터페이스
 export interface ReviewData {
   title: string;
   content: string;
   rating: number;
-  type: ReviewType;
   fundingId: number | string;
   images?: File[];
 }
@@ -23,7 +19,6 @@ export interface ReviewResponse {
   title: string;
   content: string;
   rating: number;
-  type: string;
   author: {
     userId: number;
     nickName: string;
@@ -89,7 +84,6 @@ export const createReview = async (reviewData: ReviewData): Promise<ReviewRespon
       title: reviewData.title,  // 백엔드에서 반환하지 않으므로 원래 입력값 사용
       content: response.data.comment,
       rating: reviewData.rating, // 백엔드에서 반환하지 않으므로 원래 입력값 사용
-      type: reviewData.type,    // 백엔드에서 반환하지 않으므로 원래 입력값 사용
       author: {
         userId: response.data.user.userId,
         nickName: response.data.user.nickName,
@@ -123,7 +117,7 @@ export const createReview = async (reviewData: ReviewData): Promise<ReviewRespon
 /**
  * 펀딩의 후기 목록 조회 API 호출 함수
  * 
- * @param fundingId 펀딩 ID
+ * @param fundingId 펀딩 ID (all인 경우 모든 후기 조회)
  * @param page 페이지 번호 (기본값: 0)
  * @param size 페이지 크기 (기본값: 10)
  * @returns 후기 목록 및 페이지 정보
@@ -134,6 +128,7 @@ export const getFundingReviews = async (
   size: number = 10
 ) => {
   try {
+    console.log(`펀딩 ID ${fundingId}에 대한 후기 조회 시작`);
     const token = getAuthToken();
     
     const headers: Record<string, string> = {
@@ -144,18 +139,55 @@ export const getFundingReviews = async (
       headers['Authorization'] = `Bearer ${token}`;
     }
     
+    // API 엔드포인트 결정 (백엔드 명세에 맞게 수정)
+    const API_BASE_URL = import.meta.env.VITE_BASE_URL || import.meta.env.VITE_API_BASE_URL;
+    const endpoint = `${API_BASE_URL}/fundings/reviews`;
+    
+    console.log(`후기 목록 API 호출: ${endpoint}`);
+    
+    const params: Record<string, any> = {
+      page,
+      size
+    };
+    
+    if (fundingId !== 'all') {
+      params.fundingId = fundingId;
+    }
+    
     const response = await axios.get(
-      `${API_BASE_URL}/reviews/funding/${fundingId}`,
+      endpoint,
       {
-        params: {
-          page,
-          size
-        },
+        params,
         headers
       }
     );
     
-    return response.data;
+    console.log('후기 목록 API 응답:', response.data);
+    
+    // API 응답 형식 매핑
+    const reviewsData = response.data.data || [];
+    
+    // 프론트엔드에서 사용하는 형식으로 데이터 변환
+    const reviews = reviewsData.map((item: any) => ({
+      id: item.reviewId,
+      fundingId: item.fundingId,
+      title: `펀딩 후기 #${item.reviewId}`, // API에서 제공하지 않는 경우 기본값 설정
+      author: item.user?.nickName,
+      date: new Date(item.createdAt).toLocaleDateString(),
+      views: item.visit || 0,
+      content: item.comment,
+      image: item.image,
+      authorFundingCount: 1, // API에서 제공하지 않는 경우 기본값 설정
+      rating: 5, // API에서 제공하지 않는 경우 기본값 설정
+      user: item.user
+    }));
+    
+    return {
+      content: reviews,
+      last: reviews.length < size,
+      totalElements: reviews.length,
+      number: page
+    };
   } catch (error: any) {
     console.error('펀딩 후기 목록 조회 중 오류 발생:', error);
     
@@ -164,7 +196,7 @@ export const getFundingReviews = async (
       console.error('응답 데이터:', error.response.data);
       
       if (error.response.status === 404) {
-        throw new Error('펀딩을 찾을 수 없습니다.');
+        throw new Error('펀딩 후기를 찾을 수 없습니다.');
       } else if (error.response.data?.message) {
         throw new Error(error.response.data.message);
       }
