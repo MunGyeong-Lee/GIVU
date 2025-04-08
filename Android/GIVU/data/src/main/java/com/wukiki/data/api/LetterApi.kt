@@ -1,6 +1,6 @@
 package com.wukiki.data.api
 
-import com.wukiki.data.entity.LetterEntity
+import com.wukiki.data.entity.LetterRequestEntity
 import okhttp3.MultipartBody
 import okhttp3.RequestBody
 import retrofit2.Response
@@ -18,7 +18,7 @@ interface LetterApi {
         @Path("fundingId") fundingId: String,
         @Part image: MultipartBody.Part?,
         @Part("data") body: RequestBody
-    ): Response<LetterEntity>
+    ): Response<LetterRequestEntity>
 
     @DELETE("fundings/letters/{fundingId}")
     suspend fun deleteFundingLetter(

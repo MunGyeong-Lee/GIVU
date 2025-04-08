@@ -1,7 +1,7 @@
 package com.wukiki.data.repository.letter
 
 import android.util.Log
-import com.wukiki.data.mapper.LetterMapper
+import com.wukiki.data.mapper.LetterRequestMapper
 import com.wukiki.domain.model.ApiResult
 import com.wukiki.domain.model.Letter
 import com.wukiki.domain.repository.LetterRepository
@@ -30,7 +30,7 @@ class LetterRepositoryImpl @Inject constructor(
             Log.d("LetterRepositoryImpl", "Response: $responseBody")
             if (response.isSuccessful && (responseBody != null)) {
                 Log.d("LetterRepositoryImpl", "submitFundingLetter Success")
-                ApiResult.success(LetterMapper(responseBody))
+                ApiResult.success(LetterRequestMapper(responseBody))
             } else {
                 Log.d("LetterRepositoryImpl", "submitFundingLetter Fail: ${response.code()}")
                 ApiResult.error(response.errorBody().toString(), null)

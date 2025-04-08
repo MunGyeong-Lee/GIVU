@@ -1,7 +1,7 @@
 package com.wukiki.data.repository.letter
 
 import com.wukiki.data.api.LetterApi
-import com.wukiki.data.entity.LetterEntity
+import com.wukiki.data.entity.LetterRequestEntity
 import okhttp3.MultipartBody
 import okhttp3.RequestBody
 import retrofit2.Response
@@ -15,7 +15,7 @@ class LetterRemoteDataSourceImpl @Inject constructor(
         fundingId: String,
         image: MultipartBody.Part?,
         body: RequestBody
-    ): Response<LetterEntity> =
+    ): Response<LetterRequestEntity> =
         letterApi.postFundingLetter(fundingId, image, body)
 
     override suspend fun deleteFundingLetter(fundingId: String): Response<Unit> =

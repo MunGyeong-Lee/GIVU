@@ -4,12 +4,9 @@ import com.squareup.moshi.Json
 import com.squareup.moshi.JsonClass
 
 @JsonClass(generateAdapter = true)
-data class LetterEntity(
+data class LetterRequestEntity(
     @Json(name = "letterId")
     val letterId: Int,
-
-    @Json(name = "creator")
-    val isCreator: Boolean,
 
     @Json(name = "funding")
     val fundingId: Int,
