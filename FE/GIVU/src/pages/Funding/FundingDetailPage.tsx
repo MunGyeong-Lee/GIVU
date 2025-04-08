@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import axios from "axios";
+import { isFundingCreator } from "../../services/review.service";
 
 // 펀딩 데이터 타입 정의
 interface FundingDetail {
@@ -92,7 +93,7 @@ const FALLBACK_DATA: FundingDetail = {
 
 const FundingDetailPage = () => {
   const navigate = useNavigate();
-  const params = useParams<{ id?: string }>(); // 라우터 설정에 맞게 파라미터 이름을 'id'로 수정
+  const params = useParams<{ id?: string }>();
   console.log('URL 파라미터 전체:', params);
   
   // 파라미터에서 id 추출
@@ -111,7 +112,6 @@ const FundingDetailPage = () => {
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [fundingData, setFundingData] = useState<FundingDetail | null>(null);
-  // const [, setCurrentImageIndex] = useState(0);
   const [selectedAmount, setSelectedAmount] = useState<number | null>(null);
   const [customAmount, setCustomAmount] = useState<string>('');
   const [isCustomInput, setIsCustomInput] = useState(false);
@@ -126,113 +126,157 @@ const FundingDetailPage = () => {
   const [showBalanceInfo, setShowBalanceInfo] = useState<boolean>(false);
   const [balanceLoading, setBalanceLoading] = useState<boolean>(false);
 
+  // 펀딩 생성자 확인 상태 추가
+  const [, setIsCreator] = useState<boolean>(false);
+  const [, setCreatorCheckLoading] = useState<boolean>(false);
+
+  // 편지 작성 관련 상태 추가
+  const [letterComment, setLetterComment] = useState<string>('');
+  const [letterAccess, setLetterAccess] = useState<string>('공개'); // 기본값은 공개
+  const [letterImage, setLetterImage] = useState<File | null>(null);
+  const [letterImagePreview, setLetterImagePreview] = useState<string | null>(null);
+  const [isLetterSubmitting, setIsLetterSubmitting] = useState<boolean>(false);
+  const [letterSuccess, setLetterSuccess] = useState<boolean>(false);
+  const [letterError, setLetterError] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
   // 현재 URL 출력
   useEffect(() => {
     console.log('현재 URL:', window.location.href);
     console.log('Path:', window.location.pathname);
   }, []);
   
-  // 펀딩 상세 데이터 가져오기
-  useEffect(() => {
-    // ID가 없으면 API 호출하지 않음
-    if (!fundingId) {
-      console.error('펀딩 ID가 없음');
-      setError('펀딩 ID가 잘못되었습니다.');
-      setLoading(false);
-      return;
-    }
+  // 펀딩 상세 정보 가져오기 함수 정의 (useCallback으로 감싸기)
+  const fetchFundingDetail = useCallback(async () => {
+    try {
+      // ID가 없으면 API 호출하지 않음
+      if (!fundingId) {
+        console.error('펀딩 ID가 없음');
+        setError('펀딩 ID가 잘못되었습니다.');
+        setLoading(false);
+        return;
+      }
 
-    const fetchFundingDetail = async () => {
+      console.log('펀딩 상세 정보 요청 시작, ID:', fundingId);
+      setLoading(true);
+      
+      // API Base URL 확인 - 다른 파일에서 사용하는 방식으로 수정
+      const baseUrl = import.meta.env.VITE_BASE_URL || import.meta.env.VITE_API_BASE_URL || 'https://j12d107.p.ssafy.io/api';
+      console.log('API 기본 URL 확인:', {
+        VITE_BASE_URL: import.meta.env.VITE_BASE_URL,
+        VITE_API_BASE_URL: import.meta.env.VITE_API_BASE_URL,
+        '사용할 URL': baseUrl
+      });
+      
+      // 토큰 확인 - 다양한 키 이름으로 시도
+      const token = localStorage.getItem('auth_token') || 
+                   localStorage.getItem('access_token') ||
+                   localStorage.getItem('token');
+      console.log('토큰 존재 여부:', !!token);
+      
+      // 전체 API URL 로깅 - 경로 수정: funding -> fundings (복수형)
+      const apiUrl = `${baseUrl}/fundings/${fundingId}`;
+      console.log('요청 URL:', apiUrl);
+      
+      // API 요청 - 더 많은 오류 정보 캡처
       try {
-        console.log('펀딩 상세 정보 요청 시작, ID:', fundingId);
-        setLoading(true);
-        
-        // API Base URL 확인 - 다른 파일에서 사용하는 방식으로 수정
-        const baseUrl = import.meta.env.VITE_BASE_URL || import.meta.env.VITE_API_BASE_URL || 'https://j12d107.p.ssafy.io/api';
-        console.log('API 기본 URL 확인:', {
-          VITE_BASE_URL: import.meta.env.VITE_BASE_URL,
-          VITE_API_BASE_URL: import.meta.env.VITE_API_BASE_URL,
-          '사용할 URL': baseUrl
-        });
-        
-        // 토큰 확인 - 다양한 키 이름으로 시도
-        const token = localStorage.getItem('auth_token') || 
-                     localStorage.getItem('access_token') ||
-                     localStorage.getItem('token');
-        console.log('토큰 존재 여부:', !!token);
-        
-        // 전체 API URL 로깅 - 경로 수정: funding -> fundings (복수형)
-        const apiUrl = `${baseUrl}/fundings/${fundingId}`;
-        console.log('요청 URL:', apiUrl);
-        
-        // API 요청 - 더 많은 오류 정보 캡처
-        try {
-          const response = await axios.get(
-            apiUrl,
-            {
-              headers: {
-                'Authorization': token ? `Bearer ${token}` : '',
-                'Content-Type': 'application/json'
-              }
+        const response = await axios.get(
+          apiUrl,
+          {
+            headers: {
+              'Authorization': token ? `Bearer ${token}` : '',
+              'Content-Type': 'application/json'
             }
-          );
-          
-          console.log('펀딩 상세 응답 전체:', response);
-          console.log('펀딩 상세 응답 데이터:', response.data);
-          
-          // 응답 구조 확인
-          if (response.data) {
-            if (response.data.code === 'SUCCESS') {
-              console.log('응답 데이터 구조:', response.data.data);
-              setFundingData(response.data.data);
-            } else {
-              console.error('응답 코드 오류:', response.data.code, response.data.message);
-              // 임시 데이터로 UI 표시 (실제 환경에서는 제거할 것)
-              setFundingData(FALLBACK_DATA);
-              setError(response.data?.message || '펀딩 정보를 가져오지 못했습니다.');
-            }
+          }
+        );
+        
+        console.log('펀딩 상세 응답 전체:', response);
+        console.log('펀딩 상세 응답 데이터:', response.data);
+        
+        // 응답 구조 확인
+        if (response.data) {
+          if (response.data.code === 'SUCCESS') {
+            console.log('응답 데이터 구조:', response.data.data);
+            setFundingData(response.data.data);
           } else {
-            console.error('응답 데이터가 없음');
+            console.error('응답 코드 오류:', response.data.code, response.data.message);
             // 임시 데이터로 UI 표시 (실제 환경에서는 제거할 것)
             setFundingData(FALLBACK_DATA);
-            setError('서버 응답이 올바르지 않습니다.');
+            setError(response.data?.message || '펀딩 정보를 가져오지 못했습니다.');
           }
-        } catch (apiError: any) {
-          console.error('API 요청 오류 상세정보:', apiError);
-          console.error('오류 상태 코드:', apiError.response?.status);
-          console.error('오류 응답 데이터:', apiError.response?.data);
-          console.error('오류 메시지:', apiError.message);
-          
-          // axios 오류 세부 정보 기반으로 사용자 친화적인 오류 메시지 설정
-          let errorMessage = '펀딩 정보를 가져오는 중 오류가 발생했습니다.';
-          if (apiError.response) {
-            // 서버가 응답을 반환했으나 2xx 범위가 아닌 경우
-            if (apiError.response.status === 404) {
-              errorMessage = '펀딩을 찾을 수 없습니다.';
-            } else if (apiError.response.status === 401 || apiError.response.status === 403) {
-              errorMessage = '접근 권한이 없습니다.';
-            } else if (apiError.response.data?.message) {
-              errorMessage = apiError.response.data.message;
-            }
-          } else if (apiError.request) {
-            // 요청은 전송되었으나 응답을 받지 못한 경우
-            errorMessage = '서버로부터 응답이 없습니다. 네트워크 연결을 확인해주세요.';
-          }
-          
-          setError(errorMessage);
-          setFundingData(FALLBACK_DATA); // 임시 데이터로 UI 표시
-          throw apiError; // 상위 catch 블록으로 오류 전파
+        } else {
+          console.error('응답 데이터가 없음');
+          // 임시 데이터로 UI 표시 (실제 환경에서는 제거할 것)
+          setFundingData(FALLBACK_DATA);
+          setError('서버 응답이 올바르지 않습니다.');
         }
-      } catch (err) {
-        console.error('펀딩 상세 조회 오류:', err);
-        // 이미 내부 catch 블록에서 처리되었으므로 추가 작업은 필요 없음
+      } catch (apiError: any) {
+        console.error('API 요청 오류 상세정보:', apiError);
+        console.error('오류 상태 코드:', apiError.response?.status);
+        console.error('오류 응답 데이터:', apiError.response?.data);
+        console.error('오류 메시지:', apiError.message);
+        
+        // axios 오류 세부 정보 기반으로 사용자 친화적인 오류 메시지 설정
+        let errorMessage = '펀딩 정보를 가져오는 중 오류가 발생했습니다.';
+        if (apiError.response) {
+          // 서버가 응답을 반환했으나 2xx 범위가 아닌 경우
+          if (apiError.response.status === 404) {
+            errorMessage = '펀딩을 찾을 수 없습니다.';
+          } else if (apiError.response.status === 401 || apiError.response.status === 403) {
+            errorMessage = '접근 권한이 없습니다.';
+          } else if (apiError.response.data?.message) {
+            errorMessage = apiError.response.data.message;
+          }
+        } else if (apiError.request) {
+          // 요청은 전송되었으나 응답을 받지 못한 경우
+          errorMessage = '서버로부터 응답이 없습니다. 네트워크 연결을 확인해주세요.';
+        }
+        
+        setError(errorMessage);
+        setFundingData(FALLBACK_DATA); // 임시 데이터로 UI 표시
+        throw apiError; // 상위 catch 블록으로 오류 전파
+      }
+    } catch (err) {
+      console.error('펀딩 상세 조회 오류:', err);
+      // 이미 내부 catch 블록에서 처리되었으므로 추가 작업은 필요 없음
+    } finally {
+      setLoading(false);
+    }
+  }, [fundingId, setError, setLoading, setFundingData]); // 사용하는 상태 setter 함수들 추가
+  
+  // 펀딩 상세 데이터 가져오기
+  useEffect(() => {
+    fetchFundingDetail();
+  }, [fetchFundingDetail]);
+
+  // 펀딩 생성자 확인 함수 추가
+  useEffect(() => {
+    const checkFundingCreator = async () => {
+      if (!fundingId) return;
+      
+      try {
+        setCreatorCheckLoading(true);
+        console.log('펀딩 생성자 확인 시작, ID:', fundingId);
+        
+        // API를 통한 생성자 확인
+        const result = await isFundingCreator(fundingId);
+        console.log('API로 확인한 생성자 여부:', result);
+        
+        // 결과 설정
+        setIsCreator(result);
+      } catch (error) {
+        console.error('펀딩 생성자 확인 중 오류:', error);
+        setIsCreator(false);
       } finally {
-        setLoading(false);
+        setCreatorCheckLoading(false);
       }
     };
 
-    fetchFundingDetail();
-  }, [fundingId, navigate]); // fundingId가 변경될 때마다 API 다시 호출
+    // 펀딩 데이터가 로드된 후 생성자 확인
+    if (fundingData) {
+      checkFundingCreator();
+    }
+  }, [fundingId, fundingData]);
 
   // 컴포넌트가 마운트될 때 스크롤을 맨 위로 이동
   useEffect(() => {
@@ -307,7 +351,8 @@ const FundingDetailPage = () => {
       state: { 
         amount,
         title: fundingData.title,
-        creatorName: fundingData.writer.nickName
+        creatorName: fundingData.writer.nickName,
+        fundingId: fundingData.fundingId
       }
     });
   };
@@ -388,6 +433,167 @@ const FundingDetailPage = () => {
       console.error('잔액 정보 조회 중 오류 발생:', error);
     } finally {
       setBalanceLoading(false);
+    }
+  };
+
+  // 편지 이미지 선택 처리 함수
+  const handleLetterImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files.length > 0) {
+      const file = e.target.files[0];
+      setLetterImage(file);
+      
+      // 이미지 미리보기 생성
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setLetterImagePreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  // 편지 이미지 삭제 함수
+  const handleRemoveLetterImage = () => {
+    setLetterImage(null);
+    setLetterImagePreview(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+
+  // 편지 제출 함수
+  const handleLetterSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!fundingId) {
+      setLetterError('펀딩 ID가 유효하지 않습니다.');
+      return;
+    }
+    
+    if (letterComment.trim() === '') {
+      setLetterError('편지 내용을 입력해주세요.');
+      return;
+    }
+    
+    try {
+      setIsLetterSubmitting(true);
+      setLetterError(null);
+      
+      // API Base URL 가져오기
+      const baseUrl = import.meta.env.VITE_BASE_URL || import.meta.env.VITE_API_BASE_URL || 'https://j12d107.p.ssafy.io/api';
+      
+      // 토큰 확인
+      const token = localStorage.getItem('auth_token') || 
+                    localStorage.getItem('access_token') ||
+                    localStorage.getItem('token');
+                    
+      if (!token) {
+        setLetterError('로그인이 필요합니다.');
+        return;
+      }
+      
+      // FormData 객체 생성
+      const formData = new FormData();
+      
+      // JSON 데이터 추가
+      const letterData = {
+        comment: letterComment,
+        access: letterAccess
+      };
+      
+      formData.append('data', new Blob([JSON.stringify(letterData)], { type: 'application/json' }));
+      
+      // 이미지가 있는 경우 추가
+      if (letterImage) {
+        formData.append('image', letterImage);
+      }
+      
+      // API 요청
+      const response = await axios.post(
+        `${baseUrl}/fundings/letters/${fundingId}`,
+        formData,
+        {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'multipart/form-data'
+          }
+        }
+      );
+      
+      console.log('편지 작성 응답 전체:', response);
+      console.log('편지 작성 응답 데이터:', response.data);
+      
+      // 응답이 있으면 성공으로 간주 (백엔드 응답 구조가 다양할 수 있음)
+      if (response.data) {
+        // 성공 상태 설정
+        setLetterSuccess(true);
+        
+        // 응답 데이터 로깅
+        console.log('편지 작성 성공으로 간주:', response.data);
+        
+        // letterId가 있는 경우 자동으로 목록 업데이트
+        if (response.data.letterId && fundingData) {
+          try {
+            // 새 편지를 letters 배열 앞에 추가
+            const updatedLetters = [
+              {
+                letterId: response.data.letterId,
+                funding: Number(fundingId),
+                user: response.data.user,
+                comment: response.data.comment,
+                image: response.data.image,
+                access: response.data.access,
+                createdAt: response.data.createdAt,
+                updatedAt: response.data.updatedAt
+              },
+              ...fundingData.letters
+            ];
+            
+            // 업데이트된 fundingData 설정
+            setFundingData({
+              ...fundingData,
+              letters: updatedLetters,
+              participantsNumber: fundingData.participantsNumber + 1
+            });
+            
+            console.log('편지 목록 자동 업데이트 완료');
+          } catch (updateError) {
+            console.error('편지 목록 업데이트 중 오류:', updateError);
+            // 자동 업데이트 실패 시 전체 데이터 다시 로드
+            fetchFundingDetail();
+          }
+        } else {
+          // 응답에 letterId가 없는 경우 전체 데이터 다시 로드
+          console.log('응답에 letterId가 없어 전체 데이터 다시 로드');
+          fetchFundingDetail();
+        }
+        
+        // 폼 초기화
+        setLetterComment('');
+        setLetterAccess('공개');
+        setLetterImage(null);
+        setLetterImagePreview(null);
+        
+        // 3초 후 성공 메시지 숨기기
+        setTimeout(() => {
+          setLetterSuccess(false);
+        }, 3000);
+      } else {
+        // 응답 데이터가 없는 경우에만 에러 표시
+        console.error('편지 작성 응답에 데이터가 없음:', response);
+        setLetterError('편지 작성에 실패했습니다. 응답 데이터가 없습니다.');
+      }
+    } catch (err: any) {
+      console.error('편지 작성 중 오류:', err);
+      
+      // 자세한 오류 정보 로깅
+      if (err.response) {
+        console.error('응답 상태:', err.response.status);
+        console.error('응답 데이터:', err.response.data);
+      }
+      
+      setLetterError(err.response?.data?.message || '편지 작성 중 오류가 발생했습니다.');
+    } finally {
+      setIsLetterSubmitting(false);
     }
   };
 
@@ -609,6 +815,15 @@ const FundingDetailPage = () => {
                       <span className="font-bold">{letter.user.nickName}</span>
                     </div>
                     <p className="text-gray-600 pl-10">{letter.comment}</p>
+                    {letter.image && (
+                      <div className="pl-10 mt-2">
+                        <img 
+                          src={letter.image} 
+                          alt="편지 첨부 이미지" 
+                          className="max-w-xs rounded-lg border border-gray-200"
+                        />
+                      </div>
+                    )}
                   </div>
                 ))}
               </div>
@@ -625,6 +840,150 @@ const FundingDetailPage = () => {
               </button>
             )}
           </div>
+        </div>
+      </section>
+
+      {/* 편지 작성 섹션 추가 */}
+      <section className="mb-10">
+        <h2 className="text-xl font-bold mb-4">응원 편지 남기기</h2>
+        <div className="bg-gradient-to-br from-pink-50 to-purple-50 rounded-lg p-6">
+          {letterSuccess && (
+            <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg mb-6 flex items-center">
+              <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path>
+              </svg>
+              <span>편지가 성공적으로 등록되었습니다! 참여자 목록에서 확인해 보세요.</span>
+            </div>
+          )}
+
+          {letterError && (
+            <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-lg mb-6">
+              <p>{letterError}</p>
+              <p className="mt-2 text-sm">
+                메시지가 표시되어도 편지가 등록되었을 수 있으니 참여자 목록을 확인해보세요.
+              </p>
+            </div>
+          )}
+
+          <form onSubmit={handleLetterSubmit}>
+            <div className="mb-6">
+              <label htmlFor="letterComment" className="block text-sm font-bold text-gray-700 mb-2">
+                응원 메시지
+              </label>
+              <textarea
+                id="letterComment"
+                value={letterComment}
+                onChange={(e) => setLetterComment(e.target.value)}
+                placeholder="응원의 메시지를 남겨주세요!"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 resize-none"
+                rows={4}
+                maxLength={200}
+              />
+              <div className="text-right text-sm text-gray-500 mt-1">
+                {letterComment.length}/200자
+              </div>
+            </div>
+
+            <div className="mb-6">
+              <p className="block text-sm font-bold text-gray-700 mb-2">
+                이미지 첨부 (선택)
+              </p>
+
+              {!letterImagePreview ? (
+                <div 
+                  onClick={() => fileInputRef.current?.click()}
+                  className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center cursor-pointer hover:bg-purple-50 transition-colors"
+                >
+                  <svg className="w-12 h-12 mx-auto text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                  </svg>
+                  <p className="text-sm text-gray-500 mt-2">클릭하여 이미지 첨부하기</p>
+                </div>
+              ) : (
+                <div className="relative">
+                  <img 
+                    src={letterImagePreview} 
+                    alt="미리보기" 
+                    className="max-h-48 rounded-lg mx-auto object-contain bg-white p-2 border border-gray-200"
+                  />
+                  <button
+                    type="button"
+                    onClick={handleRemoveLetterImage}
+                    className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 focus:outline-none"
+                  >
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
+                </div>
+              )}
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                onChange={handleLetterImageChange}
+                className="hidden"
+              />
+              
+              <div className="text-xs text-gray-500 mt-1 pl-1">
+                * JPG, PNG 파일만 업로드 가능합니다 (최대 5MB)
+              </div>
+            </div>
+
+            <div className="mb-6">
+              <label className="block text-sm font-bold text-gray-700 mb-2">
+                공개 설정
+              </label>
+              <div className="flex space-x-4">
+                <label className="inline-flex items-center">
+                  <input
+                    type="radio"
+                    name="letterAccess"
+                    value="공개"
+                    checked={letterAccess === '공개'}
+                    onChange={() => setLetterAccess('공개')}
+                    className="form-radio h-4 w-4 text-purple-600"
+                  />
+                  <span className="ml-2 text-gray-700">공개</span>
+                </label>
+                <label className="inline-flex items-center">
+                  <input
+                    type="radio"
+                    name="letterAccess"
+                    value="비공개"
+                    checked={letterAccess === '비공개'}
+                    onChange={() => setLetterAccess('비공개')}
+                    className="form-radio h-4 w-4 text-purple-600"
+                  />
+                  <span className="ml-2 text-gray-700">비공개</span>
+                </label>
+              </div>
+            </div>
+
+            <div className="text-right">
+              <button
+                type="submit"
+                disabled={isLetterSubmitting || letterComment.trim() === ''}
+                className={`px-6 py-3 rounded-lg text-white font-bold transition-colors ${
+                  isLetterSubmitting || letterComment.trim() === ''
+                    ? 'bg-gray-400 cursor-not-allowed'
+                    : 'bg-purple-600 hover:bg-purple-700'
+                }`}
+              >
+                {isLetterSubmitting ? (
+                  <span className="flex items-center">
+                    <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    전송 중...
+                  </span>
+                ) : (
+                  '편지 보내기'
+                )}
+              </button>
+            </div>
+          </form>
         </div>
       </section>
 
@@ -792,13 +1151,11 @@ const FundingDetailPage = () => {
         </div>
       </section>
 
-      {/* 디버깅 정보 (개발 중에만 표시) */}
-      {import.meta.env.MODE === 'development' && (
-        <div className="mt-8 p-4 bg-gray-100 rounded-lg text-xs">
-          <h4 className="font-bold mb-2">디버깅 정보</h4>
-          <pre className="overflow-auto">{JSON.stringify({ fundingId, loading, error }, null, 2)}</pre>
-        </div>
-      )}
+      {/* 푸터 안내 */}
+      <footer className="text-center text-sm text-gray-500 mt-10 pb-6">
+        <p>모든 펀딩 정보는 실제 정보와 다를 수 있습니다.</p>
+        <p className="mt-1">© 2025 GIVU. All rights reserved.</p>
+      </footer>
     </div>
   );
 };
