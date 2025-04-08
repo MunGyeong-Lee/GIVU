@@ -5,6 +5,18 @@ import com.squareup.moshi.JsonClass
 
 @JsonClass(generateAdapter = true)
 data class ReviewEntity(
+    @Json(name = "code")
+    val code: String,
+
+    @Json(name = "message")
+    val message: String,
+
+    @Json(name = "data")
+    val data: List<ReviewInfoEntity>
+)
+
+@JsonClass(generateAdapter = true)
+data class ReviewInfoEntity(
     @Json(name = "reviewId")
     val reviewId: Int,
 

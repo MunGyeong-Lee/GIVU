@@ -1,11 +1,11 @@
 package com.wukiki.data.mapper
 
-import com.wukiki.data.entity.ReviewEntity
+import com.wukiki.data.entity.ReviewInfoEntity
 import com.wukiki.domain.model.Review
 
 object ReviewMapper {
 
-    operator fun invoke(reviewEntity: ReviewEntity): Review {
+    operator fun invoke(reviewEntity: ReviewInfoEntity): Review {
         return Review(
             reviewId = reviewEntity.reviewId,
             fundingId = reviewEntity.fundingId,

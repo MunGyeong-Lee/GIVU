@@ -66,5 +66,5 @@ data class FundingInfoEntity(
     val letters: List<LetterEntity>,
 
     @Json(name = "reviews")
-    val reviews: List<ReviewEntity>
+    val reviews: List<ReviewInfoEntity>
 )
