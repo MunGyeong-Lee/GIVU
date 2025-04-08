@@ -9,11 +9,13 @@ import com.wukiki.domain.model.ApiResult
 import com.wukiki.domain.model.ApiStatus
 import com.wukiki.domain.model.Funding
 import com.wukiki.domain.model.Product
+import com.wukiki.domain.model.Review
 import com.wukiki.domain.model.User
 import com.wukiki.domain.usecase.GetAuthUseCase
 import com.wukiki.domain.usecase.GetFundingUseCase
 import com.wukiki.domain.usecase.GetMyPageUseCase
 import com.wukiki.domain.usecase.GetProductUseCase
+import com.wukiki.domain.usecase.GetReviewUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -35,7 +37,8 @@ class HomeViewModel @Inject constructor(
     private val getAuthUseCase: GetAuthUseCase,
     private val getFundingUseCase: GetFundingUseCase,
     private val getMyPageUseCase: GetMyPageUseCase,
-    private val getProductUseCase: GetProductUseCase
+    private val getProductUseCase: GetProductUseCase,
+    private val getReviewUseCase: GetReviewUseCase
 ) : AndroidViewModel(application), OnHomeClickListener {
 
     /*** UiState, UiEvent ***/
@@ -55,6 +58,9 @@ class HomeViewModel @Inject constructor(
         MutableStateFlow<ApiResult<List<Product>>>(ApiResult.init())
     val productsState = _productsState.asStateFlow()
 
+    private val _reviewsState = MutableStateFlow<ApiResult<List<Review>>>(ApiResult.init())
+    val reviewsState = _reviewsState.asStateFlow()
+
     /*** Data ***/
     private val _user = MutableStateFlow<User?>(null)
     val user = _user.asStateFlow()
@@ -70,6 +76,9 @@ class HomeViewModel @Inject constructor(
 
     private val _myLikeProducts = MutableStateFlow<List<Product>>(emptyList())
     val myLikeProducts = _myLikeProducts.asStateFlow()
+
+    private val _myFundingReviews = MutableStateFlow<List<Review>>(emptyList())
+    val myFundingReviews = _myFundingReviews.asStateFlow()
 
     private val _charge = MutableStateFlow<Int>(0)
     val charge = _charge.asStateFlow()
@@ -212,6 +221,20 @@ class HomeViewModel @Inject constructor(
                 if (result.status == ApiStatus.SUCCESS) {
                     val newProducts = result.data ?: emptyList()
                     _myLikeProducts.value = newProducts
+                }
+            }
+        }
+    }
+
+    fun initMyFundingReviews() {
+        viewModelScope.launch {
+            val response = getReviewUseCase.fetchFundingReviews()
+
+            response.collectLatest { result ->
+                _reviewsState.value = result
+                if (result.status == ApiStatus.SUCCESS) {
+                    val newReviews = result.data ?: emptyList()
+                    _myFundingReviews.value = newReviews
                 }
             }
         }
