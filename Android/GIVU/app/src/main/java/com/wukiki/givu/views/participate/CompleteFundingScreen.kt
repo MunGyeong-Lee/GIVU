@@ -32,6 +32,7 @@ import androidx.navigation.NavController
 import com.wukiki.givu.R
 import com.wukiki.givu.ui.suit
 import com.wukiki.givu.util.CommonTopBar
+import com.wukiki.givu.util.CommonUtils.makeCommaPrice
 import com.wukiki.givu.util.InfoRow
 import com.wukiki.givu.views.detail.viewmodel.FundingViewModel
 import com.wukiki.givu.views.participate.component.FundingInfoPager
@@ -42,7 +43,9 @@ fun CompleteFundingScreen(
     navController: NavController,
     xmlNavController: NavController
 ) {
+    val user by fundingViewModel.user.collectAsState()
     val funding by fundingViewModel.selectedFunding.collectAsState()
+    val transfer by fundingViewModel.transfer.collectAsState()
 
     Scaffold(
         topBar = {
@@ -93,16 +96,19 @@ fun CompleteFundingScreen(
                 Spacer(modifier = Modifier.height(24.dp))
 
                 Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                    InfoRow("이름", "김싸피")
-                    InfoRow("이메일", "kimssafy@ssafy.com")
-                    InfoRow("연락처", "010-0000-0000")
-                    InfoRow("금액", "1,000원")
+                    InfoRow("이름", user?.nickname ?: "김싸피")
+                    InfoRow("이메일", user?.email ?: "kimssafy@ssafy.com")
+                    InfoRow("상품", it.productName)
+                    InfoRow("금액", makeCommaPrice(transfer?.amount ?: 0))
                 }
 
                 Spacer(modifier = Modifier.height(16.dp))
 
                 Button(
-                    onClick = { xmlNavController.popBackStack() },
+                    onClick = {
+                        fundingViewModel.initTransfer()
+                        xmlNavController.popBackStack()
+                    },
                     modifier = Modifier
                         .fillMaxSize()
                         .height(56.dp),

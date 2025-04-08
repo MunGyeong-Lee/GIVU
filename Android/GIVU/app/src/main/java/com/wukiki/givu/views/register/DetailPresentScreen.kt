@@ -31,15 +31,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
-import coil.compose.AsyncImage
 import coil.compose.SubcomposeAsyncImage
 import com.wukiki.domain.model.ProductReview
 import com.wukiki.givu.R
@@ -239,7 +236,8 @@ fun DetailPresentScreen(
                     .align(Alignment.BottomCenter),
                 text = "이 상품 선택하기",
                 navController = xmlNavController,
-                actionId = -1
+                actionId = -1,
+                false
             ) {
                 navController.navigate("RegisterStep1") {
                     popUpTo("RegisterStep1") { inclusive = false }

@@ -111,6 +111,9 @@ class FundingViewModel @Inject constructor(
     private val _charge = MutableStateFlow<Int>(0)
     val charge = _charge.asStateFlow()
 
+    private val _transfer = MutableStateFlow<Transfer?>(null)
+    val transfer = _transfer.asStateFlow()
+
     private val _fundingTitle = MutableStateFlow<String>("")
     val fundingTitle = _fundingTitle
 
@@ -278,6 +281,8 @@ class FundingViewModel @Inject constructor(
             response.collectLatest { result ->
                 _transferState.value = result
                 if (result.status == ApiStatus.SUCCESS) {
+                    _transfer.value = result.data
+                    initFunding(result.data?.fundingId ?: -1)
                     _fundingUiEvent.emit(FundingUiEvent.ParticipateFundingSuccess)
                 } else if ((result.status == ApiStatus.FAIL) || (result.status == ApiStatus.ERROR)) {
                     _fundingUiEvent.emit(FundingUiEvent.ParticipateFundingFail)
@@ -341,6 +346,10 @@ class FundingViewModel @Inject constructor(
                 }
             }
         }
+    }
+
+    fun initTransfer() {
+        _transfer.value = null
     }
 
     fun setCharge(money: Int) {

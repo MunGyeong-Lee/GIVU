@@ -79,7 +79,8 @@ fun DetailFundingScreen(
                                         .height(68.dp),
                                     text = stringResource(R.string.text_funding_finish),
                                     navController = navController,
-                                    actionId = R.id.action_detail_funding_to_finish_funding
+                                    actionId = R.id.action_detail_funding_to_finish_funding,
+                                    false
                                 ) { }
                             }
 
@@ -90,7 +91,8 @@ fun DetailFundingScreen(
                                         .height(68.dp),
                                     text = stringResource(R.string.text_funding_update),
                                     navController = navController,
-                                    actionId = R.id.action_detail_funding_to_update_funding
+                                    actionId = R.id.action_detail_funding_to_update_funding,
+                                    false
                                 ) { }
                             }
                         }
@@ -101,7 +103,8 @@ fun DetailFundingScreen(
                                 .height(68.dp),
                             text = stringResource(R.string.title_participate_funding),
                             navController = navController,
-                            actionId = R.id.action_detail_funding_to_participate_funding
+                            actionId = R.id.action_detail_funding_to_participate_funding,
+                            it.productPrice.toInt() == it.fundedAmount
                         ) { }
                     }
                 }

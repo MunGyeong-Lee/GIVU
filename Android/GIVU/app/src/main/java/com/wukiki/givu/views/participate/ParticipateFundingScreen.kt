@@ -94,7 +94,7 @@ fun ParticipateFundingScreen(
             ) {
                 funding?.let {
                     FundingInfoPager(it)
-                    FundingAmountSelectionPager(fundingViewModel)
+                    FundingAmountSelectionPager(fundingViewModel, it)
                     ParticipantInfoPager(user)
                     // IdentityVerificationPager()
                     PaymentBalancePager(fundingViewModel)
@@ -105,17 +105,21 @@ fun ParticipateFundingScreen(
                         modifier = Modifier
                             .fillMaxSize()
                             .height(56.dp),
-                        enabled = charge > 0,
+                        enabled = (charge > 0) && (charge <= (it.productPrice.toInt() - it.fundedAmount)),
                         shape = RoundedCornerShape(10.dp),
                         border = BorderStroke(1.dp, Color(0xFFECECEC)),
-                        colors = ButtonDefaults.buttonColors(if (charge == 0) Color.LightGray else colorResource(R.color.main_primary)),
+                        colors = ButtonDefaults.buttonColors(
+                            if ((charge == 0) || (charge > (it.productPrice.toInt() - it.fundedAmount))) Color.LightGray else colorResource(
+                                R.color.main_primary
+                            )
+                        ),
                     ) {
                         Text(
                             text = stringResource(R.string.title_participate_funding),
                             fontFamily = suit,
                             fontWeight = FontWeight.Bold,
                             fontSize = 18.sp,
-                            color = if (charge == 0) Color.DarkGray else Color.White
+                            color = if ((charge == 0) || (charge > (it.productPrice.toInt() - it.fundedAmount))) Color.DarkGray else Color.White
                         )
                     }
                 }
