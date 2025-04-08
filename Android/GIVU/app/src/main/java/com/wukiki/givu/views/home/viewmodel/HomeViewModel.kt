@@ -86,20 +86,6 @@ class HomeViewModel @Inject constructor(
         emit(user)
     }
 
-    private fun initFundings() {
-        viewModelScope.launch {
-            val response = getFundingUseCase.fetchFundings()
-
-            response.collectLatest { result ->
-                _fundingsState.value = result
-                if (_fundingsState.value.status == ApiStatus.SUCCESS) {
-                    val newFundings = result.data ?: emptyList()
-                    setFundings(newFundings)
-                }
-            }
-        }
-    }
-
     private fun setFundings(fundings: List<Funding>) {
         val allFundings = mutableListOf<Funding>()
         val birthFundings = mutableListOf<Funding>()
@@ -162,6 +148,20 @@ class HomeViewModel @Inject constructor(
                 _userState.value = result
                 if (_userState.value.status == ApiStatus.SUCCESS) {
                     _user.value = _userState.value.data
+                }
+            }
+        }
+    }
+
+    fun initFundings() {
+        viewModelScope.launch {
+            val response = getFundingUseCase.fetchFundings()
+
+            response.collectLatest { result ->
+                _fundingsState.value = result
+                if (_fundingsState.value.status == ApiStatus.SUCCESS) {
+                    val newFundings = result.data ?: emptyList()
+                    setFundings(newFundings)
                 }
             }
         }
