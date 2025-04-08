@@ -3,7 +3,6 @@ import HeroSection from "./components/HeroSection";
 import PopularFundingSection from "./components/PopularFundingSection";
 import CategorySection from "./components/CategorySection";
 import HowToUseSection from "./components/HowToUseSection";
-import SuccessStoriesSection from "./components/SuccessStoriesSection";
 import AppDownloadSection from "./components/AppDownloadSection";
 
 const MainPage = () => {
@@ -35,7 +34,7 @@ const MainPage = () => {
         <PopularFundingSection />
         <CategorySection />
         <HowToUseSection />
-        <SuccessStoriesSection />
+        {/* <SuccessStoriesSection /> */}
         <AppDownloadSection />
       </div>
     </>
