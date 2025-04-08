@@ -18,4 +18,6 @@ public interface PaymentRepository extends JpaRepository<Payment, Integer> {
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("SELECT p FROM Payment p WHERE p.id = :paymentId")
     Optional<Payment> findByIdForUpdate(@Param("paymentId") Integer paymentId);
+
+    boolean existsByUserIdAndRelatedProductId(Long userId, Integer productId);
 }
