@@ -2,6 +2,7 @@ package com.backend.givu.controller;
 
 import com.backend.givu.model.service.KafkaProducer;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.kafka.config.KafkaListenerEndpointRegistry;
@@ -14,20 +15,33 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 //@RequiredArgsConstructor
 @RequestMapping("/kafka")
+@Slf4j
 public class KafkaController {
 
     @Autowired
 //    @Qualifier("internalKafkaListenerEndpointRegistry")
     private KafkaListenerEndpointRegistry registry;
 
-    @PostMapping("/start")
-    public String startConsumer() {
+    @PostMapping("/kafka/start-debug")
+    public String startConsumerWithLog() {
         MessageListenerContainer container = registry.getListenerContainer("transferListener");
-        if (!container.isRunning()) {
-            container.start();
-            return "✅ Kafka Consumer Started";
+        if (container == null) {
+            return "❌ transferListener not found in registry.";
         }
-        return "⏸️ Kafka Consumer Already Running";
+
+        try {
+            if (!container.isRunning()) {
+                container.start();
+                log.info("🟢 Kafka 컨테이너 start() 호출 완료");
+                Thread.sleep(2000); // 상태 반영 시간 확보
+                return String.format("✅ start 호출 후 상태 - isRunning: %b, isPaused: %b", container.isRunning(), container.isContainerPaused());
+            } else {
+                return "⏸️ 이미 실행 중";
+            }
+        } catch (Exception e) {
+            log.error("❌ Kafka listener start 중 오류 발생", e);
+            return "❌ Kafka listener start 실패: " + e.getMessage();
+        }
     }
 
     @PostMapping("/stop")
