@@ -32,5 +32,7 @@ interface FundingRepository {
 
     suspend fun transferFunding(fundingId: Int, amount: Int): ApiResult<Transfer>
 
+    suspend fun getPaymentOfFunding(paymentId: Int): ApiResult<Transfer>
+
     suspend fun searchFundings(title: String): ApiResult<List<Funding>>
 }
