@@ -1,0 +1,101 @@
+PUT /products
+{
+  "settings": {
+    "analysis": {
+      "tokenizer": {
+        "whitespace_tokenizer": {
+          "type": "whitespace"
+        }
+      },
+      "filter": {
+        "edge_ngram_filter": {
+          "type": "edge_ngram",
+          "min_gram": 1,
+          "max_gram": 20
+        }
+      },
+      "analyzer": {
+        "custom_ngram_analyzer": {
+          "tokenizer": "whitespace_tokenizer",
+          "filter": ["lowercase", "edge_ngram_filter"]
+        }
+      }
+    }
+  },
+  "mappings": {
+    "properties": {
+      "id": {
+        "type": "integer"
+      },
+      "productName": {
+        "type": "text",
+        "analyzer": "custom_ngram_analyzer",
+        "search_analyzer": "standard"
+      },
+      "price": {
+        "type": "integer"
+      },
+      "image": {
+        "type": "text"
+      },
+      "favorite": {
+        "type": "integer"
+      },
+      "star": {
+        "type": "double"
+      },
+      "description": {
+        "type": "text",
+        "analyzer": "custom_ngram_analyzer",
+        "search_analyzer": "standard"
+      },
+      "createdAt": {
+        "type": "date",
+        "format": "date_time"
+      },
+      "category": {
+        "type": "keyword"
+      }
+    }
+  }
+}
+---------
+PUT funding-index
+{
+  "settings": {
+    "analysis": {
+      "tokenizer": {
+        "whitespace_tokenizer": {
+          "type": "whitespace"
+        }
+      },
+      "filter": {
+        "edge_ngram_filter": {
+          "type": "edge_ngram",
+          "min_gram": 1,
+          "max_gram": 20
+        }
+      },
+      "analyzer": {
+        "custom_ngram_analyzer": {
+          "tokenizer": "whitespace_tokenizer",
+          "filter": ["lowercase", "edge_ngram_filter"]
+        }
+      }
+    }
+  },
+  "mappings": {
+    "properties": {
+      "title": {
+        "type": "text",
+        "analyzer": "custom_ngram_analyzer",
+        "search_analyzer": "standard"
+      },
+      "description": {
+        "type": "text",
+        "analyzer": "custom_ngram_analyzer",
+        "search_analyzer": "standard"
+      }
+    }
+  }
+}
