@@ -110,7 +110,14 @@ fun ProductDetailScreen(
                     .padding(bottom = 76.dp)
 //                    .verticalScroll(rememberScrollState())
             ) {
-                StoreDetailTopBar()
+                StoreDetailTopBar(
+                    onBackClick = {
+                        navController.popBackStack()
+                    },
+                    onHomeClick = {
+                        xmlNavController.navigate(R.id.fragment_home)
+                    }
+                )
 
                 LazyColumn(
                     modifier = Modifier.fillMaxWidth()

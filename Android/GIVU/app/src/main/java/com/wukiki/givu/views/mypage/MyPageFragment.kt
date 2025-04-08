@@ -61,7 +61,7 @@ class MyPageFragment : BaseFragment<FragmentMyPageBinding>(R.layout.fragment_my_
                 }
 
                 composable("ChargeAccount") {
-                    ChargeAccountScreen(viewModel, navController)
+                    ChargeAccountScreen(viewModel, navController, findNavController())
                 }
 
                 composable("MyRegisterFunding") {

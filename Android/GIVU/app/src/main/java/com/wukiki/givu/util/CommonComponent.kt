@@ -148,7 +148,10 @@ fun StoreItemCategoryComponent(
 }
 
 @Composable
-fun StoreDetailTopBar() {
+fun StoreDetailTopBar(
+    onBackClick: () -> Unit,
+    onHomeClick: () -> Unit
+) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -158,7 +161,7 @@ fun StoreDetailTopBar() {
 
         IconButton(
             onClick = {
-
+                onBackClick()
             }
         ) {
             Icon(
@@ -183,7 +186,9 @@ fun StoreDetailTopBar() {
         }
 
         IconButton(
-            onClick = {},
+            onClick = {
+                onHomeClick()
+            },
         ) {
             Icon(painter = painterResource(R.drawable.ic_topbar_home), null)
         }
