@@ -22,6 +22,8 @@ interface BasicInfo {
   description: string;
   mainImage?: string;
   additionalImages?: string[]; // 추가 이미지를 저장할 배열
+  category?: string; // 카테고리 필드 추가
+  categoryName?: string | null; // 카테고리명 필드 추가 (기타 선택 시 입력값)
 }
 
 interface Step2BasicInfoProps {
@@ -142,18 +144,45 @@ const Step2BasicInfo: React.FC<Step2BasicInfoProps> = ({
     }
   }, [productImage]);
 
-  // 입력 값 변경 핸들러
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target;
-    const updatedInfo = { ...basicInfo, [name]: value };
-    updateBasicInfo(updatedInfo);
+  // 카테고리 옵션 정의
+  const categoryOptions = [
+    { value: '생일', label: '생일' },
+    { value: '집들이', label: '집들이' },
+    { value: '졸업', label: '졸업' },
+    { value: '결혼', label: '결혼' },
+    { value: '취업', label: '취업' },
+    { value: '기타', label: '기타' }
+  ];
 
-    // 에러 상태 업데이트
+  // 입력 값 변경 핸들러
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
+  ) => {
+    const { name, value } = e.target;
+
+    // 카테고리가 변경되었을 경우 카테고리명 처리
+    if (name === 'category') {
+      const newBasicInfo = { ...basicInfo, [name]: value };
+
+      // 기타가 아닌 경우 categoryName을 null로 설정
+      if (value !== '기타') {
+        newBasicInfo.categoryName = null;
+      } else if (!newBasicInfo.categoryName) {
+        // 기타인데 아직 카테고리명이 없으면 빈 문자열로 초기화
+        newBasicInfo.categoryName = '';
+      }
+
+      updateBasicInfo(newBasicInfo);
+      validateField(name as keyof BasicInfo, value);
+      return;
+    }
+
+    updateBasicInfo({ ...basicInfo, [name]: value });
     validateField(name as keyof BasicInfo, value);
   };
 
   // 필드 유효성 검사
-  const validateField = (field: keyof BasicInfo, value: string | number | string[] | undefined) => {
+  const validateField = (field: keyof BasicInfo, value: string | number | string[] | null | undefined) => {
     let error = '';
 
     switch (field) {
@@ -163,6 +192,14 @@ const Step2BasicInfo: React.FC<Step2BasicInfoProps> = ({
         break;
       case 'description':
         if (value === '') error = '설명을 입력해주세요.';
+        break;
+      case 'category':
+        if (value === '') error = '카테고리를 선택해주세요.';
+        break;
+      case 'categoryName':
+        if (basicInfo.category === '기타' && (!value || value === '')) {
+          error = '기타 카테고리의 이름을 입력해주세요.';
+        }
         break;
       default:
         break;
@@ -174,7 +211,13 @@ const Step2BasicInfo: React.FC<Step2BasicInfoProps> = ({
 
   // 모든 필드 유효성 검사
   const validateForm = () => {
-    const fields: (keyof BasicInfo)[] = ['title', 'description'];
+    const fields: (keyof BasicInfo)[] = ['title', 'description', 'category'];
+
+    // 기타 카테고리인 경우 categoryName도 검사
+    if (basicInfo.category === '기타') {
+      fields.push('categoryName');
+    }
+
     let isValid = true;
 
     fields.forEach(field => {
@@ -199,12 +242,6 @@ const Step2BasicInfo: React.FC<Step2BasicInfoProps> = ({
       onNext();
     }
   };
-
-  // // 대표 이미지 업로드 핸들러
-  // const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-  //   // 대표 이미지는 변경 불가능하므로 기능 제거
-  //   e.preventDefault();
-  // };
 
   // 추가 이미지 업로드 핸들러
   const handleAdditionalImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -484,6 +521,71 @@ const Step2BasicInfo: React.FC<Step2BasicInfoProps> = ({
                 </p>
               )}
             </div>
+
+            {/* 카테고리 선택 */}
+            <div>
+              <label htmlFor="category" className="block text-sm font-semibold mb-2 text-gray-700">
+                카테고리 <span className="text-red-500">*</span>
+              </label>
+              <select
+                id="category"
+                name="category"
+                value={basicInfo.category || ''}
+                onChange={handleChange}
+                className={`w-full p-3 border rounded-lg focus:ring-2 focus:ring-primary-color/30 focus:border-primary-color transition-all ${errors.category ? 'border-red-500 bg-red-50' : 'border-gray-300'
+                  }`}
+              >
+                <option value="">카테고리 선택</option>
+                {categoryOptions.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+              {errors.category ? (
+                <p className="mt-1.5 text-sm text-red-500 flex items-center">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                  </svg>
+                  {errors.category}
+                </p>
+              ) : (
+                <p className="mt-1.5 text-xs text-gray-500">
+                  펀딩의 성격에 맞는 카테고리를 선택해주세요.
+                </p>
+              )}
+            </div>
+
+            {/* '기타' 카테고리 선택 시 카테고리명 입력 필드 추가 */}
+            {basicInfo.category === '기타' && (
+              <div className="mt-4">
+                <label htmlFor="categoryName" className="block text-sm font-semibold mb-2 text-gray-700">
+                  카테고리명 <span className="text-red-500">*</span>
+                </label>
+                <input
+                  id="categoryName"
+                  type="text"
+                  name="categoryName"
+                  value={basicInfo.categoryName || ''}
+                  onChange={handleChange}
+                  placeholder="원하는 카테고리 이름을 입력하세요"
+                  className={`w-full p-3 border rounded-lg focus:ring-2 focus:ring-primary-color/30 focus:border-primary-color transition-all ${errors.categoryName ? 'border-red-500 bg-red-50' : 'border-gray-300'
+                    }`}
+                />
+                {errors.categoryName ? (
+                  <p className="mt-1.5 text-sm text-red-500 flex items-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                    </svg>
+                    {errors.categoryName}
+                  </p>
+                ) : (
+                  <p className="mt-1.5 text-xs text-gray-500">
+                    직접 지정하고 싶은 카테고리 이름을 입력해주세요.
+                  </p>
+                )}
+              </div>
+            )}
 
             {/* 목표 금액 (표시만) */}
             <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
