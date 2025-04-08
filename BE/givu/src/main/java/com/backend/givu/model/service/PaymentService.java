@@ -37,5 +37,7 @@ public class PaymentService {
         log.info("✅ FAIL 상태 업데이트 후: {}", payment.getStatus());
     }
 
-
+    public boolean checkPermission(Long userId, Integer productId){
+        return paymentRepository.existsByUserIdAndRelatedProductId(userId,productId);
+    }
 }
