@@ -71,6 +71,7 @@ public class SecurityConfig {
                                 "/products-review/**",
                                 "/fundings/**",
                                 "/mypage/**",
+                                "/friends/**",
                                 "/transfer/**"
                         ).authenticated())
 
