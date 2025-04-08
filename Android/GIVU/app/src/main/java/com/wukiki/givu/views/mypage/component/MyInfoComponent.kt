@@ -72,7 +72,7 @@ fun MyInfoComponent(
                     text = "참여한 펀딩 목록",
                     fontFamily = suit,
                     fontWeight = FontWeight.SemiBold,
-                    fontSize = 20.sp,
+                    fontSize = 16.sp,
                     modifier = Modifier.padding(start = 4.dp)
                 )
 
@@ -102,7 +102,7 @@ fun MyInfoComponent(
                     text = "내가 만든 펀딩 조회",
                     fontFamily = suit,
                     fontWeight = FontWeight.SemiBold,
-                    fontSize = 20.sp,
+                    fontSize = 16.sp,
                     modifier = Modifier.padding(start = 4.dp)
 
                 )
@@ -135,7 +135,7 @@ fun MyInfoComponent(
                     text = "후원 내역",
                     fontFamily = suit,
                     fontWeight = FontWeight.SemiBold,
-                    fontSize = 20.sp,
+                    fontSize = 16.sp,
                     modifier = Modifier.padding(start = 4.dp)
 
                 )
@@ -169,7 +169,7 @@ fun MyInfoComponent(
                     text = "후기",
                     fontFamily = suit,
                     fontWeight = FontWeight.SemiBold,
-                    fontSize = 20.sp,
+                    fontSize = 16.sp,
                     modifier = Modifier.padding(start = 4.dp)
 
                 )

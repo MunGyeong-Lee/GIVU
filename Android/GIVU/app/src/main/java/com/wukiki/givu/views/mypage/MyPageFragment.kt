@@ -49,7 +49,7 @@ class MyPageFragment : BaseFragment<FragmentMyPageBinding>(R.layout.fragment_my_
                 startDestination = "MyPageScreen"
             ) {
                 composable("MyPageScreen") {
-                    MyPageScreen(viewModel, navController)
+                    MyPageScreen(viewModel, navController, findNavController())
                 }
 
                 composable("PayUsageScreen") {
