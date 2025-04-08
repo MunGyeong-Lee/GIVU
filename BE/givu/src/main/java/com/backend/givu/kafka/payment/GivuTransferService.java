@@ -1,12 +1,17 @@
-package com.backend.givu.kafka;
+package com.backend.givu.kafka.payment;
 
 
+import com.backend.givu.kafka.payment.GivuProducer;
+import com.backend.givu.model.Enum.FundingsStatus;
+import com.backend.givu.model.Enum.ParticipantsRefundStatus;
 import com.backend.givu.model.Enum.PaymentsStatus;
 import com.backend.givu.model.Enum.PaymentsTransactionType;
 import com.backend.givu.model.entity.Funding;
+import com.backend.givu.model.entity.Participant;
 import com.backend.givu.model.entity.Payment;
 import com.backend.givu.model.entity.User;
 import com.backend.givu.model.repository.FundingRepository;
+import com.backend.givu.model.repository.ParticipantRepository;
 import com.backend.givu.model.repository.PaymentRepository;
 import com.backend.givu.model.repository.UserRepository;
 import com.backend.givu.model.responseDTO.ApiResponse;
@@ -17,6 +22,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.OffsetDateTime;
+
 @Service
 @RequiredArgsConstructor
 @Slf4j
@@ -25,6 +32,7 @@ public class GivuTransferService {
     private final FundingRepository fundingRepository;
     private final UserRepository userRepository;
     private final PaymentRepository paymentRepository;
+    private final ParticipantRepository participantRepository;
 
     private final GivuProducer givuProducer;
 
@@ -40,6 +48,15 @@ public class GivuTransferService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new EntityNotFoundException("유저를 찾을 수 없습니다."));
         int fundingBalance = funding.getProduct().getPrice() - funding.getFundedAmount();
+
+        // ✅ [중복 참여 방지]
+        if (participantRepository.existsByFundingAndUser(funding, user)) {
+            log.warn("❌ 이미 참여한 유저입니다 - userId: {}, fundingId: {}", user.getId(), funding.getId());
+            return ApiResponse.fail("ALREADY_PARTICIPATED", "이미 참여한 펀딩입니다.");
+        }
+
+
+
 
         // 2. 거래내역 생성 및 pending 상태로 저장
         Payment payment = Payment.builder() //serId, fundingId, amount, PaymentsStatus.PENDING);
@@ -66,7 +83,7 @@ public class GivuTransferService {
         }
 
         // 4. 결제 금액만큼 balance에서 빼기
-        user.setBalance(user.getBalance() - amount);
+        user.subtractBalance(amount);
         log.info("현재 유저의 잔액(balance에서 빼기 후): {}", user.getBalance());
         userRepository.save(user);
 
@@ -88,17 +105,33 @@ public class GivuTransferService {
     public void confirmPayment(int transactionId){
 
         // 1. 펀딩 내역 존재하는지 확인
-        Payment payment = paymentRepository.findById(transactionId)
+        Payment payment = paymentRepository.findByIdWithFAndRelatedFunding(transactionId)
                 .orElseThrow(() -> new EntityNotFoundException("결제 정보가 없습니다: " + transactionId));
 
         // 2. 결제 상태 성공으로 반영
-        payment.setStatus(PaymentsStatus.SUCCESS);
-        paymentRepository.save(payment);
+        payment.markSuccess();
+
+        //3. 만약 해당 펀딩 금액이 다 모아졌으면 Complete 로 변경
+        int fundedAmount = payment.getRelatedFunding().getFundedAmount();
+        int price = payment.getRelatedFunding().getProduct().getPrice();
+        if(fundedAmount == price){
+            payment.getRelatedFunding().setStatus(FundingsStatus.COMPLETED);
+        }
+
+        // 4. 참여자 테이블 저장
+        Participant participant = new Participant();
+        participant.setFunding(payment.getRelatedFunding());
+        participant.setUser(payment.getUser());
+        participant.setFundingAmount(payment.getAmount());
+        participant.setJoinedAt(OffsetDateTime.now());
+        participant.setStatus(ParticipantsRefundStatus.NOT_REFUND); // 초기 상태
+
+        participantRepository.save(participant);
+
+
         log.info("✅ 결제 최종 완료 - userId: {}, transactionId: {}, status: {}",
                 payment.getUser().getId(), payment.getId(), payment.getStatus());
     }
-
-
 
 
     /**
@@ -126,7 +159,7 @@ public class GivuTransferService {
         log.info("현재 유저의 잔액 (보상 후): {}", user.getBalance());
 
         // 3. 결제 내역 실패로 돌리기
-        payment.setStatus(PaymentsStatus.FAIL);
+        payment.markFailed();
 
         // 4.  저장
         userRepository.save(user);
@@ -139,52 +172,7 @@ public class GivuTransferService {
 
 
 
-
-
-
-
 }
-
-
-
-
-
-
-//
-//
-//
-//
-//    @Transactional
-//    public ApiResponse<PaymentResultDTO> fundingTransfer(Long userId, int fundingId, int amount){
-//
-//
-//        // 1. 해당 펀딩이 있는지 확인
-//        Funding funding = fundingRepository.findById(fundingId)
-//                .orElseThrow(()-> new EntityNotFoundException("펀딩을 찾을 수 없습니다."));
-//
-//        User user = userRepository.findById(userId)
-//                .orElseThrow(()-> new EntityNotFoundException("유저를 찾을 수 없습니다."));
-//
-//        // 2. 거래내역 생성 및 pending 상태로 저장
-//        Payment payment = Payment.builder() //serId, fundingId, amount, PaymentsStatus.PENDING);
-//                .user(user)
-//                .relatedFunding(funding)
-//                .relatedProduct(null)
-//                .amount(amount)
-//                .status(PaymentsStatus.PENDING)
-//                .transactionType(PaymentsTransactionType.FUNDING)
-//                .build();
-//        paymentRepository.save(payment);
-//
-//        // 3. 트랜잭션이 끝난 이후 Kafka 발행
-//        sendKafkaEventAfterCommit(payment, userId);
-//
-//        // 4. 클라이언트 응답 DTO 생성
-//        PaymentResultDTO dto = new PaymentResultDTO(payment);
-//        return ApiResponse.success(dto);
-//    }
-//
-//
 
 
 

@@ -32,6 +32,8 @@ public class FundingService {
     private final FundingSearchRepository fundingSearchRepository;
     private final ProductRepository productRepository;
     private final UserRepository userRepository;
+    private final ParticipantRepository participantRepository;
+
     private final S3UploadService s3UploadService;
 
     /**
@@ -228,8 +230,16 @@ public class FundingService {
         // 후기 리스트 (User 포함 fetch join)
         List<Review> reviews = fundingRepository.findReviewByFundingIdWithUser(fundingId);
 
+        // 참가자 리스트
+        List<Participant> participantEntities = participantRepository.findByFundingIdWithUser(fundingId);
+        List<User> participants = participantEntities.stream()
+                .map(Participant::getUser)
+                .distinct()
+                .toList();
+
         // DTO 조립
-        FundingDetailDTO dto = FundingDetailDTO.of(funding, isCreator, writer, product, letters, reviews, user.getId());
+        FundingDetailDTO dto = FundingDetailDTO.of(funding, isCreator, writer, product,
+                letters, reviews, user.getId(),participants);
 
         return ApiResponse.success(dto);
 

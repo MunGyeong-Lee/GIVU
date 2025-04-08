@@ -96,4 +96,19 @@ public class User {
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
     @Column(name = "age_range", columnDefinition = "user_age_range")
     private UsersAgeRange ageRange;
+
+    public void addBalance(int amount){
+        this.balance += amount;
+    }
+
+    public void subtractBalance(int amount){
+        if(this.balance < amount){
+            throw new IllegalArgumentException( "잔액보다 큰 금액은 차감할 수 없습니다.");
+        }
+        this.balance -= amount;
+    }
+
+
+
+
 }
