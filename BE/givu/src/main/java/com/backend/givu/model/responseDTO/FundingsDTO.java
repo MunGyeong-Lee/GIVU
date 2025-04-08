@@ -38,30 +38,6 @@ public class FundingsDTO {
     private LocalDateTime createdAt;
 
     private LocalDateTime updatedAt;
-//
-//    public FundingsDTO(Integer fundingId, String title, String body, String description,
-//                       FundingsCategory category, String categoryName, Integer participantsNumber,
-//                       FundingsScope scope, FundingsStatus status, Integer fundedAmount,
-//                       List<String> image, Instant createdAt, Instant updatedAt,
-//                       Long userId, String nickname, String profileImage,
-//                       Integer productId, String productName, Integer price, String productImage) {
-//        this.fundingId = fundingId;
-//        this.user = new UserSimpleInfoDTO(userId, nickname, profileImage);
-//        this.product = new ProductsSimpleInfoDTO(productId, productName, price, productImage);
-//        this.title = title;
-//        this.body = body;
-//        this.description = description;
-//        this.category = CategoryMapper.toClient(category); // 영어 -> 한글
-//        this.categoryName = categoryName;
-//        this.scope = ScopeMapper.toClient(scope);          // 영어 -> 한글
-//        this.participantsNumber = participantsNumber;
-//        this.fundedAmount = fundedAmount;
-//        this.status = StatusMapper.toClient(status);       // 영어 -> 한글
-////        this.image = image;
-//        this.createdAt = DateTimeUtil.toLocalDateTime(createdAt);
-//        this.updatedAt = DateTimeUtil.toLocalDateTime(updatedAt);
-//    }
-
 
     public FundingsDTO(Funding funding){
         this.fundingId = funding.getId();
