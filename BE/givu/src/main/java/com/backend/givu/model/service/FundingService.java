@@ -1,6 +1,7 @@
 package com.backend.givu.model.service;
 
 import com.backend.givu.model.Document.FundingDocument;
+import com.backend.givu.model.Enum.FundingsScope;
 import com.backend.givu.model.Enum.FundingsStatus;
 import com.backend.givu.model.entity.*;
 import com.backend.givu.model.repository.*;
@@ -31,6 +32,7 @@ public class FundingService {
     private final FundingRepository fundingRepository;
     private final FundingSearchRepository fundingSearchRepository;
     private final ProductRepository productRepository;
+    private final FriendRepository friendRepository;
     private final UserRepository userRepository;
     private final S3UploadService s3UploadService;
 
@@ -50,30 +52,65 @@ public class FundingService {
     }
 
 
-    /**
-     * 펀딩 리스트 조회
-     */
-    public List<FundingsDTO> findAllFunding(){
-        List<Funding> fundings =  fundingRepository.findAllWithUserAndProduct();
+    public List<FundingsDTO> findAllFunding(Long userId) {
+        List<Funding> fundings = fundingRepository.findAllWithUserAndProduct();
+
+        List<Long> friendIds = userId != null
+                ? friendRepository.findByUserWithFriend(userId).stream()
+                .map(f -> f.getFriend().getId())
+                .toList()
+                : List.of(); // 비로그인 시 빈 리스트
+
         return fundings.stream()
+                .filter(funding -> {
+                    if (funding.getScope() == FundingsScope.PUBLIC) {
+                        return true;
+                    }
+
+                    // PRIVATE인 경우
+                    if (userId == null) {
+                        return false; // 로그인 안 했으면 비공개 펀딩 안 보여줌
+                    }
+
+                    Long ownerId = funding.getUser().getId();
+                    return ownerId.equals(userId) || friendIds.contains(ownerId);
+                })
                 .map(FundingsDTO::new)
                 .toList();
-
-        // 친구인지 아닌지
-        //----> 비공개 펀딩을 보여줄지 말지를 결정
-
-
     }
+
+
 
     /**
      * 검색한 펀딩 리스트 조회
      */
-    public ApiResponse<List<FundingsDTO>> findAllSearchFunding(String title){
+    public ApiResponse<List<FundingsDTO>> findAllSearchFunding(String title, Long userId) {
         List<FundingDocument> fundingDocuments = fundingSearchRepository.searchFundingByKeyword(title);
-        return ApiResponse.success(fundingDocuments.stream()
+
+        List<Long> friendIds = userId != null
+                ? friendRepository.findByUserWithFriend(userId).stream()
+                .map(f -> f.getFriend().getId())
+                .toList()
+                : List.of(); // 로그인 안 했으면 비어있는 리스트
+
+        List<FundingDocument> filtered = fundingDocuments.stream()
+                .filter(doc -> {
+                    if (doc.getScope().equals(String.valueOf(FundingsScope.PUBLIC))) {
+                        return true;
+                    } else {
+                        return userId != null && (
+                                friendIds.contains(doc.getUserId()) || doc.getUserId().equals(userId)
+                        );
+                    }
+                })
+                .toList();
+
+        return ApiResponse.success(filtered.stream()
                 .map(FundingsDTO::new)
                 .toList());
     }
+
+
 
 
     /**
