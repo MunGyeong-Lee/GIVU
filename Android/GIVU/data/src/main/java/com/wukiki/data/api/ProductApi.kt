@@ -39,4 +39,7 @@ interface ProductApi {
     suspend fun getProductSearch(
         @Path("keyword") keyword: String
     ): Response<ProductSearchEntity>
+
+    @GET("products/search/likeProduct")
+    suspend fun getProductsLike(): Response<ProductSearchEntity>
 }

@@ -12,5 +12,5 @@ data class ProductSearchEntity(
     val message: String,
 
     @Json(name = "data")
-    val data: ProductDetailEntity
+    val data: List<ProductDetailEntity>
 )

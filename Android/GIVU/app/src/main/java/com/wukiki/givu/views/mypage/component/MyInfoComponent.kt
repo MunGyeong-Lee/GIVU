@@ -125,14 +125,12 @@ fun MyInfoComponent(
                     .height(52.dp)
                     .padding(vertical = 4.dp)
                     .clip(shape = RoundedCornerShape(10.dp))
-                    .clickable {
-
-                    },
+                    .clickable { navController.navigate("MyLikeProduct") },
 
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = "후원 내역",
+                    text = "내가 찜한 상품",
                     fontFamily = suit,
                     fontWeight = FontWeight.SemiBold,
                     fontSize = 16.sp,

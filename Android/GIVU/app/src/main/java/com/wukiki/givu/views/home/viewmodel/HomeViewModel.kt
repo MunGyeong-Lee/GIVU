@@ -8,10 +8,12 @@ import com.wukiki.domain.model.Account
 import com.wukiki.domain.model.ApiResult
 import com.wukiki.domain.model.ApiStatus
 import com.wukiki.domain.model.Funding
+import com.wukiki.domain.model.Product
 import com.wukiki.domain.model.User
 import com.wukiki.domain.usecase.GetAuthUseCase
 import com.wukiki.domain.usecase.GetFundingUseCase
 import com.wukiki.domain.usecase.GetMyPageUseCase
+import com.wukiki.domain.usecase.GetProductUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -32,7 +34,8 @@ class HomeViewModel @Inject constructor(
     application: Application,
     private val getAuthUseCase: GetAuthUseCase,
     private val getFundingUseCase: GetFundingUseCase,
-    private val getMyPageUseCase: GetMyPageUseCase
+    private val getMyPageUseCase: GetMyPageUseCase,
+    private val getProductUseCase: GetProductUseCase
 ) : AndroidViewModel(application), OnHomeClickListener {
 
     /*** UiState, UiEvent ***/
@@ -48,6 +51,10 @@ class HomeViewModel @Inject constructor(
     private val _accountState = MutableStateFlow<ApiResult<Account?>>(ApiResult.init())
     val accountState = _accountState.asStateFlow()
 
+    private val _productsState =
+        MutableStateFlow<ApiResult<List<Product>>>(ApiResult.init())
+    val productsState = _productsState.asStateFlow()
+
     /*** Data ***/
     private val _user = MutableStateFlow<User?>(null)
     val user = _user.asStateFlow()
@@ -60,6 +67,9 @@ class HomeViewModel @Inject constructor(
 
     private val _myParticipateFundings = MutableStateFlow<List<Funding>>(emptyList())
     val myParticipateFundings = _myParticipateFundings.asStateFlow()
+
+    private val _myLikeProducts = MutableStateFlow<List<Product>>(emptyList())
+    val myLikeProducts = _myLikeProducts.asStateFlow()
 
     private val _charge = MutableStateFlow<Int>(0)
     val charge = _charge.asStateFlow()
@@ -188,6 +198,20 @@ class HomeViewModel @Inject constructor(
                 _fundingsState.value = result
                 if (_fundingsState.value.status == ApiStatus.SUCCESS) {
                     _myParticipateFundings.value = result.data ?: emptyList()
+                }
+            }
+        }
+    }
+
+    fun initMyLikeProducts() {
+        viewModelScope.launch {
+            val response = getProductUseCase.fetchProductsLike()
+
+            response.collectLatest { result ->
+                _productsState.value = result
+                if (result.status == ApiStatus.SUCCESS) {
+                    val newProducts = result.data ?: emptyList()
+                    _myLikeProducts.value = newProducts
                 }
             }
         }

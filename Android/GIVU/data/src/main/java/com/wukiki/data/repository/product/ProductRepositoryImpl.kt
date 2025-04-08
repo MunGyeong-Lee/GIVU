@@ -132,4 +132,27 @@ class ProductRepositoryImpl @Inject constructor(
                 emit(ApiResult.fail())
             }
         }
+
+    override suspend fun fetchProductsLike(): Flow<ApiResult<List<Product>>> =
+        flow {
+            emit(ApiResult.loading(null))
+            try {
+                val response = withContext(CoroutineScope(Dispatchers.IO).coroutineContext) {
+                    productRemoteDataSource.getProductsLike()
+                }
+
+                val responseBody = response.body()
+                Log.d("ProductRepositoryImpl", "Response: $responseBody")
+                if (response.isSuccessful && (responseBody != null)) {
+                    Log.d("ProductRepositoryImpl", "fetchProductsLike Success")
+                    emit(ApiResult.success(ProductsMapper(responseBody.data)))
+                } else {
+                    Log.d("ProductRepositoryImpl", "fetchProductsLike Fail: ${response.code()}")
+                    emit(ApiResult.error(response.errorBody().toString(), null))
+                }
+            } catch (e: Exception) {
+                Log.e("ProductRepositoryImpl", "fetchProductsLike Error: $e")
+                emit(ApiResult.fail())
+            }
+        }
 }
