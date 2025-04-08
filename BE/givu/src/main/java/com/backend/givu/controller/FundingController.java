@@ -1,6 +1,7 @@
 package com.backend.givu.controller;
 
 import com.backend.givu.docs.FundingControllerDocs;
+import com.backend.givu.kafka.transferController;
 import com.backend.givu.model.entity.CustomUserDetail;
 import com.backend.givu.model.entity.Funding;
 import com.backend.givu.model.repository.ProductRepository;
@@ -8,8 +9,6 @@ import com.backend.givu.model.requestDTO.FundingCreateDTO;
 import com.backend.givu.model.requestDTO.FundingUpdateDTO;
 import com.backend.givu.model.responseDTO.*;
 import com.backend.givu.model.service.FundingService;
-import com.backend.givu.model.service.GivuTransferService;
-import com.backend.givu.model.service.KafkaProducer;
 import com.backend.givu.model.service.S3UploadService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.swagger.v3.oas.annotations.Operation;
@@ -21,7 +20,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -204,19 +202,19 @@ public class FundingController implements FundingControllerDocs {
     }
 
 
-
-    private final GivuTransferService givuTransferService;
-    @Operation(summary = "펀딩하기(결제)", description = "해당 펀딩에 펀딩을 합니다(기뷰페이 -> 펀딩)")
-    @PostMapping(value="/{fundingId}/transfer")
-    public ResponseEntity<ApiResponse<PaymentResultDTO>> givuTransfer(
-            @AuthenticationPrincipal CustomUserDetail userDetail,
-            @PathVariable int fundingId,
-            @RequestParam int amount,
-            HttpServletRequest request)throws IOException {
-        Long userId = userDetail.getId();
-        ApiResponse<PaymentResultDTO> fundingTransfer = givuTransferService.fundingTransfer(userId, fundingId, amount);
-        return ResponseEntity.ok(fundingTransfer);
-    }
+//
+//    private final transferController.GivuTransferService givuTransferService;
+//    @Operation(summary = "펀딩하기(결제)", description = "해당 펀딩에 펀딩을 합니다(기뷰페이 -> 펀딩)")
+//    @PostMapping(value="/{fundingId}/transfer")
+//    public ResponseEntity<ApiResponse<PaymentResultDTO>> givuTransfer(
+//            @AuthenticationPrincipal CustomUserDetail userDetail,
+//            @PathVariable int fundingId,
+//            @RequestParam int amount,
+//            HttpServletRequest request)throws IOException {
+//        Long userId = userDetail.getId();
+//        ApiResponse<PaymentResultDTO> fundingTransfer = givuTransferService.fundingTransfer(userId, fundingId, amount);
+//        return ResponseEntity.ok(fundingTransfer);
+//    }
 
     @Operation(summary = "펀딩결제 현황 조회", description = "해당 펀딩 결제 현황을 조회합니다.")
     @GetMapping(value="/{paymentId}/transfer")
