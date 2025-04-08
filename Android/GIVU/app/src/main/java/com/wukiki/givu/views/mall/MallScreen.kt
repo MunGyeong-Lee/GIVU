@@ -2,7 +2,9 @@ package com.wukiki.givu.views.mall
 
 import android.util.Log
 import android.widget.Toast
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -24,11 +26,13 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -128,18 +132,32 @@ fun MallScreen(
 //            }
 
             item {
-                AsyncImage(
-                    model = "https://images.unsplash.com/photo-1502865787650-3f8318917153",
-                    contentScale = ContentScale.Crop,
-                    contentDescription = null,
+//                AsyncImage(
+//                    model = "https://images.unsplash.com/photo-1502865787650-3f8318917153",
+//                    contentScale = ContentScale.Crop,
+//                    contentDescription = null,
+//
+//                )
+
+                Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .aspectRatio(4F / 3F),  // 4:3 비율로 설정
-                )
+                        .aspectRatio(4F / 3F)
+                        .background(Color.White),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = "배너 광고 받습니다\n" +
+                                "문의: MM 구미1반 D107 이문경",
+                        fontFamily = suit,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 24.sp,
+                        textAlign = TextAlign.Center
+                    )
+                }
             }
 
             item {
-                Spacer(Modifier.height(16.dp))
                 Text(
                     text = "인기 상품",
                     fontFamily = suit,
