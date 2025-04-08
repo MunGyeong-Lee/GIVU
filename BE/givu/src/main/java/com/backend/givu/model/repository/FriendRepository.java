@@ -12,8 +12,8 @@ public interface FriendRepository extends JpaRepository<Friend, Long> {
 
     List<Friend> findByUser(User user);
 
-    @Query("SELECT f FROM Friend f JOIN FETCH f.friend WHERE f.user = :user")
-    List<Friend> findByUserWithFriend(@Param("user") User user);
+    @Query("SELECT f FROM Friend f JOIN FETCH f.friend WHERE f.user.id = :userId")
+    List<Friend> findByUserWithFriend(@Param("userId") Long userId);
 
     boolean existsByUserAndFriend(User user, User friend);
 }
