@@ -40,8 +40,8 @@ public class ProductService {
         return dtoList;
     }
 
-    public ApiResponse<List<ProductsDTO>> findAllSearchProduct(String name, String description){
-        List<ProductDocument> productDocumentList = productSearchRepository.findByProductNameContainingOrDescriptionContaining(name, description);
+    public ApiResponse<List<ProductsDTO>> findAllSearchProduct(String keyword){
+        List<ProductDocument> productDocumentList = productSearchRepository.searchProductByKeyword(keyword);
 
         List<ProductsDTO> dtoList = new ArrayList<>();
         for(ProductDocument product : productDocumentList){

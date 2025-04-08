@@ -7,6 +7,7 @@ import com.backend.givu.model.repository.FundingRepository;
 import com.backend.givu.model.repository.ReviewRepository;
 import com.backend.givu.model.repository.UserRepository;
 import com.backend.givu.model.requestDTO.ReviewCreateDTO;
+import com.backend.givu.model.responseDTO.ReviewDetailDTO;
 import com.backend.givu.model.responseDTO.ReviewsDTO;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -56,6 +57,17 @@ public class ReviewService {
         return reviews.stream()
                 .map(ReviewsDTO::new) // 생성자로 매핑
                 .collect(Collectors.toList());
+    }
+
+    /**
+     * 후기 상세
+     */
+    public ReviewDetailDTO revieDetail(Long userId, int reviewId){
+
+        Review review = reviewRepository.findByIdWithUser(reviewId)
+                .orElseThrow(()-> new EntityNotFoundException("후기를 찾을 수 없습니다."));
+        boolean creator = userId.equals(review.getUser().getId());
+        return new ReviewDetailDTO(review, creator);
     }
 
 
