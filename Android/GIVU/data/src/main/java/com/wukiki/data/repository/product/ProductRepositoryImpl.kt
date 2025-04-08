@@ -5,6 +5,7 @@ import com.wukiki.data.mapper.ProductMapper
 import com.wukiki.data.mapper.ProductsMapper
 import com.wukiki.domain.model.ApiResult
 import com.wukiki.domain.model.Product
+import com.wukiki.domain.model.ProductDetail
 import com.wukiki.domain.repository.ProductRepository
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -15,7 +16,7 @@ class ProductRepositoryImpl @Inject constructor(
     private val productRemoteDataSource: ProductRemoteDataSource
 ) : ProductRepository {
 
-    override suspend fun getProductDetail(productId: Int): ApiResult<Product> =
+    override suspend fun getProductDetail(productId: Int): ApiResult<ProductDetail> =
         try {
             val response = withContext(CoroutineScope(Dispatchers.IO).coroutineContext) {
                 productRemoteDataSource.getProductDetail(productId)
@@ -52,6 +53,46 @@ class ProductRepositoryImpl @Inject constructor(
             }
         } catch (e: Exception) {
             Log.e("ProductRepositoryImpl", "putProductImage Error: $e")
+            ApiResult.fail()
+        }
+
+    override suspend fun postProductLike(productId: Int): ApiResult<Unit> =
+        try {
+            val response = withContext(CoroutineScope(Dispatchers.IO).coroutineContext) {
+                productRemoteDataSource.postProductLike(productId)
+            }
+
+            val responseBody = response.body()
+            Log.d("ProductRepositoryImpl", "Response: $responseBody")
+            if (response.isSuccessful) {
+                Log.d("ProductRepositoryImpl", "postProductLike Success")
+                ApiResult.success(responseBody)
+            } else {
+                Log.d("ProductRepositoryImpl", "postProductLike Fail: ${response.code()}")
+                ApiResult.error(response.errorBody().toString(), null)
+            }
+        } catch (e: Exception) {
+            Log.e("ProductRepositoryImpl", "postProductLike Error: $e")
+            ApiResult.fail()
+        }
+
+    override suspend fun postProductLikeCancel(productId: Int): ApiResult<Unit> =
+        try {
+            val response = withContext(CoroutineScope(Dispatchers.IO).coroutineContext) {
+                productRemoteDataSource.postProductLikeCancel(productId)
+            }
+
+            val responseBody = response.body()
+            Log.d("ProductRepositoryImpl", "Response: $responseBody")
+            if (response.isSuccessful) {
+                Log.d("ProductRepositoryImpl", "postProductLikeCancel Success")
+                ApiResult.success(responseBody)
+            } else {
+                Log.d("ProductRepositoryImpl", "postProductLikeCancel Fail: ${response.code()}")
+                ApiResult.error(response.errorBody().toString(), null)
+            }
+        } catch (e: Exception) {
+            Log.e("ProductRepositoryImpl", "postProductLikeCancel Error: $e")
             ApiResult.fail()
         }
 

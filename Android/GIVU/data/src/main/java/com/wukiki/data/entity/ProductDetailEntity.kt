@@ -10,6 +10,12 @@ data class ProductEntity(
 
     @Json(name = "reviews")
     val reviews: List<ProductReviewEntity>,
+
+    @Json(name = "likeCount")
+    val likeCount: Int,
+
+    @Json(name = "likedByUser")
+    val isLiked: Boolean
 )
 
 @JsonClass(generateAdapter = true)
@@ -28,9 +34,6 @@ data class ProductDetailEntity(
 
     @Json(name = "image")
     val image: String,
-
-    @Json(name = "favorite")
-    val favorite: Int,
 
     @Json(name = "star")
     val star: Double,
