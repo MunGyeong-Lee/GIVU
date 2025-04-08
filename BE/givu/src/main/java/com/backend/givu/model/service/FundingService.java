@@ -28,8 +28,6 @@ import java.util.List;
 @Slf4j
 public class FundingService {
     private final PaymentRepository paymentRepository;
-    private final LetterRepository letterRepository;
-
     private final FundingRepository fundingRepository;
     private final FundingSearchRepository fundingSearchRepository;
     private final ProductRepository productRepository;
