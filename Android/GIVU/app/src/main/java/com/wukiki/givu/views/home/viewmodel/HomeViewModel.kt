@@ -51,6 +51,12 @@ class HomeViewModel @Inject constructor(
     private val _fundingsState = MutableStateFlow<ApiResult<List<Funding>>>(ApiResult.init())
     val fundingsState = _fundingsState.asStateFlow()
 
+    private val _myRegisterFundingsState = MutableStateFlow<ApiResult<List<Funding>>>(ApiResult.init())
+    val myRegisterFundingsState = _myRegisterFundingsState.asStateFlow()
+
+    private val _myParticipateFundingsState = MutableStateFlow<ApiResult<List<Funding>>>(ApiResult.init())
+    val myParticipateFundingsState = _myParticipateFundingsState.asStateFlow()
+
     private val _accountState = MutableStateFlow<ApiResult<Account?>>(ApiResult.init())
     val accountState = _accountState.asStateFlow()
 
@@ -191,8 +197,8 @@ class HomeViewModel @Inject constructor(
             val response = getMyPageUseCase.fetchMyRegisterFundings()
 
             response.collectLatest { result ->
-                _fundingsState.value = result
-                if (_fundingsState.value.status == ApiStatus.SUCCESS) {
+                _myRegisterFundingsState.value = result
+                if (result.status == ApiStatus.SUCCESS) {
                     _myRegisterFundings.value = result.data ?: emptyList()
                 }
             }
@@ -204,8 +210,8 @@ class HomeViewModel @Inject constructor(
             val response = getMyPageUseCase.fetchMyParticipateFundings()
 
             response.collectLatest { result ->
-                _fundingsState.value = result
-                if (_fundingsState.value.status == ApiStatus.SUCCESS) {
+                _myParticipateFundingsState.value = result
+                if (result.status == ApiStatus.SUCCESS) {
                     _myParticipateFundings.value = result.data ?: emptyList()
                 }
             }

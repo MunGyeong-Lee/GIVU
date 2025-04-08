@@ -46,7 +46,11 @@ class MainActivity : BaseActivity<ActivityMainBinding>(ActivityMainBinding::infl
         setLoading()
         setUserStateInHome()
         setFundingsStateInHome()
+        setMyRegisterFundingsStateInHome()
+        setMyParticipateFundingsStateInHome()
         setAccountStateInHome()
+        setProductsStateInHome()
+        setReviewsStateInHome()
         setUserStateInFunding()
         setFundingStateInFunding()
         setFundingDetailStateInFunding()
@@ -55,6 +59,7 @@ class MainActivity : BaseActivity<ActivityMainBinding>(ActivityMainBinding::infl
         setAccountStateInFunding()
         setProductsStateInFunding()
         setReviewStateInFunding()
+        setFundingStateInRegister()
         setProductsStateInRegister()
         setFundingsStateInSearch()
         setProductsStateInMall()
@@ -136,9 +141,113 @@ class MainActivity : BaseActivity<ActivityMainBinding>(ActivityMainBinding::infl
         }
     }
 
+    private fun setMyRegisterFundingsStateInHome() {
+        lifecycleScope.launch {
+            homeViewModel.myRegisterFundingsState.collectLatest { state ->
+                when (state.status) {
+                    ApiStatus.LOADING -> {
+                        mainViewModel.addLoadingTask()
+                    }
+
+                    ApiStatus.SUCCESS -> {
+                        mainViewModel.removeLoadingTask()
+                    }
+
+                    ApiStatus.ERROR -> {
+                        mainViewModel.removeLoadingTask()
+                    }
+
+                    ApiStatus.FAIL -> {
+                        mainViewModel.removeLoadingTask()
+                    }
+
+                    else -> {}
+                }
+            }
+        }
+    }
+
+    private fun setMyParticipateFundingsStateInHome() {
+        lifecycleScope.launch {
+            homeViewModel.myParticipateFundingsState.collectLatest { state ->
+                when (state.status) {
+                    ApiStatus.LOADING -> {
+                        mainViewModel.addLoadingTask()
+                    }
+
+                    ApiStatus.SUCCESS -> {
+                        mainViewModel.removeLoadingTask()
+                    }
+
+                    ApiStatus.ERROR -> {
+                        mainViewModel.removeLoadingTask()
+                    }
+
+                    ApiStatus.FAIL -> {
+                        mainViewModel.removeLoadingTask()
+                    }
+
+                    else -> {}
+                }
+            }
+        }
+    }
+
     private fun setAccountStateInHome() {
         lifecycleScope.launch {
             homeViewModel.accountState.collectLatest { state ->
+                when (state.status) {
+                    ApiStatus.LOADING -> {
+                        mainViewModel.addLoadingTask()
+                    }
+
+                    ApiStatus.SUCCESS -> {
+                        mainViewModel.removeLoadingTask()
+                    }
+
+                    ApiStatus.ERROR -> {
+                        mainViewModel.removeLoadingTask()
+                    }
+
+                    ApiStatus.FAIL -> {
+                        mainViewModel.removeLoadingTask()
+                    }
+
+                    else -> {}
+                }
+            }
+        }
+    }
+
+    private fun setProductsStateInHome() {
+        lifecycleScope.launch {
+            homeViewModel.productsState.collectLatest { state ->
+                when (state.status) {
+                    ApiStatus.LOADING -> {
+                        mainViewModel.addLoadingTask()
+                    }
+
+                    ApiStatus.SUCCESS -> {
+                        mainViewModel.removeLoadingTask()
+                    }
+
+                    ApiStatus.ERROR -> {
+                        mainViewModel.removeLoadingTask()
+                    }
+
+                    ApiStatus.FAIL -> {
+                        mainViewModel.removeLoadingTask()
+                    }
+
+                    else -> {}
+                }
+            }
+        }
+    }
+
+    private fun setReviewsStateInHome() {
+        lifecycleScope.launch {
+            homeViewModel.reviewsState.collectLatest { state ->
                 when (state.status) {
                     ApiStatus.LOADING -> {
                         mainViewModel.addLoadingTask()
@@ -349,6 +458,32 @@ class MainActivity : BaseActivity<ActivityMainBinding>(ActivityMainBinding::infl
     private fun setReviewStateInFunding() {
         lifecycleScope.launch {
             fundingViewModel.reviewState.collectLatest { state ->
+                when (state.status) {
+                    ApiStatus.LOADING -> {
+                        mainViewModel.addLoadingTask()
+                    }
+
+                    ApiStatus.SUCCESS -> {
+                        mainViewModel.removeLoadingTask()
+                    }
+
+                    ApiStatus.ERROR -> {
+                        mainViewModel.removeLoadingTask()
+                    }
+
+                    ApiStatus.FAIL -> {
+                        mainViewModel.removeLoadingTask()
+                    }
+
+                    else -> {}
+                }
+            }
+        }
+    }
+
+    private fun setFundingStateInRegister() {
+        lifecycleScope.launch {
+            registerViewModel.fundingState.collectLatest { state ->
                 when (state.status) {
                     ApiStatus.LOADING -> {
                         mainViewModel.addLoadingTask()
