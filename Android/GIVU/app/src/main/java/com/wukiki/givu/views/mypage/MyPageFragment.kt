@@ -30,6 +30,7 @@ class MyPageFragment : BaseFragment<FragmentMyPageBinding>(R.layout.fragment_my_
         viewModel.initAccount()
         viewModel.initMyRegisterFundings()
         viewModel.initMyParticipateFundings()
+        viewModel.initMyLikeProducts()
 
         binding.composeMyPage.setContent {
             val navController = rememberNavController()
@@ -70,6 +71,10 @@ class MyPageFragment : BaseFragment<FragmentMyPageBinding>(R.layout.fragment_my_
 
                 composable("MyParticipateFunding") {
                     MyParticipateFundingScreen(viewModel, findNavController())
+                }
+
+                composable("MyLikeProduct") {
+                    MyLikeProductScreen(viewModel, findNavController())
                 }
             }
         }
