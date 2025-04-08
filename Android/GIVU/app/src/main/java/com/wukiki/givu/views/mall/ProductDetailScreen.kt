@@ -1,5 +1,6 @@
 package com.wukiki.givu.views.mall
 
+import android.content.Intent
 import android.util.Log
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
@@ -44,6 +45,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -60,6 +62,7 @@ import com.wukiki.givu.ui.suit
 import com.wukiki.givu.util.CommonUtils
 import com.wukiki.givu.util.StoreDetailTopBar
 import com.wukiki.givu.views.MainViewModel
+import com.wukiki.givu.views.OrderWebviewActivity
 import com.wukiki.givu.views.mall.component.ReviewComponent
 import com.wukiki.givu.views.mall.viewmodel.MallViewModel
 import com.wukiki.givu.views.register.viewmodel.RegisterViewModel
@@ -75,6 +78,7 @@ fun ProductDetailScreen(
 ) {
     val productInfo by mallViewModel.selectedProduct.collectAsState()
     var productReviewList by remember { mutableStateOf(emptyList<ProductReview>()) }
+    val context = LocalContext.current
 
     LaunchedEffect(Unit) {
 
@@ -233,8 +237,7 @@ fun ProductDetailScreen(
                     .fillMaxWidth()
                     .height(72.dp)
                     .padding(bottom = 16.dp)
-                    .align(Alignment.BottomCenter)
-                ,
+                    .align(Alignment.BottomCenter),
                 verticalAlignment = Alignment.CenterVertically
             ) {
 
@@ -295,6 +298,11 @@ fun ProductDetailScreen(
                     Button(
                         onClick = {
                             // 구매로 이동
+                            val intent = Intent(context, OrderWebviewActivity::class.java).apply {
+                                putExtra("productId", productId)
+                            }
+                            context.startActivity(intent)
+
 
                         },
                         modifier = Modifier
