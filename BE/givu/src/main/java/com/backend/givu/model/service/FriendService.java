@@ -50,7 +50,7 @@ public class FriendService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new EntityNotFoundException("해당 유저가 존재하지 않습니다."));
 
-        List<Friend> friends = friendRepository.findByUserWithFriend(user);
+        List<Friend> friends = friendRepository.findByUserWithFriend(user.getId());
 
         return ApiResponse.success(friends.stream()
                 .map(friend -> new UserSimpleInfoDTO(friend.getFriend()))
