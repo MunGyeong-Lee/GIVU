@@ -2,6 +2,7 @@ package com.wukiki.data.repository.review
 
 import android.util.Log
 import com.wukiki.data.mapper.ReviewMapper
+import com.wukiki.data.mapper.ReviewsMapper
 import com.wukiki.domain.model.ApiResult
 import com.wukiki.domain.model.Review
 import com.wukiki.domain.repository.ReviewRepository
@@ -17,6 +18,28 @@ import javax.inject.Inject
 class ReviewRepositoryImpl @Inject constructor(
     private val reviewRemoteDataSource: ReviewRemoteDataSource
 ) : ReviewRepository {
+
+    override suspend fun fetchFundingReviews(): Flow<ApiResult<List<Review>>> = flow {
+        emit(ApiResult.loading(null))
+        try {
+            val response = withContext(CoroutineScope(Dispatchers.IO).coroutineContext) {
+                reviewRemoteDataSource.getFundingReviews()
+            }
+
+            val responseBody = response.body()
+            Log.d("ReviewRepositoryImpl", "Response: $responseBody")
+            if (response.isSuccessful && (responseBody != null)) {
+                Log.d("ReviewRepositoryImpl", "fetchFundingReviews Success")
+                emit(ApiResult.success(ReviewsMapper(responseBody)))
+            } else {
+                Log.d("ReviewRepositoryImpl", "fetchFundingReviews Fail: ${response.code()}")
+                emit(ApiResult.error(response.errorBody().toString(), null))
+            }
+        } catch (e: Exception) {
+            Log.e("ReviewRepositoryImpl", "fetchFundingReviews Error: $e")
+            emit(ApiResult.fail())
+        }
+    }
 
     override suspend fun registerFundingReview(
         fundingId: Int,

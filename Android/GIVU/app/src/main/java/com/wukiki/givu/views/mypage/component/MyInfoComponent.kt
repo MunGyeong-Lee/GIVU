@@ -27,9 +27,11 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.wukiki.givu.R
 import com.wukiki.givu.ui.suit
+import com.wukiki.givu.views.home.viewmodel.HomeViewModel
 
 @Composable
 fun MyInfoComponent(
+    homeViewModel: HomeViewModel,
     navController: NavController
 ) {
     Card(
@@ -65,7 +67,10 @@ fun MyInfoComponent(
                     .height(52.dp)
                     .padding(vertical = 4.dp)
                     .clip(shape = RoundedCornerShape(10.dp))
-                    .clickable { navController.navigate("MyParticipateFunding") },
+                    .clickable {
+                        homeViewModel.initMyParticipateFundings()
+                        navController.navigate("MyParticipateFunding")
+                    },
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
@@ -94,8 +99,10 @@ fun MyInfoComponent(
                     .height(52.dp)
                     .padding(vertical = 4.dp)
                     .clip(shape = RoundedCornerShape(10.dp))
-                    .clickable { navController.navigate("MyRegisterFunding") },
-
+                    .clickable {
+                        homeViewModel.initMyRegisterFundings()
+                        navController.navigate("MyRegisterFunding")
+                    },
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
@@ -125,8 +132,10 @@ fun MyInfoComponent(
                     .height(52.dp)
                     .padding(vertical = 4.dp)
                     .clip(shape = RoundedCornerShape(10.dp))
-                    .clickable { navController.navigate("MyLikeProduct") },
-
+                    .clickable {
+                        homeViewModel.initMyLikeProducts()
+                        navController.navigate("MyLikeProduct")
+                    },
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
@@ -158,9 +167,9 @@ fun MyInfoComponent(
                     .padding(vertical = 4.dp)
                     .clip(shape = RoundedCornerShape(10.dp))
                     .clickable {
-
+                        homeViewModel.initMyFundingReviews()
+                        navController.navigate("MyFundingReview")
                     },
-
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
