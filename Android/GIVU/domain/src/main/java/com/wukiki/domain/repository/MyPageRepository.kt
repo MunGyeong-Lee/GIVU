@@ -3,19 +3,20 @@ package com.wukiki.domain.repository
 import com.wukiki.domain.model.Account
 import com.wukiki.domain.model.ApiResult
 import com.wukiki.domain.model.Funding
+import kotlinx.coroutines.flow.Flow
 import okhttp3.RequestBody
 
 interface MyPageRepository {
 
-    suspend fun depositGivuPay(body: RequestBody): ApiResult<Pair<Int, Int>>
+    suspend fun depositGivuPay(body: RequestBody): Flow<ApiResult<Pair<Int, Int>>>
 
-    suspend fun withdrawGivuPay(body: RequestBody): ApiResult<Pair<Int, Int>>
+    suspend fun withdrawGivuPay(body: RequestBody): Flow<ApiResult<Pair<Int, Int>>>
 
-    suspend fun fetchAccount(): ApiResult<Account>
+    suspend fun fetchAccount(): Flow<ApiResult<Account>>
 
-    suspend fun createAccount(): ApiResult<String>
+    suspend fun createAccount(): Flow<ApiResult<String>>
 
-    suspend fun fetchMyRegisterFundings(): ApiResult<List<Funding>>
+    suspend fun fetchMyRegisterFundings(): Flow<ApiResult<List<Funding>>>
 
-    suspend fun fetchMyParticipateFundings(): ApiResult<List<Funding>>
+    suspend fun fetchMyParticipateFundings(): Flow<ApiResult<List<Funding>>>
 }

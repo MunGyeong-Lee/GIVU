@@ -3,6 +3,7 @@ package com.wukiki.domain.usecase
 import com.wukiki.domain.model.ApiResult
 import com.wukiki.domain.model.Letter
 import com.wukiki.domain.repository.LetterRepository
+import kotlinx.coroutines.flow.Flow
 import okhttp3.MultipartBody
 import okhttp3.RequestBody
 import javax.inject.Inject
@@ -15,8 +16,8 @@ class GetLetterUseCase @Inject constructor(
         fundingId: String,
         image: MultipartBody.Part?,
         body: RequestBody
-    ): ApiResult<Letter> = letterRepository.submitFundingLetter(fundingId, image, body)
+    ): Flow<ApiResult<Letter>> = letterRepository.submitFundingLetter(fundingId, image, body)
 
-    suspend fun deleteFundingLetter(fundingId: String): ApiResult<Unit> =
+    suspend fun deleteFundingLetter(fundingId: String): Flow<ApiResult<Unit>> =
         letterRepository.deleteFundingLetter(fundingId)
 }
