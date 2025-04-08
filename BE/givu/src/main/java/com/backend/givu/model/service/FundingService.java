@@ -27,6 +27,7 @@ import java.util.List;
 @RequiredArgsConstructor
 @Slf4j
 public class FundingService {
+    private final PaymentRepository paymentRepository;
     private final LetterRepository letterRepository;
 
     private final FundingRepository fundingRepository;
@@ -229,6 +230,29 @@ public class FundingService {
 
 
     }
+
+    /**
+     * 펀딩 결제 확인
+     */
+
+    public PaymentResultDTO paymentResult(Long userId, int transactiontId){
+
+        User user = userRepository.findById(userId)
+                .orElseThrow(()-> new EntityNotFoundException("유저를 찾을 수 없습니다."));
+        Payment payment = paymentRepository.findById(transactiontId)
+                .orElseThrow(()-> new EntityNotFoundException("해당 결제 이력을 찾을 수 없습니다."));
+
+        // 유저가 본인 결제인지 검증 (선택사항)
+        if (!payment.getUser().getId().equals(user.getId())) {
+            throw new IllegalArgumentException("해당 결제는 요청한 유저의 결제가 아닙니다.");
+        }
+
+        return new PaymentResultDTO(payment);
+
+
+    }
+
+
     @Transactional(readOnly = true)
     public void indexAllFundingsToElasticsearch() {
         List<Funding> fundings = fundingRepository.findAllWithUserAndProduct();
@@ -245,6 +269,8 @@ public class FundingService {
         FundingDocument fundingDocument = FundingMapper.toDocument(funding);
         fundingSearchRepository.save(fundingDocument);
     }
+
+
 
 
 
