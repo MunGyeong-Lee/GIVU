@@ -14,12 +14,15 @@ import com.backend.givu.model.responseDTO.*;
 import com.backend.givu.util.mapper.ProductMapper;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.nio.file.AccessDeniedException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
@@ -29,6 +32,7 @@ public class ProductService {
     private final ProductReviewRepository productReviewRepository;
     private final ProductSearchRepository productSearchRepository;
     private final UserRepository userRepository;
+    private final RedisTemplate<String, String> redisTemplate;
 
     public List<ProductsDTO> findAllProduct(){
         List<Product> productList= productRepository.findAll();
@@ -50,12 +54,40 @@ public class ProductService {
         return ApiResponse.success(dtoList);
     }
 
-    public ProductDetailDTO findProductDetailByProductId(int productId){
+    public ApiResponse<List<ProductsDTO>> findAllLikeProduct(Long userId) {
+        // 1. Redis에서 유저가 좋아요한 상품 ID 가져오기
+        Set<String> likedProductIds = getUserLikedProducts(userId);
+        if (likedProductIds == null || likedProductIds.isEmpty()) {
+            return ApiResponse.success(Collections.emptyList());
+        }
+
+        // 2. String → Integer 변환
+        List<Integer> productIds = likedProductIds.stream()
+                .map(Integer::parseInt)
+                .toList();
+
+        // 3. DB에서 상품 정보 조회
+        List<Product> products = productRepository.findAllById(productIds);
+
+        // 4. DTO 변환
+        List<ProductsDTO> dtoList = products.stream()
+                .map(ProductsDTO::new)
+                .toList();
+
+        return ApiResponse.success(dtoList);
+    }
+
+
+    public ProductDetailDTO findProductDetailByProductId(int productId, Long userId){
         Product product = productRepository.findById(productId)
                 .orElseThrow(() -> new EntityNotFoundException("상품을 찾을 수 없습니다."));
         ProductsDTO productsDTO = new ProductsDTO(product);
         List<ProductReviewDTO> reviews = productRepository.findReviewsByProductId(productId);
-        return new ProductDetailDTO(productsDTO, reviews);
+        // Redis에서 좋아요 수 & 유저가 좋아요 했는지 여부 조회
+        long likeCount = getLikeCount(productId);
+        boolean likedByUser = (userId != null) && hasLiked(userId, productId);
+
+        return new ProductDetailDTO(productsDTO, reviews, (int) likeCount, likedByUser);
     }
 
     public Product findProductEntity(int productId){
@@ -107,13 +139,6 @@ public class ProductService {
         productReviewRepository.deleteById(reviewId);
     }
 
-    @Transactional
-    public void increaseLikeCount(int productId) {
-        Product product = productRepository.findById(productId)
-                .orElseThrow(() -> new RuntimeException("상품을 찾을 수 없습니다"));
-
-        product.increaseLike(); // 도메인 메서드로 처리 추천!
-    }
 
     @Transactional(readOnly = true)
     public void indexAllProductsToElasticsearch() {
@@ -124,6 +149,47 @@ public class ProductService {
                 .toList();
 
         productSearchRepository.saveAll(documents); // ES에 대량 색인
+    }
+
+    private String getProductLikeKey(Integer productId){
+        return "product:like:" + productId;
+    }
+    private String getUserLikeKey(Long userId){
+        return "user:like:" + userId;
+    }
+
+    // 좋아요 누르기
+    public void likeProduct(Long userId, Integer productId) {
+        redisTemplate.opsForSet().add(getProductLikeKey(productId), userId.toString());
+        redisTemplate.opsForSet().add(getUserLikeKey(userId), productId.toString());
+    }
+
+    // 좋아요 취소
+    public void unlikeProduct(Long userId, Integer productId) {
+        redisTemplate.opsForSet().remove(getProductLikeKey(productId), userId.toString());
+        redisTemplate.opsForSet().remove(getUserLikeKey(userId), productId.toString());
+    }
+
+    // 해당 유저가 특정 상품을 좋아요했는지
+    public boolean hasLiked(Long userId, Integer productId) {
+        Boolean result = redisTemplate.opsForSet().isMember(getProductLikeKey(productId), userId.toString());
+        return result != null && result;
+    }
+
+    // 특정 상품의 좋아요 수
+    public long getLikeCount(Integer productId) {
+        Long size = redisTemplate.opsForSet().size(getProductLikeKey(productId));
+        return size != null ? size : 0;
+    }
+
+    // 유저가 좋아요한 상품 목록
+    public Set<String> getUserLikedProducts(Long userId) {
+        return redisTemplate.opsForSet().members(getUserLikeKey(userId));
+    }
+
+    // 특정 상품을 좋아요한 유저 목록
+    public Set<String> getProductLikedUsers(Integer productId) {
+        return redisTemplate.opsForSet().members(getProductLikeKey(productId));
     }
 
 
