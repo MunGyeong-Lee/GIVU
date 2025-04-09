@@ -194,7 +194,7 @@ public class FundingService {
                 }
             }
         }
-
+        indexFundingsToElasticsearch(funding);
         return Funding.toDTO(funding);
     }
 
@@ -218,6 +218,7 @@ public class FundingService {
         }
 
         fundingRepository.deleteById(fundingId);
+        fundingSearchRepository.deleteById(fundingId);
     }
 
     /**
