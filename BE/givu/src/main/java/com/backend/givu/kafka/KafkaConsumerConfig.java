@@ -1,10 +1,7 @@
 package com.backend.givu.kafka;
 
-import com.backend.givu.model.requestDTO.GivuTransferEventDTO;
-import com.backend.givu.model.requestDTO.RefundEventDTO;
-import com.backend.givu.model.requestDTO.RefundResultEventDTO;
-import com.backend.givu.model.responseDTO.FundingSuccessEventDTO;
-import com.backend.givu.model.responseDTO.GivuSuccessDTO;
+import com.backend.givu.model.requestDTO.*;
+import com.backend.givu.model.responseDTO.*;
 import com.backend.givu.model.service.DeadLetterQueue;
 import com.backend.givu.model.service.PaymentService;
 import lombok.RequiredArgsConstructor;
@@ -15,6 +12,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.kafka.config.ConcurrentKafkaListenerContainerFactory;
+import org.springframework.kafka.core.ConsumerFactory;
 import org.springframework.kafka.core.DefaultKafkaConsumerFactory;
 import org.springframework.kafka.listener.DefaultErrorHandler;
 import org.springframework.kafka.support.serializer.JsonDeserializer;
@@ -34,8 +32,7 @@ public class KafkaConsumerConfig {
     private final PaymentService paymentService;
     private final DeadLetterQueue deadLetterQueue;
 
-    // ===================== 공통 메서드 =====================
-
+    // 공통 JsonDeserializer 생성
     private <T> JsonDeserializer<T> createDeserializer(Class<T> clazz) {
         JsonDeserializer<T> deserializer = new JsonDeserializer<>(clazz);
         deserializer.addTrustedPackages("*");
@@ -43,6 +40,7 @@ public class KafkaConsumerConfig {
         return deserializer;
     }
 
+    // 공통 Kafka Consumer 설정
     private Map<String, Object> defaultConsumerProps(String groupId) {
         Map<String, Object> props = new HashMap<>();
         props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, kafkaBootstrapServers);
@@ -52,6 +50,7 @@ public class KafkaConsumerConfig {
         return props;
     }
 
+    // 공통 ConsumerFactory 생성
     private <T> DefaultKafkaConsumerFactory<String, T> createConsumerFactory(Class<T> clazz, String groupId) {
         return new DefaultKafkaConsumerFactory<>(
                 defaultConsumerProps(groupId),
@@ -60,6 +59,7 @@ public class KafkaConsumerConfig {
         );
     }
 
+    // 공통 ListenerContainerFactory 생성
     private <T> ConcurrentKafkaListenerContainerFactory<String, T> createListenerFactory(Class<T> clazz, String groupId, boolean setErrorHandler) {
         ConcurrentKafkaListenerContainerFactory<String, T> factory = new ConcurrentKafkaListenerContainerFactory<>();
         factory.setConsumerFactory(createConsumerFactory(clazz, groupId));
@@ -69,8 +69,7 @@ public class KafkaConsumerConfig {
         return factory;
     }
 
-    // ===================== Listener Factories =====================
-
+    // ListenerContainerFactory 빈 등록
     @Bean
     public ConcurrentKafkaListenerContainerFactory<String, GivuTransferEventDTO> kafkaListenerContainerFactory() {
         return createListenerFactory(GivuTransferEventDTO.class, "transfer-group", true);
@@ -96,19 +95,37 @@ public class KafkaConsumerConfig {
         return createListenerFactory(GivuSuccessDTO.class, "confirm-payment-group", false);
     }
 
-    // ===================== 에러 핸들러 =====================
+    @Bean
+    public ConcurrentKafkaListenerContainerFactory<String, OrderCreatedEventDTO> orderEventListenerContainerFactory() {
+        return createListenerFactory(OrderCreatedEventDTO.class, "order-group", true);
+    }
 
     @Bean
+    public ConcurrentKafkaListenerContainerFactory<String, PaymentSuccessEventDTO> paymentSuccessListenerContainerFactory() {
+        return createListenerFactory(PaymentSuccessEventDTO.class, "payment-success-group", true);
+    }
+
+    @Bean
+    public ConcurrentKafkaListenerContainerFactory<String, PaymentFailedEventDTO> paymentFailListenerContainerFactory() {
+        return createListenerFactory(PaymentFailedEventDTO.class, "payment-fail-group", true);
+    }
+
+    // 에러 핸들러
+    @Bean
     public DefaultErrorHandler errorHandler() {
-        FixedBackOff fixedBackOff = new FixedBackOff(0L, 2L); // 총 3회 (0 + 2번 retry)
+        FixedBackOff fixedBackOff = new FixedBackOff(0L, 2L); // 총 3회 시도
+
         return new DefaultErrorHandler((record, ex) -> {
+            Object event = record.value();
+            log.error("❌ Kafka 소비 실패 - Topic: {}, Partition: {}, Payload: {}",
+                    record.topic(), record.partition(), event, ex);
+
             try {
-                GivuTransferEventDTO event = (GivuTransferEventDTO) record.value();
-                log.error("❌ 최종 실패 - paymentId: {}", event.getPaymentId(), ex);
-                deadLetterQueue.send("funding-transfer-dlq", event);
+                deadLetterQueue.send(record.topic() + "-dlq", event); // DLQ로 전송
             } catch (Exception e) {
                 log.error("❌ DLQ 전송 실패", e);
             }
+
         }, fixedBackOff);
     }
 }

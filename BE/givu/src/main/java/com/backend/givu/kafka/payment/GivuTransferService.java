@@ -56,7 +56,7 @@ public class GivuTransferService {
         // ✅ [중복 참여 방지]
         if (participantRepository.existsByFundingAndUser(funding, user)) {
             log.warn("❌ 이미 참여한 유저입니다 - userId: {}, fundingId: {}", user.getId(), funding.getId());
-            return ApiResponse.fail("ALREADY_PARTICIPATED", "이미 참여한 펀딩입니다.");
+            return ApiResponse.fail("ERROR", "이미 참여한 펀딩입니다.");
         }
 
 
