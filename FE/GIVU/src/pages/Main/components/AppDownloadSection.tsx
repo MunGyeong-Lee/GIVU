@@ -53,7 +53,7 @@ const AppDownloadSection = () => {
               <span className="text-primary">더 쉽게 참여하세요</span>
             </h2>
             <p className="text-gray-600 mb-6 max-w-md">
-              언제 어디서나 GIVU 앱으로 펀딩에 참여하고,
+              언제 어디서나 GIVU 앱으로 펀딩에 참여하고,<br />
               쉽게 기부하며, 기부의 가치를 경험해보세요.
             </p>
             <a
