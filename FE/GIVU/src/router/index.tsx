@@ -100,7 +100,7 @@ const routes = [
         element: <ShoppingReviewEdit />
       },
       {
-        path: "shopping/order",
+        path: "shopping/order/:id",
         element: <OrderPage />,
       },
       {
