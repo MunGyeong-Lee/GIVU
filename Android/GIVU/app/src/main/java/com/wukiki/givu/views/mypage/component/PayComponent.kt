@@ -103,7 +103,12 @@ fun PayComponent(
                 .padding(8.dp)
                 .clip(shape = RoundedCornerShape(10.dp))
                 .clickable {
-                    navController.navigate("PayUsageScreen")
+                    if (user != null) {
+                        navController.navigate("PayUsageScreen")
+                    }
+                    else {
+                        xmlNavController.navigate(R.id.action_fragment_my_page_to_fragment_login)
+                    }
                 },
             verticalAlignment = Alignment.CenterVertically,
         ) {

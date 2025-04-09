@@ -133,7 +133,7 @@ fun MallScreen(
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .aspectRatio(4F / 3F)
+                        .aspectRatio(5F / 3F)
                         .background(Color.White),
                     contentAlignment = Alignment.Center
                 ) {

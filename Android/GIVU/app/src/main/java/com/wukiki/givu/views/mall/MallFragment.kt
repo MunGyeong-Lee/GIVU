@@ -20,6 +20,7 @@ import com.wukiki.givu.config.BaseFragment
 import com.wukiki.givu.databinding.FragmentMallBinding
 import com.wukiki.givu.views.MainViewModel
 import com.wukiki.givu.views.OrderWebviewActivity
+import com.wukiki.givu.views.home.viewmodel.HomeViewModel
 import com.wukiki.givu.views.mall.viewmodel.MallViewModel
 import com.wukiki.givu.views.register.viewmodel.RegisterViewModel
 import dagger.hilt.android.AndroidEntryPoint
@@ -30,6 +31,7 @@ class MallFragment : BaseFragment<FragmentMallBinding>(R.layout.fragment_mall) {
     private val viewModel: MallViewModel by activityViewModels()
     private val mainViewModel: MainViewModel by activityViewModels()
     private val registerViewModel: RegisterViewModel by activityViewModels()
+    private val homeViewModel: HomeViewModel by activityViewModels()
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -73,6 +75,7 @@ class MallFragment : BaseFragment<FragmentMallBinding>(R.layout.fragment_mall) {
                         mallViewModel = viewModel,
                         registerViewModel = registerViewModel,
                         mainViewModel = mainViewModel,
+                        homeViewModel = homeViewModel,
                         navController,
                         findNavController()
                     )

@@ -57,6 +57,7 @@ import com.wukiki.givu.util.CommonUtils
 import com.wukiki.givu.util.StoreDetailTopBar
 import com.wukiki.givu.views.MainViewModel
 import com.wukiki.givu.views.OrderWebviewActivity
+import com.wukiki.givu.views.home.viewmodel.HomeViewModel
 import com.wukiki.givu.views.mall.component.ReviewComponent
 import com.wukiki.givu.views.mall.viewmodel.MallViewModel
 import com.wukiki.givu.views.register.viewmodel.RegisterViewModel
@@ -67,9 +68,11 @@ fun ProductDetailScreen(
     mallViewModel: MallViewModel,
     registerViewModel: RegisterViewModel,
     mainViewModel: MainViewModel,
+    homeViewModel: HomeViewModel,
     navController: NavController,
     xmlNavController: NavController
 ) {
+    val user by homeViewModel.user.collectAsState()
     val productInfo by mallViewModel.selectedProduct.collectAsState()
     var productReviewList by remember { mutableStateOf(emptyList<ProductReview>()) }
     val context = LocalContext.current
@@ -237,53 +240,108 @@ fun ProductDetailScreen(
                     .align(Alignment.BottomCenter),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth(0.15f)
-                        .fillMaxHeight(),
-                    verticalArrangement = Arrangement.Center,
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    IconButton(
-                        onClick = {
-                            when (it.isLiked) {
-                                true -> {
-                                    mallViewModel.cancelLikeProduct()
-                                }
-
-                                else -> {
-                                    mallViewModel.likeProduct()
-                                }
-                            }
-                        },
-                        modifier = Modifier.size(24.dp)
+                if (user != null) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth(0.15f)
+                            .fillMaxHeight(),
+                        verticalArrangement = Arrangement.Center,
+                        horizontalAlignment = Alignment.CenterHorizontally
                     ) {
-                        Icon(
-                            painter = painterResource(if (it.isLiked) R.drawable.ic_heart_fill else R.drawable.ic_heart_outline),
-                            contentDescription = null,
-                            modifier = Modifier.fillMaxSize(),
-                            tint = Color.Unspecified
+                        IconButton(
+                            onClick = {
+                                when (it.isLiked) {
+                                    true -> {
+                                        mallViewModel.cancelLikeProduct()
+                                    }
+
+                                    else -> {
+                                        mallViewModel.likeProduct()
+                                    }
+                                }
+                            },
+                            modifier = Modifier.size(24.dp)
+                        ) {
+                            Icon(
+                                painter = painterResource(if (it.isLiked) R.drawable.ic_heart_fill else R.drawable.ic_heart_outline),
+                                contentDescription = null,
+                                modifier = Modifier.fillMaxSize(),
+                                tint = Color.Unspecified
+                            )
+                        }
+                        Text(
+                            text = it.likeCount.toString(),
+                            fontFamily = pretendard,
+                            fontWeight = FontWeight.Medium,
+                            fontSize = 12.sp
                         )
                     }
-                    Text(
-                        text = it.likeCount.toString(),
-                        fontFamily = pretendard,
-                        fontWeight = FontWeight.Medium,
-                        fontSize = 12.sp
-                    )
+
+                    Row(modifier = Modifier.fillMaxWidth()) {
+                        Button(
+                            onClick = {
+                                // 펀딩 생성 화면으로 이동
+                                mainViewModel.selectProduct(it.product)
+                                registerViewModel.setFromMall(true)
+                                xmlNavController.navigate(R.id.fragment_register_funding)
+                            },
+                            modifier = Modifier
+                                .weight(1f)
+                                .height(48.dp),
+                            enabled = true,
+                            shape = RoundedCornerShape(5.dp),
+                            border = BorderStroke(1.dp, Color(0xFFECECEC)),
+                            colors = ButtonDefaults.buttonColors(colorResource(R.color.main_primary)),
+                            elevation = ButtonDefaults.elevation(0.dp)
+                        ) {
+                            Text(
+                                text = "펀딩 생성하기",
+                                fontFamily = suit,
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 18.sp,
+                                color = Color.White
+                            )
+                        }
+                        Spacer(Modifier.width(8.dp))
+                        Button(
+                            onClick = {
+                                // 구매로 이동
+                                val intent =
+                                    Intent(context, OrderWebviewActivity::class.java).apply {
+                                        putExtra("productId", productId)
+                                    }
+                                context.startActivity(intent)
+                            },
+                            modifier = Modifier
+                                .weight(1f)
+                                .height(48.dp)
+                                .padding(end = 16.dp),
+                            enabled = true,
+                            shape = RoundedCornerShape(5.dp),
+                            border = BorderStroke(1.dp, colorResource(R.color.main_primary)),
+                            colors = ButtonDefaults.buttonColors(Color.White),
+                            elevation = ButtonDefaults.elevation(0.dp)
+                        ) {
+                            Text(
+                                text = "구매하기",
+                                fontFamily = suit,
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 18.sp,
+                                color = colorResource(R.color.main_primary)
+                            )
+                        }
+                    }
                 }
 
-                Row(modifier = Modifier.fillMaxWidth()) {
+                else {
                     Button(
                         onClick = {
-                            // 펀딩 생성 화면으로 이동
-                            mainViewModel.selectProduct(it.product)
-                            registerViewModel.setFromMall(true)
-                            xmlNavController.navigate(R.id.fragment_register_funding)
+                            xmlNavController.navigate(R.id.action_fragment_mall_to_fragment_login)
                         },
                         modifier = Modifier
                             .weight(1f)
-                            .height(48.dp),
+                            .height(48.dp)
+                            .padding(horizontal = 8.dp),
                         enabled = true,
                         shape = RoundedCornerShape(5.dp),
                         border = BorderStroke(1.dp, Color(0xFFECECEC)),
@@ -291,38 +349,11 @@ fun ProductDetailScreen(
                         elevation = ButtonDefaults.elevation(0.dp)
                     ) {
                         Text(
-                            text = "펀딩 생성하기",
+                            text = "로그인 하기",
                             fontFamily = suit,
                             fontWeight = FontWeight.Bold,
                             fontSize = 18.sp,
                             color = Color.White
-                        )
-                    }
-                    Spacer(Modifier.width(8.dp))
-                    Button(
-                        onClick = {
-                            // 구매로 이동
-                            val intent = Intent(context, OrderWebviewActivity::class.java).apply {
-                                putExtra("productId", productId)
-                            }
-                            context.startActivity(intent)
-                        },
-                        modifier = Modifier
-                            .weight(1f)
-                            .height(48.dp)
-                            .padding(end = 16.dp),
-                        enabled = true,
-                        shape = RoundedCornerShape(5.dp),
-                        border = BorderStroke(1.dp, colorResource(R.color.main_primary)),
-                        colors = ButtonDefaults.buttonColors(Color.White),
-                        elevation = ButtonDefaults.elevation(0.dp)
-                    ) {
-                        Text(
-                            text = "구매하기",
-                            fontFamily = suit,
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 18.sp,
-                            color = colorResource(R.color.main_primary)
                         )
                     }
                 }
