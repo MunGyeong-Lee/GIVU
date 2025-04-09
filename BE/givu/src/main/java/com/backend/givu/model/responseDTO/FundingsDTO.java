@@ -108,9 +108,9 @@ public class FundingsDTO {
             String rawCategory = funding.getCategory();
             String rawCategoryName = funding.getCategoryName();
 
-            this.category = rawCategory != null
+            this.category = (rawCategory != null && !"null".equalsIgnoreCase(rawCategory))
                     ? CategoryMapper.toClient(FundingsCategory.valueOf(rawCategory))
-                    : "ETC";
+                    : "ETC"; // 기본값
 
             this.categoryName = rawCategoryName; // 프론트에 보여질 값도 기본 제공
 
