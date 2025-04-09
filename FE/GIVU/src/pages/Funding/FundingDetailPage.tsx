@@ -24,6 +24,7 @@ interface FundingDetail {
   image: string | null;
   createdAt: string;
   updatedAt: string | null;
+  creator: boolean; // 백엔드 API 응답의 creator 필드 추가
   writer: {
     userId: number;
     nickName: string;
@@ -83,6 +84,7 @@ const FALLBACK_DATA: FundingDetail = {
   image: null,
   createdAt: new Date().toISOString(),
   updatedAt: null,
+  creator: false,
   writer: {
     userId: 1,
     nickName: "작성자",
@@ -157,6 +159,20 @@ const FundingDetailPage = () => {
   const [showPasswordModal, setShowPasswordModal] = useState<boolean>(false);
   const [password, setPassword] = useState<string>('');
   const [passwordError, setPasswordError] = useState<string | null>(null);
+
+  // 삭제 확인 모달 관련 상태 추가
+  const [showDeleteConfirmModal, setShowDeleteConfirmModal] = useState<boolean>(false);
+
+  // 수정 모달 관련 상태 추가
+  const [showEditModal, setShowEditModal] = useState<boolean>(false);
+  const [editFormData, setEditFormData] = useState({
+    title: '',
+    description: '',
+    category: '',
+    scope: '',
+    toDelete: [] as string[]
+  });
+  const [editLoading, setEditLoading] = useState<boolean>(false);
 
   // 폭죽 효과 표시 여부
   const [showConfetti, setShowConfetti] = useState<boolean>(false);
@@ -238,6 +254,16 @@ const FundingDetailPage = () => {
         if (response.data) {
           if (response.data.code === 'SUCCESS') {
             console.log('응답 데이터 구조:', response.data.data);
+            
+            // API 응답의 creator 필드 확인 및 로깅
+            console.log('펀딩 생성자 여부(creator):', response.data.data.creator);
+            
+            // 응답에서 creator 필드를 꺼내서 isCreator 상태에 설정
+            if (response.data.data.creator !== undefined) {
+              setIsCreator(response.data.data.creator);
+            }
+            
+            // 펀딩 데이터 설정
             setFundingData(response.data.data);
           } else {
             console.error('응답 코드 오류:', response.data.code, response.data.message);
@@ -389,7 +415,7 @@ const FundingDetailPage = () => {
     }
   }, [fundingData, isFundingCompleted, isCreator, showConfetti, navigate]);
 
-  // 펀딩 생성자 확인 함수 추가
+  // 펀딩 생성자 확인 함수 수정
   useEffect(() => {
     const checkFundingCreator = async () => {
       if (!fundingId) return;
@@ -398,7 +424,27 @@ const FundingDetailPage = () => {
         setCreatorCheckLoading(true);
         console.log('펀딩 생성자 확인 시작, ID:', fundingId);
         
-        // 1. API를 통한 생성자 확인
+        // API 응답에서 이미 creator 필드를 받았는지 확인
+        if (fundingData && fundingData.creator !== undefined) {
+          console.log('API 응답의 creator 필드 사용:', fundingData.creator);
+          setIsCreator(fundingData.creator);
+          
+          // 생성자인 경우 폼 데이터 초기화
+          if (fundingData.creator) {
+            setEditFormData({
+              title: fundingData.title,
+              description: fundingData.description,
+              category: fundingData.category,
+              scope: fundingData.scope,
+              toDelete: []
+            });
+          }
+          
+          setCreatorCheckLoading(false);
+          return;
+        }
+        
+        // 백업: API로 생성자 여부 확인
         let isUserCreator = false;
         
         try {
@@ -411,7 +457,7 @@ const FundingDetailPage = () => {
           // API 호출 실패시 2번 방법으로 대체
         }
         
-        // 2. 백업: 데이터 비교로 생성자 확인
+        // 백업: 데이터 비교로 생성자 확인
         if (!isUserCreator && fundingData) {
           // 로컬스토리지에서 현재 사용자 ID 가져오기
           const userId = localStorage.getItem('user_id');
@@ -427,9 +473,23 @@ const FundingDetailPage = () => {
           }
         }
         
+        // 테스트 환경에서는 항상 생성자로 설정 (실제 환경에서는 아래 주석 처리)
+        // isUserCreator = true;
+        
         // 최종 결과 설정
         console.log('최종 생성자 여부 확인 결과:', isUserCreator);
         setIsCreator(isUserCreator);
+        
+        // 생성자인 경우 폼 데이터 초기화
+        if (isUserCreator && fundingData) {
+          setEditFormData({
+            title: fundingData.title,
+            description: fundingData.description,
+            category: fundingData.category,
+            scope: fundingData.scope,
+            toDelete: []
+          });
+        }
       } catch (error) {
         console.error('펀딩 생성자 확인 중 오류:', error);
         setIsCreator(false);
@@ -1098,8 +1158,174 @@ const FundingDetailPage = () => {
     if (!fundingData) return;
     
     // 후기 작성 페이지로 이동
-    navigate(`/funding/review/write/${fundingData.fundingId}`);
+    navigate(`/funding/review/write?fundingId=${fundingData.fundingId}`);
   }, [fundingData, navigate]);
+
+  // 펀딩 수정 페이지로 이동하는 함수 추가
+  const navigateToEditPage = useCallback(() => {
+    if (!fundingData) return;
+    
+    // 펀딩 수정 페이지로 이동
+    navigate(`/funding/edit/${fundingData.fundingId}`);
+  }, [fundingData, navigate]);
+
+  // 수정 모달 표시 함수
+  const openEditModal = () => {
+    if (!fundingData) return;
+    
+    // 폼 데이터 초기화
+    setEditFormData({
+      title: fundingData.title,
+      description: fundingData.description,
+      category: fundingData.category,
+      scope: fundingData.scope,
+      toDelete: []
+    });
+    
+    // 모달 표시
+    setShowEditModal(true);
+  };
+  
+  // 폼 데이터 변경 핸들러
+  const handleEditFormChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+    const { name, value } = e.target;
+    setEditFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+  
+  // 펀딩 수정 처리 함수
+  const handleUpdateFunding = async () => {
+    if (!fundingId || !fundingData) {
+      alert('펀딩 정보를 찾을 수 없습니다.');
+      return;
+    }
+    
+    try {
+      setEditLoading(true);
+      const baseUrl = import.meta.env.VITE_BASE_URL || import.meta.env.VITE_API_BASE_URL || 'https://j12d107.p.ssafy.io/api';
+      
+      // 토큰 가져오기
+      const token = localStorage.getItem('auth_token') || 
+                   localStorage.getItem('access_token') ||
+                   localStorage.getItem('token') ||
+                   localStorage.getItem('accessToken');
+                   
+      if (!token) {
+        alert('로그인이 필요합니다.');
+        setEditLoading(false);
+        return;
+      }
+      
+      // FormData 생성
+      const formData = new FormData();
+      
+      // JSON 데이터 추가
+      formData.append('data', new Blob([JSON.stringify(editFormData)], { type: 'application/json' }));
+      
+      // API 호출
+      const response = await axios.post(
+        `${baseUrl}/fundings/${fundingId}`,
+        formData,
+        {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'multipart/form-data'
+          }
+        }
+      );
+      
+      console.log('펀딩 수정 응답:', response);
+      
+      // 수정 성공 처리
+      alert('펀딩이 성공적으로 수정되었습니다.');
+      
+      // 모달 닫기
+      setShowEditModal(false);
+      
+      // 페이지 새로고침
+      fetchFundingDetail();
+    } catch (error) {
+      console.error('펀딩 수정 중 오류:', error);
+      
+      // 오류 세부 정보 확인
+      if (axios.isAxiosError(error)) {
+        if (error.response?.status === 403) {
+          alert('펀딩 수정 권한이 없습니다.');
+        } else {
+          alert(`펀딩 수정 중 오류가 발생했습니다: ${error.response?.data?.message || error.message}`);
+        }
+      } else {
+        alert('펀딩 수정 중 알 수 없는 오류가 발생했습니다.');
+      }
+    } finally {
+      setEditLoading(false);
+    }
+  };
+
+  // 펀딩 삭제 처리 함수 추가
+  const handleDeleteFunding = async () => {
+    if (!fundingId || !fundingData) {
+      alert('펀딩 정보를 찾을 수 없습니다.');
+      return;
+    }
+
+    try {
+      setIsLoading(true);
+      const baseUrl = import.meta.env.VITE_BASE_URL || import.meta.env.VITE_API_BASE_URL || 'https://j12d107.p.ssafy.io/api';
+      
+      // 토큰 가져오기
+      const token = localStorage.getItem('auth_token') || 
+                   localStorage.getItem('access_token') ||
+                   localStorage.getItem('token') ||
+                   localStorage.getItem('accessToken');
+                   
+      if (!token) {
+        alert('로그인이 필요합니다.');
+        setIsLoading(false);
+        return;
+      }
+      
+      // 삭제 API 호출
+      const response = await axios.delete(
+        `${baseUrl}/fundings/${fundingId}`,
+        {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        }
+      );
+      
+      console.log('펀딩 삭제 응답:', response);
+      
+      // 삭제 성공 처리
+      alert('펀딩이 성공적으로 삭제되었습니다.');
+      navigate('/funding/list');
+    } catch (error) {
+      console.error('펀딩 삭제 중 오류:', error);
+      
+      // 오류 세부 정보 확인
+      if (axios.isAxiosError(error)) {
+        if (error.response?.status === 403) {
+          alert('펀딩 삭제 권한이 없습니다.');
+        } else {
+          alert(`펀딩 삭제 중 오류가 발생했습니다: ${error.response?.data?.message || error.message}`);
+        }
+      } else {
+        alert('펀딩 삭제 중 알 수 없는 오류가 발생했습니다.');
+      }
+    } finally {
+      setIsLoading(false);
+      setShowDeleteConfirmModal(false);
+    }
+  };
+
+  // 삭제 확인 모달 표시 함수
+  const showDeleteConfirmation = () => {
+    setShowDeleteConfirmModal(true);
+  };
 
   // 로딩 중 표시
   if (loading) {
@@ -1187,6 +1413,8 @@ const FundingDetailPage = () => {
           </div>
         </div>
       )}
+      
+      {/* 100% 달성 & 생성자가 아닌 일반 참여자의 경우 후기 작성 버튼 표시 - 제거 */}
       
       {/* 잔액 정보 표시 섹션 */}
       <div className="mb-6 bg-white rounded-lg shadow overflow-hidden">
@@ -1290,12 +1518,37 @@ const FundingDetailPage = () => {
         </div>
 
         {/* 진행 바 */}
-        <div className="w-full bg-gray-200 rounded-full h-2.5">
+        <div className="w-full bg-gray-200 rounded-full h-2.5 mb-3">
           <div
             className="bg-black h-2.5 rounded-full"
             style={{ width: `${fundingPercentage}%` }}
           ></div>
         </div>
+
+        {/* 펀딩 생성자인 경우 수정/삭제 버튼 표시 */}
+        {isCreator && (
+          <div className="flex justify-end gap-2 mt-2">
+            <button
+              onClick={openEditModal}
+              className="px-3 py-1.5 bg-gray-700 hover:bg-gray-800 text-white rounded-md text-sm transition-colors flex items-center"
+              disabled={isFundingCompleted}
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+              </svg>
+              수정
+            </button>
+            <button
+              onClick={showDeleteConfirmation}
+              className="px-3 py-1.5 bg-red-600 hover:bg-red-700 text-white rounded-md text-sm transition-colors flex items-center"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+              </svg>
+              삭제
+            </button>
+          </div>
+        )}
       </div>
 
       {/* 대상자 소개 섹션 */}
@@ -1702,8 +1955,8 @@ const FundingDetailPage = () => {
         <p className="mt-1">© 2025 GIVU. All rights reserved.</p>
       </footer>
 
-      {/* 펀딩 100% 달성 & 생성자인 경우 하단에 고정된 상품 구매 버튼 표시 */}
-      {isFundingCompleted && isCreator && (
+      {/* 펀딩 100% 달성 시 하단에 고정된 버튼 표시 */}
+      {isFundingCompleted && (
         <div className="fixed bottom-0 left-0 w-full bg-white border-t border-gray-200 p-4 shadow-lg z-40">
           <div className="max-w-3xl mx-auto flex justify-between items-center">
             <div>
@@ -1711,24 +1964,28 @@ const FundingDetailPage = () => {
               <p className="text-green-600">모금된 금액: {fundingData.fundedAmount.toLocaleString()}원</p>
             </div>
             <div className="flex gap-3">
-              <button
-                onClick={navigateToOrderPage}
-                className="px-6 py-3 bg-green-600 hover:bg-green-700 text-white font-bold rounded-lg transition-colors shadow-sm flex items-center"
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
-                </svg>
-                상품 구매하기
-              </button>
-              <button
-                onClick={navigateToReviewPage}
-                className="px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white font-bold rounded-lg transition-colors shadow-sm flex items-center"
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                </svg>
-                후기 작성하기
-              </button>
+              {isCreator && (
+                <>
+                  <button
+                    onClick={navigateToOrderPage}
+                    className="px-6 py-3 bg-green-600 hover:bg-green-700 text-white font-bold rounded-lg transition-colors shadow-sm flex items-center"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+                    </svg>
+                    상품 구매하기
+                  </button>
+                  <button
+                    onClick={navigateToReviewPage}
+                    className="px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white font-bold rounded-lg transition-colors shadow-sm flex items-center"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                    </svg>
+                    후기 작성하기
+                  </button>
+                </>
+              )}
             </div>
           </div>
         </div>
@@ -1790,6 +2047,165 @@ const FundingDetailPage = () => {
                   </span>
                 ) : (
                   '결제 확인'
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 펀딩 삭제 확인 모달 추가 */}
+      {showDeleteConfirmModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 px-4">
+          <div className="bg-white rounded-lg p-6 w-full max-w-md">
+            <h3 className="text-xl font-bold mb-4 text-red-600">펀딩 삭제 확인</h3>
+            <div className="mb-6">
+              <p className="mb-2 text-gray-700">
+                정말로 이 펀딩을 삭제하시겠습니까?
+              </p>
+              <p className="text-gray-500 text-sm">
+                삭제된 펀딩은 복구할 수 없으며, 관련된 모든 데이터가 영구적으로 삭제됩니다.
+              </p>
+              {fundingData && fundingData.participantsNumber > 0 && (
+                <div className="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded-md">
+                  <p className="text-yellow-700 text-sm">
+                    <span className="font-bold">주의!</span> 이 펀딩에는 이미 {fundingData.participantsNumber}명이 참여하고 있습니다.
+                    삭제하면 참여자들의 데이터도 함께 삭제됩니다.
+                  </p>
+                </div>
+              )}
+            </div>
+            
+            <div className="flex justify-end space-x-3">
+              <button
+                onClick={() => setShowDeleteConfirmModal(false)}
+                className="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50"
+              >
+                취소
+              </button>
+              <button
+                onClick={handleDeleteFunding}
+                disabled={isLoading}
+                className={`px-4 py-2 rounded-md text-white ${
+                  isLoading
+                    ? 'bg-gray-400 cursor-not-allowed'
+                    : 'bg-red-600 hover:bg-red-700'
+                }`}
+              >
+                {isLoading ? (
+                  <span className="flex items-center">
+                    <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    삭제 중...
+                  </span>
+                ) : (
+                  '펀딩 삭제'
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 펀딩 수정 모달 추가 */}
+      {showEditModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 px-4">
+          <div className="bg-white rounded-lg p-6 w-full max-w-md">
+            <h3 className="text-xl font-bold mb-4">펀딩 정보 수정</h3>
+            
+            <div className="space-y-4">
+              <div>
+                <label htmlFor="title" className="block text-sm font-medium text-gray-700 mb-1">
+                  펀딩 제목
+                </label>
+                <input
+                  type="text"
+                  id="title"
+                  name="title"
+                  value={editFormData.title}
+                  onChange={handleEditFormChange}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
+                />
+              </div>
+              
+              <div>
+                <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-1">
+                  펀딩 설명
+                </label>
+                <textarea
+                  id="description"
+                  name="description"
+                  value={editFormData.description}
+                  onChange={handleEditFormChange}
+                  rows={4}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 resize-none"
+                />
+              </div>
+              
+              <div>
+                <label htmlFor="category" className="block text-sm font-medium text-gray-700 mb-1">
+                  카테고리
+                </label>
+                <select
+                  id="category"
+                  name="category"
+                  value={editFormData.category}
+                  onChange={handleEditFormChange}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
+                >
+                  <option value="생일">생일</option>
+                  <option value="결혼">결혼</option>
+                  <option value="집들이">집들이</option>
+                  <option value="기념일">기념일</option>
+                  <option value="기타">기타</option>
+                </select>
+              </div>
+              
+              <div>
+                <label htmlFor="scope" className="block text-sm font-medium text-gray-700 mb-1">
+                  공개 범위
+                </label>
+                <select
+                  id="scope"
+                  name="scope"
+                  value={editFormData.scope}
+                  onChange={handleEditFormChange}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
+                >
+                  <option value="공개">공개</option>
+                  <option value="비공개">비공개</option>
+                </select>
+              </div>
+            </div>
+            
+            <div className="flex justify-end space-x-3 mt-6">
+              <button
+                onClick={() => setShowEditModal(false)}
+                className="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50"
+              >
+                취소
+              </button>
+              <button
+                onClick={handleUpdateFunding}
+                disabled={editLoading}
+                className={`px-4 py-2 rounded-md text-white ${
+                  editLoading
+                    ? 'bg-gray-400 cursor-not-allowed'
+                    : 'bg-purple-600 hover:bg-purple-700'
+                }`}
+              >
+                {editLoading ? (
+                  <span className="flex items-center">
+                    <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    저장 중...
+                  </span>
+                ) : (
+                  '저장하기'
                 )}
               </button>
             </div>
