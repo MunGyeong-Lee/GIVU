@@ -120,7 +120,6 @@ fun RegisterInputScreen(
                 else -> {}
             }
         }
-        registerViewModel.setFromMall(false)
     }
 
     Scaffold(

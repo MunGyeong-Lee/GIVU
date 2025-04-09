@@ -54,6 +54,9 @@ class RegisterViewModel @Inject constructor(
     private val _filteredProducts = MutableStateFlow<List<Product>>(emptyList())
     val filteredProducts = _filteredProducts.asStateFlow()
 
+    private val _nowProduct = MutableStateFlow<Product?>(null)
+    val nowProduct = _nowProduct.asStateFlow()
+
     private val _selectedProduct = MutableStateFlow<Product?>(null)
     val selectedProduct = _selectedProduct.asStateFlow()
 
@@ -81,10 +84,6 @@ class RegisterViewModel @Inject constructor(
     // Mall Fragment에서 넘어온 경우 확인
     private val _isFromMall = MutableStateFlow(false)
     val isFromMall = _isFromMall.asStateFlow()
-
-    fun setFromMall(isFrom: Boolean) {
-        _isFromMall.value = isFrom
-    }
 
     init {
         initProducts()
@@ -171,7 +170,16 @@ class RegisterViewModel @Inject constructor(
         }
     }
 
-    fun selectProduct(product: Product) {
+    fun fetchProduct(product: Product) {
+        _nowProduct.value = product
+    }
+
+    fun selectProduct() {
+        _selectedProduct.value = _nowProduct.value
+        _registerUiState.update { it.copy(productSelectState = InputValidState.VALID) }
+    }
+
+    fun selectProductInMall(product: Product) {
         _selectedProduct.value = product
         _registerUiState.update { it.copy(productSelectState = InputValidState.VALID) }
     }
@@ -235,5 +243,9 @@ class RegisterViewModel @Inject constructor(
                 }
             }
         }
+    }
+
+    fun setFromMall(isFrom: Boolean) {
+        _isFromMall.value = isFrom
     }
 }
