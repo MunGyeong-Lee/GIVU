@@ -86,7 +86,6 @@ public class KafkaConsumerConfig {
         return createListenerFactory(RefundResultEventDTO.class, "refund-consumer-group", false);
     }
 
-
     @Bean(name = "successKafkaListenerContainerFactory")
     public ConcurrentKafkaListenerContainerFactory<String, FundingSuccessEventDTO> successKafkaListenerContainerFactory() {
         return createListenerFactory(FundingSuccessEventDTO.class, "success-funding-group", false);
@@ -97,7 +96,7 @@ public class KafkaConsumerConfig {
         return createListenerFactory(GivuSuccessDTO.class, "confirm-payment-group", false);
     }
 
-        // ===================== 에러 핸들러 =====================
+    // ===================== 에러 핸들러 =====================
 
     @Bean
     public DefaultErrorHandler errorHandler() {

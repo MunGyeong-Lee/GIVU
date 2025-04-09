@@ -2,13 +2,11 @@ package com.backend.givu.model.service;
 
 import com.amazonaws.services.kms.model.NotFoundException;
 import com.backend.givu.model.Document.ProductDocument;
+import com.backend.givu.model.entity.Payment;
 import com.backend.givu.model.entity.Product;
 import com.backend.givu.model.entity.ProductReview;
 import com.backend.givu.model.entity.User;
-import com.backend.givu.model.repository.ProductRepository;
-import com.backend.givu.model.repository.ProductReviewRepository;
-import com.backend.givu.model.repository.ProductSearchRepository;
-import com.backend.givu.model.repository.UserRepository;
+import com.backend.givu.model.repository.*;
 import com.backend.givu.model.requestDTO.ProductReviewCreateDTO;
 import com.backend.givu.model.responseDTO.*;
 import com.backend.givu.util.mapper.ProductMapper;
@@ -31,6 +29,7 @@ public class ProductService {
     private final ProductRepository productRepository;
     private final ProductReviewRepository productReviewRepository;
     private final ProductSearchRepository productSearchRepository;
+    private final PaymentRepository paymentRepository;
     private final PaymentService paymentService;
     private final UserRepository userRepository;
     private final RedisTemplate<String, String> redisTemplate;
@@ -224,5 +223,22 @@ public class ProductService {
         productRepository.save(product);
     }
 
+    /**
+     * 상품 결제 확인
+     */
+    public PaymentResultDTO paymentResult(Long userId, int paymentId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new EntityNotFoundException("유저를 찾을 수 없습니다."));
+
+        Payment payment = paymentRepository.findById(paymentId)
+                .orElseThrow(() -> new EntityNotFoundException("해당 결제 이력을 찾을 수 없습니다."));
+
+        // 유저가 본인 결제인지 검증
+        if (!payment.getUser().getId().equals(user.getId())) {
+            throw new IllegalArgumentException("해당 결제는 요청한 유저의 결제가 아닙니다.");
+        }
+
+        return new PaymentResultDTO(payment);
+    }
 
 }
