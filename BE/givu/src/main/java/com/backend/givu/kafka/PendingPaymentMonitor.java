@@ -1,5 +1,6 @@
 package com.backend.givu.kafka;
 
+import com.backend.givu.kafka.payment.FundingProducer;
 import com.backend.givu.model.Enum.PaymentsStatus;
 import com.backend.givu.model.entity.Payment;
 import com.backend.givu.model.repository.PaymentRepository;
@@ -9,7 +10,6 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import java.time.Instant;
-import java.time.LocalDateTime;
 import java.util.List;
 
 

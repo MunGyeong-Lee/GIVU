@@ -1,4 +1,4 @@
-package com.backend.givu.kafka;
+package com.backend.givu.kafka.payment;
 
 import com.backend.givu.model.requestDTO.GivuTransferEventDTO;
 import lombok.RequiredArgsConstructor;
@@ -23,11 +23,10 @@ public class GivuConsumer {
     @Transactional
     @KafkaListener(
             id = "givu-success-listener",
-            topics = "fundedAmount",
+            topics = "givu-transfer-success",
             groupId = "givu-consumer-group-v2",
             concurrency = "3",              // 동시에 실행될 Consumer 쓰레드 수 (동시성 처리용)
             containerFactory = "kafkaListenerContainerFactory"
-//            autoStartup = "false"
     )
     public void handleFundingSuccess(GivuTransferEventDTO event) {
         log.info("📥 펀딩 성공 이벤트 수신 - paymentId: {}, userId: {}", event.getPaymentId(), event.getUserId());
@@ -48,11 +47,10 @@ public class GivuConsumer {
     @Transactional
     @KafkaListener(
             id = "givu-fail-listener",
-            topics = "refund-request",
+            topics = "givu-transfer-fail",
             groupId = "givu-consumer-group",
             concurrency = "3",              // 동시에 실행될 Consumer 쓰레드 수 (동시성 처리용)
             containerFactory = "kafkaListenerContainerFactory"
-//            autoStartup = "false"
     )
     public void handleFundingFail(GivuTransferEventDTO event) {
         log.info("📥 펀딩 실패 이벤트 수신 - paymentId: {}, reason: {}", event.getPaymentId(), event.getReason());
