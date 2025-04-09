@@ -1,6 +1,5 @@
-package com.backend.givu.kafka.refund;
+package com.backend.givu.kafka.cancel;
 
-import com.backend.givu.kafka.refund.RefundFundingProducer;
 import com.backend.givu.model.Enum.ParticipantsRefundStatus;
 import com.backend.givu.model.Enum.PaymentsStatus;
 import com.backend.givu.model.Enum.PaymentsTransactionType;
