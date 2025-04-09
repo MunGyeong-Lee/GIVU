@@ -155,12 +155,15 @@ function Navbar() {
 
           {/* 오른쪽 영역 (펀딩 생성하기, 로그인/프로필) */}
           <div className="flex items-center space-x-4">
-            <Link
-              to="/funding/create"
-              className="text-gray-700 text-sm font-medium hover:text-primary-color transition-colors"
-            >
-              펀딩 생성하기
-            </Link>
+            {/* 펀딩 생성하기 버튼 - 로그인한 사용자에게만 표시 */}
+            {isAuthenticated && (
+              <Link
+                to="/funding/create"
+                className="text-gray-700 text-sm font-medium hover:text-primary-color transition-colors"
+              >
+                펀딩 생성하기
+              </Link>
+            )}
 
             {isAuthenticated ? (
               <div className="flex items-center space-x-4">
@@ -216,6 +219,13 @@ function Navbar() {
               <Link
                 to='/login'
                 className='block'
+                onClick={(e) => {
+                  // 이미 로그인된 상태라면 로그인 페이지로 이동 방지
+                  if (isAuthenticated) {
+                    e.preventDefault();
+                    console.log('이미 로그인 되어 있습니다.');
+                  }
+                }}
               >
                 <div className="border border-gray-300 rounded-md flex items-center py-1 px-3 hover:border-primary-color transition-colors cursor-pointer bg-white">
                   <img
