@@ -725,8 +725,8 @@ const HeroSection = () => {
         const heroItems: HeroFundingItem[] = response.data.map((item: any) => ({
           id: item.fundingId,
           title: item.title,
-          imageUrl: item.product.image, // product.image 사용 확인
-          progressPercentage: item.fundedAmount ? Math.floor((item.fundedAmount / item.product.price) * 100) : 0,
+          imageUrl: item.product?.image || "", // product가 null인 경우 처리 및 image가 없는 경우 빈 문자열로 설정
+          progressPercentage: item.fundedAmount ? Math.floor((item.fundedAmount / (item.product?.price || 1)) * 100) : 0,
           parcitipantsNumber: item.participantsNumber ?? 0 // null일 경우 0 처리
         }));
         // 이미지 URL이 있는 아이템만 필터링하여 상태 업데이트
