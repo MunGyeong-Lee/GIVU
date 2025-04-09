@@ -8,12 +8,14 @@ import com.wukiki.domain.model.Account
 import com.wukiki.domain.model.ApiResult
 import com.wukiki.domain.model.ApiStatus
 import com.wukiki.domain.model.Funding
+import com.wukiki.domain.model.Payment
 import com.wukiki.domain.model.Product
 import com.wukiki.domain.model.Review
 import com.wukiki.domain.model.User
 import com.wukiki.domain.usecase.GetAuthUseCase
 import com.wukiki.domain.usecase.GetFundingUseCase
 import com.wukiki.domain.usecase.GetMyPageUseCase
+import com.wukiki.domain.usecase.GetPaymentUseCase
 import com.wukiki.domain.usecase.GetProductUseCase
 import com.wukiki.domain.usecase.GetReviewUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -38,7 +40,8 @@ class HomeViewModel @Inject constructor(
     private val getFundingUseCase: GetFundingUseCase,
     private val getMyPageUseCase: GetMyPageUseCase,
     private val getProductUseCase: GetProductUseCase,
-    private val getReviewUseCase: GetReviewUseCase
+    private val getReviewUseCase: GetReviewUseCase,
+    private val getPaymentUseCase: GetPaymentUseCase
 ) : AndroidViewModel(application), OnHomeClickListener {
 
     /*** UiState, UiEvent ***/
@@ -53,6 +56,9 @@ class HomeViewModel @Inject constructor(
 
     private val _myRegisterFundingsState = MutableStateFlow<ApiResult<List<Funding>>>(ApiResult.init())
     val myRegisterFundingsState = _myRegisterFundingsState.asStateFlow()
+
+    private val _myPaymentHistoryListState = MutableStateFlow<ApiResult<List<Payment>>>(ApiResult.init())
+    val myPaymentHistoryListState = _myPaymentHistoryListState.asStateFlow()
 
     private val _myParticipateFundingsState = MutableStateFlow<ApiResult<List<Funding>>>(ApiResult.init())
     val myParticipateFundingsState = _myParticipateFundingsState.asStateFlow()
@@ -73,6 +79,9 @@ class HomeViewModel @Inject constructor(
 
     private val _account = MutableStateFlow<Account?>(null)
     val account = _account.asStateFlow()
+
+    private val _myPaymentHistoryList = MutableStateFlow<List<Payment>>(emptyList())
+    val myPaymentHistoryList = _myPaymentHistoryList.asStateFlow()
 
     private val _myRegisterFundings = MutableStateFlow<List<Funding>>(emptyList())
     val myRegisterFundings = _myRegisterFundings.asStateFlow()
@@ -206,6 +215,21 @@ class HomeViewModel @Inject constructor(
             }
         }
     }
+
+
+    private fun updatePaymentHistory() {
+        viewModelScope.launch {
+            val response = getPaymentUseCase.getPaymentHistoryList()
+
+            response.collectLatest { result ->
+                _myPaymentHistoryListState.value = result
+                if(result.status == ApiStatus.SUCCESS) {
+                    _myPaymentHistoryList.value = result.data ?: emptyList()
+                }
+            }
+        }
+    }
+
 
     fun initMyParticipateFundings() {
         viewModelScope.launch {

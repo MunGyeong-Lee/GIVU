@@ -41,28 +41,29 @@ class TransferRepositoryImpl @Inject constructor(
             }
         }
 
-    override suspend fun getPaymentHistory(userId: Int): Flow<ApiResult<List<Payment>>> = flow {
-        emit(ApiResult.loading(null))
-        try {
-            val response = withContext(CoroutineScope(Dispatchers.IO).coroutineContext) {
-                transferRemoteDataSource.getPaymentHistory()
-            }
+    override suspend fun getPaymentHistory(): Flow<ApiResult<List<Payment>>> =
+        flow {
+            emit(ApiResult.loading(null))
+            try {
+                val response = withContext(CoroutineScope(Dispatchers.IO).coroutineContext) {
+                    transferRemoteDataSource.getPaymentHistory()
+                }
 
-            val body = response.body()
-            Log.d("FundingRepositoryImpl", "Response: $body")
+                val body = response.body()
+                Log.d("FundingRepositoryImpl", "Response: $body")
 
-            if (response.isSuccessful && body != null) {
-                val payments = PaymentMapper(body)  // ✅ List<Payment>로 매핑
-                emit(ApiResult.success(payments))
-            } else {
-                Log.d("FundingRepositoryImpl", "transferFunding Fail: ${response.code()}")
-                emit(ApiResult.error("Error: ${response.code()}", null))
+                if (response.isSuccessful && body != null) {
+                    val payments = PaymentMapper(body)  // ✅ List<Payment>로 매핑
+                    emit(ApiResult.success(payments))
+                } else {
+                    Log.d("FundingRepositoryImpl", "transferFunding Fail: ${response.code()}")
+                    emit(ApiResult.error("Error: ${response.code()}", null))
+                }
+            } catch (e: Exception) {
+                Log.e("FundingRepositoryImpl", "transferFunding Error: $e")
+                emit(ApiResult.fail())
             }
-        } catch (e: Exception) {
-            Log.e("FundingRepositoryImpl", "transferFunding Error: $e")
-            emit(ApiResult.fail())
         }
-    }
 
 
 }
