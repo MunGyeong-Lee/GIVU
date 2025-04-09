@@ -70,6 +70,11 @@ public class KafkaConsumerConfig {
         return createFactory(PaymentFailedEventDTO.class, "payment-fail-group");
     }
 
+    @Bean
+    public ConsumerFactory<String, RefundEventDTO> refundConsumerFactory() {
+        return createFactory(RefundEventDTO.class, "givupay-refund-consumer");
+    }
+
     // ------------ Listener Container Factories ------------
     @Bean
     public ConcurrentKafkaListenerContainerFactory<String, GivuTransferEventDTO> kafkaListenerContainerFactory() {
@@ -78,6 +83,36 @@ public class KafkaConsumerConfig {
         factory.setConsumerFactory(consumerFactory());
         factory.setCommonErrorHandler(errorHandler());
         return factory;
+    }
+
+    @Bean(name = "refundKafkaListenerContainerFactory")
+    public ConcurrentKafkaListenerContainerFactory<String, RefundEventDTO> refundKafkaListenerContainerFactory() {
+        ConcurrentKafkaListenerContainerFactory<String, RefundEventDTO> factory =
+                new ConcurrentKafkaListenerContainerFactory<>();
+        factory.setConsumerFactory(refundConsumerFactory());
+        return factory;
+    }
+
+    @Bean(name = "refundResultKafkaListenerContainerFactory")
+    public ConcurrentKafkaListenerContainerFactory<String, RefundResultEventDTO> refundResultKafkaListenerContainerFactory() {
+        JsonDeserializer<RefundResultEventDTO> deserializer = new JsonDeserializer<>(RefundResultEventDTO.class);
+        deserializer.addTrustedPackages("*");
+        deserializer.setUseTypeHeaders(false);
+
+        Map<String, Object> props = new HashMap<>();
+        props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, kafkaBootstrapServers);
+        props.put(ConsumerConfig.GROUP_ID_CONFIG, "refund-consumer-group");
+        props.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
+        props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
+        props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, deserializer);
+
+        DefaultKafkaConsumerFactory<String, RefundResultEventDTO> factory =
+                new DefaultKafkaConsumerFactory<>(props, new StringDeserializer(), deserializer);
+
+        ConcurrentKafkaListenerContainerFactory<String, RefundResultEventDTO> kafkaFactory =
+                new ConcurrentKafkaListenerContainerFactory<>();
+        kafkaFactory.setConsumerFactory(factory);
+        return kafkaFactory;
     }
 
     @Bean

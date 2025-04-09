@@ -1,6 +1,6 @@
 package com.backend.givu.controller;
 
-import com.backend.givu.kafka.GivuTransferService;
+import com.backend.givu.kafka.payment.GivuTransferService;
 import com.backend.givu.model.entity.CustomUserDetail;
 import com.backend.givu.model.entity.Product;
 import com.backend.givu.model.responseDTO.*;

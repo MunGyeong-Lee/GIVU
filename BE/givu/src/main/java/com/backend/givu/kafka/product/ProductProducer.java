@@ -1,4 +1,4 @@
-package com.backend.givu.kafka;
+package com.backend.givu.kafka.product;
 
 import com.backend.givu.model.entity.Payment;
 import com.backend.givu.model.responseDTO.PaymentFailedEventDTO;

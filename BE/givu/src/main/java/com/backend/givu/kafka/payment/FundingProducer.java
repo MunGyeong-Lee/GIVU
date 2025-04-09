@@ -1,4 +1,4 @@
-package com.backend.givu.kafka;
+package com.backend.givu.kafka.payment;
 
 import com.backend.givu.model.entity.Payment;
 import com.backend.givu.model.requestDTO.GivuTransferEventDTO;
@@ -15,8 +15,9 @@ import org.springframework.transaction.support.TransactionSynchronizationManager
 public class FundingProducer {
 
 
-
     private final KafkaTemplate<String, GivuTransferEventDTO> kafkaTemplate;
+    private static final String RESULT_SUCCESE_TOPIC = "givu-transfer-success";
+    private static final String RESULT_FAIL_TOPIC = "givu-transfer-fail";
 
     // 펀딩 금액 증가 성공 시 (전제조건 : 트랜잭션이 성공적으로 종료되어야 함)
     public void sendSuccessEventAfterCommit(Payment payment) {
@@ -27,7 +28,7 @@ public class FundingProducer {
                 new TransactionSynchronization() {
                     @Override
                     public void afterCommit() {
-                        kafkaTemplate.send("fundedAmount", payment.getUser().getId().toString(), event);
+                        kafkaTemplate.send(RESULT_SUCCESE_TOPIC, payment.getUser().getId().toString(), event);
                         log.info("✅ 펀딩 성공 이벤트 발송 완료: {}", event.getPaymentId());
                     }
                 }
@@ -48,7 +49,7 @@ public class FundingProducer {
         event.setReason(reason);
 
         log.info("📤 펀딩 실패 이벤트 발송 완료: {}", paymentId);
-        kafkaTemplate.send("refund-request", String.valueOf(paymentId), event);
+        kafkaTemplate.send(RESULT_FAIL_TOPIC, String.valueOf(paymentId), event);
     }
 
 

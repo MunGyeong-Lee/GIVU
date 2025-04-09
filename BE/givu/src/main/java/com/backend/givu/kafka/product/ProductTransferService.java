@@ -1,10 +1,9 @@
-package com.backend.givu.kafka;
+package com.backend.givu.kafka.product;
 
 import com.backend.givu.model.Enum.PaymentsStatus;
 import com.backend.givu.model.entity.Payment;
 import com.backend.givu.model.entity.User;
 import com.backend.givu.model.repository.PaymentRepository;
-import com.backend.givu.model.repository.ProductRepository;
 import com.backend.givu.model.repository.UserRepository;
 import com.backend.givu.model.requestDTO.OrderCreatedEventDTO;
 import jakarta.persistence.EntityNotFoundException;
