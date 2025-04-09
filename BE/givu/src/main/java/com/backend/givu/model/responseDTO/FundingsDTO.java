@@ -84,7 +84,12 @@ public class FundingsDTO {
         this.hidden = hidden;
         this.createdAt = DateTimeUtil.parseIsoString(funding.getCreatedAt());
         this.updatedAt = DateTimeUtil.parseIsoString(funding.getUpdatedAt());
-        this.scope = ScopeMapper.toClient(FundingsScope.valueOf(funding.getScope()));
+        String rawScope = funding.getScope();
+
+        this.scope = (rawScope != null && !"null".equalsIgnoreCase(rawScope))
+                ? ScopeMapper.toClient(FundingsScope.valueOf(rawScope))
+                : "PUBLIC"; // 예: "PUBLIC" 등 기본값 지정
+
         this.status = StatusMapper.toClient(FundingsStatus.valueOf(funding.getStatus()));
         this.participantsNumber = funding.getParticipantsNumber();
         this.fundedAmount = funding.getFundedAmount();
@@ -105,7 +110,7 @@ public class FundingsDTO {
 
             this.category = rawCategory != null
                     ? CategoryMapper.toClient(FundingsCategory.valueOf(rawCategory))
-                    : null;
+                    : "ETC";
 
             this.categoryName = rawCategoryName; // 프론트에 보여질 값도 기본 제공
 
