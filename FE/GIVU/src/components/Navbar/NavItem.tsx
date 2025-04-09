@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 
 // NavItem prop 타입 정의
 interface NavItemProps {
@@ -14,6 +14,7 @@ function NavItem({ to, label, isActive, hasDropdown }: NavItemProps) {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const timeoutRef = useRef<number | null>(null);
+  const location = useLocation();
 
   // 마우스 이벤트 핸들러
   const handleMouseEnter = () => {
@@ -53,6 +54,17 @@ function NavItem({ to, label, isActive, hasDropdown }: NavItemProps) {
     };
   }, []);
 
+  // 서브메뉴 배열 (펀딩 메뉴에 대한 드롭다운 항목)
+  const fundingSubmenus = [
+    { path: '/funding/list', label: '펀딩 목록' },
+    { path: '/funding/review', label: '펀딩 후기' }
+  ];
+
+  // 라우트 활성화 확인 함수
+  const isRouteActive = (path: string) => {
+    return location.pathname.startsWith(path);
+  };
+
   return (
     <div
       className="relative"
@@ -77,18 +89,18 @@ function NavItem({ to, label, isActive, hasDropdown }: NavItemProps) {
           onMouseEnter={handleMouseEnter}
           onMouseLeave={handleMouseLeave}
         >
-          <Link
-            to="/funding/list"
-            className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-primary-color"
-          >
-            펀딩 목록
-          </Link>
-          <Link
-            to="/funding/review"
-            className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-primary-color"
-          >
-            펀딩 후기
-          </Link>
+          {fundingSubmenus.map((submenu) => (
+            <Link
+              key={submenu.path}
+              to={submenu.path}
+              className={`block px-4 py-2 text-sm ${isRouteActive(submenu.path)
+                ? 'text-primary-color bg-gray-50'
+                : 'text-gray-700 hover:bg-gray-50 hover:text-primary-color'
+                }`}
+            >
+              {submenu.label}
+            </Link>
+          ))}
         </div>
       )}
     </div>

@@ -12,7 +12,9 @@ function Navbar() {
   const [loading, setLoading] = useState(false);
   const [scrollProgress, setScrollProgress] = useState(0);
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const profileMenuRef = useRef<HTMLDivElement>(null);
+  const mobileMenuRef = useRef<HTMLDivElement>(null);
   const { isAuthenticated, token, user } = useAppSelector(state => state.auth);
   const isMainPage = location.pathname === '/';
 
@@ -44,6 +46,9 @@ function Navbar() {
     const handleClickOutside = (event: MouseEvent) => {
       if (profileMenuRef.current && !profileMenuRef.current.contains(event.target as Node)) {
         setIsProfileMenuOpen(false);
+      }
+      if (mobileMenuRef.current && !mobileMenuRef.current.contains(event.target as Node)) {
+        setIsMobileMenuOpen(false);
       }
     };
 
@@ -100,6 +105,7 @@ function Navbar() {
       await logoutUser();
       setUserInfo(null);
       setIsProfileMenuOpen(false);
+      setIsMobileMenuOpen(false);
       navigate('/');
     } catch (error) {
       console.error('로그아웃 실패:', error);
@@ -109,6 +115,11 @@ function Navbar() {
   // 프로필 메뉴 토글
   const toggleProfileMenu = () => {
     setIsProfileMenuOpen(!isProfileMenuOpen);
+  };
+
+  // 모바일 메뉴 토글
+  const toggleMobileMenu = () => {
+    setIsMobileMenuOpen(!isMobileMenuOpen);
   };
 
   const isActive = (path: string) => {
@@ -139,8 +150,8 @@ function Navbar() {
               </Link>
             </div>
 
-            {/* 메뉴 아이템 */}
-            <nav className='flex space-x-8'>
+            {/* 데스크탑 메뉴 아이템 - 모바일에서는 숨김 */}
+            <nav className='hidden md:flex space-x-8'>
               {menuItems.map((item) => (
                 <NavItem
                   key={item.path}
@@ -155,90 +166,221 @@ function Navbar() {
 
           {/* 오른쪽 영역 (펀딩 생성하기, 로그인/프로필) */}
           <div className="flex items-center space-x-4">
-            {/* 펀딩 생성하기 버튼 - 로그인한 사용자에게만 표시 */}
+            {/* 펀딩 생성하기 버튼 - 로그인한 사용자에게만 표시, 모바일에서는 숨김 */}
             {isAuthenticated && (
               <Link
                 to="/funding/create"
-                className="text-gray-700 text-sm font-medium hover:text-primary-color transition-colors"
+                className="hidden md:block text-gray-700 text-sm font-medium hover:text-primary-color transition-colors"
               >
                 펀딩 생성하기
               </Link>
             )}
 
-            {isAuthenticated ? (
-              <div className="flex items-center space-x-4">
-                {/* 프로필 드롭다운 */}
-                <div className="relative" ref={profileMenuRef}>
-                  <button
-                    onClick={toggleProfileMenu}
-                    className="flex items-center border border-gray-300 rounded-md py-1 px-3 hover:border-primary-color transition-colors cursor-pointer bg-white"
-                  >
+            {/* 로그인 상태 UI */}
+            <div className="hidden md:block">
+              {isAuthenticated ? (
+                <div className="flex items-center space-x-4">
+                  {/* 프로필 드롭다운 */}
+                  <div className="relative" ref={profileMenuRef}>
+                    <button
+                      onClick={toggleProfileMenu}
+                      className="flex items-center border border-gray-300 rounded-md py-1 px-3 hover:border-primary-color transition-colors cursor-pointer bg-white"
+                    >
+                      <img
+                        src={userInfo?.profileImage || user?.profileImage || "/avatar.png"}
+                        alt="프로필"
+                        className="w-7 h-7 rounded-full object-cover"
+                        onError={(e) => {
+                          e.currentTarget.src = "/avatar.png";
+                        }}
+                      />
+                      <span className="text-gray-700 text-sm ml-2 group-hover:text-primary-color">
+                        {loading ? "로딩 중..." : userInfo?.nickName || user?.nickname || "사용자"}
+                      </span>
+                      <svg
+                        className={`ml-1 h-4 w-4 text-gray-500 transition-transform ${isProfileMenuOpen ? 'rotate-180' : ''
+                          }`}
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                      </svg>
+                    </button>
+
+                    {isProfileMenuOpen && (
+                      <div className="absolute right-0 mt-2 w-48 bg-white border border-gray-200 rounded-md shadow-lg py-1 z-20">
+                        <Link
+                          to="/mypage"
+                          className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-primary-color"
+                          onClick={() => setIsProfileMenuOpen(false)}
+                        >
+                          마이페이지
+                        </Link>
+                        <button
+                          onClick={handleLogout}
+                          className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-primary-color"
+                        >
+                          로그아웃
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              ) : (
+                <Link
+                  to='/login'
+                  className='block'
+                  onClick={(e) => {
+                    // 이미 로그인된 상태라면 로그인 페이지로 이동 방지
+                    if (isAuthenticated) {
+                      e.preventDefault();
+                      console.log('이미 로그인 되어 있습니다.');
+                    }
+                  }}
+                >
+                  <div className="border border-gray-300 rounded-md flex items-center py-1 px-3 hover:border-primary-color transition-colors cursor-pointer bg-white">
+                    <img
+                      src="/avatar.png"
+                      alt="프로필"
+                      className="w-7 h-7 rounded-full"
+                    />
+                    <span className='text-gray-700 text-sm ml-2 hover:text-primary-color'>
+                      로그인/회원가입
+                    </span>
+                  </div>
+                </Link>
+              )}
+            </div>
+
+            {/* 햄버거 메뉴 아이콘 - 모바일에서만 표시 */}
+            <button
+              onClick={toggleMobileMenu}
+              className="md:hidden flex items-center p-1 rounded-full text-gray-600 hover:text-primary-color focus:outline-none"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-6 w-6"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M4 6h16M4 12h16M4 18h16"
+                />
+              </svg>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* 모바일 메뉴 */}
+      <div
+        ref={mobileMenuRef}
+        className={`fixed inset-0 bg-black bg-opacity-50 z-40 transition-opacity duration-300 ease-in-out 
+          ${isMobileMenuOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}
+      >
+        <div
+          className={`absolute top-0 right-0 w-64 h-full bg-white shadow-lg transform transition-transform duration-300 ease-in-out ${isMobileMenuOpen ? 'translate-x-0' : 'translate-x-full'}`}
+        >
+          <div className="p-5">
+            <div className="flex justify-between items-center mb-6">
+              <h3 className="text-lg font-semibold text-gray-800">메뉴</h3>
+              <button
+                onClick={toggleMobileMenu}
+                className="text-gray-500 hover:text-gray-800 focus:outline-none"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+
+            {/* 모바일 메뉴 항목 */}
+            <nav className="flex flex-col space-y-4">
+              {menuItems.map((item) => (
+                <Link
+                  key={item.path}
+                  to={item.path}
+                  className={`${isActive(item.path) ? 'text-primary-color font-medium' : 'text-gray-700'} text-base hover:text-primary-color`}
+                  onClick={() => setIsMobileMenuOpen(false)}
+                >
+                  {item.label}
+                </Link>
+              ))}
+
+              {/* 펀딩 생성하기 - 로그인한 사용자에게만 표시 */}
+              {isAuthenticated && (
+                <Link
+                  to="/funding/create"
+                  className="text-gray-700 text-base hover:text-primary-color"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                >
+                  펀딩 생성하기
+                </Link>
+              )}
+            </nav>
+
+            {/* 모바일 로그인/프로필 영역 */}
+            <div className="mt-8 pt-6 border-t border-gray-200">
+              {isAuthenticated ? (
+                <div className="flex flex-col space-y-4">
+                  <div className="flex items-center space-x-3">
                     <img
                       src={userInfo?.profileImage || user?.profileImage || "/avatar.png"}
                       alt="프로필"
-                      className="w-7 h-7 rounded-full object-cover"
+                      className="w-10 h-10 rounded-full object-cover"
                       onError={(e) => {
                         e.currentTarget.src = "/avatar.png";
                       }}
                     />
-                    <span className="text-gray-700 text-sm ml-2 group-hover:text-primary-color">
-                      {loading ? "로딩 중..." : userInfo?.nickName || user?.nickname || "사용자"}
-                    </span>
-                    <svg
-                      className={`ml-1 h-4 w-4 text-gray-500 transition-transform ${isProfileMenuOpen ? 'rotate-180' : ''
-                        }`}
-                      xmlns="http://www.w3.org/2000/svg"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                    >
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                    </svg>
-                  </button>
-
-                  {isProfileMenuOpen && (
-                    <div className="absolute right-0 mt-2 w-48 bg-white border border-gray-200 rounded-md shadow-lg py-1 z-20">
-                      <Link
-                        to="/mypage"
-                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-primary-color"
-                        onClick={() => setIsProfileMenuOpen(false)}
-                      >
-                        마이페이지
-                      </Link>
-                      <button
-                        onClick={handleLogout}
-                        className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-primary-color"
-                      >
-                        로그아웃
-                      </button>
+                    <div>
+                      <div className="text-sm font-medium text-gray-800">
+                        {loading ? "로딩 중..." : userInfo?.nickName || user?.nickname || "사용자"}
+                      </div>
                     </div>
-                  )}
+                  </div>
+
+                  <Link
+                    to="/mypage"
+                    className="text-gray-700 text-base hover:text-primary-color"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                  >
+                    마이페이지
+                  </Link>
+
+                  <button
+                    onClick={handleLogout}
+                    className="text-left text-gray-700 text-base hover:text-primary-color"
+                  >
+                    로그아웃
+                  </button>
                 </div>
-              </div>
-            ) : (
-              <Link
-                to='/login'
-                className='block'
-                onClick={(e) => {
-                  // 이미 로그인된 상태라면 로그인 페이지로 이동 방지
-                  if (isAuthenticated) {
-                    e.preventDefault();
-                    console.log('이미 로그인 되어 있습니다.');
-                  }
-                }}
-              >
-                <div className="border border-gray-300 rounded-md flex items-center py-1 px-3 hover:border-primary-color transition-colors cursor-pointer bg-white">
+              ) : (
+                <Link
+                  to='/login'
+                  className="flex items-center space-x-2 text-gray-700 text-base hover:text-primary-color"
+                  onClick={(e) => {
+                    if (isAuthenticated) {
+                      e.preventDefault();
+                      console.log('이미 로그인 되어 있습니다.');
+                    }
+                    setIsMobileMenuOpen(false);
+                  }}
+                >
                   <img
                     src="/avatar.png"
                     alt="프로필"
-                    className="w-7 h-7 rounded-full"
+                    className="w-8 h-8 rounded-full"
                   />
-                  <span className='text-gray-700 text-sm ml-2 hover:text-primary-color'>
-                    로그인/회원가입
-                  </span>
-                </div>
-              </Link>
-            )}
+                  <span>로그인/회원가입</span>
+                </Link>
+              )}
+            </div>
           </div>
         </div>
       </div>
