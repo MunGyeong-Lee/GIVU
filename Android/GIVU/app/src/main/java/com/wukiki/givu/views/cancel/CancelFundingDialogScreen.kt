@@ -32,7 +32,7 @@ import com.wukiki.givu.ui.suit
 @Composable
 fun CancelFundingDialogScreen(
     onDismiss: () -> Unit,
-    onConfirm: () -> Unit
+    onRequestFingerprint: () -> Unit
 ) {
     Dialog(onDismissRequest = onDismiss) {
         Surface(
@@ -76,7 +76,7 @@ fun CancelFundingDialogScreen(
                 Spacer(modifier = Modifier.height(24.dp))
 
                 Button(
-                    onClick = onConfirm,
+                    onClick = onRequestFingerprint,
                     shape = RoundedCornerShape(10.dp),
                     colors = ButtonDefaults.buttonColors(Color(0xFFFF6B6B)),
                     modifier = Modifier.fillMaxWidth(0.6f)
