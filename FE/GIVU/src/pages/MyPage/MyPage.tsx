@@ -89,7 +89,7 @@ const MY_REVIEWS = [
 // ];
 
 // 탭 메뉴 타입 정의
-type TabType = "created" | "participated" | "liked" | "wishlist";
+type TabType = "created" | "participated" | "liked" | "wishlist" | "purchased";
 
 // Funding 타입을 먼저 정의
 type Funding = {
@@ -98,6 +98,18 @@ type Funding = {
   progress: number;
   tag: string;
   imageUrl: string;
+};
+
+// 구매 상품 타입 정의
+type PurchasedProduct = {
+  id: number;
+  productName: string;
+  category: string;
+  price: number;
+  image: string;
+  star: number;
+  createdAt: string;
+  description: string;
 };
 
 // 그 다음 FundingProps 인터페이스 정의
@@ -667,9 +679,14 @@ const MyPage = () => {
   const [wishlistProducts, setWishlistProducts] = useState<any[]>([]);
   const [loadingWishlist, setLoadingWishlist] = useState(false);
   
+  // 구매한 상품 상태 추가
+  const [purchasedProducts, setPurchasedProducts] = useState<PurchasedProduct[]>([]);
+  const [loadingPurchasedProducts, setLoadingPurchasedProducts] = useState(false);
+  
   // 방법 1: HTMLDivElement | null 타입으로 명시적 정의
   const createdFundingsRef = useRef<HTMLDivElement | null>(null);
   const participatedFundingsRef = useRef<HTMLDivElement | null>(null);
+  const purchasedProductsRef = useRef<HTMLDivElement | null>(null);
   
   // 내가 만든 펀딩, 참여한 펀딩 상태 추가
   const [myFundings, setMyFundings] = useState<Funding[]>([]);
@@ -852,6 +869,65 @@ const MyPage = () => {
     }
   };
   
+  // 내가 구매한 상품 데이터 가져오기
+  const fetchPurchasedProducts = async () => {
+    try {
+      setLoadingPurchasedProducts(true);
+      const token = localStorage.getItem('auth_token');
+      if (!token) {
+        console.error('로그인이 필요합니다.');
+        return;
+      }
+      
+      console.log('구매한 상품 API 호출 시작');
+      
+      // API 호출 - Swagger 성공 예시와 동일하게 URL 끝에 슬래시(/) 추가
+      const response = await axios.get(
+        `${import.meta.env.VITE_API_BASE_URL}/mypage/myPurchasedproducts/`,
+        {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Accept': 'application/json;charset=UTF-8'
+          }
+        }
+      );
+      
+      console.log('내가 구매한 상품 응답:', response.data);
+      
+      if (response.data && response.data.code === 'SUCCESS' && Array.isArray(response.data.data)) {
+        // API 응답 데이터를 PurchasedProduct 타입으로 변환
+        const products = response.data.data.map((item: any) => ({
+          id: item.id,
+          productName: item.productName,
+          category: item.category,
+          price: item.price,
+          image: item.image,
+          star: item.star || 0,
+          createdAt: item.createdAt,
+          description: item.description
+        }));
+        
+        console.log('변환된 구매 상품 데이터:', products);
+        setPurchasedProducts(products);
+      } else {
+        console.log('구매한 상품 데이터 없음 또는 응답 형식 불일치');
+        setPurchasedProducts([]);
+      }
+    } catch (error) {
+      console.error('내가 구매한 상품을 가져오는 중 오류 발생:', error);
+      
+      // Axios 오류 상세 정보 로깅
+      if (axios.isAxiosError(error)) {
+        console.error('API 오류 상태:', error.response?.status);
+        console.error('API 오류 데이터:', error.response?.data);
+      }
+      
+      setPurchasedProducts([]);
+    } finally {
+      setLoadingPurchasedProducts(false);
+    }
+  };
+  
   // 탭이 wishlist로 변경될 때마다 데이터 가져오기
   useEffect(() => {
     if (activeTab === "wishlist") {
@@ -921,11 +997,15 @@ const MyPage = () => {
         return;
       }
       
+      console.log('참여한 펀딩 API 호출 시작');
+      
+      // API 호출 - Swagger 성공 예시와 완전히 동일하게 URL 끝에 슬래시(/) 추가
       const response = await axios.get(
-        `${import.meta.env.VITE_API_BASE_URL}/mypage/myParticipantfundings`,
+        `${import.meta.env.VITE_API_BASE_URL}/mypage/myParticipantfundings/`,
         {
           headers: {
-            'Authorization': `Bearer ${token}`
+            'Authorization': `Bearer ${token}`,
+            'Accept': 'application/json;charset=UTF-8'
           }
         }
       );
@@ -934,29 +1014,52 @@ const MyPage = () => {
       
       if (response.data && response.data.code === 'SUCCESS' && Array.isArray(response.data.data)) {
         // API 응답 데이터를 Funding 타입으로 변환
-        const fundings = response.data.data.map((item: FundingResponse) => {
-          // 달성률 계산 (펀딩된 금액 / 상품 가격 * 100), 최대 100%로 제한
-          const progress = item.product.price > 0 
-            ? Math.min(Math.round((item.fundedAmount / item.product.price) * 100), 100)
-            : 0;
+        const fundings = response.data.data
+          // hidden이 true이면 제외
+          .filter((item: FundingResponse & { hidden?: boolean }) => item.hidden !== true)
+          .map((item: FundingResponse) => {
+            console.log('펀딩 항목 처리:', item.fundingId, item.title);
             
-          return {
-            id: item.fundingId,
-            title: item.title,
-            progress: progress,
-            tag: `${progress}% 달성`,
-            imageUrl: item.image && item.image.length > 0 
-              ? item.image[0] 
-              : item.product.image || 'https://via.placeholder.com/300x200?text=펀딩이미지',
-          };
-        });
+            // 달성률 계산 (펀딩된 금액 / 상품 가격 * 100), 최대 100%로 제한
+            const progress = item.product && item.product.price > 0 
+              ? Math.min(Math.round((item.fundedAmount / item.product.price) * 100), 100)
+              : 0;
+            
+            // 이미지 처리 로직 개선
+            let imageUrl = 'https://via.placeholder.com/300x200?text=펀딩이미지';
+            
+            if (Array.isArray(item.image) && item.image.length > 0) {
+              imageUrl = item.image[0];
+            } else if (typeof item.image === 'string') {
+              imageUrl = item.image;
+            } else if (item.product && item.product.image) {
+              imageUrl = item.product.image;
+            }
+            
+            return {
+              id: item.fundingId,
+              title: item.title,
+              progress: progress,
+              tag: `${progress}% 달성`,
+              imageUrl: imageUrl
+            };
+          });
         
+        console.log('변환된 참여 펀딩 데이터:', fundings);
         setParticipatedFundings(fundings);
       } else {
+        console.log('참여한 펀딩 데이터 없음 또는 응답 형식 불일치');
         setParticipatedFundings([]);
       }
     } catch (error) {
       console.error('내가 참여한 펀딩을 가져오는 중 오류 발생:', error);
+      
+      // Axios 오류 상세 정보 로깅
+      if (axios.isAxiosError(error)) {
+        console.error('API 오류 상태:', error.response?.status);
+        console.error('API 오류 데이터:', error.response?.data);
+      }
+      
       setParticipatedFundings([]);
     } finally {
       setLoadingParticipatedFundings(false);
@@ -971,6 +1074,8 @@ const MyPage = () => {
       fetchParticipatedFundings();
     } else if (activeTab === "wishlist") {
       fetchWishlistProducts();
+    } else if (activeTab === "purchased") {
+      fetchPurchasedProducts();
     }
   }, [activeTab]);
   
@@ -1101,6 +1206,97 @@ const MyPage = () => {
                 </svg>
               </button>
             </div>
+            )}
+          </div>
+        );
+        
+      case "purchased":
+        // 구매한 상품 탭 렌더링
+        return (
+          <div className="relative">
+            <div className="absolute -left-4 top-1/2 transform -translate-y-1/2 z-10">
+              <button 
+                onClick={() => handleScrollLeft(purchasedProductsRef)}
+                className="p-2 bg-cusBlack text-white rounded-full shadow-md hover:bg-cusBlack-light"
+                aria-label="이전 항목"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                </svg>
+              </button>
+            </div>
+            
+            {loadingPurchasedProducts ? (
+              <div className="flex justify-center items-center h-64">
+                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-cusBlue"></div>
+              </div>
+            ) : purchasedProducts.length > 0 ? (
+              <div 
+                ref={purchasedProductsRef}
+                className="flex overflow-x-auto scrollbar-hide gap-4 py-4 pl-2 pr-6"
+                style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+              >
+                {purchasedProducts.map((product) => (
+                  <Link 
+                    key={product.id} 
+                    to={`/shopping/product/${product.id}`} 
+                    className="flex-shrink-0"
+                    style={{ width: '280px' }}
+                  >
+                    <div className="bg-white border border-cusGray rounded-xl overflow-hidden hover:shadow-lg transition-all transform hover:-translate-y-1 h-full">
+                      <div className="relative h-48">
+                        <img
+                          src={product.image || 'https://via.placeholder.com/300x200?text=상품이미지'}
+                          alt={product.productName}
+                          className="w-full h-full object-cover"
+                        />
+                        <div className="absolute top-3 left-3">
+                          <span className="bg-cusBlue text-white text-xs px-3 py-1.5 rounded-full font-medium shadow-sm">
+                            {product.category}
+                          </span>
+                        </div>
+                      </div>
+                      <div className="p-5">
+                        <h3 className="font-bold text-lg text-cusBlack line-clamp-1">{product.productName}</h3>
+                        <p className="text-cusBlack-light text-sm mt-1 mb-2 line-clamp-2">{product.description}</p>
+                        <div className="flex justify-between items-center mt-3">
+                          <span className="font-bold text-lg text-cusBlack">{product.price.toLocaleString()}원</span>
+                          <div className="flex items-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-yellow-400" viewBox="0 0 20 20" fill="currentColor">
+                              <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                            </svg>
+                            <span className="ml-1 text-sm text-cusBlack-light">{product.star.toFixed(1)}</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            ) : (
+              <div className="py-12 text-center bg-cusGray-light rounded-xl">
+                <p className="text-cusBlack-light font-medium mb-4">아직 구매한 상품이 없습니다.</p>
+                <Link 
+                  to="/shopping"
+                  className="px-6 py-2 bg-cusBlue text-white rounded-full hover:bg-cusBlue-dark transition-colors"
+                >
+                  쇼핑몰 둘러보기
+                </Link>
+              </div>
+            )}
+            
+            {purchasedProducts.length > 0 && (
+              <div className="absolute -right-4 top-1/2 transform -translate-y-1/2 z-10">
+                <button 
+                  onClick={() => handleScrollRight(purchasedProductsRef)}
+                  className="p-2 bg-cusBlack text-white rounded-full shadow-md hover:bg-cusBlack-light"
+                  aria-label="다음 항목"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                  </svg>
+                </button>
+              </div>
             )}
           </div>
         );
@@ -1953,6 +2149,16 @@ const MyPage = () => {
                   onClick={() => setActiveTab("participated")}
                 >
                   참여한 펀딩
+                </button>
+                <button
+                  className={`px-5 py-3 text-base font-bold rounded-full transition-all ${
+                    activeTab === "purchased" 
+                      ? "bg-cusBlack text-green-500 shadow-lg" 
+                      : "bg-cusGray-light text-cusBlack-light hover:bg-cusGray"
+                  }`}
+                  onClick={() => setActiveTab("purchased")}
+                >
+                  구매한 상품
                 </button>
                 <button
                   className={`px-5 py-3 text-base font-bold rounded-full transition-all ${
