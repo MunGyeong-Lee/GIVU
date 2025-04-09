@@ -1,8 +1,6 @@
 package com.wukiki.givu.views.register
 
-import android.annotation.SuppressLint
 import android.os.Bundle
-import android.util.Log
 import android.view.View
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -27,9 +25,8 @@ class RegisterFundingFragment :
     BaseFragment<FragmentRegisterFundingBinding>(R.layout.fragment_register_funding) {
 
     private val viewModel: RegisterViewModel by activityViewModels()
-    private val viewModelMall: MallViewModel by activityViewModels()
+    private val mallViewModel: MallViewModel by activityViewModels()
     private val mainViewModel: MainViewModel by activityViewModels()
-
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -39,18 +36,13 @@ class RegisterFundingFragment :
 
         binding.composeRegisterFunding.setContent {
             val navController = rememberNavController()
-
-
             val selectedProduct by mainViewModel.selectedProduct.collectAsState()
             val isFromMall by viewModel.isFromMall.collectAsState()
-
             val startDestination = if (isFromMall && selectedProduct != null) "RegisterInputStep2" else "RegisterStep1"
-//            var startDestination = "RegisterStep1"
 
             LaunchedEffect(selectedProduct, isFromMall) {
-                Log.d("RegisterFragment", "쇼핑몰에서 왔니: ${isFromMall}, ${selectedProduct}")
                 if (isFromMall && selectedProduct != null) {
-                    viewModel.selectProduct(selectedProduct!!)
+                    viewModel.selectProductInMall(selectedProduct!!)
                 }
             }
             NavHost(
@@ -58,7 +50,6 @@ class RegisterFundingFragment :
                 startDestination = startDestination
             ) {
                 composable("RegisterStep1") {
-
                     RegisterFundingScreen(viewModel, navController, findNavController())
                 }
 
@@ -67,7 +58,12 @@ class RegisterFundingFragment :
                 }
 
                 composable("SelectPresent") {
-                    SelectPresentScreen(viewModel, navController, findNavController())
+                    SelectPresentScreen(viewModel, mallViewModel, navController, findNavController())
+                }
+
+                composable("SearchPresent") {
+                    mallViewModel.initSearchResult()
+                    SearchPresentScreen(mallViewModel, viewModel, navController)
                 }
 
                 composable(
@@ -81,7 +77,7 @@ class RegisterFundingFragment :
                         xmlNavController = findNavController(),
                         productId = productId,
                         registerViewModel = viewModel,
-                        mallViewModel = viewModelMall
+                        mallViewModel = mallViewModel
                     )
                 }
 
