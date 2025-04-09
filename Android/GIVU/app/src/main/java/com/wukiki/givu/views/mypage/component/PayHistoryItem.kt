@@ -17,10 +17,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.wukiki.domain.model.Payment
+import com.wukiki.givu.R
 import com.wukiki.givu.ui.pretendard
 import com.wukiki.givu.ui.suit
 import com.wukiki.givu.util.CommonUtils
@@ -29,6 +32,12 @@ import com.wukiki.givu.util.CommonUtils
 fun PayHistoryItem(
     paymentHistory: Payment
 ) {
+    val isPlus = paymentHistory.transactionType == "환불"
+
+    val dateParts = paymentHistory.date.split(" ")
+    val (year, month, day) = dateParts[0].split(".")
+    val time = dateParts[1]
+    val dayFormatted = "$month.$day"
 
     Row(
         modifier = Modifier
@@ -39,16 +48,15 @@ fun PayHistoryItem(
 
             }
             .padding(horizontal = 20.dp, vertical = 8.dp),
+        verticalAlignment = Alignment.CenterVertically
     ) {
         Text(
-//            text = "4.13",
-            text = paymentHistory.date,
+            text = "${year}\n${dayFormatted}",
             fontFamily = pretendard,
             fontWeight = FontWeight.SemiBold,
             fontSize = 14.sp,
-
             color = Color(0xFF888888),
-
+            textAlign = TextAlign.Center
         )
         Spacer(Modifier.width(20.dp))
         Column(
@@ -63,7 +71,7 @@ fun PayHistoryItem(
             )
             Spacer(Modifier.height(8.dp))
             Text(
-                text = "21:08",
+                text = time,
                 fontFamily = pretendard,
                 fontWeight = FontWeight.Normal,
                 fontSize = 13.sp,
@@ -77,10 +85,11 @@ fun PayHistoryItem(
             verticalArrangement = Arrangement.Center
         ) {
             Text(
-                text = CommonUtils.makeCommaPrice(paymentHistory.amount),
+                text = (if (isPlus) "+" else "-") + CommonUtils.makeCommaPrice(paymentHistory.amount),
                 fontFamily = pretendard,
                 fontWeight = FontWeight.SemiBold,
-                fontSize = 16.sp,
+                fontSize = 18.sp,
+                color = if (isPlus) colorResource(R.color.main_secondary) else Color.Black
 
             )
         }
