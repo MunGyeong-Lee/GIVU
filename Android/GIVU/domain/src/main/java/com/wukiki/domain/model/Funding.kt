@@ -20,5 +20,6 @@ data class Funding(
     val status: String,
     val images: List<String>,
     val createdAt: String,
-    val updatedAt: String
+    val updatedAt: String,
+    val hidden: Boolean
 )

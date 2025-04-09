@@ -11,5 +11,6 @@ data class Letter(
     val image: String,
     val access: String,
     val createdAt: String,
-    val updatedAt: String
+    val updatedAt: String,
+    val hidden: Boolean
 )
