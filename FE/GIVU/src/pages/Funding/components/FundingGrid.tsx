@@ -19,6 +19,7 @@ export interface FundingItem {
   progress?: number;
   targetAmount?: number;
   onClick?: () => void;
+  hidden?: boolean; // 친구만 볼 수 있는 비밀 펀딩 여부
 }
 
 interface FundingGridProps {
@@ -93,6 +94,7 @@ const FundingGrid: React.FC<FundingGridProps> = ({
           imageUrl={funding.imageUrl}
           creatorName={funding.creatorName}
           status={funding.status}
+          hidden={funding.hidden}
           onClick={() => handleCardClick(funding.id)}
         />
       ))}

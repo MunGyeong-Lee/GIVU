@@ -22,7 +22,8 @@ const mapToHighlightItem = (item: FundingItem): HighlightItem => {
     remainingDays: 0,
     participantsCount: item.participantsNumber || 0,
     badgeText: '', // 빈 문자열로 설정 (UI에 표시하지 않음)
-    badgeColor: '#FF5B61' // 프로그레스 바 색상으로 사용
+    badgeColor: '#FF5B61', // 프로그레스 바 색상으로 사용
+    hidden: item.hidden || false // hidden 속성 추가
   };
 };
 
@@ -126,8 +127,11 @@ const PopularFundingSection = () => {
         console.log('인기 펀딩 가져옴:', validItems.length);
 
         if (validItems.length > 0) {
+          // hidden이 false인 공개 펀딩만 필터링
+          const publicItems = validItems.filter((item: any) => !item.hidden);
+
           // 인기 펀딩: 참여자 수 기준으로 정렬
-          const sortedByParticipants = [...validItems].sort(
+          const sortedByParticipants = [...publicItems].sort(
             (a, b) => (b.participantsNumber || 0) - (a.participantsNumber || 0)
           ).slice(0, 4); // 상위 4개로 줄임
 
