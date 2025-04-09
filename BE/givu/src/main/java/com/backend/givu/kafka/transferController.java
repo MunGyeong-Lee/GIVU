@@ -4,6 +4,7 @@ import com.backend.givu.kafka.payment.GivuTransferService;
 import com.backend.givu.kafka.refund.RefundFundingService;
 import com.backend.givu.model.entity.CustomUserDetail;
 import com.backend.givu.model.responseDTO.ApiResponse;
+import com.backend.givu.model.responseDTO.PaymentHistoryDTO;
 import com.backend.givu.model.responseDTO.PaymentResultDTO;
 import com.backend.givu.model.responseDTO.RefundResponseDTO;
 import io.swagger.v3.oas.annotations.Operation;
@@ -16,6 +17,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
+import java.util.List;
 
 @Tag(name = "Transfer", description = "이체관련 API")
 @RestController
@@ -26,6 +28,7 @@ public class transferController {
 
     private final GivuTransferService givuTransferService;
     private final RefundFundingService refundFundingService;
+    private final PaymentHistoryService paymentHistoryService;
     @Operation(summary = "펀딩하기(결제)", description = "해당 펀딩에 펀딩을 합니다(기뷰페이 -> 펀딩)")
     @PostMapping(value="/{fundingId}")
     public ResponseEntity<ApiResponse<PaymentResultDTO>> givuTransfer(
@@ -57,7 +60,16 @@ public class transferController {
 
 
 
+    @Operation(summary = "결제 내역 조회", description = "해당 유저의 결제 내역을 조회합니다")
+    @GetMapping(value="/paymentHistory")
+    public ResponseEntity<ApiResponse<List<PaymentHistoryDTO>>> paymentHistory(
+            @AuthenticationPrincipal CustomUserDetail userDetail,
+            HttpServletRequest request) throws IOException{
 
+        Long userId = userDetail.getId();
+        List<PaymentHistoryDTO>paymentHistory = paymentHistoryService.paymentHistory(userId);
+        return ResponseEntity.ok(ApiResponse.success(paymentHistory));
+    }
 
 
 
