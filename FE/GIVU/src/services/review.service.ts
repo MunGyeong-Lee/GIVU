@@ -299,3 +299,221 @@ export const isFundingCreator = async (fundingId: number | string): Promise<bool
     return false;
   }
 };
+
+/**
+ * 펀딩 정보 조회 API 호출 함수
+ * 
+ * @param fundingId 펀딩 ID
+ * @returns 펀딩 정보
+ */
+export const getFundingData = async (fundingId: number | string) => {
+  try {
+    // API Base URL 확인
+    const API_BASE_URL = import.meta.env.VITE_BASE_URL || import.meta.env.VITE_API_BASE_URL;
+    if (!API_BASE_URL) {
+      throw new Error('API 기본 URL이 설정되지 않았습니다.');
+    }
+    
+    // 토큰 확인
+    const token = localStorage.getItem('auth_token');
+    if (!token) {
+      console.warn('인증 토큰이 없습니다. 일부 정보가 제한될 수 있습니다.');
+    }
+    
+    // 펀딩 정보 요청
+    const response = await axios.get(
+      `${API_BASE_URL}/fundings/${fundingId}`,
+      {
+        headers: {
+          'Authorization': token ? `Bearer ${token}` : ''
+        }
+      }
+    );
+    
+    if (!response.data || response.data.code !== 'SUCCESS') {
+      throw new Error(response.data?.message || '펀딩 정보를 가져오는데 실패했습니다.');
+    }
+    
+    return response.data.data;
+  } catch (error: any) {
+    console.error('펀딩 정보 조회 중 오류 발생:', error);
+    
+    if (error.response) {
+      console.error('응답 상태:', error.response.status, error.response.statusText);
+      console.error('응답 데이터:', error.response.data);
+      
+      if (error.response.status === 404) {
+        throw new Error('펀딩을 찾을 수 없습니다.');
+      } else if (error.response.data?.message) {
+        throw new Error(error.response.data.message);
+      }
+    }
+    
+    throw new Error('펀딩 정보를 가져오는 중 오류가 발생했습니다.');
+  }
+};
+
+/**
+ * 리뷰 상세 정보 조회 API 호출 함수
+ * 
+ * @param reviewId 리뷰 ID
+ * @returns 리뷰 상세 정보
+ */
+export const getReviewDetail = async (reviewId: number | string) => {
+  try {
+    const API_BASE_URL = import.meta.env.VITE_BASE_URL || import.meta.env.VITE_API_BASE_URL;
+    if (!API_BASE_URL) {
+      throw new Error('API BASE URL이 설정되지 않았습니다.');
+    }
+
+    const token = localStorage.getItem('auth_token');
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json'
+    };
+    
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+
+    console.log(`리뷰 상세 조회 API 호출: ${API_BASE_URL}/fundings/reviews/${reviewId}`);
+    
+    const response = await axios.get(
+      `${API_BASE_URL}/fundings/reviews/${reviewId}`,
+      { headers }
+    );
+
+    console.log('리뷰 상세 조회 응답:', response.data);
+
+    if (!response.data || response.data.code !== 'SUCCESS') {
+      throw new Error(response.data?.message || '리뷰 조회에 실패했습니다.');
+    }
+
+    return response.data.data;
+  } catch (error: any) {
+    console.error('리뷰 상세 조회 중 오류 발생:', error);
+    
+    if (error.response) {
+      console.error('응답 상태:', error.response.status, error.response.statusText);
+      console.error('응답 데이터:', error.response.data);
+      
+      if (error.response.status === 404) {
+        throw new Error('리뷰를 찾을 수 없습니다.');
+      } else if (error.response.data?.message) {
+        throw new Error(error.response.data.message);
+      }
+    }
+    
+    throw new Error('리뷰 상세 정보를 불러오는 중 오류가 발생했습니다.');
+  }
+};
+
+/**
+ * 리뷰 댓글 작성 API 호출 함수
+ * 
+ * @param reviewId 리뷰 ID
+ * @param content 댓글 내용
+ * @returns 생성된 댓글 정보
+ */
+export const createReviewComment = async (reviewId: number | string, content: string) => {
+  try {
+    const token = localStorage.getItem('auth_token');
+    if (!token) {
+      throw new Error('로그인이 필요합니다.');
+    }
+
+    const API_BASE_URL = import.meta.env.VITE_BASE_URL || import.meta.env.VITE_API_BASE_URL;
+    if (!API_BASE_URL) {
+      throw new Error('API BASE URL이 설정되지 않았습니다.');
+    }
+
+    console.log(`리뷰 댓글 작성 API 호출: ${API_BASE_URL}/fundings/reviews/${reviewId}/comments`);
+    
+    const response = await axios.post(
+      `${API_BASE_URL}/fundings/reviews/${reviewId}/comments`,
+      { content },
+      {
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        }
+      }
+    );
+
+    console.log('리뷰 댓글 작성 응답:', response.data);
+
+    if (!response.data || response.data.code !== 'SUCCESS') {
+      throw new Error(response.data?.message || '댓글 작성에 실패했습니다.');
+    }
+
+    return response.data.data;
+  } catch (error: any) {
+    console.error('리뷰 댓글 작성 중 오류 발생:', error);
+    
+    if (error.response) {
+      console.error('응답 상태:', error.response.status, error.response.statusText);
+      console.error('응답 데이터:', error.response.data);
+      
+      if (error.response.status === 401) {
+        throw new Error('로그인이 필요합니다.');
+      } else if (error.response.data?.message) {
+        throw new Error(error.response.data.message);
+      }
+    }
+    
+    throw new Error('댓글 작성 중 오류가 발생했습니다.');
+  }
+};
+
+/**
+ * 리뷰 댓글 목록 조회 API 호출 함수
+ * 
+ * @param reviewId 리뷰 ID
+ * @returns 댓글 목록
+ */
+export const getReviewComments = async (reviewId: number | string) => {
+  try {
+    const API_BASE_URL = import.meta.env.VITE_BASE_URL || import.meta.env.VITE_API_BASE_URL;
+    if (!API_BASE_URL) {
+      throw new Error('API BASE URL이 설정되지 않았습니다.');
+    }
+
+    const token = localStorage.getItem('auth_token');
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json'
+    };
+    
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+
+    console.log(`리뷰 댓글 목록 API 호출: ${API_BASE_URL}/fundings/reviews/${reviewId}/comments`);
+    
+    const response = await axios.get(
+      `${API_BASE_URL}/fundings/reviews/${reviewId}/comments`,
+      { headers }
+    );
+
+    console.log('리뷰 댓글 목록 응답:', response.data);
+
+    if (!response.data || response.data.code !== 'SUCCESS') {
+      throw new Error(response.data?.message || '댓글 목록 조회에 실패했습니다.');
+    }
+
+    return response.data.data || [];
+  } catch (error: any) {
+    console.error('리뷰 댓글 목록 조회 중 오류 발생:', error);
+    
+    if (error.response) {
+      console.error('응답 상태:', error.response.status, error.response.statusText);
+      console.error('응답 데이터:', error.response.data);
+      
+      if (error.response.status === 404) {
+        throw new Error('리뷰를 찾을 수 없습니다.');
+      } else if (error.response.data?.message) {
+        throw new Error(error.response.data.message);
+      }
+    }
+    
+    throw new Error('댓글 목록을 불러오는 중 오류가 발생했습니다.');
+  }
+};
