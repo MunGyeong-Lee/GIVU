@@ -19,6 +19,7 @@ import PaymentPage from '../pages/Payment/PaymentPage';
 import Complete from "../pages/FundingCreate/Complete";
 import ShoppingReviewEdit from '../pages/ShoppingMall/ShoppingReviewEdit';
 import SearchPage from "../pages/Search/SearchPage";
+import { Navigate } from "react-router-dom";
 // import NotFound from "../pages/NotFound/NotFound";
 
 const routes = [
@@ -65,6 +66,10 @@ const routes = [
         ],
       },
       {
+        path: "funding/*",
+        element: <Navigate to="/funding" replace />,
+      },
+      {
         path: "shopping",
         element: <MainShopping />,
       },
@@ -104,6 +109,16 @@ const routes = [
   },
   {
     path: "/funding/create",
+    element: <FundingCreateLayout />,
+    children: [
+      {
+        index: true,
+        element: <FundingCreateContainer />,
+      }
+    ]
+  },
+  {
+    path: "/fundings/create",
     element: <FundingCreateLayout />,
     children: [
       {
