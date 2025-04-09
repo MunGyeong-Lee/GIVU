@@ -1,13 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
+import axios from 'axios';
 
 // 결제 비밀번호 모달 컴포넌트
 const PaymentPasswordModal: React.FC<{
   isOpen: boolean;
   onClose: () => void;
-  onSubmit: (password: string) => void;
+  onSubmit: (password: string) => Promise<void>;
   amount: number;
-}> = ({ isOpen, onClose, onSubmit, amount }) => {
+  isLoading: boolean;
+}> = ({ isOpen, onClose, onSubmit, amount, isLoading }) => {
   const [password, setPassword] = useState<string>('');
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
@@ -30,7 +32,17 @@ const PaymentPasswordModal: React.FC<{
     setError(null);
     
     // 비밀번호 검증 및 결제 처리
-    onSubmit(password);
+    onSubmit(password)
+      .catch((e: Error) => {
+        // 오류 발생 시 로딩 상태 해제
+        setLoading(false);
+        
+        // 비밀번호 오류 처리
+        if (e.message && e.message.includes('비밀번호가 일치하지 않습니다')) {
+          setError('비밀번호가 일치하지 않습니다.');
+          setPassword(''); // 비밀번호 입력 초기화
+        }
+      });
   };
   
   // 모달 초기화
@@ -122,6 +134,9 @@ const OrderPage = () => {
   const location = useLocation();
   const [orderInfo, setOrderInfo] = useState<any>(null);
   const [isPasswordModalOpen, setIsPasswordModalOpen] = useState<boolean>(false);
+  const [balance, setBalance] = useState<number>(0);  // 기뷰페이 잔액
+  const [isLoading, setIsLoading] = useState<boolean>(false);  // 로딩 상태
+  const [error, setError] = useState<string | null>(null);  // 에러 메시지
 
   // 구매 정보 및 상품 정보 (URL에서 가져오거나 location state에서 가져옴)
   useEffect(() => {
@@ -155,6 +170,7 @@ const OrderPage = () => {
     addressDetail: '',
     postcode: '',
     message: '',
+    customMessage: ''
   });
 
   const [isSameAsBuyer, setIsSameAsBuyer] = useState(false);
@@ -204,64 +220,61 @@ const OrderPage = () => {
   };
   
   // 결제 비밀번호 확인 후 주문 처리
-  const handlePaymentConfirm = async (password: string) => {
+  const handlePaymentConfirm = async (password: string): Promise<void> => {
+    setIsLoading(true);
+    setError(null);
+
     try {
-      // 비밀번호 검증 (실제로는 API 호출로 검증)
-      console.log('결제 비밀번호:', password);
+      // 1. 2차 비밀번호 확인
+      console.log('비밀번호 확인 시작:', password);
+      const isPasswordValid = await verifyPassword(password);
+      console.log('비밀번호 확인 결과:', isPasswordValid);
       
-      // 토큰 가져오기
-      const token = localStorage.getItem('auth_token');
-      if (!token) {
-        alert('로그인이 필요합니다.');
-        navigate('/login');
-        return;
+      if (!isPasswordValid) {
+        setIsLoading(false);
+        setIsPasswordModalOpen(true); // 모달은 계속 열려있게 유지
+        throw new Error('비밀번호가 일치하지 않습니다. 다시 시도해주세요.');
       }
+
+      // 2. 잔액 다시 확인
+      await fetchBalance();
+      const totalAmount = orderInfo.product.price * orderInfo.quantity;
       
-      // 현재 시각을 Unix 타임스탬프(밀리초)로 변환
-      // const timestamp = Date.now();
-      
-      // 결제 요청 데이터 구성
-      // const paymentData = {
-      //   timestamp: timestamp,
-      //   password: password,
-      //   amount: totalAmount,
-      //   orderId: `ORDER-${Date.now()}`, // 임시 주문 ID 생성
-      //   productInfo: {
-      //     productId: product.id,
-      //     name: product.name || product.productName,
-      //     quantity: quantity,
-      //     options: options
-      //   },
-      //   deliveryInfo: shippingInfo
-      // };
-      
-      // 여기서 실제 API 호출로 결제 처리 (주석 처리)
-      /*
-      const response = await axios.post(
-        `${import.meta.env.VITE_API_BASE_URL}/payment/process`,
-        paymentData,
-        {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json'
-          }
-        }
-      );
-      
-      if (response.data.code !== 'SUCCESS') {
-        throw new Error(response.data.message || '결제에 실패했습니다.');
+      if (balance < totalAmount) {
+        throw new Error('잔액이 부족합니다. 충전 후 다시 시도해주세요.');
       }
-      */
+
+      // 3. 상품 구매 요청
+      console.log('상품 구매 요청 시작:', orderInfo.product.id);
+      const result = await purchaseProduct(orderInfo.product.id);
+      console.log('상품 구매 응답:', result);
       
-      // 임시 처리 (API 연동 전)
-      setTimeout(() => {
+      if (result.code === 'SUCCESS') {
         setIsPasswordModalOpen(false);
         alert('결제가 완료되었습니다!');
-        navigate('/mypage'); // 주문 완료 후 마이페이지로 이동
-      }, 1000);
+        
+        // 쇼핑몰 메인 페이지로 이동
+        navigate('/shopping');
+      } else {
+        throw new Error(result.message || '결제에 실패했습니다.');
+      }
+
     } catch (error: any) {
-      console.error('결제 처리 중 오류:', error);
-      alert(`결제에 실패했습니다: ${error.message || '알 수 없는 오류'}`);
+      console.error('결제 처리 오류:', error);
+      setError(error.message);
+      
+      // 비밀번호 오류일 경우 모달은 열린 상태로 유지
+      if (error.message.includes('비밀번호가 일치하지 않습니다')) {
+        setIsLoading(false);
+        // 오류를 다시 throw하여 모달 컴포넌트에서 처리할 수 있게 함
+        throw error;
+      }
+      
+      // 다른 오류의 경우 모달 닫기
+      setIsPasswordModalOpen(false);
+      alert(error.message);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -291,6 +304,155 @@ const OrderPage = () => {
         (document.querySelector('input[name="addressDetail"]') as HTMLInputElement)?.focus();
       }
     }).open();
+  };
+
+  // 기뷰페이 잔액 조회
+  const fetchBalance = async () => {
+    try {
+      const token = localStorage.getItem('auth_token');
+      if (!token) {
+        throw new Error('로그인이 필요합니다.');
+      }
+
+      const response = await axios.get(
+        `${import.meta.env.VITE_BASE_URL}/users/info`,
+        {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        }
+      );
+
+      // 전체 응답 구조 확인을 위한 로그
+      console.log('사용자 정보 전체 응답:', response);
+      console.log('사용자 정보 data:', response.data);
+      
+      // 응답 구조에 따라 balance 값을 추출
+      if (response.data.data) {
+        console.log('사용자 정보 data.data:', response.data.data);
+        
+        // 잔액 정보가 있는 위치 확인
+        if (response.data.data.hasOwnProperty('balance')) {
+          setBalance(response.data.data.balance);
+        } else if (response.data.data.user && response.data.data.user.hasOwnProperty('balance')) {
+          setBalance(response.data.data.user.balance);
+        } else {
+          console.log('응답에서 balance 필드를 찾을 수 없습니다.');
+          setBalance(0);
+        }
+      } else if (response.data.hasOwnProperty('balance')) {
+        setBalance(response.data.balance);
+      } else {
+        console.log('응답에서 data 필드를 찾을 수 없습니다.');
+        setBalance(0);
+      }
+    } catch (error) {
+      console.error('잔액 조회 실패:', error);
+      setError('잔액 조회에 실패했습니다.');
+    }
+  };
+
+  // 컴포넌트 마운트 시 잔액 조회
+  useEffect(() => {
+    fetchBalance();
+    console.log('잔액 조회 useEffect 실행');
+  }, []);
+
+  // 2차 비밀번호 확인
+  const verifyPassword = async (password: string) => {
+    try {
+      const token = localStorage.getItem('auth_token');
+      if (!token) {
+        throw new Error('로그인이 필요합니다.');
+      }
+
+      console.log('비밀번호 확인 요청 데이터:', { password });
+
+      const response = await axios.post(
+        `${import.meta.env.VITE_BASE_URL}/users/checkPassword`,
+        { password },
+        {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        }
+      );
+
+      // 응답 구조 상세 로깅
+      console.log('비밀번호 확인 응답 전체:', response);
+      console.log('비밀번호 확인 응답 데이터:', response.data);
+      
+      // 성공 여부 확인 (다양한 응답 구조 처리)
+      if (response.data.code === 'SUCCESS' || response.data.isValid === true) {
+        return true;
+      } else if (response.data.code === 'ERROR' || response.data.isValid === false) {
+        console.log('비밀번호가 일치하지 않습니다.');
+        return false;
+      } else {
+        // 응답 구조가 예상과 다른 경우
+        console.log('예상치 못한 응답 구조:', response.data);
+        return false;
+      }
+    } catch (error: any) {
+      console.error('비밀번호 확인 API 호출 오류:', error);
+      
+      // 더 상세한 에러 로깅
+      if (error.response) {
+        console.log('에러 상태:', error.response.status);
+        console.log('에러 데이터:', error.response.data);
+      }
+      
+      throw new Error('비밀번호 확인 중 오류가 발생했습니다.');
+    }
+  };
+
+  // 상품 구매 요청
+  const purchaseProduct = async (productId: number) => {
+    try {
+      const token = localStorage.getItem('auth_token');
+      if (!token) {
+        throw new Error('로그인이 필요합니다.');
+      }
+
+      console.log('상품 구매 요청 시작 - 상품 ID:', productId);
+      
+      // 총 결제 금액 계산
+      const amount = orderInfo.product.price * (orderInfo.quantity || 1);
+      console.log('결제 금액:', amount);
+      
+      // Curl 예시와 동일하게 쿼리 파라미터로 amount 전달, 요청 본문은 비움
+      const response = await axios({
+        method: 'post',
+        url: `${import.meta.env.VITE_BASE_URL}/products/purchase/${productId}`,
+        params: {
+          amount: amount
+        },
+        data: '',  // 빈 요청 본문
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+          'Accept': 'application/json;charset=UTF-8'
+        }
+      });
+      
+      console.log('상품 구매 성공 응답:', response.data);
+      return response.data;
+      
+    } catch (error: any) {
+      console.error('상품 구매 최종 실패:', error);
+      
+      // 추가 에러 정보 로깅
+      if (error.response) {
+        console.log('최종 에러 상태:', error.response.status);
+        console.log('최종 에러 데이터:', error.response.data);
+        const errorMsg = error.response.data.message || '상품 구매에 실패했습니다.';
+        console.log('최종 에러 메시지:', errorMsg);
+        throw new Error(errorMsg);
+      }
+      
+      throw new Error('상품 구매에 실패했습니다.');
+    }
   };
 
   if (!orderInfo) {
@@ -496,6 +658,8 @@ const OrderPage = () => {
               {shippingInfo.message === 'custom' && (
                 <textarea 
                   name="customMessage"
+                  value={shippingInfo.customMessage}
+                  onChange={handleShippingChange}
                   className="w-full p-2 border border-cusGray rounded-md mt-2 focus:outline-none focus:ring-2 focus:ring-cusBlue"
                   placeholder="배송 요청사항을 입력해주세요"
                   rows={2}
@@ -532,9 +696,13 @@ const OrderPage = () => {
                     <span className="text-yellow-500 text-xl mr-2">👑</span>
                     <h3 className="text-lg font-medium text-cusBlue">기뷰페이 결제</h3>
                   </div>
-                  <p className="text-sm text-cusBlack-light">사용 가능한 기뷰페이: 100,000원</p>
+                  <p className="text-sm text-cusBlack-light">사용 가능한 기뷰페이: <span className="font-bold">{Number(balance).toLocaleString()}원</span></p>
                 </div>
-                <div className="text-cusBlue font-medium">기뷰페이로 결제됩니다</div>
+                <div className={`font-medium ${balance >= totalAmount ? 'text-cusBlue' : 'text-cusRed'}`}>
+                  {balance >= totalAmount 
+                    ? "기뷰페이로 결제됩니다" 
+                    : "잔액이 부족합니다"}
+                </div>
               </div>
             </div>
           </div>
@@ -572,7 +740,8 @@ const OrderPage = () => {
         isOpen={isPasswordModalOpen}
         onClose={() => setIsPasswordModalOpen(false)}
         onSubmit={handlePaymentConfirm}
-        amount={totalAmount}
+        amount={orderInfo?.product ? orderInfo.product.price * orderInfo.quantity : 0}
+        isLoading={isLoading}
       />
     </div>
   );
