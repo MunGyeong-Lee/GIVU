@@ -12,6 +12,7 @@ import com.wukiki.domain.model.Transfer
 import com.wukiki.domain.repository.FundingRepository
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.withContext
@@ -194,6 +195,7 @@ class FundingRepositoryImpl @Inject constructor(
     override suspend fun getPaymentOfFunding(paymentId: Int): Flow<ApiResult<Transfer>> =
         flow {
             emit(ApiResult.loading(null))
+            delay(1000L)
             try {
                 val response = withContext(CoroutineScope(Dispatchers.IO).coroutineContext) {
                     fundingRemoteDataSource.getFundingTransfer(paymentId)
