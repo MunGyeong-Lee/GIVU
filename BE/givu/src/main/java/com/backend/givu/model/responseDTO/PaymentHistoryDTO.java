@@ -19,7 +19,7 @@ public class PaymentHistoryDTO {
 
     private int paymentId;
     private Long userId;
-    private String fundingTilte;
+    private String fundingTitle;
     private String productName;
     private int amount;
     private String transactionType;
@@ -28,7 +28,7 @@ public class PaymentHistoryDTO {
     public PaymentHistoryDTO(Payment payment){
         this.paymentId = payment.getId();
         this.userId = payment.getUser().getId();
-        this.fundingTilte = payment.getRelatedFunding()!= null ? payment.getRelatedFunding().getTitle() :null;
+        this.fundingTitle = payment.getRelatedFunding()!= null ? payment.getRelatedFunding().getTitle() :null;
         this.productName = payment.getRelatedProduct() != null ? payment.getRelatedProduct().getProductName() : null;
         this.amount = payment.getAmount();
         this.transactionType = TransactionTypeMapper.toClient(payment.getTransactionType());
