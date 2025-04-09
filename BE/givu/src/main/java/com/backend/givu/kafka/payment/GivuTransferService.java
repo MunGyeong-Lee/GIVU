@@ -56,7 +56,7 @@ public class GivuTransferService {
         // ✅ [중복 참여 방지]
         if (participantRepository.existsByFundingAndUser(funding, user)) {
             log.warn("❌ 이미 참여한 유저입니다 - userId: {}, fundingId: {}", user.getId(), funding.getId());
-            return ApiResponse.fail("ALREADY_PARTICIPATED", "이미 참여한 펀딩입니다.");
+            return ApiResponse.fail("ERROR", "이미 참여한 펀딩입니다.");
         }
 
 
@@ -106,6 +106,7 @@ public class GivuTransferService {
     @Transactional
     public void confirmPayment(int transactionId){
 
+
         // 1. 펀딩 내역 존재하는지 확인
         Payment payment = paymentRepository.findByIdWithFAndRelatedFunding(transactionId)
                 .orElseThrow(() -> new EntityNotFoundException("결제 정보가 없습니다: " + transactionId));
@@ -116,7 +117,7 @@ public class GivuTransferService {
         //3. 만약 해당 펀딩 금액이 다 모아졌으면 Complete 로 변경
         int fundedAmount = payment.getRelatedFunding().getFundedAmount();
         int price = payment.getRelatedFunding().getProduct().getPrice();
-        if(fundedAmount == price){
+        if (fundedAmount == price) {
             payment.getRelatedFunding().setStatus(FundingsStatus.COMPLETED);
         }
 
@@ -134,6 +135,8 @@ public class GivuTransferService {
         log.info("✅ 결제 최종 완료 - userId: {}, transactionId: {}, status: {}",
                 payment.getUser().getId(), payment.getId(), payment.getStatus());
     }
+
+
 
 
     /**
