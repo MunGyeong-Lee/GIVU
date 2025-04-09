@@ -14,6 +14,7 @@ import lombok.*;
 import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 @Getter
 @Setter
@@ -101,7 +102,8 @@ public class FundingsDTO {
             this.description = funding.getDescription();
             this.image = funding.getImage();
             this.category = CategoryMapper.toClient(FundingsCategory.valueOf(funding.getCategory()));
-            this.categoryName = funding.getCategoryName();
+            this.categoryName = funding.getCategoryName(); // nullable 허용
+
             this.product = new ProductsSimpleInfoDTO(
                     funding.getProductId(),
                     funding.getProductName(),
