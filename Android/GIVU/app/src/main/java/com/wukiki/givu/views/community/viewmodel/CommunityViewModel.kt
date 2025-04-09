@@ -68,7 +68,8 @@ class CommunityViewModel @Inject constructor(
                 status = "active",
                 images = listOf("https://images.unsplash.com/photo-1522383225653-ed111181a951"),
                 createdAt = "2024-03-01",
-                updatedAt = "2024-03-10"
+                updatedAt = "2024-03-10",
+                hidden = true
             ),
             Funding(
                 id = 2,
@@ -90,7 +91,8 @@ class CommunityViewModel @Inject constructor(
                 status = "active",
                 images = listOf("https://images.unsplash.com/photo-1604023009903-95644dfc1c2c"),
                 createdAt = "2024-03-02",
-                updatedAt = "2024-03-12"
+                updatedAt = "2024-03-12",
+                hidden = true
             ),
             Funding(
                 id = 3,
@@ -112,7 +114,8 @@ class CommunityViewModel @Inject constructor(
                 status = "active",
                 images = listOf("https://images.unsplash.com/photo-1517705008128-361805f42e86"),
                 createdAt = "2024-03-03",
-                updatedAt = "2024-03-13"
+                updatedAt = "2024-03-13",
+                hidden = true
             ),
             Funding(
                 id = 4,
@@ -134,7 +137,8 @@ class CommunityViewModel @Inject constructor(
                 status = "active",
                 images = listOf("https://images.unsplash.com/photo-1529042410759-befb1204b468"),
                 createdAt = "2024-03-04",
-                updatedAt = "2024-03-14"
+                updatedAt = "2024-03-14",
+                hidden = true
             ),
             Funding(
                 id = 5,
@@ -156,7 +160,8 @@ class CommunityViewModel @Inject constructor(
                 status = "active",
                 images = listOf("https://images.unsplash.com/photo-1502865787650-3f8318917153"),
                 createdAt = "2024-03-05",
-                updatedAt = "2024-03-15"
+                updatedAt = "2024-03-15",
+                hidden = true
             ),
             Funding(
                 id = 6,
@@ -178,7 +183,8 @@ class CommunityViewModel @Inject constructor(
                 status = "active",
                 images = listOf("https://images.unsplash.com/photo-1507679799987-c73779587ccf"),
                 createdAt = "2024-03-06",
-                updatedAt = "2024-03-16"
+                updatedAt = "2024-03-16",
+                hidden = true
             ),
             Funding(
                 id = 7,
@@ -200,7 +206,8 @@ class CommunityViewModel @Inject constructor(
                 status = "active",
                 images = listOf("https://images.unsplash.com/photo-1511974035430-5de47d3b95da"),
                 createdAt = "2024-03-07",
-                updatedAt = "2024-03-17"
+                updatedAt = "2024-03-17",
+                hidden = true
             ),
             Funding(
                 id = 8,
@@ -222,7 +229,8 @@ class CommunityViewModel @Inject constructor(
                 status = "active",
                 images = listOf("https://images.unsplash.com/photo-1517423440428-a5a00ad493e8"),
                 createdAt = "2024-03-08",
-                updatedAt = "2024-03-18"
+                updatedAt = "2024-03-18",
+                hidden = true
             ),
             Funding(
                 id = 9,
@@ -244,7 +252,8 @@ class CommunityViewModel @Inject constructor(
                 status = "active",
                 images = listOf("https://images.unsplash.com/photo-1523540490786-7cc9c1fced68"),
                 createdAt = "2024-03-09",
-                updatedAt = "2024-03-19"
+                updatedAt = "2024-03-19",
+                hidden = true
             ),
             Funding(
                 id = 10,
@@ -266,7 +275,8 @@ class CommunityViewModel @Inject constructor(
                 status = "active",
                 images = listOf("https://images.unsplash.com/photo-1497935586351-b67a49e012bf"),
                 createdAt = "2024-03-10",
-                updatedAt = "2024-03-20"
+                updatedAt = "2024-03-20",
+                hidden = true
             )
         )
 
