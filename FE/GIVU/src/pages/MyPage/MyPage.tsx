@@ -273,8 +273,8 @@ const TransactionModal: React.FC<{
         
         // 성공 시 UI 업데이트와 사용자 알림은 콜백 이후에 수행
         alert(type === 'deposit' ? '기뷰페이 충전이 완료되었습니다.' : '기뷰페이 출금이 완료되었습니다.');
-        resetModal();
-        onClose();
+      resetModal();
+      onClose();
       } else {
         // 오류 응답 처리
         throw new Error(response.data.message || '처리 중 오류가 발생했습니다.');
@@ -307,7 +307,7 @@ const TransactionModal: React.FC<{
           setError(err.response.data.message);
         }
       } else {
-        setError(err.message || '거래 중 오류가 발생했습니다.');
+      setError(err.message || '거래 중 오류가 발생했습니다.');
       }
     } finally {
       setLoading(false);
@@ -341,7 +341,7 @@ const TransactionModal: React.FC<{
           <div className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-cusBlack-light mb-1">
-                {type === 'deposit' ? '충전 금액' : '출금 금액'} 
+                {type === 'deposit' ? '충전 금액' : '출금 금액'}
               </label>
               <div className="relative">
                 <input
@@ -584,30 +584,30 @@ const AccountCreationModal: React.FC<{
           
           {step === 1 ? (
             <div>
-              <input
-                type="password"
-                value={password}
-                onChange={handlePasswordChange}
-                placeholder="6자리 비밀번호 입력"
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg text-center text-xl tracking-widest"
-                maxLength={6}
-                autoFocus
-              />
+            <input
+              type="password"
+              value={password}
+              onChange={handlePasswordChange}
+              placeholder="6자리 비밀번호 입력"
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg text-center text-xl tracking-widest"
+              maxLength={6}
+              autoFocus
+            />
               <p className="text-xs text-gray-500 mt-2 text-center">
                 비밀번호는 숫자 6자리로 설정해주세요. 이 비밀번호는 기뷰페이 충전/출금 시 필요합니다.
               </p>
             </div>
           ) : (
             <div>
-              <input
-                type="password"
-                value={confirmPassword}
-                onChange={handleConfirmPasswordChange}
-                placeholder="비밀번호 확인"
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg text-center text-xl tracking-widest"
-                maxLength={6}
-                autoFocus
-              />
+            <input
+              type="password"
+              value={confirmPassword}
+              onChange={handleConfirmPasswordChange}
+              placeholder="비밀번호 확인"
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg text-center text-xl tracking-widest"
+              maxLength={6}
+              autoFocus
+            />
               <p className="text-xs text-gray-500 mt-2 text-center">
                 입력한 비밀번호를 한번 더 입력해주세요.
               </p>
@@ -997,22 +997,22 @@ const MyPage = () => {
                 <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-cusBlue"></div>
               </div>
             ) : myFundings.length > 0 ? (
-              <div 
-                ref={createdFundingsRef}
-                className="flex overflow-x-auto scrollbar-hide gap-4 py-4 pl-2 pr-6"
-                style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
-              >
+            <div 
+              ref={createdFundingsRef}
+              className="flex overflow-x-auto scrollbar-hide gap-4 py-4 pl-2 pr-6"
+              style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+            >
                 {myFundings.map((funding) => (
-                  <Link 
-                    key={funding.id} 
-                    to={`/funding/${funding.id}`} 
-                    className="flex-shrink-0"
-                    style={{ width: '300px' }}
-                  >
-                    <FundingCard funding={funding} />
-                  </Link>
-                ))}
-              </div>
+                <Link 
+                  key={funding.id} 
+                  to={`/funding/${funding.id}`} 
+                  className="flex-shrink-0"
+                  style={{ width: '300px' }}
+                >
+                  <FundingCard funding={funding} />
+                </Link>
+              ))}
+            </div>
             ) : (
               <div className="py-12 text-center bg-cusGray-light rounded-xl">
                 <p className="text-cusBlack-light font-medium mb-4">아직 만든 펀딩이 없습니다.</p>
@@ -1026,17 +1026,17 @@ const MyPage = () => {
             )}
             
             {myFundings.length > 0 && (
-              <div className="absolute -right-4 top-1/2 transform -translate-y-1/2 z-10">
-                <button 
-                  onClick={() => handleScrollRight(createdFundingsRef)}
-                  className="p-2 bg-cusBlack text-white rounded-full shadow-md hover:bg-cusBlack-light"
-                  aria-label="다음 항목"
-                >
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                  </svg>
-                </button>
-              </div>
+            <div className="absolute -right-4 top-1/2 transform -translate-y-1/2 z-10">
+              <button 
+                onClick={() => handleScrollRight(createdFundingsRef)}
+                className="p-2 bg-cusBlack text-white rounded-full shadow-md hover:bg-cusBlack-light"
+                aria-label="다음 항목"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
+              </button>
+            </div>
             )}
           </div>
         );
@@ -1061,22 +1061,22 @@ const MyPage = () => {
                 <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-cusBlue"></div>
               </div>
             ) : participatedFundings.length > 0 ? (
-              <div 
-                ref={participatedFundingsRef}
-                className="flex overflow-x-auto scrollbar-hide gap-4 py-4 pl-2 pr-6"
-                style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
-              >
+            <div 
+              ref={participatedFundingsRef}
+              className="flex overflow-x-auto scrollbar-hide gap-4 py-4 pl-2 pr-6"
+              style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+            >
                 {participatedFundings.map((funding) => (
-                  <Link 
-                    key={funding.id} 
-                    to={`/funding/${funding.id}`} 
-                    className="flex-shrink-0"
-                    style={{ width: '300px' }}
-                  >
-                    <FundingCard funding={funding} />
-                  </Link>
-                ))}
-              </div>
+                <Link 
+                  key={funding.id} 
+                  to={`/funding/${funding.id}`} 
+                  className="flex-shrink-0"
+                  style={{ width: '300px' }}
+                >
+                  <FundingCard funding={funding} />
+                </Link>
+              ))}
+            </div>
             ) : (
               <div className="py-12 text-center bg-cusGray-light rounded-xl">
                 <p className="text-cusBlack-light font-medium mb-4">아직 참여한 펀딩이 없습니다.</p>
@@ -1090,17 +1090,17 @@ const MyPage = () => {
             )}
             
             {participatedFundings.length > 0 && (
-              <div className="absolute -right-4 top-1/2 transform -translate-y-1/2 z-10">
-                <button 
-                  onClick={() => handleScrollRight(participatedFundingsRef)}
-                  className="p-2 bg-cusBlack text-white rounded-full shadow-md hover:bg-cusBlack-light"
-                  aria-label="다음 항목"
-                >
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                  </svg>
-                </button>
-              </div>
+            <div className="absolute -right-4 top-1/2 transform -translate-y-1/2 z-10">
+              <button 
+                onClick={() => handleScrollRight(participatedFundingsRef)}
+                className="p-2 bg-cusBlack text-white rounded-full shadow-md hover:bg-cusBlack-light"
+                aria-label="다음 항목"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
+              </button>
+            </div>
             )}
           </div>
         );
@@ -1569,16 +1569,16 @@ const MyPage = () => {
   useEffect(() => {
     const fetchUserAndAccountInfo = async () => {
       // 로컬 스토리지에서 토큰과 사용자 정보 가져오기
-      const userString = localStorage.getItem('user');
-      const token = localStorage.getItem('auth_token');
+    const userString = localStorage.getItem('user');
+    const token = localStorage.getItem('auth_token');
 
       if (!token) {
-        alert('로그인이 필요한 서비스입니다.');
-        navigate('/login');
-        return;
-      }
+      alert('로그인이 필요한 서비스입니다.');
+      navigate('/login');
+      return;
+    }
 
-      try {
+    try {
         // 1. /users/info API에서 사용자 정보 가져오기 (우선)
         try {
           const userInfoResponse = await axios.get(
@@ -1640,7 +1640,7 @@ const MyPage = () => {
           // 계좌가 존재하는 경우
           if (accountResponse.data && accountResponse.data.code === 'SUCCESS') {
             console.log('연동 계좌 정보 존재. 계좌 UI 설정');
-            setHasAccount(true);
+        setHasAccount(true);
             
             // API 응답 데이터 구조에 따라 계좌 정보 설정
             if (accountResponse.data.data) {
@@ -1676,8 +1676,8 @@ const MyPage = () => {
             setBankBalance(0);
             localStorage.removeItem('account_number');
             localStorage.removeItem('bank_balance');
-          }
-        } catch (error) {
+      }
+    } catch (error) {
           console.error('연동 계좌 정보 조회 오류:', error);
           
           // 저장된 계좌 정보로 UI 표시 여부 결정
@@ -1711,8 +1711,8 @@ const MyPage = () => {
             setUserData(parsedUser);
           } catch (e) {
             console.error('사용자 정보 파싱 오류:', e);
-            navigate('/login');
-          }
+      navigate('/login');
+    }
         } else {
           navigate('/login');
         }
@@ -1890,7 +1890,7 @@ const MyPage = () => {
                         >
                           출금하기
                         </button>
-                      </div>
+                    </div>
                     </div>
                     <div className="text-center md:text-left bg-gray-50 p-4 rounded-lg shadow-sm">
                       <p className="text-cusBlack-light mb-2">내 연동 계좌 (한국은행)</p>

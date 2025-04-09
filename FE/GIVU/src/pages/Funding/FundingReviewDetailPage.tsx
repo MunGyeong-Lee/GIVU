@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import axios from 'axios';
+import { getReviewDetail, getFundingData } from '../../services/review.service';
 
 interface ReviewDetail {
   id: number;
@@ -9,7 +9,7 @@ interface ReviewDetail {
   date: string;
   views: number;
   rating: number;
-  authorFundingCount: number;  // 작성자의 펀딩 참여 수 추가
+  authorFundingCount: number;
   content: string;
   images: string[];
   relatedFunding: {
@@ -21,44 +21,31 @@ interface ReviewDetail {
   };
 }
 
-// 더미 데이터 수정
-// const REVIEW_DETAILS: ReviewDetail = {
-//   id: 1,
-//   title: "노란색이 된 도현이의 속옷을 사주세요 !!!",
-//   author: "정도현",
-//   date: "2025.03.10",
-//   views: 235,
-//   rating: 4.5,  // 별점 추가
-//   authorFundingCount: 5,  // 펀딩 참여 수 추가
-//   content: `
-//     안녕하세요! 저는 이번에 GIVU에서 펀딩에 참여하여 멋진 선물을 받게 되었습니다.
-    
-//     이번에 받은 노란색 속옷은 제가 정말 갖고 싶었던 아이템이었는데요, 여러분들 덕분에 목표 금액을 달성하여 구매할 수 있게 되었습니다.
-    
-//     생각보다 품질도 좋고 착용감도 너무 편안해서 정말 만족스럽습니다. 펀딩에 참여해주신 모든 분들께 진심으로 감사드립니다.
-    
-//     앞으로도 GIVU를 통해 많은 분들의 소원이 이루어졌으면 좋겠습니다. 정말 감사합니다!
-//   `,
-//   images: [
-//     "https://via.placeholder.com/800x500?text=상세이미지1",
-//     "https://via.placeholder.com/800x500?text=상세이미지2"
-//   ],
-//   relatedFunding: {
-//     id: 101,
-//     title: "도현이의 생일 선물 펀딩",
-//     amount: 150000,
-//     target: 300000,
-//     percentage: 50
-//   }
-// };
-
 // StarRating 컴포넌트 정의
 const StarRating = ({ rating }: { rating?: number }) => {
   if (!rating) return null;
 
   return (
     <div className="flex items-center">
-      {/* ... StarRating 컴포넌트 내용 ... */}
+      <div className="flex items-center">
+        {[1, 2, 3, 4, 5].map((star) => (
+          <svg
+            key={star}
+            className={`w-5 h-5 ${
+              star <= rating
+                ? 'text-yellow-400'
+                : 'text-gray-300'
+            }`}
+            fill="currentColor"
+            viewBox="0 0 20 20"
+          >
+            <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+          </svg>
+        ))}
+      </div>
+      <span className="ml-2 text-sm font-medium text-gray-700">
+        {rating.toFixed(1)}
+      </span>
     </div>
   );
 };
@@ -68,6 +55,7 @@ function FundingReviewDetailPage() {
   const [review, setReview] = useState<ReviewDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [fundingTitle, setFundingTitle] = useState<string>('');
 
   // API 호출 함수
   const fetchReviewDetail = async () => {
@@ -80,43 +68,33 @@ function FundingReviewDetailPage() {
         return;
       }
 
-      // API 기본 URL 가져오기
-      const API_BASE_URL = import.meta.env.VITE_BASE_URL || import.meta.env.VITE_API_BASE_URL;
-      if (!API_BASE_URL) {
-        throw new Error('API BASE URL이 설정되지 않았습니다.');
-      }
-
-      // 토큰이 있으면 사용
-      const token = localStorage.getItem('auth_token');
-      const headers: Record<string, string> = {
-        'Content-Type': 'application/json'
-      };
+      // 리뷰 상세 정보 가져오기
+      const reviewData = await getReviewDetail(id);
       
-      if (token) {
-        headers['Authorization'] = `Bearer ${token}`;
+      // 펀딩 정보 가져오기
+      try {
+        const fundingData = await getFundingData(reviewData.fundingId);
+        setFundingTitle(fundingData.title || `펀딩 #${reviewData.fundingId}`);
+        
+        // 관련 펀딩 정보 업데이트
+        reviewData.relatedFunding = {
+          ...reviewData.relatedFunding,
+          title: fundingData.title || `펀딩 #${reviewData.fundingId}`,
+          amount: fundingData.fundedAmount || 150000,
+          target: fundingData.targetAmount || 300000,
+          percentage: fundingData.fundedAmount && fundingData.targetAmount 
+            ? Math.floor((fundingData.fundedAmount / fundingData.targetAmount) * 100) 
+            : 50
+        };
+      } catch (err) {
+        console.error('펀딩 정보를 가져오는데 실패했습니다:', err);
+        // 펀딩 정보를 가져오지 못해도 리뷰는 표시
       }
-
-      console.log(`후기 상세 조회 API 호출: ${API_BASE_URL}/fundings/reviews/${id}`);
       
-      // 실제 API 호출
-      const response = await axios.get(
-        `${API_BASE_URL}/fundings/reviews/${id}`,
-        { headers }
-      );
-
-      console.log('후기 상세 조회 응답:', response.data);
-
-      if (!response.data || response.data.code !== 'SUCCESS') {
-        throw new Error(response.data?.message || '후기 조회에 실패했습니다.');
-      }
-
-      // API 응답을 ReviewDetail 형식으로 변환
-      const reviewData = response.data.data;
-      
-      // 백엔드 응답에서 필요한 정보 매핑
+      // 백엔드 응답을 ReviewDetail 형식으로 변환
       const reviewDetail: ReviewDetail = {
         id: reviewData.reviewId,
-        title: `펀딩 후기 #${reviewData.reviewId}`, // 백엔드에서 제공하지 않는 경우 기본값
+        title: fundingTitle || `펀딩 후기 #${reviewData.reviewId}`, // 펀딩 제목 또는 기본값
         author: reviewData.user?.nickName || '익명',
         date: new Date(reviewData.createdAt).toLocaleDateString(),
         views: reviewData.visit || 0,
@@ -126,7 +104,7 @@ function FundingReviewDetailPage() {
         images: reviewData.image ? [reviewData.image] : [],
         relatedFunding: {
           id: reviewData.fundingId,
-          title: '관련 펀딩', // 백엔드에서 제공하지 않는 경우 기본값
+          title: fundingTitle || '관련 펀딩', // 펀딩 제목 또는 기본값
           amount: 150000, // 백엔드에서 제공하지 않는 경우 기본값
           target: 300000, // 백엔드에서 제공하지 않는 경우 기본값
           percentage: 50 // 백엔드에서 제공하지 않는 경우 기본값
@@ -193,7 +171,7 @@ function FundingReviewDetailPage() {
           </span>
           {/* 펀딩 참여 수 표시 */}
           <span className="text-rose-500 font-medium">
-            {review.authorFundingCount}개의 펀딩 참여
+            {review.authorFundingCount}회 펀딩 참여
           </span>
           <span>•</span>
           <span>{review.date}</span>
@@ -246,27 +224,6 @@ function FundingReviewDetailPage() {
           >
             펀딩 보기
           </Link>
-        </div>
-      </div>
-
-      {/* 코멘트 섹션 */}
-      <div className="mt-10">
-        <h3 className="text-lg font-bold mb-4">댓글</h3>
-        <div className="border border-gray-200 rounded-lg p-4">
-          <textarea
-            className="w-full p-2 border border-gray-300 rounded mb-2"
-            rows={3}
-            placeholder="댓글을 남겨주세요"
-          ></textarea>
-          <div className="flex justify-end">
-            <button className="px-4 py-2 bg-black text-white rounded-md hover:bg-gray-800 transition">
-              등록하기
-            </button>
-          </div>
-        </div>
-
-        <div className="mt-6">
-          <p className="text-gray-500 text-center py-4">아직 댓글이 없습니다.</p>
         </div>
       </div>
     </div>
