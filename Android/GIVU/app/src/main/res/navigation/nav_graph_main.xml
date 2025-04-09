@@ -118,7 +118,6 @@
         android:label="Register Funding"
         tools:layout="@layout/fragment_register_funding">
 
-
     </fragment>
 
     <fragment
