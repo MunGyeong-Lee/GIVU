@@ -23,6 +23,7 @@ public class LetterDetailDTO {
     private String access;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+    private boolean hidden; // 💡 시스템이 내용 가렸는지 여부
 
     public LetterDetailDTO(Letter letter, Long currentUserId) {
         this.letterId = letter.getId();
@@ -38,6 +39,17 @@ public class LetterDetailDTO {
                 letter.getUser().getProfileImage()
         );
         this.creator = letter.getUser().getId().equals(currentUserId);
+
+        boolean isPrivate = "비밀".equalsIgnoreCase(this.access);
+        boolean isFundingOwner = letter.getFunding().getUser().getId().equals(currentUserId);
+
+        if (isPrivate && !(this.creator || isFundingOwner)) {
+            this.comment = "비밀 댓글입니다.";
+            this.hidden = true;
+        } else {
+            this.comment = letter.getComment();
+            this.hidden = false;
+        }
     }
 
 }

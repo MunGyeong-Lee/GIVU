@@ -39,6 +39,7 @@ public class FundingDetailDTO {
     private List<ReviewsDTO> reviews;
 
     private List<UserSimpleInfoDTO> participants;
+    private int participantsCount;
 
 
 
@@ -53,7 +54,7 @@ public class FundingDetailDTO {
                 CategoryMapper.toClient(f.getCategory()),
                 f.getCategoryName(),
                 ScopeMapper.toClient(f.getScope()),
-                f.getParticipantsNumber(),
+                participants.size(),
                 f.getFundedAmount(),
                 StatusMapper.toClient(f.getStatus()),
                 f.getImage(),
@@ -68,7 +69,9 @@ public class FundingDetailDTO {
 
                 participants.stream()
                         .map(u -> new UserSimpleInfoDTO(u.getId(), u.getNickname(), u.getProfileImage()))
-                        .toList()
+                        .toList(),
+
+                participants.size()
         );
     }
 

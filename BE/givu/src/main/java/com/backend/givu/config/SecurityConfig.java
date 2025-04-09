@@ -57,6 +57,7 @@ public class SecurityConfig {
                                 "/fundings/list",
                                 "/fundings/search",
                                 "/fundings/reindex",
+                                "/fundings/*",
                                 "/kafka/send",
                                 "/kafka/**"
                         ).permitAll()
@@ -71,6 +72,7 @@ public class SecurityConfig {
                                 "/products-review/**",
                                 "/fundings/**",
                                 "/mypage/**",
+                                "/friends/**",
                                 "/transfer/**"
                         ).authenticated())
 
