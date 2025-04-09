@@ -9,11 +9,14 @@ import com.backend.givu.model.Enum.PaymentsTransactionType;
 import com.backend.givu.model.entity.Funding;
 import com.backend.givu.model.entity.Participant;
 import com.backend.givu.model.entity.Payment;
+import com.backend.givu.model.entity.Product;
 import com.backend.givu.model.entity.User;
 import com.backend.givu.model.repository.FundingRepository;
 import com.backend.givu.model.repository.ParticipantRepository;
 import com.backend.givu.model.repository.PaymentRepository;
+import com.backend.givu.model.repository.ProductRepository;
 import com.backend.givu.model.repository.UserRepository;
+import com.backend.givu.model.requestDTO.OrderCreatedEventDTO;
 import com.backend.givu.model.responseDTO.ApiResponse;
 import com.backend.givu.model.responseDTO.PaymentResultDTO;
 import jakarta.persistence.EntityNotFoundException;
@@ -32,6 +35,7 @@ public class GivuTransferService {
     private final FundingRepository fundingRepository;
     private final UserRepository userRepository;
     private final PaymentRepository paymentRepository;
+    private final ProductRepository productRepository;
     private final ParticipantRepository participantRepository;
 
     private final GivuProducer givuProducer;
@@ -172,6 +176,44 @@ public class GivuTransferService {
     }
 
 
+    @Transactional
+    public ApiResponse<PaymentResultDTO> purchaseProduct(Long userId, int productId, int amount) {
+        // 1. 유저 조회
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new EntityNotFoundException("유저 정보를 찾을 수 없습니다."));
+
+        // 2. 상품 조회
+        Product product = productRepository.findById(productId)
+                .orElseThrow(() -> new EntityNotFoundException("상품 정보를 찾을 수 없습니다."));
+
+        // 3. 결제 엔티티 생성 (PENDING 상태)
+        Payment payment = Payment.builder()
+                .user(user)
+                .relatedProduct(product)
+                .relatedFunding(null)
+                .amount(amount)
+                .status(PaymentsStatus.PENDING)
+                .transactionType(PaymentsTransactionType.PRODUCT)
+                .build();
+
+        paymentRepository.save(payment);
+
+        log.info("📥 결제 요청 생성 - paymentId: {}, userId: {}, 금액: {}", payment.getId(), userId, amount);
+
+        // 4. Kafka 이벤트 발행 (트랜잭션 커밋 이후)
+        OrderCreatedEventDTO event = new OrderCreatedEventDTO();
+        event.setUserId(userId);
+        event.setProductId(productId);
+        event.setPaymentId(payment.getId());
+        event.setTotalAmount(amount);
+        event.setPaymentMethod("BALANCE"); // 예: 잔액 결제 방식
+
+        givuProducer.sendKafkaEventAfterCommit(event);
+
+        // 5. 응답 생성
+        PaymentResultDTO dto = new PaymentResultDTO(payment);
+        return ApiResponse.success(dto);
+    }
 
 }
 
