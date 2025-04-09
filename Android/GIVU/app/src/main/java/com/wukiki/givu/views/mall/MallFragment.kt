@@ -57,6 +57,11 @@ class MallFragment : BaseFragment<FragmentMallBinding>(R.layout.fragment_mall) {
                     MallScreen(navController = navController, mallViewModel = viewModel)
                 }
 
+                composable("SearchProduct") {
+                    viewModel.initSearchResult()
+                    SearchProductScreen(viewModel, registerViewModel, navController)
+                }
+
                 composable(
                     route = "ProductDetailScreen/{productId}",
                     arguments = listOf(navArgument("productId") { type = NavType.StringType })
