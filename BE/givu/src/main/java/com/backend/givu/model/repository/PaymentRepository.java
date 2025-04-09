@@ -39,5 +39,14 @@ public interface PaymentRepository extends JpaRepository<Payment, Integer> {
     @Query("SELECT p FROM Payment p JOIN FETCH p.relatedProduct WHERE p.user.id = :userId")
     List<Payment> findByUserIdWithProduct(@Param("userId") Long userId);
 
+    @Query("""
+    SELECT p
+    FROM Payment p
+    LEFT JOIN FETCH p.relatedFunding
+    LEFT JOIN FETCH p.relatedProduct
+    WHERE p.user.id = :userId
+    """)
+    List<Payment> findByUserIdWithFundingAndProduct(@Param("userId") Long userId);
+
 
 }
