@@ -1,23 +1,29 @@
 package com.wukiki.givu.views.register
 
-import android.util.Log
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.Divider
+import androidx.compose.material.Button
+import androidx.compose.material.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -31,6 +37,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -43,7 +50,6 @@ import com.wukiki.givu.R
 import com.wukiki.givu.ui.pretendard
 import com.wukiki.givu.ui.suit
 import com.wukiki.givu.util.CommonUtils
-import com.wukiki.givu.util.StoreDetailBottomButton
 import com.wukiki.givu.util.StoreDetailTopBar
 import com.wukiki.givu.views.mall.component.ReviewComponent
 import com.wukiki.givu.views.mall.viewmodel.MallViewModel
@@ -57,26 +63,17 @@ fun DetailPresentScreen(
     xmlNavController: NavController,
     productId: String?,
 ) {
-    val selectedProduct by registerViewModel.selectedProduct.collectAsState()
-
     val productInfo by mallViewModel.selectedProduct.collectAsState()
     var productReviewList by remember { mutableStateOf(emptyList<ProductReview>()) }
 
     LaunchedEffect(Unit) {
-
         productId?.let {
             mallViewModel.getDetailProductInfo(productId)
-            Log.d("Mall Detail Screen", "아이디: ${productId}")
-
         }
     }
 
     LaunchedEffect(productInfo) {
-
         productReviewList = productInfo?.product?.reviews ?: emptyList()
-
-        Log.d("Mall Detail Screen", "상품: ${productInfo}")
-        Log.d("Mall Detail Screen", "리뷰: ${productReviewList}")
     }
 
     productInfo?.let {
@@ -114,14 +111,13 @@ fun DetailPresentScreen(
                     }
 
                     item {
-                        Column() {
-
+                        Column {
                             Column(
                                 modifier = Modifier.padding(horizontal = 20.dp)
                             ) {
                                 Spacer(Modifier.height(16.dp))
                                 Text(
-                                    text = "상품이름",
+                                    text = it.product.productName,
                                     fontFamily = pretendard,
                                     fontWeight = FontWeight.Bold,
                                     fontSize = 22.sp,
@@ -138,7 +134,6 @@ fun DetailPresentScreen(
                                         painter = painterResource(R.drawable.ic_star_best),
                                         contentDescription = null,
                                         tint = Color(0xFFFEBE14),
-                                        //                            modifier = Modifier.size(20.dp)
                                     )
                                     Spacer(Modifier.width(4.dp))
                                     Text(
@@ -167,7 +162,7 @@ fun DetailPresentScreen(
                             }
 
                             Spacer(Modifier.height(24.dp))
-                            Divider(
+                            HorizontalDivider(
                                 modifier = Modifier.fillMaxWidth(),
                                 thickness = 15.dp,
                                 color = Color(0xFFF2F2F2)
@@ -198,7 +193,7 @@ fun DetailPresentScreen(
                                 }
                             }
                             Spacer(Modifier.height(24.dp))
-                            Divider(
+                            HorizontalDivider(
                                 modifier = Modifier.fillMaxWidth(),
                                 thickness = 15.dp,
                                 color = Color(0xFFF2F2F2)
@@ -224,24 +219,81 @@ fun DetailPresentScreen(
                     }
                 }
                 Spacer(Modifier.height(16.dp))
-
             }
 
-
             // 하단 바
-            StoreDetailBottomButton(
+            Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(68.dp)
+                    .height(72.dp)
                     .align(Alignment.BottomCenter),
-                text = "이 상품 선택하기",
-                navController = xmlNavController,
-                actionId = -1,
-                false
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                navController.navigate("RegisterStep1") {
-                    popUpTo("RegisterStep1") { inclusive = false }
-                    launchSingleTop = true
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth(0.15f)
+                        .fillMaxHeight(),
+                    verticalArrangement = Arrangement.Center,
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    IconButton(
+                        onClick = {
+                            when (it.isLiked) {
+                                true -> {
+                                    mallViewModel.cancelLikeProduct()
+                                }
+
+                                else -> {
+                                    mallViewModel.likeProduct()
+                                }
+                            }
+                        },
+                        modifier = Modifier.size(24.dp)
+                    ) {
+                        Icon(
+                            painter = painterResource(if (it.isLiked) R.drawable.ic_heart_fill else R.drawable.ic_heart_outline),
+                            contentDescription = null,
+                            modifier = Modifier.fillMaxSize(),
+                            tint = Color.Unspecified
+                        )
+                    }
+                    Text(
+                        text = it.likeCount.toString(),
+                        fontFamily = pretendard,
+                        fontWeight = FontWeight.Medium,
+                        fontSize = 12.sp
+                    )
+                }
+
+                Row(
+                    modifier = Modifier.fillMaxWidth()
+                        .padding(end = 16.dp)
+                ) {
+                    Button(
+                        onClick = {
+                            registerViewModel.selectProduct()
+                            navController.navigate("RegisterStep1") {
+                                popUpTo("RegisterStep1") { inclusive = false }
+                                launchSingleTop = true
+                            }
+                        },
+                        modifier = Modifier
+                            .weight(1f)
+                            .height(48.dp),
+                        enabled = true,
+                        shape = RoundedCornerShape(5.dp),
+                        border = BorderStroke(1.dp, Color(0xFFECECEC)),
+                        colors = ButtonDefaults.buttonColors(colorResource(R.color.main_primary)),
+                        elevation = ButtonDefaults.elevation(0.dp)
+                    ) {
+                        Text(
+                            text = "이 상품 선택하기",
+                            fontFamily = suit,
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 18.sp,
+                            color = Color.White
+                        )
+                    }
                 }
             }
         }
