@@ -15,13 +15,13 @@ object MyFundingMapper {
                     userId = funding.user.userId,
                     userNickname = funding.user.nickname,
                     userProfile = funding.user.image ?: "",
-                    productId = funding.product.id,
-                    productName = funding.product.productName,
-                    productPrice = funding.product.price.toString(),
-                    productImage = funding.product.image,
+                    productId = funding.product?.id ?: -1,
+                    productName = funding.product?.productName ?: "",
+                    productPrice = (funding.product?.price ?: "0").toString(),
+                    productImage = funding.product?.image ?: "",
                     title = funding.title,
                     body = "",
-                    description = funding.description,
+                    description = funding.description ?: "",
                     category = funding.category ?: "",
                     categoryName = funding.categoryName ?: "",
                     scope = funding.scope ?: "",
@@ -30,7 +30,8 @@ object MyFundingMapper {
                     status = funding.status ?: "",
                     images = funding.images ?: emptyList(),
                     createdAt = funding.createdAt,
-                    updatedAt = funding.updatedAt ?: ""
+                    updatedAt = funding.updatedAt ?: "",
+                    hidden = funding.hidden
                 )
             )
         }

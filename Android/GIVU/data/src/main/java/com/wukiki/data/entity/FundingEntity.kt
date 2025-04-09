@@ -12,13 +12,13 @@ data class FundingEntity(
     val user: FundingUserEntity,
 
     @Json(name = "product")
-    val product: FundingProductEntity,
+    val product: FundingProductEntity?,
 
     @Json(name = "title")
     val title: String,
 
     @Json(name = "description")
-    val description: String,
+    val description: String?,
 
     @Json(name = "category")
     val category: String?,
@@ -45,7 +45,10 @@ data class FundingEntity(
     val createdAt: String,
 
     @Json(name = "updatedAt")
-    val updatedAt: String?
+    val updatedAt: String?,
+
+    @Json(name = "hidden")
+    val hidden: Boolean
 )
 
 @JsonClass(generateAdapter = true)
