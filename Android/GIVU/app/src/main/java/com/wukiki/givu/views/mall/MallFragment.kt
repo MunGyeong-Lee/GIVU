@@ -21,6 +21,8 @@ import com.wukiki.givu.views.home.viewmodel.HomeViewModel
 import com.wukiki.givu.views.mall.viewmodel.MallViewModel
 import com.wukiki.givu.views.register.viewmodel.RegisterViewModel
 import dagger.hilt.android.AndroidEntryPoint
+import androidx.compose.animation.AnimatedContentTransitionScope
+import androidx.compose.animation.core.tween
 
 @AndroidEntryPoint
 class MallFragment : BaseFragment<FragmentMallBinding>(R.layout.fragment_mall) {
@@ -37,6 +39,7 @@ class MallFragment : BaseFragment<FragmentMallBinding>(R.layout.fragment_mall) {
 
         binding.composeMall.setContent {
             val navController = rememberNavController()
+//            val navController = rememberAnimatedNavController()
             val currentBackStackEntry by navController.currentBackStackEntryAsState()
             val currentRoute = currentBackStackEntry?.destination?.route
 
@@ -52,18 +55,94 @@ class MallFragment : BaseFragment<FragmentMallBinding>(R.layout.fragment_mall) {
                 navController = navController,
                 startDestination = "MallMainScreen"
             ) {
-                composable(route = "MallMainScreen") {
+                composable(
+                    route = "MallMainScreen",
+                    enterTransition = {
+                        slideIntoContainer(
+                            towards = AnimatedContentTransitionScope.SlideDirection.Left,
+                            animationSpec = tween(300)
+                        )
+                    },
+                    exitTransition = {
+                        slideOutOfContainer(
+                            towards = AnimatedContentTransitionScope.SlideDirection.Left,
+                            animationSpec = tween(300)
+                        )
+                    },
+                    popEnterTransition = {
+                        slideIntoContainer(
+                            towards = AnimatedContentTransitionScope.SlideDirection.Right,
+                            animationSpec = tween(300)
+                        )
+                    },
+                    popExitTransition = {
+                        slideOutOfContainer(
+                            towards = AnimatedContentTransitionScope.SlideDirection.Right,
+                            animationSpec = tween(300)
+                        )
+                    }
+                ) {
                     MallScreen(navController = navController, mallViewModel = viewModel)
                 }
 
-                composable("SearchProduct") {
+                composable(
+                    route = "SearchProduct",
+                    enterTransition = {
+                        slideIntoContainer(
+                            towards = AnimatedContentTransitionScope.SlideDirection.Left,
+                            animationSpec = tween(300)
+                        )
+                    },
+                    exitTransition = {
+                        slideOutOfContainer(
+                            towards = AnimatedContentTransitionScope.SlideDirection.Left,
+                            animationSpec = tween(300)
+                        )
+                    },
+                    popEnterTransition = {
+                        slideIntoContainer(
+                            towards = AnimatedContentTransitionScope.SlideDirection.Right,
+                            animationSpec = tween(300)
+                        )
+                    },
+                    popExitTransition = {
+                        slideOutOfContainer(
+                            towards = AnimatedContentTransitionScope.SlideDirection.Right,
+                            animationSpec = tween(300)
+                        )
+                    }
+                ) {
                     viewModel.initSearchResult()
                     SearchProductScreen(viewModel, registerViewModel, navController)
                 }
 
                 composable(
                     route = "ProductDetailScreen/{productId}",
-                    arguments = listOf(navArgument("productId") { type = NavType.StringType })
+                    arguments = listOf(navArgument("productId") { type = NavType.StringType }),
+                    enterTransition = {
+                        slideIntoContainer(
+                            towards = AnimatedContentTransitionScope.SlideDirection.Left,
+                            animationSpec = tween(300)
+                        )
+                    },
+                    exitTransition = {
+                        slideOutOfContainer(
+                            towards = AnimatedContentTransitionScope.SlideDirection.Left,
+                            animationSpec = tween(300)
+                        )
+                    },
+                    popEnterTransition = {
+                        slideIntoContainer(
+                            towards = AnimatedContentTransitionScope.SlideDirection.Right,
+                            animationSpec = tween(300)
+                        )
+                    },
+                    popExitTransition = {
+                        slideOutOfContainer(
+                            towards = AnimatedContentTransitionScope.SlideDirection.Right,
+                            animationSpec = tween(300)
+                        )
+                    }
                 ) { backStackEntry ->
                     val productId = backStackEntry.arguments?.getString("productId")
 
@@ -77,8 +156,6 @@ class MallFragment : BaseFragment<FragmentMallBinding>(R.layout.fragment_mall) {
                         findNavController()
                     )
                 }
-
-
             }
         }
     }
