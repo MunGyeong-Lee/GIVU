@@ -6,9 +6,8 @@ export interface FundingItem {
   id: number;
   title: string;
   description: string;
-  targetAmount: number;
   currentAmount: number;
-  progressPercentage?: number;
+  progressPercentage: number; // 필수 값으로 변경
   imageUrl?: string;
   creatorName: string;
   isPopular?: boolean;
@@ -18,7 +17,9 @@ export interface FundingItem {
   createdAt?: string;
   parcitipantsNumber?: number;
   progress?: number;
+  targetAmount?: number;
   onClick?: () => void;
+  hidden?: boolean; // 친구만 볼 수 있는 비밀 펀딩 여부
 }
 
 interface FundingGridProps {
@@ -88,12 +89,12 @@ const FundingGrid: React.FC<FundingGridProps> = ({
           id={funding.id}
           title={funding.title}
           description={funding.description}
-          targetAmount={funding.targetAmount}
           currentAmount={funding.currentAmount}
           progressPercentage={funding.progressPercentage}
           imageUrl={funding.imageUrl}
           creatorName={funding.creatorName}
           status={funding.status}
+          hidden={funding.hidden}
           onClick={() => handleCardClick(funding.id)}
         />
       ))}

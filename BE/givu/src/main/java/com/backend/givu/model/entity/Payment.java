@@ -61,12 +61,19 @@ public class Payment {
     protected void onCreate(){
         Instant now = Instant.now() ;
         this.date = now;
-
     }
 
     @PreUpdate
     protected  void onUpdate(){
         this.date = Instant.now();
+    }
+
+    public void markSuccess(){
+        this.status = PaymentsStatus.SUCCESS;
+    }
+
+    public void markFailed(){
+        this.status = PaymentsStatus.FAIL;
     }
 
 

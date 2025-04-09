@@ -37,7 +37,9 @@ public class SecurityConfig {
 
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
-                                "/products/*/like"  // 이 라인 추가 → 인증 필요하게!
+                                "/products/*/like",// 이 라인 추가 → 인증 필요하게!
+                                "/products/*/like/cancel",
+                                "/products/search/likeProduct"
                         ).authenticated()       // 인증 필요
                         .requestMatchers(
                                 "/api-docs", 
@@ -55,6 +57,7 @@ public class SecurityConfig {
                                 "/fundings/list",
                                 "/fundings/search",
                                 "/fundings/reindex",
+                                "/fundings/*",
                                 "/kafka/send",
                                 "/kafka/**"
                         ).permitAll()
@@ -68,7 +71,9 @@ public class SecurityConfig {
                                 "/users/test",        // 테스트
                                 "/products-review/**",
                                 "/fundings/**",
-                                "/mypage/**"
+                                "/mypage/**",
+                                "/friends/**",
+                                "/transfer/**"
                         ).authenticated())
 
                 /**

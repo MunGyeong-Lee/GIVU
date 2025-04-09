@@ -94,8 +94,14 @@ export const createFunding = async (
     // FormData 객체 생성
     const formData = new FormData();
     
+    // categoryName이 null일 경우 해당 필드 제거
+    const requestData = { ...fundingData };
+    if (requestData.categoryName === null) {
+      requestData.categoryName = ''; // null 대신 빈 문자열로 전송
+    }
+    
     // data 필드에 JSON 문자열로 변환된 펀딩 데이터 추가
-    formData.append('data', JSON.stringify(fundingData));
+    formData.append('data', JSON.stringify(requestData));
     
     // 추가 이미지 처리 - 문자열 대신 파일로 변환
     if (additionalImages && additionalImages.length > 0) {

@@ -7,80 +7,57 @@ interface FundingCardProps {
   id: number;
   title: string;
   description: string;
-  targetAmount: number;
   currentAmount: number;
-  progressPercentage?: number;
+  progressPercentage: number; // 필수 값으로 변경
   imageUrl?: string;
   creatorName: string; // 카카오 유저 닉네임 추가
   onClick?: () => void;
-  status?: string; // 펀딩 상태 추가 (PENDING, COMPLETED 등)
+  status?: string; // 펀딩 상태 추가 (대기, 완료, 배송 중 등)
+  hidden?: boolean; // 친구만 볼 수 있는 비밀 펀딩 여부
 }
 
 const FundingCard: React.FC<FundingCardProps> = ({
   // id,
   title,
   // description,
-  targetAmount,
   currentAmount,
   progressPercentage,
   imageUrl,
   creatorName,
   onClick,
-  status
+  status,
+  hidden = false
 }) => {
-  // 찜하기 상태 관리 - 주석 처리 (아래 3줄)
-  // const [isLiked, setIsLiked] = useState(false);
   // 이미지 로딩 상태 관리
   const [imageError, setImageError] = useState(false);
-  // 애니메이션 상태 관리 - 주석 처리 (아래 2줄)
-  // const [isAnimating, setIsAnimating] = useState(false);
-  // const [heartScale, setHeartScale] = useState(1);
 
-  // 펀딩 완료 상태 확인
-  const isCompleted = status === 'COMPLETED';
-
-  // 백엔드에서 주지 않을 경우 프론트에서 계산 (안전장치)
-  const getProgressPercentage = () => {
-    if (progressPercentage !== undefined) return Math.min(progressPercentage, 100);
-    return Math.min(Math.round((currentAmount / targetAmount) * 100), 100);
-  };
-
-  // 찜하기 토글 핸들러 - 주석 처리 (아래 함수 전체)
-  /*
-  const handleLikeToggle = (e: React.MouseEvent) => {
-    e.stopPropagation();
-
-    // 이미 애니메이션 중이면 반응하지 않음
-    if (isAnimating) return;
-
-    // 애니메이션 시작
-    setIsAnimating(true);
-    setHeartScale(0.5); // 작아지는 효과
-
-    // 작아진 후 커지면서 상태 변경
-    setTimeout(() => {
-      setIsLiked(!isLiked);
-      setHeartScale(1.2); // 커지는 효과
-
-      // 원래 크기로 복귀
-      setTimeout(() => {
-        setHeartScale(1);
-        setIsAnimating(false);
-      }, 200);
-    }, 200);
-  };
-  */
+  // 펀딩 완료 상태 확인 - 한글 상태값으로 변경
+  const isCompleted = status === '완료' || status === '배송 중' || status === '배송 완료';
 
   // 이미지 로드 실패 핸들러
   const handleImageError = () => {
     setImageError(true);
   };
 
+  // hidden 상태일 때 클릭 이벤트 처리
+  const handleClick = (event: React.MouseEvent) => {
+    if (hidden) {
+      // hidden이 true면 클릭 이벤트를 중단하고 아무 동작도 하지 않음
+      event.preventDefault();
+      event.stopPropagation();
+      return;
+    }
+
+    if (onClick) {
+      onClick();
+    }
+  };
+
   return (
     <div
       className="rounded-lg overflow-hidden transition-all duration-200 cursor-pointer flex flex-col hover:shadow-md active:shadow-inner"
       style={{ height: '320px' }}
-      onClick={onClick}
+      onClick={handleClick}
     >
       {/* 이미지 영역 - 고정 비율로 변경 + 호버 효과 */}
       <div className="relative w-full overflow-hidden" style={{ height: '180px' }}>
@@ -88,13 +65,13 @@ const FundingCard: React.FC<FundingCardProps> = ({
           <img
             src={imageError ? defaultImage : (imageUrl || defaultImage)}
             alt={title}
-            className={`w-full h-full object-cover transition-transform duration-300 hover-zoom ${isCompleted ? 'opacity-80' : ''}`}
+            className={`w-full h-full object-cover transition-transform duration-300 hover-zoom ${isCompleted ? 'opacity-80' : ''} ${hidden ? 'opacity-60' : ''}`}
             style={{
               objectPosition: 'center',
               transformOrigin: 'center'
             }}
             onMouseOver={(e) => {
-              if (!isCompleted) {
+              if (!isCompleted && !hidden) {
                 e.currentTarget.style.transform = 'scale(1.1)';
               }
             }}
@@ -107,7 +84,7 @@ const FundingCard: React.FC<FundingCardProps> = ({
         </div>
 
         {/* 완료된 펀딩 오버레이 */}
-        {isCompleted && (
+        {isCompleted && !hidden && (
           <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">
             <div className="bg-white bg-opacity-90 py-1.5 px-4 rounded-md text-gray-900 font-medium text-sm shadow-md">
               완료된 펀딩입니다
@@ -115,27 +92,14 @@ const FundingCard: React.FC<FundingCardProps> = ({
           </div>
         )}
 
-        {/* 찜하기 버튼 - 주석 처리 (아래 div 전체) */}
-        {/* 
-        <div
-          onClick={handleLikeToggle}
-          className="absolute top-2 right-2 z-10 cursor-pointer transition-all"
-        >
-          <div
-            className="relative transition-transform duration-200"
-            style={{ transform: `scale(${heartScale})` }}
-          >
-            {isLiked ? (
-              <>
-                <AiFillHeart size={24} className="text-red-500" />
-                <AiOutlineHeart size={24} className="text-white absolute top-0 left-0" />
-              </>
-            ) : (
-              <AiOutlineHeart size={24} className="text-white" />
-            )}
+        {/* 비밀 펀딩 오버레이 */}
+        {hidden && (
+          <div className="absolute inset-0 bg-black bg-opacity-60 flex items-center justify-center">
+            <div className="bg-white bg-opacity-90 py-1.5 px-4 rounded-md text-gray-900 font-medium text-sm shadow-md text-center">
+              친구만 볼 수 있는 비밀 펀딩입니다
+            </div>
           </div>
-        </div>
-        */}
+        )}
       </div>
 
       {/* 콘텐츠 영역 - 패딩 축소 */}
@@ -156,7 +120,7 @@ const FundingCard: React.FC<FundingCardProps> = ({
             <div
               className="h-1 rounded-full"
               style={{
-                width: `${getProgressPercentage()}%`,
+                width: `${progressPercentage}%`,
                 backgroundColor: isCompleted ? '#9CA3AF' : '#FF5B61'
               }}
             ></div>
@@ -165,7 +129,7 @@ const FundingCard: React.FC<FundingCardProps> = ({
           {/* 달성률과 모금액을 한 줄에 배치 - 텍스트 크기 축소 */}
           <div className="flex justify-between items-center">
             <div className="font-bold text-sm" style={{ color: isCompleted ? '#9CA3AF' : '#FF5B61' }}>
-              {getProgressPercentage().toLocaleString()}% 달성
+              {progressPercentage.toLocaleString()}% 달성
             </div>
             <div className="text-xs text-gray-700">
               {currentAmount.toLocaleString()}원

@@ -9,13 +9,17 @@ import defaultImage from '../../../assets/images/default-funding-image.jpg';
 export interface HighlightItem {
   id: number;
   title: string;
-  description: string;
+  imageUrl?: string;
+  progressPercentage: number;
   targetAmount: number;
   currentAmount: number;
-  progressPercentage: number;
-  imageUrl?: string;
-  badgeText: string;
-  badgeColor: string;
+  type: 'popular' | 'achievement';
+  remainingDays: number;
+  participantsCount: number;
+  description?: string;
+  badgeText?: string;
+  badgeColor?: string;
+  hidden?: boolean; // 친구만 볼 수 있는 비밀 펀딩 여부
 }
 
 // 펀딩 하이라이트 컴포넌트 props 타입 정의
@@ -44,10 +48,10 @@ const FundingHighlights: React.FC<FundingHighlightsProps> = ({
   // 슬라이더 레퍼런스
   const sliderRef = useRef<CustomSlider>(null);
 
-  // 현재 활성화된 아이템 배열
+  // 현재 활성화된 아이템 배열 - hidden이 false인 아이템만 필터링
   const items = activeTab === 'popular'
-    ? popularItems
-    : achievementItems;
+    ? popularItems.filter(item => !item.hidden)
+    : achievementItems.filter(item => !item.hidden);
 
   // slick 설정
   const settings = {
@@ -195,12 +199,8 @@ const FundingHighlights: React.FC<FundingHighlightsProps> = ({
         width: '100%',
         margin: '0 auto',
         padding: 0,
-        boxSizing: 'border-box',
         position: 'relative',
-        backgroundColor: 'transparent'
-      }}
-        className="custom-slider-container"
-      >
+      }}>
         <style>
           {`
             /* 캐러셀 스타일 커스텀 - 배경색 제거 */
@@ -261,19 +261,19 @@ const FundingHighlights: React.FC<FundingHighlightsProps> = ({
         </style>
         <Slider {...settings} ref={sliderRef}>
           {items.map((item) => (
-            <div key={item.id} style={{ backgroundColor: 'transparent' }}>
+            <div key={item.id}>
               <div
                 style={{
                   position: 'relative',
-                  height: '340px',
-                  margin: '0 10px',
-                  borderRadius: '12px',
+                  width: '100%',
+                  height: '360px',
+                  margin: '0 0.5rem',
+                  borderRadius: '0.75rem',
                   overflow: 'hidden',
-                  boxShadow: 'none', // 그림자 제거
-                  cursor: 'pointer',
-                  backgroundColor: 'transparent'
+                  boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
+                  cursor: item.hidden ? 'default' : 'pointer'
                 }}
-                onClick={() => handleItemClick(item.id)}
+                onClick={() => !item.hidden && handleItemClick(item.id)}
               >
                 <img
                   src={item.imageUrl || defaultImage}
@@ -282,7 +282,8 @@ const FundingHighlights: React.FC<FundingHighlightsProps> = ({
                     width: '100%',
                     height: '100%',
                     objectFit: 'cover',
-                    objectPosition: 'center'
+                    objectPosition: 'center',
+                    opacity: item.hidden ? 0.6 : 1 // hidden인 경우 이미지를 더 흐리게 처리
                   }}
                   onError={(e) => {
                     const target = e.target as HTMLImageElement;
@@ -292,112 +293,144 @@ const FundingHighlights: React.FC<FundingHighlightsProps> = ({
                   draggable="false"
                 />
 
-                {/* 그라데이션 오버레이 */}
-                <div style={{
-                  position: 'absolute',
-                  bottom: 0,
-                  left: 0,
-                  right: 0,
-                  height: '75%',
-                  background: 'linear-gradient(to top, rgba(0, 0, 0, 0.9), rgba(0, 0, 0, 0.4) 70%, transparent)',
-                  zIndex: 1
-                }}></div>
-
-                {/* 콘텐츠 */}
-                <div style={{
-                  position: 'absolute',
-                  inset: 0,
-                  display: 'flex',
-                  flexDirection: 'column',
-                  justifyContent: 'flex-end',
-                  padding: '1.5rem 1.5rem 2rem 1.5rem',
-                  color: 'white',
-                  zIndex: 2
-                }}>
-                  {/* 배지 */}
-                  <span
-                    className={activeTab === 'popular' ? 'badge-popular' : 'badge-achievement'}
-                    style={{
-                      display: 'inline-block',
-                      padding: '0.2rem 0.5rem',
-                      marginBottom: '0.5rem',
-                      fontSize: '0.7rem',
-                      fontWeight: 'bold',
-                      borderRadius: '9999px',
-                      width: 'fit-content'
-                    }}
-                  >
-                    {item.badgeText}
-                  </span>
-
-                  {/* 제목 */}
-                  <h2 style={{
-                    fontSize: '1.3rem',
-                    fontWeight: 'bold',
-                    marginBottom: '0.5rem',
-                    maxWidth: '100%',
-                    textShadow: '0 1px 3px rgba(0,0,0,0.8)',
-                    lineHeight: '1.3'
-                  }}>
-                    {item.title}
-                  </h2>
-
-                  {/* 설명 */}
-                  <p style={{
-                    fontSize: '0.9rem',
-                    color: 'rgba(255, 255, 255, 1)',
-                    marginBottom: '0.8rem',
-                    maxWidth: '100%',
-                    textShadow: '0 1px 2px rgba(0,0,0,0.5)'
-                  }}>
-                    {item.description}
-                  </p>
-
-                  {/* 달성률 */}
+                {/* 비밀 펀딩 오버레이 */}
+                {item.hidden && (
                   <div style={{
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
                     display: 'flex',
+                    justifyContent: 'center',
                     alignItems: 'center',
-                    justifyContent: 'space-between',
-                    marginBottom: '0.5rem',
-                    width: '100%'
+                    backgroundColor: 'rgba(0, 0, 0, 0.6)',
+                    zIndex: 3
                   }}>
-                    <span style={{
+                    <div style={{
+                      padding: '0.8rem 1.5rem',
+                      backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                      borderRadius: '0.5rem',
+                      fontWeight: '600',
                       fontSize: '1rem',
-                      fontWeight: 'bold',
-                      color: 'white',
-                      textShadow: '0 1px 2px rgba(0,0,0,0.5)'
+                      color: '#333',
+                      boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)'
                     }}>
-                      {item.progressPercentage}% 달성
-                    </span>
-                    <span style={{
-                      color: 'rgba(255, 255, 255, 1)',
-                      fontSize: '0.8rem',
-                      textShadow: '0 1px 2px rgba(0,0,0,0.5)'
-                    }}>
-                      목표: {item.targetAmount.toLocaleString()}원
-                    </span>
+                      친구만 볼 수 있는 비밀 펀딩입니다
+                    </div>
                   </div>
+                )}
 
-                  {/* 프로그레스 바 배경 */}
+                {/* 그라데이션 오버레이 - hidden이 아닐 때만 표시 */}
+                {!item.hidden && (
                   <div style={{
-                    width: '100%',
-                    height: '0.3rem',
-                    backgroundColor: 'rgba(255, 255, 255, 0.3)',
-                    borderRadius: '9999px',
-                    marginBottom: '0.8rem',
-                    overflow: 'hidden'
+                    position: 'absolute',
+                    bottom: 0,
+                    left: 0,
+                    right: 0,
+                    height: '75%',
+                    background: 'linear-gradient(to top, rgba(0, 0, 0, 0.9), rgba(0, 0, 0, 0.4) 70%, transparent)',
+                    zIndex: 1
+                  }}></div>
+                )}
+
+                {/* 콘텐츠 - hidden이 아닐 때만 표시 */}
+                {!item.hidden && (
+                  <div style={{
+                    position: 'absolute',
+                    inset: 0,
+                    display: 'flex',
+                    flexDirection: 'column',
+                    justifyContent: 'flex-end',
+                    padding: '1.5rem 1.5rem 2rem 1.5rem',
+                    color: 'white',
+                    zIndex: 2
                   }}>
-                    {/* 프로그레스 바 내부 색상 */}
-                    <div
-                      className={activeTab === 'popular' ? 'progress-popular' : 'progress-achievement'}
+                    {/* 배지 */}
+                    <span
+                      className={activeTab === 'popular' ? 'badge-popular' : 'badge-achievement'}
                       style={{
-                        height: '100%',
-                        width: `${item.progressPercentage}%`,
-                        borderRadius: '9999px'
+                        display: 'inline-block',
+                        padding: '0.2rem 0.5rem',
+                        marginBottom: '0.5rem',
+                        fontSize: '0.7rem',
+                        fontWeight: 'bold',
+                        borderRadius: '9999px',
+                        width: 'fit-content'
                       }}
-                    ></div>
+                    >
+                      {item.badgeText}
+                    </span>
+
+                    {/* 제목 */}
+                    <h2 style={{
+                      fontSize: '1.3rem',
+                      fontWeight: 'bold',
+                      marginBottom: '0.5rem',
+                      maxWidth: '100%',
+                      textShadow: '0 1px 3px rgba(0,0,0,0.8)',
+                      lineHeight: '1.3'
+                    }}>
+                      {item.title}
+                    </h2>
+
+                    {/* 설명 */}
+                    <p style={{
+                      fontSize: '0.9rem',
+                      color: 'rgba(255, 255, 255, 1)',
+                      marginBottom: '0.8rem',
+                      maxWidth: '100%',
+                      textShadow: '0 1px 2px rgba(0,0,0,0.5)'
+                    }}>
+                      {item.description}
+                    </p>
+
+                    {/* 달성률 */}
+                    <div style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      marginBottom: '0.5rem',
+                      width: '100%'
+                    }}>
+                      <span style={{
+                        fontSize: '1rem',
+                        fontWeight: 'bold',
+                        color: 'white',
+                        textShadow: '0 1px 2px rgba(0,0,0,0.5)'
+                      }}>
+                        {item.progressPercentage}% 달성
+                      </span>
+                      <span style={{
+                        color: 'rgba(255, 255, 255, 1)',
+                        fontSize: '0.8rem',
+                        textShadow: '0 1px 2px rgba(0,0,0,0.5)'
+                      }}>
+                        모금액: {item.currentAmount.toLocaleString()}원
+                      </span>
+                    </div>
+
+                    {/* 프로그레스 바 배경 */}
+                    <div style={{
+                      width: '100%',
+                      height: '0.3rem',
+                      backgroundColor: 'rgba(255, 255, 255, 0.3)',
+                      borderRadius: '9999px',
+                      marginBottom: '0.8rem',
+                      overflow: 'hidden'
+                    }}>
+                      {/* 프로그레스 바 내부 색상 */}
+                      <div
+                        className={activeTab === 'popular' ? 'progress-popular' : 'progress-achievement'}
+                        style={{
+                          height: '100%',
+                          width: `${item.progressPercentage}%`,
+                          borderRadius: '9999px'
+                        }}
+                      ></div>
+                    </div>
                   </div>
-                </div>
+                )}
               </div>
             </div>
           ))}

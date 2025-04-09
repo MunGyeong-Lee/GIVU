@@ -1,5 +1,6 @@
 package com.backend.givu.controller;
 
+import com.backend.givu.model.entity.CustomUserDetail;
 import com.backend.givu.model.entity.Product;
 import com.backend.givu.model.responseDTO.ApiResponse;
 import com.backend.givu.model.responseDTO.ImageUploadResponseDTO;
@@ -14,6 +15,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -37,17 +39,31 @@ public class ProductController {
 
     @Operation(summary = "검색 상품 조회", description = "해당 검색어가 이름 또는 설명에 포함된 모든 상품을 조회합니다.")
     @GetMapping("/search")
-    public ResponseEntity<ApiResponse<List<ProductsDTO>>> searchProducts(@RequestParam String keyword){
+    public ResponseEntity<ApiResponse<List<ProductsDTO>>> searchProducts(@RequestParam String keyword) {
         ApiResponse<List<ProductsDTO>> response = productService.findAllSearchProduct(keyword);
+        return ResponseEntity.ok(response);
+    }
+
+    @Operation(summary = "내가 좋아요 한 상품 조회", description = "내가 좋아요를 누른 모든 상품을 조회합니다.")
+    @GetMapping("/search/likeProduct")
+    public ResponseEntity<ApiResponse<List<ProductsDTO>>> searchLikeProducts(@AuthenticationPrincipal CustomUserDetail customUserDetail) {
+        long userId = customUserDetail.getId();
+        ApiResponse<List<ProductsDTO>> response = productService.findAllLikeProduct(userId);
         return ResponseEntity.ok(response);
     }
 
     @Operation(summary = "상품 상세 조회", description = "상품 상세 정보를 조회합니다.")
     @GetMapping("/{productId}")
-    public ResponseEntity<ProductDetailDTO> findProduct(@PathVariable int productId) {
-        ProductDetailDTO product = productService.findProductDetailByProductId(productId);
+    public ResponseEntity<ProductDetailDTO> findProduct(
+            @PathVariable int productId,
+            @AuthenticationPrincipal CustomUserDetail userDetails) {
+
+        Long userId = (userDetails != null) ? userDetails.getId() : null;
+
+        ProductDetailDTO product = productService.findProductDetailByProductId(productId, userId);
         return ResponseEntity.ok(product);
     }
+
 
     @Operation(summary = "상품 이미지 업로드", description = "파일과 productId를 받아 이미지를 업로드합니다.")
     @PutMapping(value = "/{productId}/image", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
@@ -75,8 +91,19 @@ public class ProductController {
 
     @Operation(summary = "상품 좋아요", description = "해당 상품의 좋아요를 추가합니다.")
     @PatchMapping("/{productId}/like")
-    public ResponseEntity<Void> increaseLike(@PathVariable int productId) {
-        productService.increaseLikeCount(productId);
+    public ResponseEntity<Void> increaseLike(
+            @AuthenticationPrincipal CustomUserDetail userDetail, @PathVariable int productId) {
+        Long userId = userDetail.getId();
+        productService.likeProduct(userId, productId);
+        return ResponseEntity.ok().build();
+    }
+
+    @Operation(summary = "상품 좋아요 취소", description = "해당 상품의 좋아요를 해제합니다.")
+    @PatchMapping("/{productId}/like/cancel")
+    public ResponseEntity<Void> decreaseLike(
+            @AuthenticationPrincipal CustomUserDetail userDetail, @PathVariable int productId) {
+        Long userId = userDetail.getId();
+        productService.unlikeProduct(userId, productId);
         return ResponseEntity.ok().build();
     }
 

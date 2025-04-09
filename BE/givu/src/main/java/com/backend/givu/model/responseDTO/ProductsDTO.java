@@ -19,7 +19,6 @@ public class ProductsDTO {
     private ProductsCategory category;
     private int price;
     private String image;
-    private int favorite;
     private double star;
     private LocalDateTime createdAt;
     private String description;
@@ -30,7 +29,6 @@ public class ProductsDTO {
         this.category = product.getCategory();
         this.price = product.getPrice();
         this.image = product.getImage();
-        this.favorite = product.getFavorite();
         this.star = product.getStar();
         this.createdAt = DateTimeUtil.toLocalDateTime(product.getCreatedAt());
         this.description = product.getDescription();
@@ -41,7 +39,6 @@ public class ProductsDTO {
         this.category = product.getCategory();
         this.price = product.getPrice();
         this.image = product.getImage();
-        this.favorite = product.getFavorite();
         this.star = product.getStar();
         this.createdAt = DateTimeUtil.parseIsoString(product.getCreatedAt());
         this.description = product.getDescription();
