@@ -18,6 +18,9 @@ function Navbar() {
   const { isAuthenticated, token, user } = useAppSelector(state => state.auth);
   const isMainPage = location.pathname === '/';
 
+  // 주문 페이지 확인 (모바일에서 네비게이션 바 숨기기 위함)
+  const isOrderPage = location.pathname.match(/^\/shopping\/order\/\d+$/);
+
   // 디버깅용 로그!
   useEffect(() => {
     console.log('인증 상태:', isAuthenticated);
@@ -138,7 +141,7 @@ function Navbar() {
   ];
 
   return (
-    <header className='bg-white w-full border-b border-gray-200 fixed top-0 left-0 right-0 z-50'>
+    <header className={`bg-white w-full border-b border-gray-200 fixed top-0 left-0 right-0 z-50 ${isOrderPage ? 'md:block hidden' : ''}`}>
       <div className='max-w-7xl mx-auto px-4 sm:px-6 lg:px-8'>
         <div className='flex justify-between items-center h-16'>
           {/* 왼쪽 영역 (로고와 메뉴 아이템) */}
@@ -254,26 +257,28 @@ function Navbar() {
               )}
             </div>
 
-            {/* 햄버거 메뉴 아이콘 - 모바일에서만 표시 */}
-            <button
-              onClick={toggleMobileMenu}
-              className="md:hidden flex items-center p-1 rounded-full text-gray-600 hover:text-primary-color focus:outline-none"
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="h-6 w-6"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
+            {/* 햄버거 메뉴 아이콘 - 모바일에서만 표시 (주문 페이지에서는 표시하지 않음) */}
+            {!isOrderPage && (
+              <button
+                onClick={toggleMobileMenu}
+                className="md:hidden flex items-center p-1 rounded-full text-gray-600 hover:text-primary-color focus:outline-none"
               >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M4 6h16M4 12h16M4 18h16"
-                />
-              </svg>
-            </button>
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-6 w-6"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M4 6h16M4 12h16M4 18h16"
+                  />
+                </svg>
+              </button>
+            )}
           </div>
         </div>
       </div>
