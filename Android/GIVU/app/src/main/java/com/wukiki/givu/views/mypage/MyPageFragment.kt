@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.view.View
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -13,8 +14,10 @@ import androidx.navigation.fragment.findNavController
 import com.wukiki.givu.R
 import com.wukiki.givu.config.BaseFragment
 import com.wukiki.givu.databinding.FragmentMyPageBinding
+import com.wukiki.givu.views.BiometricAuth
 import com.wukiki.givu.views.MainViewModel
 import com.wukiki.givu.views.home.viewmodel.HomeViewModel
+import com.wukiki.givu.views.mypage.component.DepositAccountScreen
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
@@ -22,6 +25,8 @@ class MyPageFragment : BaseFragment<FragmentMyPageBinding>(R.layout.fragment_my_
 
     private val viewModel: HomeViewModel by activityViewModels()
     private val mainViewModel: MainViewModel by activityViewModels()
+    private var biometricAuthForDepositResult = mutableStateOf(false)
+    private var biometricAuthForChargeResult = mutableStateOf(false)
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -39,6 +44,19 @@ class MyPageFragment : BaseFragment<FragmentMyPageBinding>(R.layout.fragment_my_
             val navBackStackEntry by navController.currentBackStackEntryAsState()
             val currentRoute = navBackStackEntry?.destination?.route
 
+            if (biometricAuthForDepositResult.value) {
+                LaunchedEffect(Unit) {
+                    biometricAuthForDepositResult.value = false
+                    viewModel.depositAccount()
+                }
+            }
+            if (biometricAuthForChargeResult.value) {
+                LaunchedEffect(Unit) {
+                    biometricAuthForChargeResult.value = false
+                    viewModel.withdrawAccount()
+                }
+            }
+
             LaunchedEffect(currentRoute) {
                 if (currentRoute == "MyPageScreen") {
                     mainViewModel.setBnvState(true)
@@ -52,6 +70,8 @@ class MyPageFragment : BaseFragment<FragmentMyPageBinding>(R.layout.fragment_my_
                 startDestination = "MyPageScreen"
             ) {
                 composable("MyPageScreen") {
+                    viewModel.setCharge(0)
+                    viewModel.setDeposit(0)
                     MyPageScreen(viewModel, navController, findNavController())
                 }
 
@@ -64,7 +84,31 @@ class MyPageFragment : BaseFragment<FragmentMyPageBinding>(R.layout.fragment_my_
                 }
 
                 composable("ChargeAccount") {
-                    ChargeAccountScreen(viewModel, navController, findNavController())
+                    ChargeAccountScreen(viewModel, navController, findNavController()) {
+                        BiometricAuth(
+                            activity = requireActivity(),
+                            onSuccess = {
+                                biometricAuthForChargeResult.value = true
+                            },
+                            onFailure = {
+                                // 실패 시 처리
+                            }
+                        ).authenticate()
+                    }
+                }
+
+                composable("DepositAccount") {
+                    DepositAccountScreen(viewModel, navController, findNavController()) {
+                        BiometricAuth(
+                            activity = requireActivity(),
+                            onSuccess = {
+                                biometricAuthForDepositResult.value = true
+                            },
+                            onFailure = {
+                                // 실패 시 처리
+                            }
+                        ).authenticate()
+                    }
                 }
 
                 composable("MyRegisterFunding") {
