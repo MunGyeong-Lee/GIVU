@@ -17,5 +17,7 @@ interface ProductRepository {
 
     suspend fun getProducts(): Flow<ApiResult<List<Product>>>
 
+    suspend fun searchProducts(keyword: String): Flow<ApiResult<List<Product>>>
+
     suspend fun fetchProductsLike(): Flow<ApiResult<List<Product>>>
 }
