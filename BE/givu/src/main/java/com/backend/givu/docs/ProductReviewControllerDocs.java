@@ -50,6 +50,7 @@ public interface ProductReviewControllerDocs {
                             "이미지는 `image` 파트로 파일 첨부해주세요."
     )
     public ResponseEntity<ProductReviewDTO> updateProductReview(
+            @PathVariable int productId,
             @PathVariable int reviewId,
             @RequestPart("data") String data,
             @RequestPart(value = "image", required = false) MultipartFile imageFile,

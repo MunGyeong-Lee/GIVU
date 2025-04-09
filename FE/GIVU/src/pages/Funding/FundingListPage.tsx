@@ -41,6 +41,7 @@ interface FundingItemAPI {
   image: string[];
   createdAt: string;
   updatedAt: string;
+  hidden: boolean; // 친구만 볼 수 있는 펀딩 여부
 }
 
 // API 응답을 FundingGrid 컴포넌트 형식으로 변환하는 함수
@@ -64,6 +65,7 @@ const mapToFundingGridItem = (item: FundingItemAPI): FundingGridItem => {
     status: item.status || '',
     createdAt: item.createdAt || '',
     parcitipantsNumber: item.participantsNumber || 0, // 오타 주의: parcitipantsNumber로 되어 있음
+    hidden: item.hidden || false, // hidden 속성 추가
   };
 };
 
@@ -110,6 +112,7 @@ const mapToHighlightItem = (item: FundingItemAPI): HighlightItem => {
     description: item.description || '',
     badgeText: progressPercentage >= 100 ? '달성' : `${progressPercentage}%`,
     badgeColor: progressPercentage >= 100 ? 'bg-green-500' : 'bg-primary',
+    hidden: item.hidden || false // hidden 속성 추가
   };
 };
 
@@ -188,11 +191,14 @@ function FundingListPage() {
       }
 
       // 인기 펀딩과 달성 임박 펀딩 설정 (참여자 수와 펀딩액 기준으로)
-      const sortedByPopularity = [...fundingList].sort((a, b) =>
+      // hidden이 false인 펀딩만 필터링
+      const publicFundings = fundingList.filter(item => !item.hidden);
+
+      const sortedByPopularity = [...publicFundings].sort((a, b) =>
         (b.participantsNumber || 0) - (a.participantsNumber || 0)
       ).slice(0, 5);
 
-      const sortedByAchievement = [...fundingList].sort((a, b) =>
+      const sortedByAchievement = [...publicFundings].sort((a, b) =>
         (b.fundedAmount || 0) - (a.fundedAmount || 0)
       ).slice(0, 5);
 
