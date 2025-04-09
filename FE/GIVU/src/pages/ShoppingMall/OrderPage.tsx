@@ -347,6 +347,7 @@ const OrderPage = () => {
         
         // 커서를 상세주소 필드로 이동한다.
         (document.querySelector('input[name="addressDetail"]') as HTMLInputElement)?.focus();
+        window.close();
       }
     }).open();
   };
