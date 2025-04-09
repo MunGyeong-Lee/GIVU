@@ -127,7 +127,7 @@ const Preview: React.FC<PreviewProps> = ({ fundingData, onPrev, onFundingCreated
         description: basicInfo.description,
         category: basicInfo.category || '',
         categoryName: basicInfo.category === '기타' ? basicInfo.categoryName || '' : null,
-        scope: publicSettings.isPublic ? '공개' : '친구'
+        scope: publicSettings.isPublic ? '공개' : '비밀'
       };
 
       console.log('[미리보기] 펀딩 생성 시작', {
@@ -292,7 +292,7 @@ const Preview: React.FC<PreviewProps> = ({ fundingData, onPrev, onFundingCreated
                   </div>
                   <span className={`text-xs font-medium px-2 py-1 rounded-full ${publicSettings.isPublic ? 'text-green-700 bg-green-50' : 'text-blue-700 bg-transparent border border-blue-200'
                     }`}>
-                    {publicSettings.isPublic ? '전체 공개' : '친구 공개'}
+                    {publicSettings.isPublic ? '전체 공개' : '비밀 펀딩'}
                   </span>
                 </div>
 
