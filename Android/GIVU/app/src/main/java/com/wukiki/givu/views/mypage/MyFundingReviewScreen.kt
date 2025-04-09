@@ -47,7 +47,7 @@ fun MyFundingReviewScreen(
         ) {
             Row {
                 Text(
-                    text = "내가 찜한 상품",
+                    text = "내가 남긴 후기",
                     fontFamily = suit,
                     fontWeight = FontWeight.Bold,
                     fontSize = 22.sp
