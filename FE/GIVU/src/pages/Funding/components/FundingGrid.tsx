@@ -6,9 +6,8 @@ export interface FundingItem {
   id: number;
   title: string;
   description: string;
-  targetAmount: number;
   currentAmount: number;
-  progressPercentage?: number;
+  progressPercentage: number; // 필수 값으로 변경
   imageUrl?: string;
   creatorName: string;
   isPopular?: boolean;
@@ -18,6 +17,7 @@ export interface FundingItem {
   createdAt?: string;
   parcitipantsNumber?: number;
   progress?: number;
+  targetAmount?: number;
   onClick?: () => void;
 }
 
@@ -88,7 +88,6 @@ const FundingGrid: React.FC<FundingGridProps> = ({
           id={funding.id}
           title={funding.title}
           description={funding.description}
-          targetAmount={funding.targetAmount}
           currentAmount={funding.currentAmount}
           progressPercentage={funding.progressPercentage}
           imageUrl={funding.imageUrl}
