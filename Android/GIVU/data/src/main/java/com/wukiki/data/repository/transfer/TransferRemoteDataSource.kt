@@ -1,9 +1,12 @@
 package com.wukiki.data.repository.transfer
 
 import com.wukiki.data.entity.FundingTransferEntity
+import com.wukiki.data.entity.PaymentEntity
 import retrofit2.Response
 
 interface TransferRemoteDataSource {
 
     suspend fun postFundingTransfer(fundingId: String, amount: Int): Response<FundingTransferEntity>
+
+    suspend fun getPaymentHistory(): Response<PaymentEntity>
 }
