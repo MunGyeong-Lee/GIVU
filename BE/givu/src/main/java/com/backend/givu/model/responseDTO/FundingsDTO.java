@@ -85,13 +85,7 @@ public class FundingsDTO {
         this.hidden = hidden;
         this.createdAt = DateTimeUtil.parseIsoString(funding.getCreatedAt());
         this.updatedAt = DateTimeUtil.parseIsoString(funding.getUpdatedAt());
-        this.scope = Optional.ofNullable(funding.getScope())
-                .map(String::trim)
-                .filter(s -> !s.isBlank() && !"null".equalsIgnoreCase(s))
-                .map(FundingsScope::valueOf)
-                .map(ScopeMapper::toClient)
-                .orElse("PUBLIC");
-
+        this.scope = ScopeMapper.toClient(FundingsScope.valueOf(funding.getScope()));
         this.status = StatusMapper.toClient(FundingsStatus.valueOf(funding.getStatus()));
         this.participantsNumber = funding.getParticipantsNumber();
         this.fundedAmount = funding.getFundedAmount();
@@ -107,14 +101,8 @@ public class FundingsDTO {
             this.title = funding.getTitle();
             this.description = funding.getDescription();
             this.image = funding.getImage();
-            String rawCategory = funding.getCategory();
-            String rawCategoryName = funding.getCategoryName();
-
-            this.category = (rawCategory != null && !"null".equalsIgnoreCase(rawCategory))
-                    ? CategoryMapper.toClient(FundingsCategory.valueOf(rawCategory))
-                    : "ETC"; // 기본값
-
-            this.categoryName = rawCategoryName; // 프론트에 보여질 값도 기본 제공
+            this.category = CategoryMapper.toClient(FundingsCategory.valueOf(funding.getCategory()));
+            this.categoryName = funding.getCategoryName(); // nullable 허용
 
             this.product = new ProductsSimpleInfoDTO(
                     funding.getProductId(),
