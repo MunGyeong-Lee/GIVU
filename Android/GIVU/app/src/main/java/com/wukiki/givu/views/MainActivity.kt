@@ -65,6 +65,7 @@ class MainActivity : BaseActivity<ActivityMainBinding>(ActivityMainBinding::infl
         setProductsStateInMall()
         setProductDetailStateInMall()
         setSearchProductsStateInMall()
+        setMyPaymentHistoryListStateInMypage()
     }
 
     private fun setBottomNavigationBar() {
@@ -166,6 +167,33 @@ class MainActivity : BaseActivity<ActivityMainBinding>(ActivityMainBinding::infl
                 }
             }
         }
+    }
+
+    private fun setMyPaymentHistoryListStateInMypage() {
+        lifecycleScope.launch {
+            homeViewModel.myPaymentHistoryListState.collectLatest { state ->
+                when (state.status) {
+                    ApiStatus.LOADING -> {
+                        mainViewModel.addLoadingTask()
+                    }
+
+                    ApiStatus.SUCCESS -> {
+                        mainViewModel.removeLoadingTask()
+                    }
+
+                    ApiStatus.ERROR -> {
+                        mainViewModel.removeLoadingTask()
+                    }
+
+                    ApiStatus.FAIL -> {
+                        mainViewModel.removeLoadingTask()
+                    }
+
+                    else -> {}
+                }
+            }
+        }
+
     }
 
     private fun setMyParticipateFundingsStateInHome() {

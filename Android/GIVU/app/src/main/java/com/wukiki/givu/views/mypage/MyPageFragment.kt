@@ -32,6 +32,7 @@ class MyPageFragment : BaseFragment<FragmentMyPageBinding>(R.layout.fragment_my_
         viewModel.initMyParticipateFundings()
         viewModel.initMyLikeProducts()
         viewModel.initMyFundingReviews()
+//        viewModel.updatePaymentHistory()
 
         binding.composeMyPage.setContent {
             val navController = rememberNavController()
@@ -55,7 +56,7 @@ class MyPageFragment : BaseFragment<FragmentMyPageBinding>(R.layout.fragment_my_
                 }
 
                 composable("PayUsageScreen") {
-                    PayUsageScreen()
+                    PayUsageScreen(viewModel, navController)
                 }
 
                 composable("UserInfoScreen") {

@@ -1,8 +1,10 @@
 package com.wukiki.data.repository.transfer
 
 import android.util.Log
+import com.wukiki.data.mapper.PaymentMapper
 import com.wukiki.data.mapper.TransferMapper
 import com.wukiki.domain.model.ApiResult
+import com.wukiki.domain.model.Payment
 import com.wukiki.domain.model.Transfer
 import com.wukiki.domain.repository.TransferRepository
 import kotlinx.coroutines.CoroutineScope
@@ -38,4 +40,30 @@ class TransferRepositoryImpl @Inject constructor(
                 emit(ApiResult.fail())
             }
         }
+
+    override suspend fun getPaymentHistory(): Flow<ApiResult<List<Payment>>> =
+        flow {
+            emit(ApiResult.loading(null))
+            try {
+                val response = withContext(CoroutineScope(Dispatchers.IO).coroutineContext) {
+                    transferRemoteDataSource.getPaymentHistory()
+                }
+
+                val body = response.body()
+                Log.d("FundingRepositoryImpl", "Response: $body")
+
+                if (response.isSuccessful && body != null) {
+                    val payments = PaymentMapper(body)  // ✅ List<Payment>로 매핑
+                    emit(ApiResult.success(payments))
+                } else {
+                    Log.d("FundingRepositoryImpl", "transferFunding Fail: ${response.code()}")
+                    emit(ApiResult.error("Error: ${response.code()}", null))
+                }
+            } catch (e: Exception) {
+                Log.e("FundingRepositoryImpl", "transferFunding Error: $e")
+                emit(ApiResult.fail())
+            }
+        }
+
+
 }
