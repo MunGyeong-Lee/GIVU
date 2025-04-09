@@ -802,9 +802,7 @@ const HeroSection = () => {
                 position={[0, 10, 0]}
               />
 
-              <Suspense fallback={
-                <Text color="black" anchorX="center" anchorY="middle" fontSize={0.5}>Loading 3D...</Text>
-              }>
+              <Suspense fallback={null}>
                 {/* 로딩 상태 및 데이터 유무에 따른 조건부 렌더링 */}
                 {isLoading ? null : fundingItems.length > 0 ? (
                   <GiftBoxEffect
@@ -823,10 +821,38 @@ const HeroSection = () => {
         </div>
       )}
 
-      {/* 로딩 중일 때 표시될 스피너 (캔버스 위에 오버레이) */}
-      {isLoading && (
-        <div className="absolute inset-0 flex justify-center items-center bg-white bg-opacity-50 z-10">
-          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+      {/* 로딩 중일 때 표시될 스피너 개선 - 스켈레톤 UI로 변경 */}
+      {(isLoading || (canvasVisible && fundingItems.length === 0)) && (
+        <div className="absolute inset-0 flex justify-center items-center bg-white z-10">
+          <div className="w-full max-w-md mx-auto">
+            <div className="flex flex-col items-center">
+              {/* 로고 플레이스홀더 */}
+              <div className="w-32 h-32 mb-8 rounded-full bg-gray-200 animate-pulse"></div>
+
+              {/* 텍스트 플레이스홀더 */}
+              <div className="w-3/4 h-6 mb-4 bg-gray-200 rounded animate-pulse"></div>
+              <div className="w-2/4 h-6 mb-8 bg-gray-200 rounded animate-pulse"></div>
+
+              {/* 버튼 플레이스홀더 */}
+              <div className="w-40 h-10 bg-gray-200 rounded-full animate-pulse"></div>
+
+              {/* 배경 효과 스켈레톤 */}
+              <div className="absolute inset-0 flex justify-center items-center opacity-10">
+                <div className="w-full h-full flex flex-wrap justify-center items-center">
+                  {[...Array(12)].map((_, i) => (
+                    <div
+                      key={i}
+                      className="w-16 h-16 m-4 rounded-md bg-gray-300 animate-pulse"
+                      style={{
+                        animationDelay: `${i * 100}ms`,
+                        opacity: 0.7 - (i * 0.05)
+                      }}
+                    ></div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       )}
 

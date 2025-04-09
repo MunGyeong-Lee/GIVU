@@ -1,7 +1,6 @@
-package com.backend.givu.kafka.refund;
+package com.backend.givu.kafka.cancel;
 
 
-import com.backend.givu.kafka.refund.FriendsRefundProducer;
 import com.backend.givu.model.entity.User;
 import com.backend.givu.model.repository.UserRepository;
 import jakarta.persistence.EntityNotFoundException;
