@@ -173,21 +173,6 @@ public class FundingController implements FundingControllerDocs {
         return ResponseEntity.noContent().build(); //204 No Content
     }
 
-//    @Operation(summary = "펀딩 완료", description = "해당 펀딩을 완료시킵니다.")
-//    @PutMapping(value = "/{fundingId}/complete")
-//    public ResponseEntity<FundingsDTO> completeFunding(
-//            @AuthenticationPrincipal CustomUserDetail userDetail,
-//            @PathVariable int fundingId,
-//            HttpServletRequest request) throws AccessDeniedException{
-//
-//        Long userId = userDetail.getId();
-//        log.info("펀딩 완료 요청: userId={}, fundingId={}", userId, fundingId);
-//
-//        FundingsDTO completeFunding = fundingService.completeFunding(userId, fundingId);
-//        return ResponseEntity.ok(completeFunding);
-//
-//    }
-
 
     @Operation(summary = "펀딩 상세보기", description = "해당 펀딩 상세를 보여줍니다.")
     @GetMapping(value = "/{fundingId}")
@@ -216,6 +201,24 @@ public class FundingController implements FundingControllerDocs {
         PaymentResultDTO fundingTransfer = fundingService.paymentResult(userId, paymentId);
         return ResponseEntity.ok(ApiResponse.success(fundingTransfer));
     }
+
+
+    @Operation(summary = "펀딩 결제", description = "해당 펀딩 금액으로 상품을 결제합니다.")
+    @PutMapping(value = "/{fundingId}/purchase")
+    public ResponseEntity<ApiResponse<FundingsDTO>> fundingPurchase(
+            @AuthenticationPrincipal CustomUserDetail userDetail,
+            @PathVariable int fundingId,
+            @RequestParam String address,
+            HttpServletRequest request) throws AccessDeniedException{
+
+        Long userId = userDetail.getId();
+        log.info("펀딩 결제 요청: userId={}, fundingId={}", userId, fundingId);
+
+        FundingsDTO fundingPurchase = fundingService.fundingPurchase(userId, fundingId, address);
+        return ResponseEntity.ok(ApiResponse.success(fundingPurchase));
+
+    }
+
 
 
 
