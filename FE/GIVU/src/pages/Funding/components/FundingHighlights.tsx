@@ -9,13 +9,16 @@ import defaultImage from '../../../assets/images/default-funding-image.jpg';
 export interface HighlightItem {
   id: number;
   title: string;
-  description: string;
+  imageUrl?: string;
+  progressPercentage: number;
   targetAmount: number;
   currentAmount: number;
-  progressPercentage: number;
-  imageUrl?: string;
-  badgeText: string;
-  badgeColor: string;
+  type: 'popular' | 'achievement';
+  remainingDays: number;
+  participantsCount: number;
+  description?: string;
+  badgeText?: string;
+  badgeColor?: string;
 }
 
 // 펀딩 하이라이트 컴포넌트 props 타입 정의
@@ -374,7 +377,7 @@ const FundingHighlights: React.FC<FundingHighlightsProps> = ({
                       fontSize: '0.8rem',
                       textShadow: '0 1px 2px rgba(0,0,0,0.5)'
                     }}>
-                      목표: {item.targetAmount.toLocaleString()}원
+                      모금액: {item.currentAmount.toLocaleString()}원
                     </span>
                   </div>
 

@@ -18,6 +18,9 @@ const mapToHighlightItem = (item: FundingItem): HighlightItem => {
     currentAmount: item.fundedAmount || 0,
     progressPercentage: progressPercentage > 100 ? 100 : progressPercentage, // 100% 초과 시 100%로 제한
     imageUrl: item.product?.image || '',
+    type: 'popular',
+    remainingDays: 0,
+    participantsCount: item.participantsNumber || 0,
     badgeText: '', // 빈 문자열로 설정 (UI에 표시하지 않음)
     badgeColor: '#FF5B61' // 프로그레스 바 색상으로 사용
   };

@@ -7,10 +7,13 @@ const mapToHighlightItem = (item: FundingItem, badgeText: string, badgeColor: st
   id: item.id,
   title: item.title,
   description: item.description,
-  targetAmount: item.targetAmount,
+  targetAmount: item.targetAmount || 0,
   currentAmount: item.currentAmount,
   progressPercentage: item.progressPercentage || 0,
   imageUrl: item.imageUrl,
+  type: 'popular',
+  remainingDays: 0,
+  participantsCount: item.parcitipantsNumber || 0,
   badgeText,
   badgeColor
 });
