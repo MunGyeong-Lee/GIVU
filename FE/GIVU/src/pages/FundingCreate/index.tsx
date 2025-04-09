@@ -136,24 +136,10 @@ const FundingCreateContainer: React.FC = () => {
     }
   };
 
-  // 미리보기로 이동
-  const goToPreview = () => {
-    setCurrentStep('preview');
-
-    // 네비게이션 바에 현재 단계 업데이트
-    // @ts-ignore
-    if (window.fundingCreateContext) {
-      // @ts-ignore
-      window.fundingCreateContext.updateCurrentStep('preview');
-    }
-  };
-
   // 컴포넌트가 마운트될 때 미리보기 콜백 등록
   useEffect(() => {
     // @ts-ignore
     if (window.fundingCreateContext) {
-      // @ts-ignore
-      window.fundingCreateContext.registerPreviewCallback(goToPreview);
       // @ts-ignore
       window.fundingCreateContext.updateCurrentStep(currentStep);
     }
