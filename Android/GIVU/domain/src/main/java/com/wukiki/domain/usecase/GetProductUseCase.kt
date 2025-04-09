@@ -26,6 +26,9 @@ class GetProductUseCase @Inject constructor(
     suspend fun updateProductImage(productId: Int): Flow<ApiResult<String>> =
         productRepository.putProductImage(productId)
 
+    suspend fun searchProducts(keyword: String): Flow<ApiResult<List<Product>>> =
+        productRepository.searchProducts(keyword)
+
     suspend fun fetchProductsLike(): Flow<ApiResult<List<Product>>> =
         productRepository.fetchProductsLike()
 }
