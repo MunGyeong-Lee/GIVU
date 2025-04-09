@@ -112,6 +112,9 @@
         <action
             android:id="@+id/action_detail_funding_to_finish_funding"
             app:destination="@id/fragment_finish_funding" />
+        <action
+            android:id="@+id/action_fragment_detail_funding_to_fragment_login"
+            app:destination="@id/fragment_login" />
 
     </fragment>
 

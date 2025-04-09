@@ -1,12 +1,10 @@
 package com.wukiki.givu.views.mall
 
-import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.view.View
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.ui.platform.LocalContext
 import androidx.fragment.app.activityViewModels
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -19,7 +17,6 @@ import com.wukiki.givu.R
 import com.wukiki.givu.config.BaseFragment
 import com.wukiki.givu.databinding.FragmentMallBinding
 import com.wukiki.givu.views.MainViewModel
-import com.wukiki.givu.views.OrderWebviewActivity
 import com.wukiki.givu.views.home.viewmodel.HomeViewModel
 import com.wukiki.givu.views.mall.viewmodel.MallViewModel
 import com.wukiki.givu.views.register.viewmodel.RegisterViewModel
@@ -85,10 +82,4 @@ class MallFragment : BaseFragment<FragmentMallBinding>(R.layout.fragment_mall) {
             }
         }
     }
-
-//    override fun onResume() {
-//        super.onResume()
-//
-//        mainViewModel.setBnvState(true)
-//    }
 }
