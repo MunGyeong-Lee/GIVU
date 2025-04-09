@@ -1,4 +1,4 @@
-package com.backend.givu.kafka.refund;
+package com.backend.givu.kafka.cancel;
 
 
 import com.backend.givu.model.requestDTO.RefundEventDTO;
