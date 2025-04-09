@@ -1161,14 +1161,6 @@ const FundingDetailPage = () => {
     navigate(`/funding/review/write?fundingId=${fundingData.fundingId}`);
   }, [fundingData, navigate]);
 
-  // 펀딩 수정 페이지로 이동하는 함수 추가
-  const navigateToEditPage = useCallback(() => {
-    if (!fundingData) return;
-    
-    // 펀딩 수정 페이지로 이동
-    navigate(`/funding/edit/${fundingData.fundingId}`);
-  }, [fundingData, navigate]);
-
   // 수정 모달 표시 함수
   const openEditModal = () => {
     if (!fundingData) return;
