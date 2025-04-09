@@ -64,6 +64,7 @@ class MainActivity : BaseActivity<ActivityMainBinding>(ActivityMainBinding::infl
         setFundingsStateInSearch()
         setProductsStateInMall()
         setProductDetailStateInMall()
+        setSearchProductsStateInMall()
         setMyPaymentHistoryListStateInMypage()
     }
 
@@ -616,6 +617,32 @@ class MainActivity : BaseActivity<ActivityMainBinding>(ActivityMainBinding::infl
     private fun setProductDetailStateInMall() {
         lifecycleScope.launch {
             mallViewModel.productDetailState.collectLatest { state ->
+                when (state.status) {
+                    ApiStatus.LOADING -> {
+                        mainViewModel.addLoadingTask()
+                    }
+
+                    ApiStatus.SUCCESS -> {
+                        mainViewModel.removeLoadingTask()
+                    }
+
+                    ApiStatus.ERROR -> {
+                        mainViewModel.removeLoadingTask()
+                    }
+
+                    ApiStatus.FAIL -> {
+                        mainViewModel.removeLoadingTask()
+                    }
+
+                    else -> {}
+                }
+            }
+        }
+    }
+
+    private fun setSearchProductsStateInMall() {
+        lifecycleScope.launch {
+            mallViewModel.searchProductsState.collectLatest { state ->
                 when (state.status) {
                     ApiStatus.LOADING -> {
                         mainViewModel.addLoadingTask()

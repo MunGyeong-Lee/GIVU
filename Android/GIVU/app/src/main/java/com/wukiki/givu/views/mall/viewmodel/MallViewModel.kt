@@ -35,7 +35,14 @@ class MallViewModel @Inject constructor(
         MutableStateFlow<ApiResult<ProductDetail?>>(ApiResult.init())
     val productDetailState = _productDetailState.asStateFlow()
 
+    private val _searchProductsState =
+        MutableStateFlow<ApiResult<List<Product>>>(ApiResult.init())
+    val searchProductsState = _searchProductsState.asStateFlow()
+
     /*** Datas ***/
+    private val _selectedCategory = MutableStateFlow<String>("전체")
+    val selectedCategory = _selectedCategory.asStateFlow()
+
     private val _products = MutableStateFlow<List<Product>>(emptyList())
     val products = _products.asStateFlow()
 
@@ -45,14 +52,20 @@ class MallViewModel @Inject constructor(
     private val _selectedProduct = MutableStateFlow<ProductDetail?>(null)
     val selectedProduct = _selectedProduct.asStateFlow()
 
-//    private val _productReviewList = MutableStateFlow<List<ProductReview>>(emptyList())
-//    val productReviewList = _productReviewList.asStateFlow()
+    private val _searchKeyword = MutableStateFlow<String>("")
+    val searchKeyword = _searchKeyword
+
+    private val _searchResults = MutableStateFlow<List<Product>>(emptyList())
+    val searchResults = _searchResults.asStateFlow()
+
+    private val _sortOption = MutableStateFlow("이름순")
+    val sortOption = _sortOption.asStateFlow()
 
     init {
         initProducts()
     }
 
-    private fun initProducts() {
+    fun initProducts() {
         viewModelScope.launch {
             val response = getProductUseCase.getProducts()
 
@@ -60,6 +73,7 @@ class MallViewModel @Inject constructor(
                 _productsState.value = result
                 if (result.status == ApiStatus.SUCCESS) {
                     val newProducts = result.data ?: emptyList()
+                    _selectedCategory.value = "전체"
                     _products.value = newProducts
                     _filteredProducts.value = _products.value
                 } else if ((result.status == ApiStatus.FAIL) || (result.status == ApiStatus.ERROR)) {
@@ -67,6 +81,15 @@ class MallViewModel @Inject constructor(
                 }
             }
         }
+    }
+
+    fun selectCategory(category: String) {
+        _selectedCategory.value = category
+    }
+
+    fun initSearchResult() {
+        _searchKeyword.value = ""
+        _searchResults.value = emptyList()
     }
 
     fun filterProducts(category: String) {
@@ -126,6 +149,49 @@ class MallViewModel @Inject constructor(
                     _mallUiEvent.emit(MallUiEvent.CancelLikeProductSuccess)
                 } else if ((result.status == ApiStatus.FAIL) || (result.status == ApiStatus.ERROR)) {
                     _mallUiEvent.emit(MallUiEvent.CancelLikeProductFail)
+                }
+            }
+        }
+    }
+
+    fun updateSortOption(option: String) {
+        _sortOption.value = option
+        val newResults = _searchResults.value.toMutableList()
+        when (_sortOption.value) {
+            "이름순" -> {
+                _searchResults.value = newResults.sortedBy { it.productName }
+            }
+
+            "가격이 낮은 순" -> {
+                _searchResults.value = newResults.sortedBy { it.price.toInt() }
+            }
+
+            "가격이 높은 순" -> {
+                _searchResults.value = newResults.sortedByDescending { it.price.toInt() }
+            }
+        }
+    }
+
+    fun searchProduct(keyword: String) {
+        viewModelScope.launch {
+            when (_searchKeyword.value.isBlank()) {
+                true -> {
+                    _searchResults.value = emptyList()
+                }
+
+                else -> {
+                    val response = getProductUseCase.searchProducts(keyword)
+
+                    response.collectLatest { result ->
+                        _searchProductsState.value = result
+                        if (result.status == ApiStatus.SUCCESS) {
+                            val newResult = result.data?.toMutableList()
+                                ?: emptyList<Product>().toMutableList()
+                            _sortOption.value = "이름순"
+                            newResult.sortedBy { it.productName }
+                            _searchResults.value = newResult
+                        }
+                    }
                 }
             }
         }
