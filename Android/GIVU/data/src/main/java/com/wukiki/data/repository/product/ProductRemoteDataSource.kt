@@ -18,5 +18,7 @@ interface ProductRemoteDataSource {
 
     suspend fun getProducts(): Response<List<ProductDetailEntity>>
 
+    suspend fun getProductSearch(keyword: String): Response<ProductSearchEntity>
+
     suspend fun getProductsLike(): Response<ProductSearchEntity>
 }
