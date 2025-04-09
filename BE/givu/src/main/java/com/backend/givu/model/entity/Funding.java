@@ -122,9 +122,22 @@ public class Funding {
         this.updatedAt = now;
     }
 
+
     @PreUpdate
     protected  void onUpdate(){
         this.updatedAt = Instant.now();
+    }
+
+    public void addFundedAmount(int amount){
+        this.fundedAmount += amount;
+    }
+
+
+    public void subtractFundedAmount(int amount) {
+        if (this.fundedAmount < amount) {
+            throw new IllegalArgumentException("펀딩 총액보다 큰 금액은 차감할 수 없습니다.");
+        }
+        this.fundedAmount -= amount;
     }
 
 

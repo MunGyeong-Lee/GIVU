@@ -22,6 +22,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 
 @Service
@@ -34,6 +35,8 @@ public class FundingService {
     private final ProductRepository productRepository;
     private final FriendRepository friendRepository;
     private final UserRepository userRepository;
+    private final ParticipantRepository participantRepository;
+
     private final S3UploadService s3UploadService;
 
     /**
@@ -264,8 +267,20 @@ public class FundingService {
         List<Letter> letters = fundingRepository.findLetterByFundingIdWithUser(fundingId);
         List<Review> reviews = fundingRepository.findReviewByFundingIdWithUser(fundingId);
 
+        // 참가자 리스트
+        List<Participant> participantEntities = participantRepository.findByFundingIdWithUser(fundingId);
+        List<User> participants = participantEntities.stream()
+                .map(Participant::getUser)
+//                .filter(Objects::nonNull)
+                .distinct()
+                .toList();
+
         // DTO 조립
-        FundingDetailDTO dto = FundingDetailDTO.of(funding, isCreator, writer, product, letters, reviews, viewerId);
+        FundingDetailDTO dto = FundingDetailDTO.of(
+                funding, isCreator, writer, product, letters, reviews, viewerId,participants);
+
+//        FundingDetailDTO dto = FundingDetailDTO.of(funding, isCreator, writer, product, letters, reviews, viewerId);
+
 
         return ApiResponse.success(dto);
     }

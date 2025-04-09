@@ -1,5 +1,6 @@
-package com.backend.givu.kafka;
+package com.backend.givu.kafka.payment;
 
+import com.backend.givu.kafka.payment.FundingProducer;
 import com.backend.givu.model.entity.Funding;
 import com.backend.givu.model.entity.Payment;
 import com.backend.givu.model.repository.FundingRepository;
@@ -32,7 +33,7 @@ public class FundingTransferService {
                     .orElseThrow(() -> new EntityNotFoundException("결제 정보가 없습니다: " + paymentId));
 
             log.info("현재 펀딩 모금액(반영 전:{} ", funding.getFundedAmount());
-            funding.setFundedAmount(funding.getFundedAmount() + amount); //펀딩 모금액 증가
+            funding.addFundedAmount(amount); //펀딩 모금액 증가
             log.info("현재 펀딩 모금액(반영 후):{} ", funding.getFundedAmount());
             log.info("펀딩 금액 증가 다 처리 완료");
 
