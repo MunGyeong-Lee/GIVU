@@ -9,7 +9,7 @@ const PaymentPasswordModal: React.FC<{
   onSubmit: (password: string) => Promise<void>;
   amount: number;
   isLoading: boolean;
-}> = ({ isOpen, onClose, onSubmit, amount}) => {
+}> = ({ isOpen, onClose, onSubmit, amount }) => {
   const [password, setPassword] = useState<string>('');
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
