@@ -13,6 +13,7 @@ interface FundingCardProps {
   creatorName: string; // 카카오 유저 닉네임 추가
   onClick?: () => void;
   status?: string; // 펀딩 상태 추가 (대기, 완료, 배송 중 등)
+  hidden?: boolean; // 친구만 볼 수 있는 비밀 펀딩 여부
 }
 
 const FundingCard: React.FC<FundingCardProps> = ({
@@ -24,7 +25,8 @@ const FundingCard: React.FC<FundingCardProps> = ({
   imageUrl,
   creatorName,
   onClick,
-  status
+  status,
+  hidden = false
 }) => {
   // 이미지 로딩 상태 관리
   const [imageError, setImageError] = useState(false);
@@ -37,11 +39,25 @@ const FundingCard: React.FC<FundingCardProps> = ({
     setImageError(true);
   };
 
+  // hidden 상태일 때 클릭 이벤트 처리
+  const handleClick = (event: React.MouseEvent) => {
+    if (hidden) {
+      // hidden이 true면 클릭 이벤트를 중단하고 아무 동작도 하지 않음
+      event.preventDefault();
+      event.stopPropagation();
+      return;
+    }
+
+    if (onClick) {
+      onClick();
+    }
+  };
+
   return (
     <div
       className="rounded-lg overflow-hidden transition-all duration-200 cursor-pointer flex flex-col hover:shadow-md active:shadow-inner"
       style={{ height: '320px' }}
-      onClick={onClick}
+      onClick={handleClick}
     >
       {/* 이미지 영역 - 고정 비율로 변경 + 호버 효과 */}
       <div className="relative w-full overflow-hidden" style={{ height: '180px' }}>
@@ -49,13 +65,13 @@ const FundingCard: React.FC<FundingCardProps> = ({
           <img
             src={imageError ? defaultImage : (imageUrl || defaultImage)}
             alt={title}
-            className={`w-full h-full object-cover transition-transform duration-300 hover-zoom ${isCompleted ? 'opacity-80' : ''}`}
+            className={`w-full h-full object-cover transition-transform duration-300 hover-zoom ${isCompleted ? 'opacity-80' : ''} ${hidden ? 'opacity-60' : ''}`}
             style={{
               objectPosition: 'center',
               transformOrigin: 'center'
             }}
             onMouseOver={(e) => {
-              if (!isCompleted) {
+              if (!isCompleted && !hidden) {
                 e.currentTarget.style.transform = 'scale(1.1)';
               }
             }}
@@ -68,10 +84,19 @@ const FundingCard: React.FC<FundingCardProps> = ({
         </div>
 
         {/* 완료된 펀딩 오버레이 */}
-        {isCompleted && (
+        {isCompleted && !hidden && (
           <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">
             <div className="bg-white bg-opacity-90 py-1.5 px-4 rounded-md text-gray-900 font-medium text-sm shadow-md">
               완료된 펀딩입니다
+            </div>
+          </div>
+        )}
+
+        {/* 비밀 펀딩 오버레이 */}
+        {hidden && (
+          <div className="absolute inset-0 bg-black bg-opacity-60 flex items-center justify-center">
+            <div className="bg-white bg-opacity-90 py-1.5 px-4 rounded-md text-gray-900 font-medium text-sm shadow-md text-center">
+              친구만 볼 수 있는 비밀 펀딩입니다
             </div>
           </div>
         )}

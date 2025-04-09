@@ -57,6 +57,7 @@ public class SecurityConfig {
                                 "/fundings/list",
                                 "/fundings/search",
                                 "/fundings/reindex",
+                                "/fundings/*",
                                 "/kafka/send",
                                 "/kafka/**"
                         ).permitAll()
@@ -70,7 +71,9 @@ public class SecurityConfig {
                                 "/users/test",        // 테스트
                                 "/products-review/**",
                                 "/fundings/**",
-                                "/mypage/**"
+                                "/mypage/**",
+                                "/friends/**",
+                                "/transfer/**"
                         ).authenticated())
 
                 /**

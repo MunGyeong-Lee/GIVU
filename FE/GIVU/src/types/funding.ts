@@ -29,6 +29,7 @@ export interface FundingItem {
   image: string | null;
   createdAt: string;
   updatedAt: string | null;
+  hidden: boolean; // 친구만 볼 수 있는 비밀 펀딩 여부
 }
 
 // 히어로 섹션에서 사용할 간소화된 펀딩 타입
