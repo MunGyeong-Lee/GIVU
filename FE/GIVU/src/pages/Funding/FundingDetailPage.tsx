@@ -124,8 +124,8 @@ const FundingDetailPage = () => {
   const [isCustomInput, setIsCustomInput] = useState(false);
   const [showAllParticipants, setShowAllParticipants] = useState(false);
   const [amountError, setAmountError] = useState<string | null>(null);
-  const [paymentProcessing, setPaymentProcessing] = useState<boolean>(false);
-  const [paymentResult, setPaymentResult] = useState<any>(null);
+  // const [paymentProcessing, setPaymentProcessing] = useState<boolean>(false);
+  // const [paymentResult, setPaymentResult] = useState<any>(null);
   
   // 잔액 정보 상태 추가
   const [balanceInfo, setBalanceInfo] = useState<BalanceInfo>({
@@ -138,7 +138,7 @@ const FundingDetailPage = () => {
 
   // 펀딩 생성자 확인 상태 추가
   const [isCreator, setIsCreator] = useState<boolean>(false);
-  const [creatorCheckLoading, setCreatorCheckLoading] = useState<boolean>(false);
+  const [, setCreatorCheckLoading] = useState<boolean>(false);
 
   // 편지 작성 관련 상태 추가
   const [letterComment, setLetterComment] = useState<string>('');
