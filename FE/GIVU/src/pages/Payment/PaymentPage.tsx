@@ -531,7 +531,7 @@ const PaymentPage = () => {
           <div className="flex justify-between items-center">
             <span className="text-gray-600">현재 GIVU 페이 잔액</span>
             <div className="flex items-center gap-2">
-              <span className="font-medium">{balance.toLocaleString()}원</span>
+            <span className="font-medium">{balance.toLocaleString()}원</span>
               <button
                 onClick={() => {
                   setLoading(true);

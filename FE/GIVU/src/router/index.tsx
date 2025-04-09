@@ -80,6 +80,10 @@ const routes = [
         ],
       },
       {
+        path: "funding/*",
+        element: <Navigate to="/funding" replace />,
+      },
+      {
         path: "shopping",
         element: <MainShopping />,
       },
