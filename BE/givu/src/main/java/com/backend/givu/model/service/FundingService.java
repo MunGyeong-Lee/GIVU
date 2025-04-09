@@ -1,6 +1,7 @@
 package com.backend.givu.model.service;
 
 import com.backend.givu.model.Document.FundingDocument;
+import com.backend.givu.model.Enum.FundingsScope;
 import com.backend.givu.model.Enum.FundingsStatus;
 import com.backend.givu.model.entity.*;
 import com.backend.givu.model.repository.*;
@@ -21,6 +22,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 
 @Service
@@ -31,6 +33,7 @@ public class FundingService {
     private final FundingRepository fundingRepository;
     private final FundingSearchRepository fundingSearchRepository;
     private final ProductRepository productRepository;
+    private final FriendRepository friendRepository;
     private final UserRepository userRepository;
     private final ParticipantRepository participantRepository;
 
@@ -52,30 +55,62 @@ public class FundingService {
     }
 
 
-    /**
-     * 펀딩 리스트 조회
-     */
-    public List<FundingsDTO> findAllFunding(){
-        List<Funding> fundings =  fundingRepository.findAllWithUserAndProduct();
+    public List<FundingsDTO> findAllFunding(Long userId) {
+        List<Funding> fundings = fundingRepository.findAllWithUserAndProduct();
+
+        List<Long> friendIds = userId != null
+                ? friendRepository.findByUserWithFriend(userId).stream()
+                .map(f -> f.getFriend().getId())
+                .toList()
+                : List.of();
+
         return fundings.stream()
-                .map(FundingsDTO::new)
+                .map(funding -> {
+                    Long ownerId = funding.getUser().getId();
+
+                    boolean hidden = false;
+                    if (funding.getScope() == FundingsScope.PRIVATE) {
+                        hidden = userId == null || !(ownerId.equals(userId) || friendIds.contains(ownerId));
+                    }
+
+                    return new FundingsDTO(funding, hidden);
+                })
                 .toList();
-
-        // 친구인지 아닌지
-        //----> 비공개 펀딩을 보여줄지 말지를 결정
-
-
     }
+
+
+
 
     /**
      * 검색한 펀딩 리스트 조회
      */
-    public ApiResponse<List<FundingsDTO>> findAllSearchFunding(String title){
+    public ApiResponse<List<FundingsDTO>> findAllSearchFunding(String title, Long userId) {
         List<FundingDocument> fundingDocuments = fundingSearchRepository.searchFundingByKeyword(title);
-        return ApiResponse.success(fundingDocuments.stream()
-                .map(FundingsDTO::new)
-                .toList());
+
+        List<Long> friendIds = userId != null
+                ? friendRepository.findByUserWithFriend(userId).stream()
+                .map(f -> f.getFriend().getId())
+                .toList()
+                : List.of();
+
+        List<FundingsDTO> result = fundingDocuments.stream()
+                .map(doc -> {
+                    Long ownerId = doc.getUserId();
+
+                    boolean hidden = false;
+                    if (FundingsScope.valueOf(doc.getScope()) == FundingsScope.PRIVATE) {
+                        hidden = userId == null || !(ownerId.equals(userId) || friendIds.contains(ownerId));
+                    }
+
+                    return new FundingsDTO(doc, hidden);
+                })
+                .toList();
+
+        return ApiResponse.success(result);
     }
+
+
+
 
 
     /**
@@ -208,43 +243,48 @@ public class FundingService {
     /**
      * 펀딩 상세 보기
      */
-    public ApiResponse<FundingDetailDTO> fundingDetail (Long userId, int fundingId){
+    public ApiResponse<FundingDetailDTO> fundingDetail(Long userId, int fundingId) {
 
-        // 존재하는 펀딩인지 확인
+        // 펀딩 + 유저 + 상품 가져오기
         Funding funding = fundingRepository.findByIdWithUserAndProduct(fundingId)
-                .orElseThrow(() -> new EntityNotFoundException("펀딩을 찾을 수 없습니다,"));
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new EntityNotFoundException("유저를 찾을 수 없습니다."));
+                .orElseThrow(() -> new EntityNotFoundException("펀딩을 찾을 수 없습니다."));
 
-
-        //  연관된 상품, 작성자 정보, 작성자 == 조회하는 유저 인지
         Product product = funding.getProduct();
         User writer = funding.getUser();
-        boolean isCreator = user.getId().equals(writer.getId());
 
-        // 편지 리스트 (User 포함 fetch join)
+        boolean isCreator = false;
+        Long viewerId = null;
+
+        if (userId != null) {
+            // 로그인 유저일 경우에만 조회
+            User user = userRepository.findById(userId)
+                    .orElseThrow(() -> new EntityNotFoundException("유저를 찾을 수 없습니다."));
+            isCreator = user.getId().equals(writer.getId());
+            viewerId = user.getId();
+        }
+
+        // 편지 + 후기
         List<Letter> letters = fundingRepository.findLetterByFundingIdWithUser(fundingId);
-        // 작성자 본인이 접속했을때는 비밀글 보이게
-        // 작성자 본인이 아니면 비밀글 안보이게 필터링
-
-        // 후기 리스트 (User 포함 fetch join)
         List<Review> reviews = fundingRepository.findReviewByFundingIdWithUser(fundingId);
 
         // 참가자 리스트
         List<Participant> participantEntities = participantRepository.findByFundingIdWithUser(fundingId);
         List<User> participants = participantEntities.stream()
                 .map(Participant::getUser)
+//                .filter(Objects::nonNull)
                 .distinct()
                 .toList();
 
         // DTO 조립
-        FundingDetailDTO dto = FundingDetailDTO.of(funding, isCreator, writer, product,
-                letters, reviews, user.getId(),participants);
+        FundingDetailDTO dto = FundingDetailDTO.of(
+                funding, isCreator, writer, product, letters, reviews, viewerId,participants);
+
+//        FundingDetailDTO dto = FundingDetailDTO.of(funding, isCreator, writer, product, letters, reviews, viewerId);
+
 
         return ApiResponse.success(dto);
-
-
     }
+
 
     /**
      * 펀딩 결제 확인

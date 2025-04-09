@@ -69,17 +69,20 @@ public class FundingController implements FundingControllerDocs {
 
     @Operation(summary = "펀딩 리스트 조회", description = "전체 펀딩 리스트를 조회합니다.")
     @GetMapping(value = "/list")
-    public ResponseEntity<List<FundingsDTO>> findAll(){
-
-        List<FundingsDTO> fundingList = fundingService.findAllFunding();
+    public ResponseEntity<List<FundingsDTO>> findAll(@AuthenticationPrincipal CustomUserDetail customUserDetail){
+        Long userId = customUserDetail != null ? customUserDetail.getId() : null;
+        List<FundingsDTO> fundingList = fundingService.findAllFunding(userId);
         return ResponseEntity.ok(fundingList);
     }
 
     @Operation(summary = "검색한 펀딩 리스트 조회", description = "검색한 펀딩 리스트를 조회합니다.")
-    @GetMapping(value = "/search")
-    public ResponseEntity<ApiResponse<List<FundingsDTO>>> findAll(@RequestParam String title){
-        ApiResponse<List<FundingsDTO>> response = fundingService.findAllSearchFunding(title);
-        return ResponseEntity.ok(response);
+    @GetMapping("/search")
+    public ApiResponse<List<FundingsDTO>> searchFundings(
+            @RequestParam String title,
+            @AuthenticationPrincipal CustomUserDetail userDetail) {
+
+        Long userId = userDetail != null ? userDetail.getId() : null;
+        return fundingService.findAllSearchFunding(title, userId);
     }
 
     @PostMapping("/reindex")
@@ -187,17 +190,18 @@ public class FundingController implements FundingControllerDocs {
 
 
     @Operation(summary = "펀딩 상세보기", description = "해당 펀딩 상세를 보여줍니다.")
-    @GetMapping(value="/{fundingId}")
+    @GetMapping(value = "/{fundingId}")
     public ResponseEntity<ApiResponse<FundingDetailDTO>> fundingDetail(
             @AuthenticationPrincipal CustomUserDetail userDetail,
             @PathVariable int fundingId,
-            HttpServletRequest request) throws IOException{
+            HttpServletRequest request) throws IOException {
 
-        Long userId = userDetail.getId();
+        Long userId = (userDetail != null) ? userDetail.getId() : null;
 
-        ApiResponse<FundingDetailDTO> fundingDetail  = fundingService.fundingDetail(userId, fundingId);
+        ApiResponse<FundingDetailDTO> fundingDetail = fundingService.fundingDetail(userId, fundingId);
         return ResponseEntity.ok(fundingDetail);
     }
+
 
 
 //

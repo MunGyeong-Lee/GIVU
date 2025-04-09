@@ -74,12 +74,12 @@ public class GivuTransferService {
         // 3. 잔액 부족한 경우
         if (user.getBalance().compareTo(amount) < 0) {
             log.warn("❌ 잔액 부족 - userId: {}, paymentId: {}", user.getId(), payment.getId());
-            return ApiResponse.fail("LACK_BALANCE", "잔액이 부족합니다.");
+            return ApiResponse.fail("ERROR", "잔액이 부족합니다.");
         }
         // 펀딩 잔액 보다 많은 금액을 펀딩하려는 경우
         if (fundingBalance < amount) {
             log.warn("❌ 펀딩 잔액 이상 - userId: {}, paymentId: {}", user.getId(), payment.getId());
-            return ApiResponse.fail("EXCEED_FUNDING", "펀딩 잔액 이상의 금액을 펀딩할 수 없습니다.");
+            return ApiResponse.fail("ERROR", "펀딩 잔액 이상의 금액을 펀딩할 수 없습니다.");
         }
 
         // 4. 결제 금액만큼 balance에서 빼기
