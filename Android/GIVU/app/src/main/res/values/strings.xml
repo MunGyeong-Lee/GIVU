@@ -49,6 +49,10 @@
     <string name="text_charge_account">충전하기</string>
     <string name="message_charge_account_success">충전에 성공했습니다.</string>
     <string name="message_charge_account_fail">충전에 실패했습니다.</string>
+    <string name="title_deposit_account">GIVU Pay 출금하기</string>
+    <string name="text_deposit_account">출금하기</string>
+    <string name="message_deposit_account_success">출금에 성공했습니다.</string>
+    <string name="message_deposit_account_fail">출금에 실패했습니다.</string>
 
     <!-- Search -->
     <string name="label_search">Search</string>

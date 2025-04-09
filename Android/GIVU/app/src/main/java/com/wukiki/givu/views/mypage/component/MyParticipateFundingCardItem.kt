@@ -109,7 +109,7 @@ fun MyParticipateFundingCardItem(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 SubcomposeAsyncImage(
-                    model = if (funding.images.isNotEmpty()) funding.images[0] else "",
+                    model = funding.userProfile,
                     contentDescription = "Profile Image",
                     contentScale = ContentScale.Crop,
                     modifier = Modifier
@@ -125,7 +125,7 @@ fun MyParticipateFundingCardItem(
                     },
                     error = {
                         Image(
-                            painter = painterResource(id = R.drawable.ic_logo),
+                            painter = painterResource(id = R.drawable.ic_profile_default),
                             contentDescription = "Error",
                             modifier = Modifier
                                 .clip(RoundedCornerShape(10.dp))

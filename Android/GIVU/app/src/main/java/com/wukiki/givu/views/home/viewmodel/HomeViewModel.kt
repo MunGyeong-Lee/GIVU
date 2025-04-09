@@ -31,6 +31,7 @@ import kotlinx.coroutines.launch
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.RequestBody
 import okhttp3.RequestBody.Companion.toRequestBody
+import timber.log.Timber
 import javax.inject.Inject
 
 @HiltViewModel
@@ -98,6 +99,9 @@ class HomeViewModel @Inject constructor(
     private val _charge = MutableStateFlow<Int>(0)
     val charge = _charge.asStateFlow()
 
+    private val _deposit = MutableStateFlow<Int>(0)
+    val deposit = _deposit.asStateFlow()
+
     private val _fundings = MutableStateFlow<List<List<Funding>>>(listOf(listOf(), listOf(), listOf(), listOf(), listOf(), listOf()))
     val fundings = _fundings.asStateFlow()
 
@@ -161,9 +165,9 @@ class HomeViewModel @Inject constructor(
         _popularFundings.value = allFundings.sortedByDescending { it.participantsNumber }.subList(0, 5)
     }
 
-    private fun makePayRequestBody(): RequestBody {
+    private fun makePayRequestBody(amount: Int): RequestBody {
         val metadata = mapOf(
-            "amount" to _charge.value
+            "amount" to amount
         )
         val gson = GsonBuilder().serializeNulls().create()
         val json = gson.toJson(metadata)
@@ -216,7 +220,6 @@ class HomeViewModel @Inject constructor(
         }
     }
 
-
     fun updatePaymentHistory() {
         viewModelScope.launch {
             val response = getPaymentUseCase.getPaymentHistoryList()
@@ -229,7 +232,6 @@ class HomeViewModel @Inject constructor(
             }
         }
     }
-
 
     fun initMyParticipateFundings() {
         viewModelScope.launch {
@@ -289,10 +291,34 @@ class HomeViewModel @Inject constructor(
         _charge.value = money
     }
 
+    fun setDeposit(money: Int) {
+        _deposit.value = money
+    }
+
+    fun depositAccount() {
+        viewModelScope.launch {
+            Timber.d("Money: ${_deposit.value}")
+            val response = getMyPageUseCase.depositGivuPay(
+                body = makePayRequestBody(_deposit.value)
+            )
+
+            response.collectLatest { result ->
+                if (result.status == ApiStatus.SUCCESS) {
+                    _homeUiEvent.emit(HomeUiEvent.DepositSuccess)
+                    _deposit.value = 0
+                    initUserInfo()
+                    initAccount()
+                } else if (result.status == ApiStatus.FAIL) {
+                    _homeUiEvent.emit(HomeUiEvent.DepositFail)
+                }
+            }
+        }
+    }
+
     fun withdrawAccount() {
         viewModelScope.launch {
             val response = getMyPageUseCase.withdrawGivuPay(
-                body = makePayRequestBody()
+                body = makePayRequestBody(_charge.value)
             )
 
             response.collectLatest { result ->
@@ -300,6 +326,7 @@ class HomeViewModel @Inject constructor(
                     _homeUiEvent.emit(HomeUiEvent.WithdrawalSuccess)
                     _charge.value = 0
                     initUserInfo()
+                    initAccount()
                 } else if (result.status == ApiStatus.FAIL) {
                     _homeUiEvent.emit(HomeUiEvent.WithdrawalFail)
                 }
