@@ -278,11 +278,7 @@ const OrderPage = () => {
       if (result.code === 'SUCCESS') {
         alert('결제가 완료되었습니다!');
         // ✅ WebView 종료
-        if (window.Android && typeof window.Android.paymentComplete === 'function') {
-          window.Android.paymentComplete();
-        } else {
-          window.close();
-        }
+        window.close();
       } else {
         throw new Error(result.message || '결제에 실패했습니다.');
       }
