@@ -204,19 +204,6 @@ public class FundingController implements FundingControllerDocs {
 
 
 
-//
-//    private final transferController.GivuTransferService givuTransferService;
-//    @Operation(summary = "펀딩하기(결제)", description = "해당 펀딩에 펀딩을 합니다(기뷰페이 -> 펀딩)")
-//    @PostMapping(value="/{fundingId}/transfer")
-//    public ResponseEntity<ApiResponse<PaymentResultDTO>> givuTransfer(
-//            @AuthenticationPrincipal CustomUserDetail userDetail,
-//            @PathVariable int fundingId,
-//            @RequestParam int amount,
-//            HttpServletRequest request)throws IOException {
-//        Long userId = userDetail.getId();
-//        ApiResponse<PaymentResultDTO> fundingTransfer = givuTransferService.fundingTransfer(userId, fundingId, amount);
-//        return ResponseEntity.ok(fundingTransfer);
-//    }
 
     @Operation(summary = "펀딩결제 현황 조회", description = "해당 펀딩 결제 현황을 조회합니다.")
     @GetMapping(value="/{paymentId}/transfer")
@@ -224,9 +211,9 @@ public class FundingController implements FundingControllerDocs {
             @AuthenticationPrincipal CustomUserDetail userDetail,
             @PathVariable int paymentId,
             HttpServletRequest request)throws IOException {
+
         Long userId = userDetail.getId();
         PaymentResultDTO fundingTransfer = fundingService.paymentResult(userId, paymentId);
-
         return ResponseEntity.ok(ApiResponse.success(fundingTransfer));
     }
 
