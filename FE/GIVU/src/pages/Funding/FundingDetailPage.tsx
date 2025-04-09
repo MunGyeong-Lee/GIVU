@@ -1143,7 +1143,7 @@ const FundingDetailPage = () => {
     if (!fundingData || !fundingData.product) return;
     
     // 구매 페이지로 필요한 정보 전달 (상품 정보와 결제 금액 0원)
-    navigate('/order', {
+    navigate(`/shopping/order/${fundingData.product.id}`, {
       state: {
         product: fundingData.product,
         isFundingProduct: true, // 펀딩으로 구매된 상품임을 표시

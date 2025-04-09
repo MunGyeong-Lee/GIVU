@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation, useParams } from 'react-router-dom';
 import axios from 'axios';
 
 // 결제 비밀번호 모달 컴포넌트
@@ -132,29 +132,74 @@ const PaymentPasswordModal: React.FC<{
 const OrderPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const { id } = useParams<{ id: string }>();
   const [orderInfo, setOrderInfo] = useState<any>(null);
   const [isPasswordModalOpen, setIsPasswordModalOpen] = useState<boolean>(false);
   const [balance, setBalance] = useState<number>(0);  // 기뷰페이 잔액
   const [isLoading, setIsLoading] = useState<boolean>(false);  // 로딩 상태
   const [, setError] = useState<string | null>(null);  // 에러 메시지
 
-  // 구매 정보 및 상품 정보 (URL에서 가져오거나 location state에서 가져옴)
+  // 구매 정보 및 상품 정보 (URL 파라미터 또는 location state에서 가져옴)
   useEffect(() => {
-    if (location.state?.product) {
-      setOrderInfo({
-        product: location.state.product,
-        quantity: location.state.quantity || 1,
-        options: location.state.options || {},
-      });
-    } else {
-      // 잘못된 접근 처리
-      alert('올바르지 않은 접근입니다.');
-      navigate('/shopping');
-    }
-
+    const fetchProductData = async () => {
+      try {
+        // location.state에 product 정보가 있으면 그대로 사용
+        if (location.state?.product) {
+          setOrderInfo({
+            product: location.state.product,
+            quantity: location.state.quantity || 1,
+            options: location.state.options || {},
+          });
+          return;
+        }
+        
+        // URL 파라미터로부터 상품 ID를 얻은 경우, API 호출로 상품 정보 가져오기
+        if (id) {
+          const token = localStorage.getItem('auth_token');
+          const response = await axios.get(
+            `${import.meta.env.VITE_API_BASE_URL}/products/${id}`,
+            {
+              headers: token ? {
+                'Authorization': `Bearer ${token}`,
+                'Accept': 'application/json;charset=UTF-8'
+              } : undefined
+            }
+          );
+          
+          const productData = response.data.product;
+          setOrderInfo({
+            product: {
+              ...productData,
+              price: productData.price,
+              imageUrl: productData.image, // 이미지 필드 이름 변환
+              name: productData.productName, // 상품명 필드 이름 변환
+              deliveryInfo: {
+                fee: 3000,
+                freeFeeOver: 50000,
+                estimatedDays: "1~3일 이내"
+              }
+            },
+            quantity: 1,
+            options: {},
+          });
+          return;
+        }
+        
+        // 상품 정보가 없는 경우
+        alert('상품 정보를 찾을 수 없습니다.');
+        navigate('/shopping');
+      } catch (error) {
+        console.error('상품 정보를 가져오는 중 오류가 발생했습니다:', error);
+        alert('상품 정보를 가져오는데 실패했습니다.');
+        navigate('/shopping');
+      }
+    };
+    
+    fetchProductData();
+    
     // 페이지 로드 시 스크롤을 맨 위로 이동
     window.scrollTo(0, 0);
-  }, [location, navigate]);
+  }, [id, location, navigate]);
 
   // 폼 상태 관리
   const [buyerInfo, setBuyerInfo] = useState({

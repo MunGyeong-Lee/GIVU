@@ -307,8 +307,9 @@ const ShoppingProductDetail = () => {
       return;
     }
 
-    // 주문 페이지로 이동하면서 상품 정보, 수량, 선택한 옵션 전달
-    navigate('/shopping/order', {
+    // 주문 페이지로 이동
+    // URL에 상품 ID를 포함하면서 state로 상세 정보 전달 (혹시 필요한 경우를 위해)
+    navigate(`/shopping/order/${product.id}`, {
       state: {
         product: {
           ...product,
@@ -318,7 +319,8 @@ const ShoppingProductDetail = () => {
             freeFeeOver: 50000,
             estimatedDays: "1~3일 이내"
           },
-          imageUrl: product.image // OrderPage에서 imageUrl 사용
+          imageUrl: product.image, // OrderPage에서 imageUrl 사용
+          name: product.productName // OrderPage에서 name 사용
         },
         quantity,
         options: selectedOptions
