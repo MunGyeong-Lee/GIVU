@@ -145,8 +145,8 @@ function Navbar() {
           <div className='flex items-center'>
             {/* 로고 */}
             <div className='flex-shrink-0 mr-10'>
-              <Link to='/' className='text-xl font-bold text-primary-color hover:text-primary-color no-underline'>
-                GIVU
+              <Link to='/'>
+                <img src='/GIVU_LOGO.png' alt='GIVU Logo' className='h-11 w-auto' />
               </Link>
             </div>
 
