@@ -56,10 +56,10 @@ const FundingHighlights: React.FC<FundingHighlightsProps> = ({
   // slick 설정
   const settings = {
     centerMode: true,
-    centerPadding: '25%',
+    centerPadding: '20%',
     dots: false,
     infinite: true,
-    speed: 500,
+    speed: 700,
     slidesToShow: 1,
     slidesToScroll: 1,
     autoplay: true,
@@ -70,7 +70,8 @@ const FundingHighlights: React.FC<FundingHighlightsProps> = ({
     swipe: false,    // 스와이프 기능 제거
     touchMove: false, // 터치 이동 기능 제거
     useCSS: true,
-    cssEase: 'ease-in-out'
+    cssEase: 'cubic-bezier(0.25, 0.1, 0.25, 1.0)',
+    adaptiveHeight: true,
   };
 
   // 탭 변경 핸들러
@@ -120,7 +121,7 @@ const FundingHighlights: React.FC<FundingHighlightsProps> = ({
       left: 0,
       right: 0,
       width: '100%',
-      height: '440px',
+      height: '400px',
       margin: 0,
       padding: 0,
       zIndex: 10,
@@ -200,6 +201,7 @@ const FundingHighlights: React.FC<FundingHighlightsProps> = ({
         margin: '0 auto',
         padding: 0,
         position: 'relative',
+        marginTop: '1.5rem',
       }}>
         <style>
           {`
@@ -212,6 +214,25 @@ const FundingHighlights: React.FC<FundingHighlightsProps> = ({
             }
             .custom-slider-container .slick-slide {
               background-color: transparent !important;
+            }
+            
+            /* 스페이싱과 트랜지션 개선 */
+            .slick-slide {
+              padding: 0 18px;
+              transition: transform 0.4s ease-in-out;
+              transform: scale(0.85);
+              opacity: 0.6;
+            }
+            
+            .slick-current {
+              transform: scale(1);
+              opacity: 1;
+              z-index: 10;
+            }
+            
+            .slick-slide:not(.slick-current) {
+              transform: scale(0.75);
+              filter: brightness(0.8);
             }
             
             /* 배지 및 프로그레스 바 색상 오버라이드 */
@@ -259,21 +280,33 @@ const FundingHighlights: React.FC<FundingHighlightsProps> = ({
             }
           `}
         </style>
-        <Slider {...settings} ref={sliderRef}>
+        <Slider {...settings} ref={sliderRef} className="funding-carousel">
           {items.map((item) => (
-            <div key={item.id}>
+            <div key={item.id} style={{ padding: '10px 15px' }}>
               <div
                 style={{
                   position: 'relative',
                   width: '100%',
-                  height: '360px',
-                  margin: '0 0.5rem',
+                  height: '320px',
                   borderRadius: '0.75rem',
                   overflow: 'hidden',
-                  boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
-                  cursor: item.hidden ? 'default' : 'pointer'
+                  boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.2), 0 8px 10px -6px rgba(0, 0, 0, 0.1)',
+                  cursor: item.hidden ? 'default' : 'pointer',
+                  transition: 'transform 0.3s ease, box-shadow 0.3s ease',
+                  transform: 'perspective(1000px) rotateY(0deg)',
+                  transformStyle: 'preserve-3d',
                 }}
                 onClick={() => !item.hidden && handleItemClick(item.id)}
+                onMouseEnter={(e) => {
+                  if (!item.hidden) {
+                    e.currentTarget.style.transform = 'perspective(1000px) rotateY(0deg) scale(1.03)';
+                    e.currentTarget.style.boxShadow = '0 20px 30px -10px rgba(0, 0, 0, 0.25), 0 10px 15px -3px rgba(0, 0, 0, 0.1)';
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.transform = 'perspective(1000px) rotateY(0deg)';
+                  e.currentTarget.style.boxShadow = '0 10px 25px -5px rgba(0, 0, 0, 0.2), 0 8px 10px -6px rgba(0, 0, 0, 0.1)';
+                }}
               >
                 <img
                   src={item.imageUrl || defaultImage}
@@ -442,28 +475,74 @@ const FundingHighlights: React.FC<FundingHighlightsProps> = ({
             position: 'absolute',
             top: 0,
             left: 0,
-            width: '25%',
+            width: '20%',
             height: '100%',
             cursor: 'pointer',
             zIndex: 5,
-            backgroundColor: 'transparent'
+            backgroundColor: 'transparent',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
           }}
           onClick={goToPrevSlide}
-        />
+        >
+          <div style={{
+            width: '40px',
+            height: '40px',
+            borderRadius: '50%',
+            backgroundColor: 'rgba(255, 255, 255, 0.3)',
+            backdropFilter: 'blur(5px)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            opacity: 0.7,
+            transition: 'opacity 0.3s ease',
+          }}
+            onMouseEnter={(e) => e.currentTarget.style.opacity = '1'}
+            onMouseLeave={(e) => e.currentTarget.style.opacity = '0.7'}
+          >
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M15 18L9 12L15 6" stroke="#333" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          </div>
+        </div>
 
         <div
           style={{
             position: 'absolute',
             top: 0,
             right: 0,
-            width: '25%',
+            width: '20%',
             height: '100%',
             cursor: 'pointer',
             zIndex: 5,
-            backgroundColor: 'transparent'
+            backgroundColor: 'transparent',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
           }}
           onClick={goToNextSlide}
-        />
+        >
+          <div style={{
+            width: '40px',
+            height: '40px',
+            borderRadius: '50%',
+            backgroundColor: 'rgba(255, 255, 255, 0.3)',
+            backdropFilter: 'blur(5px)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            opacity: 0.7,
+            transition: 'opacity 0.3s ease',
+          }}
+            onMouseEnter={(e) => e.currentTarget.style.opacity = '1'}
+            onMouseLeave={(e) => e.currentTarget.style.opacity = '0.7'}
+          >
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M9 6L15 12L9 18" stroke="#333" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          </div>
+        </div>
       </div>
     </div>
   );
