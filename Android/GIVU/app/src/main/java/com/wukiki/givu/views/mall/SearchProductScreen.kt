@@ -1,4 +1,4 @@
-package com.wukiki.givu.views.search
+package com.wukiki.givu.views.mall
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -8,29 +8,22 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentHeight
-import androidx.compose.foundation.pager.HorizontalPager
-import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.ScrollableTabRow
-import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -44,26 +37,23 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.wukiki.givu.R
 import com.wukiki.givu.ui.suit
+import com.wukiki.givu.views.mall.viewmodel.MallViewModel
+import com.wukiki.givu.views.register.viewmodel.RegisterViewModel
 import com.wukiki.givu.views.search.component.EmptySearchResultScreen
-import com.wukiki.givu.views.search.component.SearchResultPager
-import com.wukiki.givu.views.search.viewmodel.SearchViewModel
-import kotlinx.coroutines.launch
+import com.wukiki.givu.views.mall.component.SearchProductResultPager
 
 @Composable
-fun SearchScreen(
-    searchViewModel: SearchViewModel = hiltViewModel(),
+fun SearchProductScreen(
+    mallViewModel: MallViewModel,
+    registerViewModel: RegisterViewModel,
     navController: NavController
 ) {
     val focusManager = LocalFocusManager.current
-    val searchKeyword by searchViewModel.searchKeyword.collectAsState()
-    val searchResults by searchViewModel.searchResults.collectAsState()
-    val tabTitles = listOf("제목", "작성자")
-    val pagerState = rememberPagerState { tabTitles.size }
-    val coroutineScope = rememberCoroutineScope()
+    val searchKeyword by mallViewModel.searchKeyword.collectAsState()
+    val searchResults by mallViewModel.searchResults.collectAsState()
 
     Scaffold(
         topBar = {
@@ -79,6 +69,7 @@ fun SearchScreen(
                         contentDescription = null,
                         modifier = Modifier.size(28.dp)
                     )
+
                 }
                 Spacer(Modifier.weight(1F))
                 Box(
@@ -93,13 +84,13 @@ fun SearchScreen(
                 ) {
                     BasicTextField(
                         value = searchKeyword,
-                        onValueChange = { searchViewModel.searchKeyword.value = it },
+                        onValueChange = { mallViewModel.searchKeyword.value = it },
                         keyboardOptions = KeyboardOptions.Default.copy(
                             imeAction = ImeAction.Search
                         ),
                         keyboardActions = KeyboardActions(
                             onSearch = {
-                                searchViewModel.search(searchKeyword)
+                                mallViewModel.searchProduct(searchKeyword)
                                 focusManager.clearFocus()
                             }
                         ),
@@ -134,7 +125,7 @@ fun SearchScreen(
                                     contentDescription = "Search",
                                     tint = Color.Gray,
                                     modifier = Modifier.size(18.dp)
-                                        .clickable { searchViewModel.search(searchKeyword) }
+                                        .clickable { mallViewModel.searchProduct(searchKeyword) }
                                 )
                             }
                         }
@@ -155,37 +146,6 @@ fun SearchScreen(
                         .wrapContentHeight()
                         .padding(paddingValues)
                 ) {
-                    ScrollableTabRow(
-                        selectedTabIndex = pagerState.currentPage,
-                        containerColor = Color.White,
-                        contentColor = Color.Black,
-                        edgePadding = 8.dp,
-                        indicator = {},
-                        divider = {}
-                    ) {
-                        tabTitles.forEachIndexed { index, title ->
-                            Tab(
-                                selected = pagerState.currentPage == index,
-                                onClick = {
-                                    coroutineScope.launch {
-                                        pagerState.animateScrollToPage(index)
-                                    }
-                                },
-                                modifier = Modifier.padding(horizontal = 4.dp),
-                                text = {
-                                    Text(
-                                        text = title,
-                                        fontWeight = FontWeight.Bold,
-                                        color = if (pagerState.currentPage == index) Color.Black else Color.Gray,
-                                        fontSize = 20.sp
-                                    )
-                                }
-                            )
-                        }
-                    }
-
-                    HorizontalDivider()
-
                     Column(
                         modifier = Modifier.padding(start = 16.dp, top = 16.dp, end = 16.dp)
                     ) {
@@ -211,16 +171,7 @@ fun SearchScreen(
                         )
                     }
 
-                    HorizontalPager(
-                        state = pagerState,
-                        modifier = Modifier.fillMaxSize()
-                    ) { page ->
-                        when (page) {
-                            0 -> SearchResultPager(searchResults, navController = navController)
-
-                            1 -> SearchResultPager(searchResults, navController = navController)
-                        }
-                    }
+                    SearchProductResultPager(searchResults, mallViewModel, registerViewModel, navController)
                 }
             }
         }

@@ -24,6 +24,7 @@ import androidx.compose.material.Button
 import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.Divider
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
@@ -76,7 +77,6 @@ fun ProductDetailScreen(
     LaunchedEffect(Unit) {
         productId?.let {
             mallViewModel.getDetailProductInfo(productId)
-
         }
     }
 
@@ -88,14 +88,11 @@ fun ProductDetailScreen(
         Box(
             modifier = Modifier
                 .fillMaxSize()
-//            .padding(bottom = 68.dp)
         ) {
-
             Column(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(bottom = 76.dp)
-//                    .verticalScroll(rememberScrollState())
+                    .padding(bottom = 68.dp)
             ) {
                 StoreDetailTopBar(
                     onBackClick = {
@@ -123,84 +120,88 @@ fun ProductDetailScreen(
 
                     item {
                         Column {
-                            Spacer(Modifier.height(16.dp))
-                            Text(
-                                text = it.product.productName,
-                                fontFamily = pretendard,
-                                fontWeight = FontWeight.Bold,
-                                fontSize = 22.sp,
-                                maxLines = 2,
-                                overflow = TextOverflow.Ellipsis
-                            )
-
-                            Spacer(Modifier.height(12.dp))
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                verticalAlignment = Alignment.CenterVertically
+                            Column(
+                                modifier = Modifier.padding(horizontal = 20.dp)
                             ) {
-                                Icon(
-                                    painter = painterResource(R.drawable.ic_star_best),
-                                    contentDescription = null,
-                                    tint = Color(0xFFFEBE14),
-                                    //                            modifier = Modifier.size(20.dp)
-                                )
-                                Spacer(Modifier.width(4.dp))
+                                Spacer(Modifier.height(16.dp))
                                 Text(
-                                    text = it.product.star,
+                                    text = it.product.productName,
                                     fontFamily = pretendard,
                                     fontWeight = FontWeight.Bold,
+                                    fontSize = 22.sp,
+                                    maxLines = 2,
+                                    overflow = TextOverflow.Ellipsis
+                                )
+
+                                Spacer(Modifier.height(12.dp))
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Icon(
+                                        painter = painterResource(R.drawable.ic_star_best),
+                                        contentDescription = null,
+                                        tint = Color(0xFFFEBE14),
+                                    )
+                                    Spacer(Modifier.width(4.dp))
+                                    Text(
+                                        text = it.product.star,
+                                        fontFamily = pretendard,
+                                        fontWeight = FontWeight.Bold,
+                                        fontSize = 16.sp,
+                                        color = Color(0xFF666666)
+                                    )
+                                }
+
+                                Spacer(Modifier.height(16.dp))
+                                Text(
+                                    text = "판매가",
+                                    fontFamily = suit,
+                                    fontWeight = FontWeight.Medium,
                                     fontSize = 16.sp,
-                                    color = Color(0xFF666666)
+                                )
+                                Spacer(Modifier.height(4.dp))
+                                Text(
+                                    text = CommonUtils.makeCommaPrice(it.product.price.toInt()),
+                                    fontFamily = pretendard,
+                                    fontWeight = FontWeight.SemiBold,
+                                    fontSize = 20.sp,
                                 )
                             }
 
-                            Spacer(Modifier.height(16.dp))
-                            Text(
-                                text = "판매가",
-                                fontFamily = suit,
-                                fontWeight = FontWeight.Medium,
-                                fontSize = 16.sp,
-                                //                        color = colorResource(R.color.main_secondary)
-                            )
-                            Spacer(Modifier.height(4.dp))
-                            Text(
-                                text = CommonUtils.makeCommaPrice(it.product.price.toInt()),
-                                fontFamily = pretendard,
-                                fontWeight = FontWeight.SemiBold,
-                                fontSize = 20.sp,
-                            )
-
                             Spacer(Modifier.height(24.dp))
-                            Divider(
+                            HorizontalDivider(
                                 modifier = Modifier.fillMaxWidth(),
                                 thickness = 15.dp,
                                 color = Color(0xFFF2F2F2)
                             )
                             Spacer(Modifier.height(24.dp))
-                            Text(
-                                text = "상품 정보",
-                                fontFamily = suit,
-                                fontWeight = FontWeight.SemiBold,
-                                fontSize = 20.sp,
-                            )
-                            Box(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(top = 12.dp)
-                                    .clip(shape = RoundedCornerShape(5.dp))
-                                    .border(1.dp, Color.Black, RoundedCornerShape(5.dp)),
-                            ) {
+
+                            Column(modifier = Modifier.padding(horizontal = 20.dp)) {
                                 Text(
-                                    text = it.product.description,
+                                    text = "상품 정보",
                                     fontFamily = suit,
-                                    fontWeight = FontWeight.Medium,
-                                    fontSize = 16.sp,
-                                    modifier = Modifier.padding(12.dp)
-                                    //                        color = colorResource(R.color.main_secondary)
+                                    fontWeight = FontWeight.SemiBold,
+                                    fontSize = 20.sp,
                                 )
+                                Box(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(top = 12.dp)
+                                        .clip(shape = RoundedCornerShape(5.dp))
+                                        .border(1.dp, Color.Black, RoundedCornerShape(5.dp)),
+                                ) {
+                                    Text(
+                                        text = it.product.description,
+                                        fontFamily = suit,
+                                        fontWeight = FontWeight.Medium,
+                                        fontSize = 16.sp,
+                                        modifier = Modifier.padding(12.dp)
+                                    )
+                                }
                             }
                             Spacer(Modifier.height(24.dp))
-                            Divider(
+                            HorizontalDivider(
                                 modifier = Modifier.fillMaxWidth(),
                                 thickness = 15.dp,
                                 color = Color(0xFFF2F2F2)
@@ -211,30 +212,31 @@ fun ProductDetailScreen(
                                 fontFamily = suit,
                                 fontWeight = FontWeight.SemiBold,
                                 fontSize = 20.sp,
+                                modifier = Modifier.padding(start = 20.dp)
                             )
+
                             Spacer(Modifier.height(24.dp))
                         }
                     }
 
                     items(productReviewList) { review ->
-                        ReviewComponent(review)
+                        Column(modifier = Modifier.padding(horizontal = 20.dp)) {
+                            ReviewComponent(review)
+                        }
+
                     }
                 }
                 Spacer(Modifier.height(16.dp))
-
             }
-
 
             // 하단 바
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(72.dp)
-                    .padding(bottom = 16.dp)
                     .align(Alignment.BottomCenter),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-
                 Column(
                     modifier = Modifier
                         .fillMaxWidth(0.15f)
@@ -276,10 +278,8 @@ fun ProductDetailScreen(
                         onClick = {
                             // 펀딩 생성 화면으로 이동
                             mainViewModel.selectProduct(it.product)
-
                             registerViewModel.setFromMall(true)
                             xmlNavController.navigate(R.id.fragment_register_funding)
-
                         },
                         modifier = Modifier
                             .weight(1f)
@@ -306,12 +306,11 @@ fun ProductDetailScreen(
                                 putExtra("productId", productId)
                             }
                             context.startActivity(intent)
-
-
                         },
                         modifier = Modifier
                             .weight(1f)
-                            .height(48.dp),
+                            .height(48.dp)
+                            .padding(end = 16.dp),
                         enabled = true,
                         shape = RoundedCornerShape(5.dp),
                         border = BorderStroke(1.dp, colorResource(R.color.main_primary)),

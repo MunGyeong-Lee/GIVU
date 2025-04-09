@@ -9,6 +9,7 @@ import retrofit2.http.GET
 import retrofit2.http.PATCH
 import retrofit2.http.PUT
 import retrofit2.http.Path
+import retrofit2.http.Query
 
 interface ProductApi {
 
@@ -37,7 +38,7 @@ interface ProductApi {
 
     @GET("products/search")
     suspend fun getProductSearch(
-        @Path("keyword") keyword: String
+        @Query("keyword") keyword: String
     ): Response<ProductSearchEntity>
 
     @GET("products/search/likeProduct")

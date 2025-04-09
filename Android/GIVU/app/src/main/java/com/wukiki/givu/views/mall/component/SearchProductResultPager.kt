@@ -1,4 +1,4 @@
-package com.wukiki.givu.views.search.component
+package com.wukiki.givu.views.mall.component
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -19,19 +19,20 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
-import com.wukiki.domain.model.Funding
+import com.wukiki.domain.model.Product
 import com.wukiki.givu.util.SortButton
-import com.wukiki.givu.views.search.viewmodel.SearchViewModel
+import com.wukiki.givu.views.mall.viewmodel.MallViewModel
+import com.wukiki.givu.views.register.viewmodel.RegisterViewModel
 
 @Composable
-fun SearchResultPager(
-    searchResult: List<Funding>,
-    searchViewModel: SearchViewModel = hiltViewModel(),
+fun SearchProductResultPager(
+    searchResult: List<Product>,
+    mallViewModel: MallViewModel,
+    registerViewModel: RegisterViewModel,
     navController: NavController
 ) {
-    val sortOption by searchViewModel.sortOption.collectAsState()
+    val sortOption by mallViewModel.sortOption.collectAsState()
     val showSheet = remember { mutableStateOf(false) }
 
     Column(
@@ -58,15 +59,16 @@ fun SearchResultPager(
             horizontalArrangement = Arrangement.spacedBy(8.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            items(searchResult) { funding ->
-                SearchResultCardItem(funding, navController)
+            items(searchResult) { product ->
+                SearchProductResultCardItem(product, registerViewModel, navController)
             }
         }
     }
 
     if (showSheet.value) {
-        SortOptionBottomSheet(
+        ProductSortOptionBottomSheet(
             onDismissRequest = { showSheet.value = false },
+            mallViewModel
         )
     }
 }

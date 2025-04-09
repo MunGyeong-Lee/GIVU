@@ -255,7 +255,23 @@ class FundingViewModel @Inject constructor(
         emit(user)
     }
 
-    private fun participateFunding(paymentId: Int) {
+    private fun getPaymentOfFunding(paymentId: Int) {
+        viewModelScope.launch {
+            val response = getFundingUseCase.fetchPaymentOfFunding(paymentId)
+
+            response.collectLatest { result ->
+                _transferState.value = result
+                if (result.status == ApiStatus.SUCCESS) {
+                    _transfer.value = result.data
+                    participateFunding()
+                } else if ((result.status == ApiStatus.FAIL) || (result.status == ApiStatus.ERROR)) {
+                    _fundingUiEvent.emit(FundingUiEvent.ParticipateFundingFail)
+                }
+            }
+        }
+    }
+
+    private fun participateFunding() {
         viewModelScope.launch {
             val response = getLetterUseCase.submitFundingLetter(
                 fundingId = _selectedFunding.value?.id.toString(),
@@ -266,23 +282,7 @@ class FundingViewModel @Inject constructor(
             response.collectLatest { result ->
                 _letterState.value = result
                 if (result.status == ApiStatus.SUCCESS) {
-                    getPaymentOfFunding(paymentId)
-                } else if ((result.status == ApiStatus.FAIL) || (result.status == ApiStatus.ERROR)) {
-                    _fundingUiEvent.emit(FundingUiEvent.ParticipateFundingFail)
-                }
-            }
-        }
-    }
-
-    private fun getPaymentOfFunding(paymentId: Int) {
-        viewModelScope.launch {
-            val response = getFundingUseCase.fetchPaymentOfFunding(paymentId)
-
-            response.collectLatest { result ->
-                _transferState.value = result
-                if (result.status == ApiStatus.SUCCESS) {
-                    _transfer.value = result.data
-                    initFunding(result.data?.fundingId ?: -1)
+                    initFunding((result.data?.fundingId ?: "-1").toInt())
                     _fundingUiEvent.emit(FundingUiEvent.ParticipateFundingSuccess)
                 } else if ((result.status == ApiStatus.FAIL) || (result.status == ApiStatus.ERROR)) {
                     _fundingUiEvent.emit(FundingUiEvent.ParticipateFundingFail)
@@ -486,7 +486,7 @@ class FundingViewModel @Inject constructor(
                 _transferState.value = result
                 if (result.status == ApiStatus.SUCCESS) {
                     _charge.value = 0
-                    participateFunding(result.data?.paymentId ?: -1)
+                    getPaymentOfFunding(result.data?.paymentId ?: -1)
                 } else if ((result.status == ApiStatus.FAIL) || (result.status == ApiStatus.ERROR)) {
                     _fundingUiEvent.emit(FundingUiEvent.TransferFail)
                 }

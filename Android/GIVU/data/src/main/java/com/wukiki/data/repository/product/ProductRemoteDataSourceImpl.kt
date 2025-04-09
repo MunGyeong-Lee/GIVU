@@ -27,6 +27,9 @@ class ProductRemoteDataSourceImpl @Inject constructor(
     override suspend fun getProducts(): Response<List<ProductDetailEntity>> =
         productApi.getProducts()
 
+    override suspend fun getProductSearch(keyword: String): Response<ProductSearchEntity> =
+        productApi.getProductSearch(keyword)
+
     override suspend fun getProductsLike(): Response<ProductSearchEntity> =
         productApi.getProductsLike()
 }
