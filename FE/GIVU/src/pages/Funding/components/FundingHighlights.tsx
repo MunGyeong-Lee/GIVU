@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Slider from 'react-slick';
 import "slick-carousel/slick/slick.css";
@@ -27,6 +27,7 @@ interface FundingHighlightsProps {
   popularItems?: HighlightItem[];
   achievementItems?: HighlightItem[];
   title?: string;
+  isLoading?: boolean; // 로딩 상태 prop 추가
 }
 
 // Slider 확장을 위한 타입 선언
@@ -38,10 +39,29 @@ interface CustomSlider extends Slider {
 const FundingHighlights: React.FC<FundingHighlightsProps> = ({
   popularItems = [],
   achievementItems = [],
-  // title = '펀딩 하이라이트'
+  isLoading = false // 로딩 상태 기본값 추가
 }) => {
   // Navigation 훅 추가
   const navigate = useNavigate();
+  // 내부 로딩 상태 추가
+  const [internalLoading, setInternalLoading] = useState(true);
+
+  // 컴포넌트 마운트 시 로딩 상태 설정
+  useEffect(() => {
+    // 데이터가 로딩된 후 짧은 지연 시간을 두고 로딩 상태 해제
+    if (popularItems.length > 0 || achievementItems.length > 0) {
+      setInternalLoading(false);
+    }
+  }, [popularItems, achievementItems]);
+
+  // 컴포넌트 마운트 시 내부 로딩 상태 초기화
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setInternalLoading(false);
+    }, 1000); // 1초 후 로딩 상태 해제
+
+    return () => clearTimeout(timer);
+  }, []);
 
   // 탭 상태 관리
   const [activeTab, setActiveTab] = useState<'popular' | 'achievement'>('popular');
@@ -98,19 +118,75 @@ const FundingHighlights: React.FC<FundingHighlightsProps> = ({
     navigate(`/funding/${id}`);
   };
 
+  // 로딩 중 스켈레톤 UI
+  if (internalLoading || isLoading) {
+    return (
+      <div style={{
+        width: '100%',
+        height: '400px',
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: '#f9fafb',
+        borderRadius: '0.5rem',
+        padding: '1rem'
+      }}>
+        <div style={{
+          width: '60%',
+          height: '25px',
+          backgroundColor: '#e5e7eb',
+          borderRadius: '0.25rem',
+          marginBottom: '1rem',
+          animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite'
+        }}></div>
+        <div style={{
+          width: '80%',
+          height: '250px',
+          backgroundColor: '#e5e7eb',
+          borderRadius: '0.5rem',
+          marginBottom: '1rem',
+          animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite'
+        }}></div>
+        <div style={{
+          width: '40%',
+          height: '20px',
+          backgroundColor: '#e5e7eb',
+          borderRadius: '0.25rem',
+          animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite'
+        }}></div>
+        <style>{`
+          @keyframes pulse {
+            0%, 100% {
+              opacity: 1;
+            }
+            50% {
+              opacity: 0.5;
+            }
+          }
+        `}</style>
+      </div>
+    );
+  }
+
   // 아이템이 없는 경우
   if (items.length === 0) {
     return (
       <div style={{
-        backgroundColor: '#fee2e2',
-        border: '1px solid #fecaca',
+        backgroundColor: '#f9fafb',
+        border: '1px solid #e5e7eb',
         borderRadius: '0.5rem',
         padding: '1.5rem',
         marginBottom: '2rem',
         textAlign: 'center',
-        color: '#ef4444'
+        color: '#6b7280',
+        height: '400px',
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        fontSize: '1.125rem'
       }}>
-        하이라이트 아이템이 없습니다
+        현재 하이라이트 아이템이 없습니다
       </div>
     );
   }
