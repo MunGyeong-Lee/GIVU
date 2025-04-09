@@ -9,6 +9,7 @@ interface Product {
   price: number;
   image: string | null;
   category: string;
+  permission?: boolean; // 리뷰 작성 권한 추가
 }
 
 const ShoppingReview = () => {
@@ -24,16 +25,48 @@ const ShoppingReview = () => {
   const [loadingProduct, setLoadingProduct] = useState(true);
   const [image, setImage] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   // 상품 정보 로드
   useEffect(() => {
     const fetchProduct = async () => {
       try {
         setLoadingProduct(true);
-        const response = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/products/${id}`);
-        setProduct(response.data.product);
+        const token = localStorage.getItem('auth_token');
+        if (!token) {
+          setError('로그인이 필요합니다.');
+          setTimeout(() => {
+            navigate(`/shopping/product/${id}`);
+          }, 2000);
+          return;
+        }
+        
+        const response = await axios.get(
+          `${import.meta.env.VITE_API_BASE_URL}/products/${id}`,
+          {
+            headers: {
+              'Authorization': `Bearer ${token}`
+            }
+          }
+        );
+        
+        const productData = response.data.product;
+        setProduct(productData);
+        
+        // 리뷰 작성 권한 확인
+        if (!productData.permission) {
+          setError('이 상품에 대한 리뷰 작성 권한이 없습니다. 상품 구매 후 리뷰를 작성할 수 있습니다.');
+          setTimeout(() => {
+            navigate(`/shopping/product/${id}`);
+          }, 2000);
+          return;
+        }
       } catch (error) {
         console.error('상품 정보를 불러오는 중 오류가 발생했습니다:', error);
+        setError('상품 정보를 불러오는데 실패했습니다.');
+        setTimeout(() => {
+          navigate(`/shopping/product/${id}`);
+        }, 2000);
       } finally {
         setLoadingProduct(false);
       }
@@ -42,7 +75,7 @@ const ShoppingReview = () => {
     if (id) {
       fetchProduct();
     }
-  }, [id]);
+  }, [id, navigate]);
 
   // 이미지 선택 핸들러
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -144,6 +177,22 @@ const ShoppingReview = () => {
     return (
       <div className="flex justify-center items-center h-screen">
         <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-rose-500"></div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="max-w-2xl mx-auto px-4 py-8 text-center">
+        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
+          <p>{error}</p>
+        </div>
+        <button
+          onClick={() => navigate(`/shopping/product/${id}`)}
+          className="mt-4 px-4 py-2 bg-pink-500 text-white rounded-md hover:bg-pink-600"
+        >
+          상품 페이지로 돌아가기
+        </button>
       </div>
     );
   }
