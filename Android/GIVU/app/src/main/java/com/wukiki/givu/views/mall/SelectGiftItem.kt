@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -35,6 +36,7 @@ import com.wukiki.givu.R
 import com.wukiki.givu.ui.pretendard
 import com.wukiki.givu.ui.suit
 import com.wukiki.givu.util.CommonUtils
+import java.text.DecimalFormat
 
 @Composable
 fun GiftListItem(
@@ -105,14 +107,17 @@ fun GiftListItem(
                     color = colorResource(R.color.main_secondary)
                 )
                 Spacer(Modifier.weight(1f))
-                Image(
-                    painter = painterResource(R.drawable.ic_like_on), null,
-                    modifier = Modifier.size(20.dp)
+                Icon(
+                    painter = painterResource(R.drawable.ic_star_best),
+                    contentDescription = null,
+                    modifier = Modifier.size(28.dp),
+                    tint = colorResource(R.color.main_secondary)
                 )
 
                 Spacer(Modifier.width(4.dp))
                 Text(
-                    text = "15",
+                    text = DecimalFormat("0.0").format(product.star.toDouble())
+                    ,
                     fontFamily = pretendard,
                     fontWeight = FontWeight.Normal,
                     fontSize = 14.sp

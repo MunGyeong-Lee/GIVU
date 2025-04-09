@@ -138,7 +138,6 @@ fun MallItemPopular(
                         painter = painterResource(R.drawable.ic_star_best),
                         contentDescription = null,
                         modifier = Modifier
-//                            .padding( end = 2.dp)
                             .size(28.dp),
                         tint = colorResource(R.color.main_secondary)
                     )
