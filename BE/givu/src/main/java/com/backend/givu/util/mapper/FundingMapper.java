@@ -2,6 +2,9 @@ package com.backend.givu.util.mapper;
 
 import com.backend.givu.model.Document.FundingDocument;
 import com.backend.givu.model.Document.ProductDocument;
+import com.backend.givu.model.Enum.FundingsCategory;
+import com.backend.givu.model.Enum.FundingsScope;
+import com.backend.givu.model.Enum.FundingsStatus;
 import com.backend.givu.model.entity.Funding;
 import com.backend.givu.model.entity.Product;
 
@@ -33,12 +36,18 @@ public class FundingMapper {
                 funding.getProduct().getImage(),
                 funding.getTitle(),
                 funding.getDescription(),
-                String.valueOf(funding.getCategory()),
+                funding.getCategory() != null
+                        ? funding.getCategory().name()
+                        : FundingsCategory.ETC.name(),
                 funding.getCategoryName(),
                 funding.getParticipantsNumber(),
                 funding.getFundedAmount(),
-                String.valueOf(funding.getScope()),
-                String.valueOf(funding.getStatus()),
+                funding.getScope() != null
+                        ? funding.getScope().name()
+                        : FundingsScope.PUBLIC.name(),
+                funding.getStatus() != null
+                        ? funding.getStatus().name()
+                        : FundingsStatus.PENDING.name(),
                 funding.getImage(),
                 createdAt,
                 updatedAt

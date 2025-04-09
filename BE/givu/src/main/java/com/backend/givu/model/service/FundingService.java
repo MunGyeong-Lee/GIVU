@@ -23,6 +23,8 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 
 @Service
@@ -87,11 +89,11 @@ public class FundingService {
     public ApiResponse<List<FundingsDTO>> findAllSearchFunding(String title, Long userId) {
         List<FundingDocument> fundingDocuments = fundingSearchRepository.searchFundingByKeyword(title);
 
-        List<Long> friendIds = userId != null
+        Set<Long> friendIds = userId != null
                 ? friendRepository.findByUserWithFriend(userId).stream()
                 .map(f -> f.getFriend().getId())
-                .toList()
-                : List.of();
+                .collect(Collectors.toSet())
+                : Set.of();
 
         List<FundingsDTO> result = fundingDocuments.stream()
                 .map(doc -> {
@@ -192,7 +194,7 @@ public class FundingService {
                 }
             }
         }
-
+        indexFundingsToElasticsearch(funding);
         return Funding.toDTO(funding);
     }
 
@@ -216,6 +218,7 @@ public class FundingService {
         }
 
         fundingRepository.deleteById(fundingId);
+        fundingSearchRepository.deleteById(fundingId);
     }
 
     /**
