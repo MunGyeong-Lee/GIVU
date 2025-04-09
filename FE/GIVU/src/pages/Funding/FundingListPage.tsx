@@ -180,6 +180,22 @@ function FundingListPage() {
       // 응답이 배열인지 확인하고 처리
       const fundingList = Array.isArray(data) ? data : [];
 
+      // 디버깅: API 응답 데이터 로깅
+      console.log('API 응답 데이터:', fundingList);
+      // 카테고리 값 확인
+      if (fundingList.length > 0) {
+        console.log('첫 번째 아이템 카테고리:', fundingList[0].category);
+        console.log('첫 번째 아이템 상태:', fundingList[0].status);
+
+        // 모든 고유 카테고리 값 로깅
+        const uniqueCategories = [...new Set(fundingList.map(item => item.category))];
+        console.log('고유 카테고리 목록:', uniqueCategories);
+
+        // 모든 고유 상태 값 로깅
+        const uniqueStatuses = [...new Set(fundingList.map(item => item.status))];
+        console.log('고유 상태 목록:', uniqueStatuses);
+      }
+
       setFundings(fundingList);
 
       // 데이터가 비어있는 경우 빈 배열 처리
@@ -248,6 +264,7 @@ function FundingListPage() {
 
   // 카테고리 변경 핸들러
   const handleCategoryChange = (categoryId: string) => {
+    console.log('카테고리 변경:', categoryId);
     setSelectedCategory(categoryId);
     // 카테고리 변경 시 필터링 초기화
     resetPagination();
@@ -255,6 +272,7 @@ function FundingListPage() {
 
   // 정렬 옵션 변경 핸들러
   const handleSortChange = (sortId: string) => {
+    console.log('정렬 옵션 변경:', sortId);
     setSelectedSort(sortId);
     // 정렬 변경 시 필터링 초기화
     resetPagination();
@@ -262,6 +280,7 @@ function FundingListPage() {
 
   // 상태 필터 변경 핸들러
   const handleStatusChange = (status: 'all' | 'pending' | 'completed') => {
+    console.log('상태 필터 변경:', status);
     setSelectedStatus(status);
     // 상태 필터 변경 시 필터링 초기화
     resetPagination();
@@ -271,52 +290,6 @@ function FundingListPage() {
   const resetPagination = () => {
     setVisibleCount(12);
     setHasMore(true);
-  };
-
-  // 상태별 필터링 (API 값에 맞게 수정)
-  const filterByStatus = (items: FundingItemAPI[]) => {
-    // 항상 배열인지 확인
-    if (!Array.isArray(items)) return [];
-
-    // API의 status 값이 한글로 변경됨
-    // 전체: 대기, 완료, 배송 중, 배송 완료 (취소 제외)
-    // 진행중: 대기
-    // 완료: 완료, 배송 중, 배송 완료
-    if (selectedStatus === 'all') {
-      // '취소' 상태만 제외하고 모두 표시
-      return items.filter(item => item && item.status !== '취소');
-    } else if (selectedStatus === 'pending') {
-      // 진행중: 대기
-      return items.filter(item => item && item.status === '대기');
-    } else if (selectedStatus === 'completed') {
-      // 완료: 완료, 배송 중, 배송 완료
-      return items.filter(item =>
-        item && (item.status === '완료' || item.status === '배송 중' || item.status === '배송 완료')
-      );
-    }
-
-    return items;
-  };
-
-  // 정렬 함수
-  const sortItems = (items: FundingItemAPI[]) => {
-    // 항상 배열인지 확인
-    if (!Array.isArray(items)) return [];
-
-    switch (selectedSort) {
-      case 'latest':
-        return [...items].sort((a, b) =>
-          new Date(b.createdAt || '').getTime() - new Date(a.createdAt || '').getTime()
-        );
-      case 'deadline':
-        // 마감임박순 (API에 마감일 필드가 없으면 수정 필요)
-        return [...items];
-      case 'achievement':
-        // 달성률순 (API에 목표액 필드가 없으면 수정 필요)
-        return [...items].sort((a, b) => (b.fundedAmount || 0) - (a.fundedAmount || 0));
-      default:
-        return items;
-    }
   };
 
   // 추가: 검색어 필터링 함수
@@ -329,6 +302,101 @@ function FundingListPage() {
     );
   };
 
+  // API 카테고리 값을 프론트엔드 카테고리 값으로 매핑하는 함수
+  const mapApiCategoryToFrontend = (apiCategory: string): string => {
+    // API 카테고리(한글)와 프론트엔드 카테고리(영어) 간의 매핑
+    const categoryMap: Record<string, string> = {
+      '생일': 'birthday',
+      '집들이': 'housewarming',
+      '결혼': 'wedding',
+      '출산': 'birth',
+      '졸업': 'graduation',
+      '취직': 'employment',
+      '취업': 'employment', // 취업/취직 두 가지 경우 모두 대비
+      '기타': 'all'
+    };
+
+    // 카테고리 값이 없거나 매핑되지 않은 값인 경우 'all' 반환
+    if (!apiCategory || !categoryMap[apiCategory]) {
+      console.log('매핑되지 않은 카테고리:', apiCategory);
+      return 'all';
+    }
+
+    return categoryMap[apiCategory];
+  };
+
+  // 상태별 필터링 (API 값에 맞게 수정)
+  const filterByStatus = (items: FundingItemAPI[]) => {
+    // 항상 배열인지 확인
+    if (!Array.isArray(items)) return [];
+
+    console.log('상태 필터링 전 아이템 수:', items.length);
+    console.log('현재 선택된 상태:', selectedStatus);
+
+    let filteredResult = [];
+
+    // status가 null 또는 undefined인 경우 기본값 '대기'로 처리
+    const safeItems = items.map(item => ({
+      ...item,
+      status: item.status || '대기'
+    }));
+
+    // API의 status 값이 한글로 변경됨
+    // 전체: 대기, 완료, 배송 중, 배송 완료 (취소 제외)
+    // 진행중: 대기
+    // 완료: 완료, 배송 중, 배송 완료
+    if (selectedStatus === 'all') {
+      // '취소' 상태만 제외하고 모두 표시
+      filteredResult = safeItems.filter(item => item.status !== '취소');
+    } else if (selectedStatus === 'pending') {
+      // 진행중: 대기
+      filteredResult = safeItems.filter(item => item.status === '대기');
+    } else if (selectedStatus === 'completed') {
+      // 완료: 완료, 배송 중, 배송 완료
+      filteredResult = safeItems.filter(item =>
+        item.status === '완료' || item.status === '배송 중' || item.status === '배송 완료'
+      );
+    } else {
+      filteredResult = safeItems;
+    }
+
+    console.log('상태 필터링 후 아이템 수:', filteredResult.length);
+    if (filteredResult.length === 0 && items.length > 0) {
+      console.log('상태 필터 일치하는 항목 없음. 상태 값 샘플:', items.slice(0, 3).map(item => item.status));
+    }
+
+    return filteredResult;
+  };
+
+  // 정렬 함수
+  const sortItems = (items: FundingItemAPI[]) => {
+    // 항상 배열인지 확인
+    if (!Array.isArray(items)) return [];
+
+    switch (selectedSort) {
+      case 'latest':
+        return [...items].sort((a, b) =>
+          new Date(b.createdAt || '').getTime() - new Date(a.createdAt || '').getTime()
+        );
+      case 'oldest':
+        return [...items].sort((a, b) =>
+          new Date(a.createdAt || '').getTime() - new Date(b.createdAt || '').getTime()
+        );
+      case 'popular':
+        // 인기순 - 참여자 수 기준
+        return [...items].sort((a, b) => (b.participantsNumber || 0) - (a.participantsNumber || 0));
+      case 'achievement':
+        // 달성률순 계산
+        return [...items].sort((a, b) => {
+          const aProgress = a.product && a.product.price ? (a.fundedAmount / a.product.price) : 0;
+          const bProgress = b.product && b.product.price ? (b.fundedAmount / b.product.price) : 0;
+          return bProgress - aProgress;
+        });
+      default:
+        return items;
+    }
+  };
+
   // 필터링 및 정렬 적용 부분 수정
   const filteredByStatus = filterByStatus(fundings || []);
 
@@ -337,10 +405,28 @@ function FundingListPage() {
 
   // 카테고리 필터링
   const filteredItems = Array.isArray(filteredBySearch)
-    ? filteredBySearch.filter(item =>
-      item && (selectedCategory === 'all' || item.category === selectedCategory)
-    )
+    ? filteredBySearch.filter(item => {
+      if (!item) return false;
+
+      if (selectedCategory === 'all') return true;
+
+      // API 카테고리 값(한글)을 프론트엔드 카테고리 값(영어)으로 변환
+      const mappedCategory = mapApiCategoryToFrontend(item.category);
+
+      console.log('아이템 한글 카테고리:', item.category);
+      console.log('매핑된 카테고리:', mappedCategory);
+      console.log('선택된 카테고리:', selectedCategory);
+
+      return mappedCategory === selectedCategory;
+    })
     : [];
+
+  console.log('카테고리 필터링 전 아이템 수:', filteredBySearch.length);
+  console.log('카테고리 필터링 후 아이템 수:', filteredItems.length);
+  if (filteredItems.length === 0 && filteredBySearch.length > 0) {
+    console.log('카테고리 일치하는 항목 없음. 선택된 카테고리:', selectedCategory);
+    console.log('카테고리 값 샘플:', filteredBySearch.slice(0, 3).map(item => item.category));
+  }
 
   // 최종 정렬된 데이터
   const processedFundings = sortItems(filteredItems);
