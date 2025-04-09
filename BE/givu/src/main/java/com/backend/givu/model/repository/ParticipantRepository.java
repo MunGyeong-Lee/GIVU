@@ -5,8 +5,10 @@ import com.backend.givu.model.entity.Funding;
 import com.backend.givu.model.entity.Participant;
 import com.backend.givu.model.entity.User;
 import io.lettuce.core.dynamic.annotation.Param;
+import jakarta.persistence.LockModeType;
 import jakarta.servlet.http.Part;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
@@ -22,6 +24,8 @@ public interface ParticipantRepository extends JpaRepository<Participant, Intege
 
     List<Participant> findByFunding_Id(Integer fundingId);
 
+
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("""
     SELECT   p
     FROM     Participant p

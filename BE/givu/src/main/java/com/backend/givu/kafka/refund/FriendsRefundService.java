@@ -22,7 +22,7 @@ public class FriendsRefundService {
     public void refundToUser(Long userId, int fundingId, int amount, int paymenetId) {
         try {
             // 1. 사용자 확인
-            User user = userRepository.findById(userId)
+            User user = userRepository.findByIdForUpdate(userId)
                     .orElseThrow(() -> new EntityNotFoundException("유저가 존재하지 않습니다."));
 
             // 2. 금액 환불 처리
