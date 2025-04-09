@@ -45,6 +45,13 @@ public class GlobalExceptionHandler {
                 .body(ApiResponse.fail("E404", ex.getMessage()));
     }
 
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<ApiResponse<?>> handleIllegalArgument(IllegalArgumentException ex) {
+        return ResponseEntity
+                .status(HttpStatus.BAD_REQUEST)
+                .body(ApiResponse.fail("E400", ex.getMessage()));
+    }
+
 //    /**
 //     * 커스텀 NotFound 예외
 //     */
