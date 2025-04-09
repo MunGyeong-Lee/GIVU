@@ -3,6 +3,8 @@ package com.backend.givu.model.service;
 import com.backend.givu.model.Document.FundingDocument;
 import com.backend.givu.model.Enum.FundingsScope;
 import com.backend.givu.model.Enum.FundingsStatus;
+import com.backend.givu.model.Enum.PaymentsStatus;
+import com.backend.givu.model.Enum.PaymentsTransactionType;
 import com.backend.givu.model.entity.*;
 import com.backend.givu.model.repository.*;
 import com.backend.givu.model.requestDTO.FundingCreateDTO;
@@ -218,27 +220,7 @@ public class FundingService {
         fundingRepository.deleteById(fundingId);
     }
 
-    /**
-     * 펀딩 완료
-     */
-    public FundingsDTO completeFunding(Long userId, int fundingId){
-        // 존재하는 펀딩인지 확인
-        Funding funding = fundingRepository.findById(fundingId)
-                .orElseThrow(() -> new EntityNotFoundException("펀딩을 찾을 수 없습니다,"));
 
-        // 본인 펀딩인지 확인
-        if(!funding.getUser().getId().equals(userId)) {
-            log.warn("펀딩 삭제 권한 없음: 요청자={}, 작성자={}", userId, funding.getUser().getId());
-            throw new AccessDeniedException("펀딩 완료 권한이 없습니다.");
-        }
-
-        // 완료 상태로 변경
-        funding.setStatus(FundingsStatus.COMPLETED);
-
-        // 변경 사항 저장 및 DTO로 변환
-        return Funding.toDTO(fundingRepository.save(funding));
-
-    }
 
     /**
      * 펀딩 상세 보기
@@ -289,7 +271,6 @@ public class FundingService {
     /**
      * 펀딩 결제 확인
      */
-
     public PaymentResultDTO paymentResult(Long userId, int transactiontId){
 
         User user = userRepository.findById(userId)
@@ -323,6 +304,54 @@ public class FundingService {
     public void indexFundingsToElasticsearch(Funding funding){
         FundingDocument fundingDocument = FundingMapper.toDocument(funding);
         fundingSearchRepository.save(fundingDocument);
+    }
+
+
+    /**
+     * 펀딩 완료
+     */
+    public FundingsDTO fundingPurchase(Long userId, int fundingId, String address){
+        // 존재하는 펀딩인지 확인
+        Funding funding = fundingRepository.findByIdWithUserAndProduct(fundingId)
+                .orElseThrow(() -> new EntityNotFoundException("펀딩을 찾을 수 없습니다,"));
+
+        // 본인 펀딩인지 확인
+        if(!funding.getUser().getId().equals(userId)) {
+            log.warn("펀딩 완료 권한 없음: 요청자={}, 작성자={}", userId, funding.getUser().getId());
+            throw new AccessDeniedException("펀딩 완료 권한이 없습니다.");
+        }
+
+        // 펀딩 모금액과 상품 가격이 같은 지 또는 complete 상태 인지
+        if(!funding.getFundedAmount().equals(funding.getProduct().getPrice())
+                || funding.getStatus() != FundingsStatus.COMPLETED){
+            log.warn("펀딩 완료 상태가 아님: 모금액={}, 상품가격={}, 상태={}",
+                    funding.getFundedAmount(), funding.getProduct().getPrice(),funding.getStatus());
+            throw new IllegalArgumentException("펀딩 완료 상태가 아닙니다.");
+        }
+
+        // 주소가  null 이 아닌지 확인
+        if(address==null){
+            log.warn("올바른 주소 아님: 주소={}", address);
+            throw new IllegalArgumentException("올바른 주소를 입력하세요");
+        }
+
+        // 배송 중 상태로 변경
+        funding.setStatus(FundingsStatus.SHIPPING);
+
+        // payment 생성
+        Payment payment = Payment.builder()
+                .user(funding.getUser())
+                .relatedFunding(funding)
+                .amount(funding.getFundedAmount())
+                .transactionType(PaymentsTransactionType.PRODUCT)
+                .status(PaymentsStatus.SUCCESS)
+                .build();
+
+        paymentRepository.save(payment);
+
+        // 변경 사항 저장 및 DTO로 변환
+        return Funding.toDTO(fundingRepository.save(funding));
+
     }
 
 

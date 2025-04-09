@@ -2,6 +2,7 @@ package com.backend.givu.model.responseDTO;
 
 import com.backend.givu.model.Enum.PaymentsStatus;
 import com.backend.givu.model.Enum.PaymentsTransactionType;
+import com.backend.givu.model.entity.Payment;
 import lombok.*;
 
 import java.time.LocalDateTime;
@@ -19,4 +20,6 @@ public class PaymentsDTO {
     private int amount;
     private PaymentsStatus status;
     private LocalDateTime date;
+
+
 }
