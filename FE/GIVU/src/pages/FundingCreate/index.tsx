@@ -10,9 +10,9 @@ import Preview from './Preview';
 export interface FundingCreateState {
   // 1단계: 상품 정보
   selectedProduct: {
-    id?: string;
-    productName?: string;
-    price?: number;
+    id: string;
+    productName: string;
+    price: number;
     image?: string;
     category?: string;
   };
@@ -26,24 +26,48 @@ export interface FundingCreateState {
     startDate?: string;
     endDate?: string;
     targetAmount: number;
+    category?: string;
+    categoryName?: string | null;
   };
 
   // 3단계: 공개 설정
   publicSettings: {
     isPublic: boolean;
+    allowAnonymous: boolean;
+    allowMessage: boolean;
+    allowComment: boolean;
+    endDate: string;
+    scope: '공개' | '친구';
   };
 }
 
 // 초기 상태 값
 const initialState: FundingCreateState = {
-  selectedProduct: {},
+  selectedProduct: {
+    id: '',
+    productName: '',
+    price: 0,
+    image: '',
+    category: ''
+  },
   basicInfo: {
     title: '',
     description: '',
+    mainImage: '',
+    additionalImages: [],
+    startDate: '',
+    endDate: '',
     targetAmount: 0,
+    category: '',
+    categoryName: null
   },
   publicSettings: {
     isPublic: true,
+    allowAnonymous: true,
+    allowMessage: true,
+    allowComment: true,
+    endDate: '',
+    scope: '공개'
   }
 };
 
@@ -53,7 +77,7 @@ type StepType = 1 | 2 | 3 | 'preview';
 const FundingCreateContainer: React.FC = () => {
   const [currentStep, setCurrentStep] = useState<StepType>(1);
   const [fundingState, setFundingState] = useState<FundingCreateState>(initialState);
-  
+
   // URL에서 파라미터와 state 가져오기
   const location = useLocation();
   // const [searchParams] = useSearchParams();
@@ -112,24 +136,10 @@ const FundingCreateContainer: React.FC = () => {
     }
   };
 
-  // 미리보기로 이동
-  const goToPreview = () => {
-    setCurrentStep('preview');
-
-    // 네비게이션 바에 현재 단계 업데이트
-    // @ts-ignore
-    if (window.fundingCreateContext) {
-      // @ts-ignore
-      window.fundingCreateContext.updateCurrentStep('preview');
-    }
-  };
-
   // 컴포넌트가 마운트될 때 미리보기 콜백 등록
   useEffect(() => {
     // @ts-ignore
     if (window.fundingCreateContext) {
-      // @ts-ignore
-      window.fundingCreateContext.registerPreviewCallback(goToPreview);
       // @ts-ignore
       window.fundingCreateContext.updateCurrentStep(currentStep);
     }
@@ -139,7 +149,7 @@ const FundingCreateContainer: React.FC = () => {
   useEffect(() => {
     if (selectedProductFromState) {
       console.log('쇼핑몰에서 선택한 상품:', selectedProductFromState);
-      
+
       // 상품 데이터 형식을 FundingCreateState에 맞게 변환
       const product = {
         id: selectedProductFromState.id?.toString(),
@@ -148,10 +158,10 @@ const FundingCreateContainer: React.FC = () => {
         image: selectedProductFromState.image,
         category: selectedProductFromState.category
       };
-      
+
       // 상품 정보 업데이트
       updateState('selectedProduct', product);
-      
+
       // 자동으로 기본 정보 초기값 설정 (선택사항)
       updateState('basicInfo', {
         ...fundingState.basicInfo,

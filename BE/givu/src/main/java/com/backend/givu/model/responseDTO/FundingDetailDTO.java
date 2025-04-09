@@ -38,7 +38,14 @@ public class FundingDetailDTO {
     private List<LetterDetailDTO> letters;
     private List<ReviewsDTO> reviews;
 
-    public static FundingDetailDTO of(Funding f, boolean creator, User writer, Product p, List<Letter> letters, List<Review> reviews, Long currentUserId){
+    private List<UserSimpleInfoDTO> participants;
+    private int participantsCount;
+
+
+
+    public static FundingDetailDTO of(
+            Funding f, boolean creator, User writer, Product p, List<Letter> letters,
+            List<Review> reviews, Long currentUserId, List<User> participants){
         return new FundingDetailDTO(
                 f.getId(),
                 creator,
@@ -47,7 +54,7 @@ public class FundingDetailDTO {
                 CategoryMapper.toClient(f.getCategory()),
                 f.getCategoryName(),
                 ScopeMapper.toClient(f.getScope()),
-                f.getParticipantsNumber(),
+                participants.size(),
                 f.getFundedAmount(),
                 StatusMapper.toClient(f.getStatus()),
                 f.getImage(),
@@ -58,7 +65,13 @@ public class FundingDetailDTO {
                 new ProductsSimpleInfoDTO(p),
 
                 letters.stream().map(letter -> new LetterDetailDTO(letter, currentUserId)).toList(),
-                reviews.stream().map(ReviewsDTO::new).toList()
+                reviews.stream().map(ReviewsDTO::new).toList(),
+
+                participants.stream()
+                        .map(u -> new UserSimpleInfoDTO(u.getId(), u.getNickname(), u.getProfileImage()))
+                        .toList(),
+
+                participants.size()
         );
     }
 

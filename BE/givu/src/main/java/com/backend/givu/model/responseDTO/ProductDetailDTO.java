@@ -16,5 +16,7 @@ import java.util.List;
 public class ProductDetailDTO {
     private ProductsDTO product;
     private List<ProductReviewDTO> reviews;
-
+    private Integer likeCount;
+    private boolean likedByUser;
+    private boolean permission;
 }

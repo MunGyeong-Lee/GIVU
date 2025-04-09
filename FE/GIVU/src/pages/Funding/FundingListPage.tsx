@@ -41,21 +41,21 @@ interface FundingItemAPI {
   image: string[];
   createdAt: string;
   updatedAt: string;
+  hidden: boolean; // 친구만 볼 수 있는 펀딩 여부
 }
 
 // API 응답을 FundingGrid 컴포넌트 형식으로 변환하는 함수
 const mapToFundingGridItem = (item: FundingItemAPI): FundingGridItem => {
   if (!item) return null as any; // 아이템이 없는 경우 처리
 
-  // 진행률 계산 (현재는 더미로, 실제로는 API에서 목표액이 제공되어야 함)
-  const targetAmount = 100000; // 임시 목표액
-  const progressPercentage = Math.round(((item.fundedAmount || 0) / targetAmount) * 100);
+  // 진행률 계산 (상품 가격 대비 펀딩액 비율로 계산)
+  const targetAmount = item.product?.price || 100000; // 상품 가격을 목표액으로 사용
+  const progressPercentage = Math.min(Math.round(((item.fundedAmount || 0) / targetAmount) * 100), 100);
 
   return {
     id: item.fundingId,
     title: item.title || '',
     description: item.description || '',
-    targetAmount: targetAmount, // 임시 목표액
     currentAmount: item.fundedAmount || 0,
     progressPercentage: progressPercentage,
     // 대표 이미지를 product.image에서 가져옴
@@ -65,40 +65,54 @@ const mapToFundingGridItem = (item: FundingItemAPI): FundingGridItem => {
     status: item.status || '',
     createdAt: item.createdAt || '',
     parcitipantsNumber: item.participantsNumber || 0, // 오타 주의: parcitipantsNumber로 되어 있음
+    hidden: item.hidden || false, // hidden 속성 추가
   };
 };
 
-// API 응답을 하이라이트 아이템 형식으로 변환하는 함수
-const mapToHighlightItem = (item: FundingItemAPI, badgeType: 'popular' | 'achievement'): HighlightItem => {
-  if (!item) return null as any; // 아이템이 없는 경우 처리
+/**
+ * 종료일까지 남은 일수를 계산하는 함수
+ * @param endDate 종료일(문자열)
+ * @returns 남은 일수(정수)
+ */
+const calculateDaysLeft = (endDate: string): number => {
+  if (!endDate) return 0;
 
-  // 진행률 계산 (현재는 더미로, 실제로는 API에서 목표액이 제공되어야 함)
-  const targetAmount = 100000; // 임시 목표액
-  const progressPercentage = Math.round(((item.fundedAmount || 0) / targetAmount) * 100);
+  const today = new Date();
+  const end = new Date(endDate);
 
-  // 배지 설정
-  const badgeConfig = {
-    'popular': {
-      text: '인기 펀딩',
-      color: '#FF5B61'
-    },
-    'achievement': {
-      text: '달성 임박',
-      color: '#4CAF50'
-    }
-  };
+  // 날짜 차이 계산 (밀리초)
+  const diffTime = end.getTime() - today.getTime();
+
+  // 일수로 변환
+  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+  // 음수일 경우 0 반환
+  return diffDays < 0 ? 0 : diffDays;
+};
+
+/**
+ * API 응답을 하이라이트 아이템으로 변환하는 함수
+ */
+const mapToHighlightItem = (item: FundingItemAPI): HighlightItem => {
+  if (!item) return null as any;
+
+  const targetAmount = item.product?.price || 100000;
+  const progressPercentage = Math.min(Math.round(((item.fundedAmount || 0) / targetAmount) * 100), 100);
 
   return {
     id: item.fundingId,
     title: item.title || '',
-    description: item.description || '',
-    targetAmount: targetAmount, // 임시 목표액
-    currentAmount: item.fundedAmount || 0,
+    imageUrl: item.product?.image || '/placeholder-image.jpg',
     progressPercentage: progressPercentage,
-    // 대표 이미지를 product.image에서 가져옴
-    imageUrl: item.product?.image || '',
-    badgeText: badgeConfig[badgeType].text,
-    badgeColor: badgeConfig[badgeType].color
+    targetAmount: targetAmount,
+    currentAmount: item.fundedAmount || 0,
+    type: progressPercentage >= 100 ? 'achievement' : 'popular',
+    remainingDays: calculateDaysLeft(item.createdAt),
+    participantsCount: item.participantsNumber || 0,
+    description: item.description || '',
+    badgeText: progressPercentage >= 100 ? '달성' : `${progressPercentage}%`,
+    badgeColor: progressPercentage >= 100 ? 'bg-green-500' : 'bg-primary',
+    hidden: item.hidden || false // hidden 속성 추가
   };
 };
 
@@ -138,17 +152,12 @@ function FundingListPage() {
       console.log('펀딩 데이터 가져오기 시작');
 
       // 토큰 가져오기 - 로컬 스토리지에서 올바른 토큰 가져오기
-      // 로그에서 사용자 정보가 'token'이 아닌 다른 키로 저장된 것으로 보임
       const accessToken = localStorage.getItem('access_token') ||
         localStorage.getItem('auth_token') ||
         localStorage.getItem('jwt_token');
 
-      // Redux 스토어에서 토큰 정보 확인 (디버깅용)
-      console.log('로컬 스토리지 토큰:', accessToken);
-
       // API 요청 URL 및 옵션 설정
       const apiUrl = `${import.meta.env.VITE_API_BASE_URL}/fundings/list`;
-      console.log('API 요청 URL:', apiUrl);
 
       // 인증 헤더 설정 - Bearer 토큰 형식으로 전송
       const headers: Record<string, string> = {
@@ -164,21 +173,13 @@ function FundingListPage() {
         withCredentials: true // 쿠키 전송 (필요한 경우)
       };
 
-      console.log('API 요청 설정:', {
-        hasToken: !!accessToken,
-        withCredentials: true,
-        tokenHeader: accessToken ? 'Bearer ' + accessToken.substring(0, 10) + '...' : 'none'
-      });
-
       // 요청 전송
       const response = await axios.get(apiUrl, config);
       const data = response.data;
 
-      console.log('API 응답 데이터:', data);
-
       // 응답이 배열인지 확인하고 처리
       const fundingList = Array.isArray(data) ? data : [];
-      console.log('처리할 데이터 개수:', fundingList.length);
+
       setFundings(fundingList);
 
       // 데이터가 비어있는 경우 빈 배열 처리
@@ -190,30 +191,25 @@ function FundingListPage() {
       }
 
       // 인기 펀딩과 달성 임박 펀딩 설정 (참여자 수와 펀딩액 기준으로)
-      const sortedByPopularity = [...fundingList].sort((a, b) =>
+      // hidden이 false인 펀딩만 필터링
+      const publicFundings = fundingList.filter(item => !item.hidden);
+
+      const sortedByPopularity = [...publicFundings].sort((a, b) =>
         (b.participantsNumber || 0) - (a.participantsNumber || 0)
       ).slice(0, 5);
 
-      console.log('인기 펀딩 데이터:', sortedByPopularity);
-
-      const sortedByAchievement = [...fundingList].sort((a, b) =>
+      const sortedByAchievement = [...publicFundings].sort((a, b) =>
         (b.fundedAmount || 0) - (a.fundedAmount || 0)
       ).slice(0, 5);
 
-      console.log('달성 임박 펀딩 데이터:', sortedByAchievement);
-
       // 하이라이트 아이템 형식으로 변환
       const popularHighlights = sortedByPopularity.map(item =>
-        mapToHighlightItem(item, 'popular')
-      ).filter(Boolean); // null 값 제거
-
-      console.log('변환된 인기 하이라이트:', popularHighlights);
+        mapToHighlightItem(item)
+      );
 
       const achievementHighlights = sortedByAchievement.map(item =>
-        mapToHighlightItem(item, 'achievement')
-      ).filter(Boolean); // null 값 제거
-
-      console.log('변환된 달성 하이라이트:', achievementHighlights);
+        mapToHighlightItem(item)
+      );
 
       setPopularHighlightItems(popularHighlights);
       setAchievementHighlightItems(achievementHighlights);
@@ -281,11 +277,6 @@ function FundingListPage() {
   const filterByStatus = (items: FundingItemAPI[]) => {
     // 항상 배열인지 확인
     if (!Array.isArray(items)) return [];
-
-    // status 값 디버깅
-    if (items.length > 0) {
-      console.log('첫 번째 아이템 status 값:', items[0].status);
-    }
 
     // API의 status 값이 한글로 변경됨
     // 전체: 대기, 완료, 배송 중, 배송 완료 (취소 제외)
