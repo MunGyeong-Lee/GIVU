@@ -21,6 +21,7 @@ import ShoppingReviewEdit from '../pages/ShoppingMall/ShoppingReviewEdit';
 import SearchPage from "../pages/Search/SearchPage";
 import LoginPage from "../pages/Login/LoginPage";
 import { store } from "../store";
+import MobilePage from '../pages/ShoppingMall/MobilePage';
 // import NotFound from "../pages/NotFound/NotFound";
 
 // 인증 상태에 따른 리다이렉트를 처리하는 래퍼 컴포넌트
@@ -102,6 +103,10 @@ const routes = [
       {
         path: "shopping/order/:id",
         element: <OrderPage />,
+      },
+      {
+        path: "shopping/mobile/order/:id",
+        element: <MobilePage />,
       },
       {
         path: "mypage",
