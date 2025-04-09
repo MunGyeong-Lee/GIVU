@@ -55,7 +55,7 @@ class MyPageFragment : BaseFragment<FragmentMyPageBinding>(R.layout.fragment_my_
                 }
 
                 composable("PayUsageScreen") {
-                    PayUsageScreen()
+                    PayUsageScreen(navController)
                 }
 
                 composable("UserInfoScreen") {
