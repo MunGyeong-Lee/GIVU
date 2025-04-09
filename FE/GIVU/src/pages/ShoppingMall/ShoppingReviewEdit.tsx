@@ -32,7 +32,7 @@ const ShoppingReviewEdit = () => {
   
   // 상품 정보 상태 추가
   const [product, setProduct] = useState<Product | null>(null);
-  const [review, setReview] = useState<Review | null>(null);
+  const [, setReview] = useState<Review | null>(null);
   const [title, setTitle] = useState('');
   const [body, setBody] = useState('');
   const [star, setStar] = useState(5);
