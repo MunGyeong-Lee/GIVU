@@ -149,7 +149,7 @@ fun HomeScreen(
             item {
                 HomeAppBarPager(navController, user)
                 Spacer(modifier = Modifier.height(4.dp))
-                SearchBarItem(navController)
+                SearchBarItem(navController, R.id.action_home_to_search)
             }
             item {
                 Spacer(modifier = Modifier.height(16.dp))
