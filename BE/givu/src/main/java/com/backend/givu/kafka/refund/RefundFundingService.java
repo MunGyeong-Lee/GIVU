@@ -41,7 +41,7 @@ public class RefundFundingService {
     @Transactional
     public ApiResponse<RefundResponseDTO> refundFunding(Long userId, int fundingId){
         // 1. 펀딩 유무 확인
-        Funding funding = fundingRepository.findById(fundingId)
+        Funding funding = fundingRepository.findByIdForUpdate(fundingId)
                 .orElseThrow(()-> new EntityNotFoundException("펀딩을 찾을 수 없습니다."));
         // 2. 펀딩 참가자 리스트
         List<Participant> participants = participantRepository.findByFunding_Id(fundingId);
@@ -72,6 +72,7 @@ public class RefundFundingService {
      */
     @Transactional
     public void refundForOneParticipant(Participant participant) {
+
         Funding funding = participant.getFunding();
         int amount = participant.getFundingAmount();
         Long userId = participant.getUser().getId();
@@ -108,7 +109,7 @@ public class RefundFundingService {
     @Transactional
     public void handleRefundSuccess(RefundResultEventDTO event) {
         log.info("환불 성공 처리 - 환불 내역 상태, participant 상태 변경 시도");
-        Payment payment = paymentRepository.findById(event.getPaymentId())
+        Payment payment = paymentRepository.findByIdForUpdate(event.getPaymentId())
                 .orElseThrow(() -> new EntityNotFoundException("결제 내역을 찾을 수 없습니다."));
 
         // 1. 환불 내역 상태 - 성공
@@ -133,7 +134,7 @@ public class RefundFundingService {
     @Transactional
     public void rollbackBalance(RefundResultEventDTO event) {
         log.info("환불 실패 처리 - 펀딩 금액 복구 시도");
-        Payment payment = paymentRepository.findById(event.getPaymentId())
+        Payment payment = paymentRepository.findByIdForUpdate(event.getPaymentId())
                 .orElseThrow(() -> new EntityNotFoundException("결제 내역을 찾을 수 없습니다."));
 
 

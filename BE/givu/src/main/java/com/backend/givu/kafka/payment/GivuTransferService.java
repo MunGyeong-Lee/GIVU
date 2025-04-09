@@ -45,7 +45,7 @@ public class GivuTransferService {
         Funding funding = fundingRepository.findById(fundingId)
                 .orElseThrow(() -> new EntityNotFoundException("펀딩을 찾을 수 없습니다."));
 
-        User user = userRepository.findById(userId)
+        User user = userRepository.findByIdForUpdate(userId)
                 .orElseThrow(() -> new EntityNotFoundException("유저를 찾을 수 없습니다."));
         int fundingBalance = funding.getProduct().getPrice() - funding.getFundedAmount();
 
@@ -54,8 +54,6 @@ public class GivuTransferService {
             log.warn("❌ 이미 참여한 유저입니다 - userId: {}, fundingId: {}", user.getId(), funding.getId());
             return ApiResponse.fail("ALREADY_PARTICIPATED", "이미 참여한 펀딩입니다.");
         }
-
-
 
 
         // 2. 거래내역 생성 및 pending 상태로 저장
@@ -142,9 +140,9 @@ public class GivuTransferService {
         log.info("🔁 보상 시작 - userId: {}, transactionId: {}, amount: {}", userId, transactionId, amount);
 
         // 1.  유저 정보, 결제 정보 존재 하는지 확인
-        User user = userRepository.findById(userId)
+        User user = userRepository.findByIdForUpdate(userId)
             .orElseThrow(()-> new EntityNotFoundException("유저 정보가 없습니다."));
-        Payment payment = paymentRepository.findById(transactionId)
+        Payment payment = paymentRepository.findByIdForUpdate(transactionId)
                 .orElseThrow(()-> new EntityNotFoundException("결제 정보가 없습니다." + transactionId));
 
 
