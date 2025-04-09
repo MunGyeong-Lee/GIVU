@@ -1,16 +1,15 @@
 package com.backend.givu.controller;
 
+import com.backend.givu.kafka.GivuTransferService;
 import com.backend.givu.model.entity.CustomUserDetail;
 import com.backend.givu.model.entity.Product;
-import com.backend.givu.model.responseDTO.ApiResponse;
-import com.backend.givu.model.responseDTO.ImageUploadResponseDTO;
-import com.backend.givu.model.responseDTO.ProductDetailDTO;
-import com.backend.givu.model.responseDTO.ProductsDTO;
+import com.backend.givu.model.responseDTO.*;
 import com.backend.givu.model.service.ProductService;
 import com.backend.givu.model.service.S3UploadService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -29,6 +28,7 @@ import java.util.List;
 public class ProductController {
     private final ProductService productService;
     private final S3UploadService s3UploadService;
+    private final GivuTransferService givuTransferService;
 
     @Operation(summary = "상품 전체 리스트 조회", description = "상품 전체 목록을 조회합니다.")
     @GetMapping("/list")
@@ -111,6 +111,32 @@ public class ProductController {
     public ResponseEntity<String> reindexAllProducts() {
         productService.indexAllProductsToElasticsearch();
         return ResponseEntity.ok("✅ 모든 상품을 Elasticsearch에 색인 완료!");
+    }
+
+    @Operation(summary = "상품 구매 요청", description = "기뷰페이로 상품을 구매합니다.")
+    @PostMapping(value = "/purchase/{productId}")
+    public ResponseEntity<ApiResponse<PaymentResultDTO>> purchaseProduct(
+            @AuthenticationPrincipal CustomUserDetail userDetail,
+            @PathVariable int productId,
+            @RequestParam int amount,
+            HttpServletRequest request) {
+
+        Long userId = userDetail.getId();
+        ApiResponse<PaymentResultDTO> result = givuTransferService.purchaseProduct(userId, productId, amount);
+        return ResponseEntity.ok(result);
+    }
+
+    @Operation(summary = "상품 결제 현황 조회", description = "상품 구매 결제 상태를 조회합니다.")
+    @GetMapping(value = "/{paymentId}/product")
+    public ResponseEntity<ApiResponse<PaymentResultDTO>> productPaymentResult(
+            @AuthenticationPrincipal CustomUserDetail userDetail,
+            @PathVariable int paymentId,
+            HttpServletRequest request) throws IOException {
+
+        Long userId = userDetail.getId();
+        PaymentResultDTO result = productService.paymentResult(userId, paymentId);
+
+        return ResponseEntity.ok(ApiResponse.success(result));
     }
 
 }
