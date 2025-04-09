@@ -2,17 +2,13 @@ package com.wukiki.givu.views.cancel
 
 import android.widget.Toast
 import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -26,12 +22,10 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -42,18 +36,16 @@ import com.wukiki.givu.util.CommonTopBar
 import com.wukiki.givu.views.cancel.component.RecommendGiftPager
 import com.wukiki.givu.views.detail.viewmodel.FundingUiEvent
 import com.wukiki.givu.views.detail.viewmodel.FundingViewModel
+import com.wukiki.givu.views.participate.component.FundingInfoPager
 
 @Composable
 fun CancelFundingScreen(
     fundingViewModel: FundingViewModel,
-    navController: NavController
+    navController: NavController,
+    onRequestFingerprint: () -> Unit
 ) {
     val context = LocalContext.current
     val funding by fundingViewModel.selectedFunding.collectAsState()
-    val paymentPassword by fundingViewModel.paymentPassword.collectAsState()
-    val shadowBrush = Brush.verticalGradient(
-        colors = listOf(Color.Gray.copy(alpha = 0.3f), Color.Transparent)
-    )
     var showDialog by remember { mutableStateOf(false) }
     val fundingUiEvent = fundingViewModel.fundingUiEvent
 
@@ -97,6 +89,10 @@ fun CancelFundingScreen(
             ) {
                 Spacer(modifier = Modifier.height(8.dp))
 
+                FundingInfoPager(it)
+
+                Spacer(modifier = Modifier.height(16.dp))
+
                 Text(
                     text = stringResource(R.string.title_recommend_other_funding),
                     fontSize = 24.sp,
@@ -137,48 +133,14 @@ fun CancelFundingScreen(
 
                 Spacer(modifier = Modifier.height(24.dp))
 
-                Text(
-                    text = stringResource(R.string.text_givu_pay_password),
-                    fontSize = 18.sp,
-                    fontWeight = FontWeight.Medium,
-                    fontFamily = suit
-                )
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                Box(
-                    modifier = Modifier
-                        .height(32.dp)
-                        .background(shadowBrush, RoundedCornerShape(10.dp))
-                        .padding(2.dp)
-                ) {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .background(Color.White, RoundedCornerShape(10.dp))
-                            .padding(horizontal = 8.dp)
-                    ) {
-                        BasicTextField(
-                            value = paymentPassword,
-                            onValueChange = { fundingViewModel.paymentPassword.value = it },
-                            singleLine = true,
-                            textStyle = TextStyle(
-                                color = Color.Black,
-                                fontSize = 14.sp,
-                                fontFamily = suit,
-                                fontWeight = FontWeight.Medium
-                            ),
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = 2.dp, vertical = 1.dp)
-                        )
-                    }
-                }
-
-                Spacer(modifier = Modifier.height(24.dp))
-
                 Button(
-                    onClick = { showDialog = true },
+                    onClick = {
+                        if (it.fundedAmount * 2 <= it.productPrice.toInt()) {
+                            showDialog = true
+                        } else {
+                            onRequestFingerprint()
+                        }
+                    },
                     modifier = Modifier
                         .fillMaxSize()
                         .height(56.dp),
@@ -188,7 +150,7 @@ fun CancelFundingScreen(
                     colors = ButtonDefaults.buttonColors(colorResource(R.color.main_primary)),
                 ) {
                     Text(
-                        text = stringResource(R.string.title_cancel_funding),
+                        text = stringResource(if (it.fundedAmount * 2 <= it.productPrice.toInt()) R.string.title_cancel_funding else R.string.title_finish_funding),
                         fontFamily = suit,
                         fontWeight = FontWeight.Bold,
                         fontSize = 18.sp,
@@ -201,7 +163,7 @@ fun CancelFundingScreen(
         if (showDialog) {
             CancelFundingDialogScreen(
                 onDismiss = { showDialog = false },
-                onConfirm = { fundingViewModel.cancelFunding() }
+                onRequestFingerprint = onRequestFingerprint
             )
         }
     }
