@@ -47,6 +47,7 @@ fun PayUsageScreen(
     navController: NavController
 ) {
     val paymentHistoryList by homeViewModel.myPaymentHistoryList.collectAsState()
+    val user by homeViewModel.user.collectAsState()
 
     LaunchedEffect(Unit) {
         homeViewModel.updatePaymentHistory()
@@ -82,7 +83,7 @@ fun PayUsageScreen(
                     )
                     Spacer(Modifier.height(8.dp))
                     Text(
-                        text = CommonUtils.makeCommaPrice(30000),
+                        text = CommonUtils.makeCommaPrice((user?.balance ?: "0").toInt()),
                         fontFamily = pretendard,
                         fontWeight = FontWeight.Bold,
                         fontSize = 28.sp

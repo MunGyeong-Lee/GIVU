@@ -51,10 +51,6 @@
         android:label="@string/menu_title_mall"
         tools:layout="@layout/fragment_mall">
 
-        <action
-            android:id="@+id/action_mall_to_search_product"
-            app:destination="@id/fragment_search_product" />
-
     </fragment>
 
     <fragment
@@ -122,9 +118,6 @@
         android:label="Register Funding"
         tools:layout="@layout/fragment_register_funding">
 
-        <action
-            android:id="@+id/action_register_funding_to_search_product"
-            app:destination="@id/fragment_search_product" />
 
     </fragment>
 
