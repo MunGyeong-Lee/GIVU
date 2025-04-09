@@ -102,6 +102,7 @@ public class GivuTransferService {
     @Transactional
     public void confirmPayment(int transactionId){
 
+
         // 1. 펀딩 내역 존재하는지 확인
         Payment payment = paymentRepository.findByIdWithFAndRelatedFunding(transactionId)
                 .orElseThrow(() -> new EntityNotFoundException("결제 정보가 없습니다: " + transactionId));
@@ -112,7 +113,7 @@ public class GivuTransferService {
         //3. 만약 해당 펀딩 금액이 다 모아졌으면 Complete 로 변경
         int fundedAmount = payment.getRelatedFunding().getFundedAmount();
         int price = payment.getRelatedFunding().getProduct().getPrice();
-        if(fundedAmount == price){
+        if (fundedAmount == price) {
             payment.getRelatedFunding().setStatus(FundingsStatus.COMPLETED);
         }
 
@@ -130,6 +131,8 @@ public class GivuTransferService {
         log.info("✅ 결제 최종 완료 - userId: {}, transactionId: {}, status: {}",
                 payment.getUser().getId(), payment.getId(), payment.getStatus());
     }
+
+
 
 
     /**

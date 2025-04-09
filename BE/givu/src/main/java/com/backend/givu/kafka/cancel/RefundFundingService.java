@@ -120,7 +120,7 @@ public class RefundFundingService {
                         .orElseThrow(()-> new EntityNotFoundException("참여자 정보가 없습니다."));
         participant.setStatus(ParticipantsRefundStatus.REFUND);
 
-        log.info("✅ [환불 성공 처리] paymentId={}, participantId={}, userId={}, fundingId={}",
+        log.info("✅ [최종] 환불 성공 처리 - paymentId={}, participantId={}, userId={}, fundingId={}",
                 payment.getId(), participant.getId(), event.getUserId(), event.getFundingId());
     }
 
