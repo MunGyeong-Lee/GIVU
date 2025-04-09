@@ -17,7 +17,8 @@ interface Product {
   category: string;
   price: number;
   image: string | null;
-  favorite: number;
+  favorite?: number;
+  likeCount?: number;
   star: number;
   createdAt: string;
   description: string;
@@ -129,9 +130,68 @@ const ShoppingProductDetail = () => {
         setLoading(true);
         // const token = localStorage.getItem('auth_token');
         
+        // 환경 변수 확인
+        console.log('API 기본 URL:', import.meta.env.VITE_API_BASE_URL);
+        console.log('실제 API 호출 URL:', `${import.meta.env.VITE_API_BASE_URL}/products/${id}`);
+        
         // 상품 정보 가져오기
-        const productResponse = await axios.get(`${import.meta.env.VITE_BASE_URL}/products/${id}`);
-        setProduct(productResponse.data.product);
+        const token = localStorage.getItem('auth_token');
+        console.log('인증 토큰 존재 여부:', !!token);
+        
+        const productResponse = await axios.get(
+          `${import.meta.env.VITE_API_BASE_URL}/products/${id}`,
+          {
+            headers: token ? {
+              'Authorization': `Bearer ${token}`,
+              'Accept': 'application/json;charset=UTF-8'
+            } : undefined,
+            withCredentials: true
+          }
+        );
+        console.log('상품 정보 API 응답 전체 (JSON):', JSON.stringify(productResponse.data, null, 2));
+        
+        // API 응답에서 필요한 데이터 추출
+        const productData = productResponse.data.product;
+        console.log('API에서 받은 product 데이터 (JSON):', JSON.stringify(productData, null, 2));
+        
+        // permission 값을 직접 확인
+        const rawPermission = productResponse.data.permission;
+        console.log('permission 값의 타입:', typeof rawPermission);
+        console.log('permission 값 직접 참조:', rawPermission);
+        console.log('permission 값 문자열 비교:', rawPermission === "true");  // 문자열인 경우 확인
+        console.log('permission 값 boolean 비교:', rawPermission === true);   // boolean인 경우 확인
+        
+        // 확실하게 boolean으로 변환 (문자열 "true"도 true로 처리)
+        const permission = rawPermission === true || String(rawPermission) === "true";
+        console.log('변환된 permission 값:', permission);
+        console.log('변환된 permission 타입:', typeof permission);
+        
+        const likedByUser = productResponse.data.likedByUser;
+        const likeCount = productResponse.data.likeCount;
+        
+        console.log('API에서 받은 permission 값:', permission);
+        console.log('API에서 받은 likedByUser 값:', likedByUser);
+        console.log('API에서 받은 likeCount 값:', likeCount);
+        console.log('로그인된 사용자 ID:', localStorage.getItem('userId'));
+        
+        // 상품 정보와 함께 추가 정보도 저장
+        const updatedProduct = {
+          ...productData,
+          permission: permission  // 이미 boolean으로 변환된 값
+        };
+        console.log('permission이 설정된 상품 객체:', updatedProduct);
+        console.log('설정된 permission 값:', updatedProduct.permission);
+        console.log('설정된 permission 타입:', typeof updatedProduct.permission);
+        
+        setProduct(updatedProduct);
+        
+        // 좋아요 상태도 함께 설정
+        setIsFavorite(likedByUser);
+        
+        console.log('최종 설정된 product 데이터:', {
+          ...productData,
+          permission: permission
+        });
         
         // 리뷰 목록에 isAuthor 필드 추가
         const reviewsWithAuthor = productResponse.data.reviews.map((review: Review) => ({
@@ -167,49 +227,31 @@ const ShoppingProductDetail = () => {
     setIsLoggedIn(!!user || (!!token && !!userId));
   }, [user]);
 
-  // 좋아요 상태 확인
+  // 좋아요 상태 확인 - 필요 없으므로 제거하거나 간소화
   useEffect(() => {
-    const checkFavoriteStatus = async () => {
+    // 이미 상품 정보를 가져올 때 좋아요 상태도 함께 가져오므로
+    // 이 로직은 로컬 스토리지 캐시 확인용으로만 남깁니다.
+    const checkLocalFavoriteStatus = () => {
       try {
-        const token = localStorage.getItem('auth_token');
-        if (!token && !user) return;
-        if (!id) return; // id가 없으면 함수 종료
-
+        if (!id) return;
+        
         // ID를 문자열로 확실하게 변환
         const productId = id as string;
-
+        
         // 로컬 스토리지에서 좋아요 상태 확인
         const favoriteProducts = JSON.parse(localStorage.getItem('favoriteProducts') || '{}') as Record<string, boolean>;
         if (favoriteProducts[productId] !== undefined) {
-          setIsFavorite(favoriteProducts[productId]);
-          return;
+          // 이 값은 API 응답보다 낮은 우선순위를 가집니다
+          // API 응답에서 이미 설정한 경우에는 사용하지 않습니다
+          console.log('로컬 스토리지에서 가져온 좋아요 상태:', favoriteProducts[productId]);
         }
-
-        const response = await axios.get(
-          `${import.meta.env.VITE_API_BASE_URL}/products/${productId}`,
-          {
-            headers: {
-              'Authorization': `Bearer ${token}`,
-              'Content-Type': 'application/json',
-              'Accept': 'application/json'
-            },
-            withCredentials: true
-          }
-        );
-        
-        const favoriteStatus = response.data.product.favorite;
-        setIsFavorite(favoriteStatus);
-
-        // 로컬 스토리지에 저장
-        favoriteProducts[productId] = favoriteStatus;
-        localStorage.setItem('favoriteProducts', JSON.stringify(favoriteProducts));
       } catch (error) {
-        console.error('좋아요 상태 확인 중 오류:', error);
+        console.error('로컬 좋아요 상태 확인 중 오류:', error);
       }
     };
-
+    
     if ((isLoggedIn || user) && id) {
-      checkFavoriteStatus();
+      checkLocalFavoriteStatus();
     }
   }, [id, isLoggedIn, user]);
 
@@ -451,7 +493,24 @@ const ShoppingProductDetail = () => {
   };
 
   // JSX에 추가할 리뷰 섹션
-  const ReviewSection = () => (
+  const ReviewSection = () => {
+    // 디버깅 정보 추가
+    console.log('ReviewSection 렌더링 시 product 객체:', product);
+    console.log('ReviewSection 렌더링 시 product.permission 값 직접 확인:', product?.permission);
+    console.log('ReviewSection permission 값 타입:', typeof product?.permission);
+    
+    // 로컬 변수로 permission 값을 가져와서 로깅
+    const permissionValue = product?.permission;
+    // 다양한 방식으로 확인해 보자
+    console.log('리뷰 작성 가능 여부 직접 비교 (== true):', permissionValue == true);
+    console.log('리뷰 작성 가능 여부 직접 비교 (=== true):', permissionValue === true);
+    console.log('리뷰 작성 가능 여부 문자열 확인 (String(permissionValue) === "true"):', String(permissionValue) === "true");
+    // 최종적으로 boolean 값으로 설정 (문자열 "true"도 true로 처리)
+    const canWriteReview = permissionValue === true || String(permissionValue) === "true";
+    console.log('최종 리뷰 작성 가능 여부(canWriteReview):', canWriteReview);
+    console.log('리뷰 작성 가능 여부 타입:', typeof canWriteReview);
+    
+    return (
     <div className="mb-12">
       <div className="flex items-center justify-between mb-6">
         <h3 className="text-lg font-bold">상품 리뷰</h3>
@@ -538,7 +597,7 @@ const ShoppingProductDetail = () => {
 
       {/* 리뷰 작성 버튼 - permission 값에 따라 조건부로 표시 */}
       <div className="text-center mt-6">
-        {product.permission ? (
+        {canWriteReview ? (
           <Link
             to={`/shopping/product/${id}/review`}
             className="inline-block px-6 py-3 bg-pink-500 text-white rounded-md hover:bg-pink-600 transition-colors"
@@ -552,7 +611,8 @@ const ShoppingProductDetail = () => {
         )}
       </div>
     </div>
-  );
+    );
+  };
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-8">
