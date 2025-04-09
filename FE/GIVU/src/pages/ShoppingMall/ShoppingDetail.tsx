@@ -22,6 +22,7 @@ interface Product {
   createdAt: string;
   description: string;
   options?: ProductOption[];  // 옵션 추가 (선택적)
+  permission?: boolean;       // 리뷰 작성 권한 추가
 }
 
 // Review 인터페이스 수정
@@ -285,6 +286,19 @@ const ShoppingProductDetail = () => {
 
   // 리뷰 삭제 핸들러 추가
   const handleDeleteReview = async (reviewId: number) => {
+    // 본인 리뷰 여부 추가 확인
+    const review = reviews.find(r => r.reviewId === reviewId);
+    
+    if (!review) {
+      alert('존재하지 않는 리뷰입니다.');
+      return;
+    }
+    
+    if (!review.isAuthor) {
+      alert('본인이 작성한 리뷰만 삭제할 수 있습니다.');
+      return;
+    }
+    
     if (!window.confirm('리뷰를 삭제하시겠습니까?')) {
       return;
     }
@@ -297,7 +311,7 @@ const ShoppingProductDetail = () => {
       }
       
       await axios.delete(
-        `${import.meta.env.VITE_API_BASE_URL}/products-review/${reviewId}`,
+        `${import.meta.env.VITE_API_BASE_URL}/products-review/${id}/${reviewId}`,
         {
           headers: {
             'Authorization': `Bearer ${token}`
@@ -315,8 +329,10 @@ const ShoppingProductDetail = () => {
       let newAverageRating = 0;
       if (updatedReviews.length > 0) {
         newAverageRating = updatedReviews.reduce((acc, review) => acc + review.star, 0) / updatedReviews.length;
+        setAverageRating(newAverageRating);
+      } else {
+        setAverageRating(0);
       }
-      setAverageRating(newAverageRating);
 
       // 상품의 평균 별점 업데이트
       try {
@@ -335,10 +351,16 @@ const ShoppingProductDetail = () => {
           }
         );
 
+        // 상품 정보 업데이트
+        setProduct({
+          ...product,
+          star: newAverageRating
+        });
+
         // 메인 페이지의 상품 목록도 업데이트
         const mainResponse = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/products/list`);
         const updatedProducts = mainResponse.data.map((p: any) => 
-          p.id === updatedProduct.id ? updatedProduct : p
+          p.id === updatedProduct.id ? { ...p, star: newAverageRating } : p
         );
         
         // 전역 상태 업데이트를 위한 이벤트 발생
@@ -514,14 +536,20 @@ const ShoppingProductDetail = () => {
         ))}
       </div>
 
-      {/* 리뷰 작성 버튼 - 경로 수정 */}
+      {/* 리뷰 작성 버튼 - permission 값에 따라 조건부로 표시 */}
       <div className="text-center mt-6">
-        <Link
-          to={`/shopping/product/${id}/review`}
-          className="inline-block px-6 py-3 bg-pink-500 text-white rounded-md hover:bg-pink-600 transition-colors"
-        >
-          리뷰 작성하기
-        </Link>
+        {product.permission ? (
+          <Link
+            to={`/shopping/product/${id}/review`}
+            className="inline-block px-6 py-3 bg-pink-500 text-white rounded-md hover:bg-pink-600 transition-colors"
+          >
+            리뷰 작성하기
+          </Link>
+        ) : (
+          <div className="text-gray-500 px-6 py-3 border border-gray-300 rounded-md inline-block cursor-not-allowed">
+            상품 구매 후 리뷰를 작성할 수 있습니다
+          </div>
+        )}
       </div>
     </div>
   );
