@@ -2,15 +2,10 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 interface FundingCreateNavbarProps {
-  onPreview?: () => void;
-  showPreviewButton?: boolean;
   currentStep?: string | number;
 }
 
-const FundingCreateNavbar: React.FC<FundingCreateNavbarProps> = ({
-  onPreview,
-  showPreviewButton = true,
-}) => {
+const FundingCreateNavbar: React.FC<FundingCreateNavbarProps> = () => {
   const navigate = useNavigate();
   const [showModal, setShowModal] = useState(false);
 
@@ -49,27 +44,8 @@ const FundingCreateNavbar: React.FC<FundingCreateNavbarProps> = ({
             </h1>
           </div>
 
-          {/* 미리보기 버튼 */}
-          {showPreviewButton ? (
-            <button
-              onClick={onPreview}
-              className="flex items-center px-4 py-1.5 border border-primary-color text-primary-color rounded-full text-sm font-medium hover:bg-primary-color hover:text-white transition-colors focus:outline-none focus:ring-2 focus:ring-primary-color focus:ring-opacity-50"
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" viewBox="0 0 20 20" fill="currentColor">
-                <path d="M10 12a2 2 0 100-4 2 2 0 000 4z" />
-                <path fillRule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clipRule="evenodd" />
-              </svg>
-              미리보기
-            </button>
-          ) : (
-            <button
-              className="flex items-center px-4 py-1.5 text-gray-600 bg-gray-100 rounded-full text-sm font-medium"
-              disabled
-            >
-              기획중
-              <span className="ml-1 inline-block w-2 h-2 bg-gray-400 rounded-full"></span>
-            </button>
-          )}
+          {/* 미리보기 버튼 제거 - 빈 공간 유지를 위한 빈 div */}
+          <div className="w-[100px]"></div>
         </div>
       </div>
 
