@@ -252,7 +252,7 @@ const OrderPage = () => {
   };
 
   // 주문 제출 핸들러
-  const handleSubmitOrder = (e: React.FormEvent) => {
+  const handleSubmitOrder = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!agreeTerms) {
@@ -260,8 +260,35 @@ const OrderPage = () => {
       return;
     }
 
-    // 비밀번호 입력 모달 표시
-    setIsPasswordModalOpen(true);
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      // 1. 잔액 조회
+      await fetchBalance();
+      const totalAmount = orderInfo.product.price * orderInfo.quantity;
+  
+      if (balance < totalAmount) {
+        throw new Error('잔액이 부족합니다. 충전 후 다시 시도해주세요.');
+      }
+  
+      // 2. 상품 구매 요청
+      const result = await purchaseProduct(orderInfo.product.id);
+  
+      if (result.code === 'SUCCESS') {
+        alert('결제가 완료되었습니다!');
+        // ✅ WebView 종료
+        window.close();
+      } else {
+        throw new Error(result.message || '결제에 실패했습니다.');
+      }
+    } catch (error: any) {
+      console.error('결제 처리 오류:', error);
+      setError(error.message);
+      alert(error.message);
+    } finally {
+      setIsLoading(false);
+    }
   };
   
   // 결제 비밀번호 확인 후 주문 처리
