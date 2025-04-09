@@ -1,12 +1,11 @@
 package com.wukiki.domain.model
 
 data class Payment(
-    val transactionId: String,
+    val paymentId: String,
     val userId: String,
-    val relatedFundingId: String,
-    val relatedProductId: String,
-    val transactionType: String,
+    val fundingTitle: String,
+    val productName: String?,
     val amount: String,
-    val status: String,
+    val transactionType: String,
     val date: String
 )
