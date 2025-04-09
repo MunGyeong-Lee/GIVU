@@ -14,6 +14,7 @@ import lombok.*;
 import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 @Getter
 @Setter
@@ -84,11 +85,12 @@ public class FundingsDTO {
         this.hidden = hidden;
         this.createdAt = DateTimeUtil.parseIsoString(funding.getCreatedAt());
         this.updatedAt = DateTimeUtil.parseIsoString(funding.getUpdatedAt());
-        String rawScope = funding.getScope();
-
-        this.scope = (rawScope != null && !"null".equalsIgnoreCase(rawScope))
-                ? ScopeMapper.toClient(FundingsScope.valueOf(rawScope))
-                : "PUBLIC"; // 예: "PUBLIC" 등 기본값 지정
+        this.scope = Optional.ofNullable(funding.getScope())
+                .map(String::trim)
+                .filter(s -> !s.isBlank() && !"null".equalsIgnoreCase(s))
+                .map(FundingsScope::valueOf)
+                .map(ScopeMapper::toClient)
+                .orElse("PUBLIC");
 
         this.status = StatusMapper.toClient(FundingsStatus.valueOf(funding.getStatus()));
         this.participantsNumber = funding.getParticipantsNumber();
