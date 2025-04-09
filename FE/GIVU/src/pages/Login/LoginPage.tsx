@@ -14,7 +14,7 @@ const LoginPage = () => {
         {/* 좌상단 로고 */}
         <div className="absolute top-8 left-8">
           <Link to="/">
-            <h1 className="font-paperlogy text-3xl text-cusBlack">GIVU</h1>
+            <img src="/GIVU_LOGO.png" alt="GIVU Logo" className="h-12 w-auto" />
           </Link>
         </div>
 
