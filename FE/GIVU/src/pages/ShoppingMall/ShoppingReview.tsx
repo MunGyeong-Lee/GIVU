@@ -45,16 +45,39 @@ const ShoppingReview = () => {
           `${import.meta.env.VITE_API_BASE_URL}/products/${id}`,
           {
             headers: {
-              'Authorization': `Bearer ${token}`
-            }
+              'Authorization': `Bearer ${token}`,
+              'Accept': 'application/json;charset=UTF-8'
+            },
+            withCredentials: true
           }
         );
         
+        console.log('리뷰 페이지 API 응답 전체 (JSON):', JSON.stringify(response.data, null, 2));
+        
         const productData = response.data.product;
-        setProduct(productData);
+        
+        // permission 값을 직접 확인
+        const rawPermission = response.data.permission;
+        console.log('리뷰 페이지 permission 값의 타입:', typeof rawPermission);
+        console.log('리뷰 페이지 permission 값 직접 참조:', rawPermission);
+        console.log('리뷰 페이지 permission 값 문자열 비교:', rawPermission === "true");
+        console.log('리뷰 페이지 permission 값 boolean 비교:', rawPermission === true);
+        
+        // 확실하게 boolean으로 변환 (문자열 "true"도 true로 처리)
+        const permission = rawPermission === true || String(rawPermission) === "true";
+        console.log('리뷰 페이지 변환된 permission 값:', permission);
+        
+        // 상품 데이터에 permission 설정
+        const updatedProductData = {
+          ...productData,
+          permission: permission
+        };
+        
+        console.log('리뷰 페이지 수정된 상품 데이터:', updatedProductData);
+        setProduct(updatedProductData);
         
         // 리뷰 작성 권한 확인
-        if (!productData.permission) {
+        if (!permission) {
           setError('이 상품에 대한 리뷰 작성 권한이 없습니다. 상품 구매 후 리뷰를 작성할 수 있습니다.');
           setTimeout(() => {
             navigate(`/shopping/product/${id}`);
@@ -135,16 +158,29 @@ const ShoppingReview = () => {
       // 상품의 평균 별점 업데이트
       try {
         // 상품 정보 다시 가져오기
-        const productResponse = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/products/${id}`);
-        const updatedProduct = productResponse.data.product;
+        const productResponse = await axios.get(
+          `${import.meta.env.VITE_API_BASE_URL}/products/${id}`,
+          {
+            headers: {
+              'Authorization': token ? `Bearer ${token}` : '',
+              'Accept': 'application/json;charset=UTF-8'
+            },
+            withCredentials: true
+          }
+        );
+        
+        const updatedProductData = productResponse.data.product;
+        // 업데이트할 별점을 확인
+        console.log('별점 업데이트에 사용될 값:', star);
         
         // 상품의 평균 별점 업데이트 API 호출
         await axios.patch(
           `${import.meta.env.VITE_API_BASE_URL}/products/${id}/star`,
-          { star: updatedProduct.star },
+          { star: star }, // 새로 등록한 리뷰의 별점으로 업데이트
           {
             headers: {
-              'Authorization': token ? `Bearer ${token}` : ''
+              'Authorization': token ? `Bearer ${token}` : '',
+              'Content-Type': 'application/json'
             }
           }
         );
@@ -152,7 +188,7 @@ const ShoppingReview = () => {
         // 메인 페이지의 상품 목록도 업데이트
         const mainResponse = await axios.get(`${import.meta.env.VITE_API_BASE_URL}/products/list`);
         const updatedProducts = mainResponse.data.map((p: any) => 
-          p.id === updatedProduct.id ? updatedProduct : p
+          p.id === updatedProductData.id ? updatedProductData : p
         );
         
         // 전역 상태 업데이트를 위한 이벤트 발생
