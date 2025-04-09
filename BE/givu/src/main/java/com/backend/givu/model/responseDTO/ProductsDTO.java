@@ -8,6 +8,7 @@ import lombok.*;
 
 import java.time.LocalDateTime;
 
+@EqualsAndHashCode(of = "id")
 @Getter
 @Setter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
