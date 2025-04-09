@@ -11,11 +11,11 @@ import java.time.LocalDateTime;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 public class PaymentsDTO {
-    private int transationId;
+    private int transactionId;
     private long userId;
     private int relatedFundingId;
     private int relatedProductId;
-    private PaymentsTransactionType transationType;
+    private PaymentsTransactionType transactionType;
     private int amount;
     private PaymentsStatus status;
     private LocalDateTime date;

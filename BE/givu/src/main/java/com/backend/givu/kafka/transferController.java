@@ -2,11 +2,9 @@ package com.backend.givu.kafka;
 
 import com.backend.givu.kafka.payment.GivuTransferService;
 import com.backend.givu.kafka.cancel.RefundFundingService;
+import com.backend.givu.kafka.success.SuccessFundingService;
 import com.backend.givu.model.entity.CustomUserDetail;
-import com.backend.givu.model.responseDTO.ApiResponse;
-import com.backend.givu.model.responseDTO.PaymentHistoryDTO;
-import com.backend.givu.model.responseDTO.PaymentResultDTO;
-import com.backend.givu.model.responseDTO.RefundResponseDTO;
+import com.backend.givu.model.responseDTO.*;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
@@ -29,6 +27,8 @@ public class transferController {
     private final GivuTransferService givuTransferService;
     private final RefundFundingService refundFundingService;
     private final PaymentHistoryService paymentHistoryService;
+    private final SuccessFundingService successFundingService;
+
     @Operation(summary = "펀딩하기(결제)", description = "해당 펀딩에 펀딩을 합니다(기뷰페이 -> 펀딩)")
     @PostMapping(value="/{fundingId}")
     public ResponseEntity<ApiResponse<PaymentResultDTO>> givuTransfer(
@@ -55,11 +55,17 @@ public class transferController {
 
 
 
-//    @Operation(summary = "펀딩 성공 (기뷰페이 환급/50% 초과)", description = "해당 펀딩에 취소합니다(펀딩 -> 기뷰페이)")
-//    @PostMapping(value="/{fundingId}/complete")
-//    public
+    @Operation(summary = "펀딩 성공 (기뷰페이 환급/50% 초과)", description = "해당 펀딩의 모금액을 기뷰페이로 이체합니다(펀딩 -> 기뷰페이)")
+    @PostMapping(value="/{fundingId}/success")
+    public ResponseEntity<ApiResponse<FundingSuccessDTO>> fundingSuccess(
+            @AuthenticationPrincipal CustomUserDetail userDetail,
+            @PathVariable int fundingId,
+            HttpServletRequest request) throws IOException{
 
-
+        Long userId = userDetail.getId();
+        ApiResponse<FundingSuccessDTO> fundingSuccess = successFundingService.fundingSuccess(userId, fundingId);
+        return ResponseEntity.ok(fundingSuccess);
+    }
 
 
 

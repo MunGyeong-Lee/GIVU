@@ -3,21 +3,22 @@ package com.backend.givu.kafka;
 import com.backend.givu.model.requestDTO.GivuTransferEventDTO;
 import com.backend.givu.model.requestDTO.RefundEventDTO;
 import com.backend.givu.model.requestDTO.RefundResultEventDTO;
+import com.backend.givu.model.responseDTO.FundingSuccessEventDTO;
+import com.backend.givu.model.responseDTO.GivuSuccessDTO;
 import com.backend.givu.model.service.DeadLetterQueue;
 import com.backend.givu.model.service.PaymentService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.common.serialization.StringDeserializer;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.kafka.config.ConcurrentKafkaListenerContainerFactory;
-import org.springframework.kafka.config.KafkaListenerEndpointRegistry;
 import org.springframework.kafka.core.DefaultKafkaConsumerFactory;
 import org.springframework.kafka.listener.DefaultErrorHandler;
 import org.springframework.kafka.support.serializer.JsonDeserializer;
 import org.springframework.util.backoff.FixedBackOff;
-import org.springframework.beans.factory.annotation.Value;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -33,108 +34,82 @@ public class KafkaConsumerConfig {
     private final PaymentService paymentService;
     private final DeadLetterQueue deadLetterQueue;
 
+    // ===================== 공통 메서드 =====================
 
-
-
-    @Bean
-    public DefaultKafkaConsumerFactory<String, RefundEventDTO> refundConsumerFactory() {
-        JsonDeserializer<RefundEventDTO> deserializer = new JsonDeserializer<>(RefundEventDTO.class);
+    private <T> JsonDeserializer<T> createDeserializer(Class<T> clazz) {
+        JsonDeserializer<T> deserializer = new JsonDeserializer<>(clazz);
         deserializer.addTrustedPackages("*");
         deserializer.setUseTypeHeaders(false);
+        return deserializer;
+    }
 
+    private Map<String, Object> defaultConsumerProps(String groupId) {
         Map<String, Object> props = new HashMap<>();
         props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, kafkaBootstrapServers);
-        props.put(ConsumerConfig.GROUP_ID_CONFIG, "givupay-refund-consumer");
+        props.put(ConsumerConfig.GROUP_ID_CONFIG, groupId);
         props.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
         props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
-        props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, deserializer);
+        return props;
+    }
 
-        return new DefaultKafkaConsumerFactory<>(props, new StringDeserializer(), deserializer);
+    private <T> DefaultKafkaConsumerFactory<String, T> createConsumerFactory(Class<T> clazz, String groupId) {
+        return new DefaultKafkaConsumerFactory<>(
+                defaultConsumerProps(groupId),
+                new StringDeserializer(),
+                createDeserializer(clazz)
+        );
+    }
+
+    private <T> ConcurrentKafkaListenerContainerFactory<String, T> createListenerFactory(Class<T> clazz, String groupId, boolean setErrorHandler) {
+        ConcurrentKafkaListenerContainerFactory<String, T> factory = new ConcurrentKafkaListenerContainerFactory<>();
+        factory.setConsumerFactory(createConsumerFactory(clazz, groupId));
+        if (setErrorHandler) {
+            factory.setCommonErrorHandler(errorHandler());
+        }
+        return factory;
+    }
+
+    // ===================== Listener Factories =====================
+
+    @Bean
+    public ConcurrentKafkaListenerContainerFactory<String, GivuTransferEventDTO> kafkaListenerContainerFactory() {
+        return createListenerFactory(GivuTransferEventDTO.class, "transfer-group", true);
+    }
+
+    @Bean(name = "refundKafkaListenerContainerFactory")
+    public ConcurrentKafkaListenerContainerFactory<String, RefundEventDTO> refundKafkaListenerContainerFactory() {
+        return createListenerFactory(RefundEventDTO.class, "givupay-refund-consumer", false);
     }
 
     @Bean(name = "refundResultKafkaListenerContainerFactory")
     public ConcurrentKafkaListenerContainerFactory<String, RefundResultEventDTO> refundResultKafkaListenerContainerFactory() {
-        JsonDeserializer<RefundResultEventDTO> deserializer = new JsonDeserializer<>(RefundResultEventDTO.class);
-        deserializer.addTrustedPackages("*");
-        deserializer.setUseTypeHeaders(false);
-
-        Map<String, Object> props = new HashMap<>();
-        props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, kafkaBootstrapServers);
-        props.put(ConsumerConfig.GROUP_ID_CONFIG, "refund-consumer-group");
-        props.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
-        props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
-        props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, deserializer);
-
-        DefaultKafkaConsumerFactory<String, RefundResultEventDTO> factory =
-                new DefaultKafkaConsumerFactory<>(props, new StringDeserializer(), deserializer);
-
-        ConcurrentKafkaListenerContainerFactory<String, RefundResultEventDTO> kafkaFactory =
-                new ConcurrentKafkaListenerContainerFactory<>();
-        kafkaFactory.setConsumerFactory(factory);
-        return kafkaFactory;
+        return createListenerFactory(RefundResultEventDTO.class, "refund-consumer-group", false);
     }
 
 
-
-
-    @Bean
-    public DefaultKafkaConsumerFactory<String, GivuTransferEventDTO> consumerFactory() {
-        JsonDeserializer<GivuTransferEventDTO> deserializer = new JsonDeserializer<>(GivuTransferEventDTO.class);
-        deserializer.addTrustedPackages("*");
-        deserializer.setUseTypeHeaders(false); // Spring Kafka 3.x 이상 시 필요
-
-        Map<String, Object> props = new HashMap<>();
-        props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, kafkaBootstrapServers);
-        props.put(ConsumerConfig.GROUP_ID_CONFIG, "transfer-group");
-        props.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
-        props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
-        props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, deserializer);
-
-        return new DefaultKafkaConsumerFactory<>(props, new StringDeserializer(), deserializer);
+    @Bean(name = "successKafkaListenerContainerFactory")
+    public ConcurrentKafkaListenerContainerFactory<String, FundingSuccessEventDTO> successKafkaListenerContainerFactory() {
+        return createListenerFactory(FundingSuccessEventDTO.class, "success-funding-group", false);
     }
 
-
-
-
-    @Bean
-    public ConcurrentKafkaListenerContainerFactory<String, GivuTransferEventDTO> kafkaListenerContainerFactory() {
-        ConcurrentKafkaListenerContainerFactory<String, GivuTransferEventDTO> factory =
-                new ConcurrentKafkaListenerContainerFactory<>();
-        factory.setConsumerFactory(consumerFactory());
-        factory.setCommonErrorHandler(errorHandler());
-        return factory;
+    @Bean(name = "givuSuccessKafkaListenerContainerFactory")
+    public ConcurrentKafkaListenerContainerFactory<String, GivuSuccessDTO> givuSuccessKafkaListenerContainerFactory() {
+        return createListenerFactory(GivuSuccessDTO.class, "confirm-payment-group", false);
     }
 
-
-    @Bean(name = "refundKafkaListenerContainerFactory")
-    public ConcurrentKafkaListenerContainerFactory<String, RefundEventDTO> refundKafkaListenerContainerFactory() {
-        ConcurrentKafkaListenerContainerFactory<String, RefundEventDTO> factory =
-                new ConcurrentKafkaListenerContainerFactory<>();
-        factory.setConsumerFactory(refundConsumerFactory());
-
-        // 필요하다면 retry나 error handler도 추가 가능
-        return factory;
-    }
+        // ===================== 에러 핸들러 =====================
 
     @Bean
     public DefaultErrorHandler errorHandler() {
         FixedBackOff fixedBackOff = new FixedBackOff(0L, 2L); // 총 3회 (0 + 2번 retry)
-        DefaultErrorHandler handler = new DefaultErrorHandler(
-                (record, ex) -> {
-                    GivuTransferEventDTO event = (GivuTransferEventDTO) record.value();
-                    log.error("❌ 최종 실패 - paymentId: {}", event.getPaymentId(), ex);
-
-                    try {
-                        deadLetterQueue.send("funding-transfer-dlq", event);  // DLQ로 전송
-                    } catch (Exception e) {
-                        log.error("❌ DLQ 전송 실패", e);
-                    }
-                },
-                fixedBackOff
-        );
-
-        return handler;
-        }
-
-
+        return new DefaultErrorHandler((record, ex) -> {
+            try {
+                GivuTransferEventDTO event = (GivuTransferEventDTO) record.value();
+                log.error("❌ 최종 실패 - paymentId: {}", event.getPaymentId(), ex);
+                deadLetterQueue.send("funding-transfer-dlq", event);
+            } catch (Exception e) {
+                log.error("❌ DLQ 전송 실패", e);
+            }
+        }, fixedBackOff);
+    }
 }
