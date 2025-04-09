@@ -100,8 +100,15 @@ public class FundingsDTO {
             this.title = funding.getTitle();
             this.description = funding.getDescription();
             this.image = funding.getImage();
-            this.category = CategoryMapper.toClient(FundingsCategory.valueOf(funding.getCategory()));
-            this.categoryName = funding.getCategoryName();
+            String rawCategory = funding.getCategory();
+            String rawCategoryName = funding.getCategoryName();
+
+            this.category = rawCategory != null
+                    ? CategoryMapper.toClient(FundingsCategory.valueOf(rawCategory))
+                    : null;
+
+            this.categoryName = rawCategoryName; // 프론트에 보여질 값도 기본 제공
+
             this.product = new ProductsSimpleInfoDTO(
                     funding.getProductId(),
                     funding.getProductName(),
