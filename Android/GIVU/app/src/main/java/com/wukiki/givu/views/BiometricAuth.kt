@@ -11,8 +11,8 @@ class BiometricAuth (
     private val onFailure: (() -> Unit)? = null,
 ) {
     private val promptInfo = BiometricPrompt.PromptInfo.Builder()
-        .setTitle("지문 인증")
-        .setSubtitle("결제를 위한 지문 인증이 필요합니다.")
+        .setTitle("생체 정보로 인증해주세요")
+//        .setSubtitle("결제를 위한 지문 인증이 필요합니다.")
         .setNegativeButtonText("취소")
         .build()
 
@@ -25,7 +25,7 @@ class BiometricAuth (
             }
 
             override fun onAuthenticationError(errorCode: Int, errString: CharSequence) {
-                Toast.makeText(activity, "인증 실패: $errString", Toast.LENGTH_SHORT).show()
+//                Toast.makeText(activity, "인증 실패: $errString", Toast.LENGTH_SHORT).show()
                 onFailure?.invoke()
             }
 
