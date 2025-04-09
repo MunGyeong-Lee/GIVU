@@ -18,7 +18,8 @@ object LetterRequestMapper {
             image = letterRequestEntity.image ?: "",
             access = letterRequestEntity.access ?: "",
             createdAt = formatDateTime(letterRequestEntity.createdAt ?: ""),
-            updatedAt = formatDateTime(letterRequestEntity.updatedAt ?: "")
+            updatedAt = formatDateTime(letterRequestEntity.updatedAt ?: ""),
+            hidden = true
         )
     }
 }

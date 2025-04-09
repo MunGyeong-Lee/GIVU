@@ -121,19 +121,21 @@ class HomeViewModel @Inject constructor(
         val childFundings = mutableListOf<Funding>()
 
         fundings.forEach { funding ->
-            allFundings.add(funding)
-            when (funding.category) {
-                "생일" -> birthFundings.add(funding)
+            if ((funding.userId.toString() == (_user.value?.id ?: "")) || !funding.hidden) {
+                allFundings.add(funding)
+                when (funding.category) {
+                    "생일" -> birthFundings.add(funding)
 
-                "집들이" -> houseFundings.add(funding)
+                    "집들이" -> houseFundings.add(funding)
 
-                "결혼" -> marriageFundings.add(funding)
+                    "결혼" -> marriageFundings.add(funding)
 
-                "졸업" -> graduateFundings.add(funding)
+                    "졸업" -> graduateFundings.add(funding)
 
-                "취업" -> jobFundings.add(funding)
+                    "취업" -> jobFundings.add(funding)
 
-                "출산" -> childFundings.add(funding)
+                    "출산" -> childFundings.add(funding)
+                }
             }
         }
 

@@ -30,6 +30,7 @@ import coil.compose.SubcomposeAsyncImage
 import com.wukiki.domain.model.Letter
 import com.wukiki.givu.R
 import com.wukiki.givu.ui.suit
+import com.wukiki.givu.util.CommonUtils.encryptNickname
 import com.wukiki.givu.util.shimmerEffect
 import com.wukiki.givu.views.detail.viewmodel.FundingViewModel
 
@@ -40,69 +41,110 @@ fun LetterItem(
 ) {
     val showSheet = remember { mutableStateOf(false) }
 
-    Column(
-        modifier = Modifier.padding(vertical = 8.dp)
-    ) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            SubcomposeAsyncImage(
-                model = letter.userProfile,
-                contentDescription = "User Profile",
-                contentScale = ContentScale.Crop,
-                modifier = Modifier.size(36.dp)
-                    .clip(CircleShape),
-                loading = {
-                    Box(
-                        modifier = Modifier
-                            .matchParentSize()
-                            .clip(RoundedCornerShape(10.dp))
-                            .shimmerEffect()
-                    )
-                },
-                error = {
+    when (letter.hidden) {
+        true -> {
+            Column(
+                modifier = Modifier.padding(vertical = 8.dp)
+            ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
                     Image(
-                        painter = painterResource(id = R.drawable.ic_profile),
+                        painter = painterResource(id = R.drawable.ic_profile_default),
                         contentDescription = "Error",
                         modifier = Modifier
                             .clip(RoundedCornerShape(10.dp))
                             .size(24.dp)
                     )
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text(
+                        modifier = Modifier.weight(1F),
+                        text = "익명의 사용자",
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.Bold,
+                        fontFamily = suit
+                    )
                 }
-            )
-            Spacer(modifier = Modifier.width(4.dp))
-            Text(
-                modifier = Modifier.weight(1F),
-                text = letter.userNickname,
-                fontSize = 18.sp,
-                fontWeight = FontWeight.Bold,
-                fontFamily = suit
-            )
-            Icon(
-                modifier = Modifier.clickable {
-                    showSheet.value = true
-                },
-                painter = painterResource(R.drawable.ic_comment_menu),
-                contentDescription = "Comment Menu"
-            )
+                Spacer(modifier = Modifier.height(16.dp))
+                Text(
+                    text = "비밀 편지입니다.",
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Medium,
+                    fontFamily = suit,
+                    color = Color.DarkGray,
+                    maxLines = 1,
+                    minLines = 1
+                )
+                Spacer(modifier = Modifier.height(16.dp))
+            }
         }
-        Spacer(modifier = Modifier.height(16.dp))
-        Text(
-            text = letter.comment,
-            fontSize = 16.sp,
-            fontWeight = FontWeight.Medium,
-            fontFamily = suit,
-            maxLines = 2,
-            minLines = 2
-        )
-        Spacer(modifier = Modifier.height(16.dp))
-        Text(
-            text = letter.createdAt,
-            fontSize = 14.sp,
-            color = Color.Gray,
-            fontWeight = FontWeight.Medium,
-            fontFamily = suit
-        )
+
+        else -> {
+            Column(
+                modifier = Modifier.padding(vertical = 8.dp)
+            ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    SubcomposeAsyncImage(
+                        model = letter.userProfile,
+                        contentDescription = "User Profile",
+                        contentScale = ContentScale.Crop,
+                        modifier = Modifier.size(36.dp)
+                            .clip(CircleShape),
+                        loading = {
+                            Box(
+                                modifier = Modifier
+                                    .matchParentSize()
+                                    .clip(RoundedCornerShape(10.dp))
+                                    .shimmerEffect()
+                            )
+                        },
+                        error = {
+                            Image(
+                                painter = painterResource(id = R.drawable.ic_profile),
+                                contentDescription = "Error",
+                                modifier = Modifier
+                                    .clip(RoundedCornerShape(10.dp))
+                                    .size(24.dp)
+                            )
+                        }
+                    )
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text(
+                        modifier = Modifier.weight(1F),
+                        text = encryptNickname(letter.userNickname, letter.isCreator),
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.Bold,
+                        fontFamily = suit
+                    )
+                    Icon(
+                        modifier = Modifier.clickable {
+                            showSheet.value = true
+                        },
+                        painter = painterResource(R.drawable.ic_comment_menu),
+                        contentDescription = "Comment Menu"
+                    )
+                }
+                Spacer(modifier = Modifier.height(16.dp))
+                Text(
+                    text = letter.comment,
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Medium,
+                    fontFamily = suit,
+                    maxLines = 2,
+                    minLines = 2
+                )
+                Spacer(modifier = Modifier.height(16.dp))
+                Text(
+                    text = letter.createdAt,
+                    fontSize = 14.sp,
+                    color = Color.Gray,
+                    fontWeight = FontWeight.Medium,
+                    fontFamily = suit
+                )
+            }
+        }
     }
 
     if (showSheet.value) {

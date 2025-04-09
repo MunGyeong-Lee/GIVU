@@ -30,5 +30,8 @@ data class LetterEntity(
     val createdAt: String?,
 
     @Json(name = "updatedAt")
-    val updatedAt: String?
+    val updatedAt: String?,
+
+    @Json(name = "hidden")
+    val hidden: Boolean
 )

@@ -40,15 +40,11 @@ class MainViewModel @Inject constructor(
         _selectedProduct.value = product
     }
 
-    fun initLoadingTask() {
-        _loadingState.update { 0 }
-    }
-
     fun addLoadingTask() {
         _loadingState.update { it + 1 }
     }
 
     fun removeLoadingTask() {
-        _loadingState.update { it - 1 }
+        _loadingState.update { if (it > 0) it - 1 else 0 }
     }
 }

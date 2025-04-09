@@ -18,7 +18,8 @@ object LetterMapper {
             image = letterEntity.image ?: "",
             access = letterEntity.access ?: "",
             createdAt = formatDateTime(letterEntity.createdAt ?: ""),
-            updatedAt = formatDateTime(letterEntity.updatedAt ?: "")
+            updatedAt = formatDateTime(letterEntity.updatedAt ?: ""),
+            hidden = letterEntity.hidden
         )
     }
 }

@@ -73,9 +73,9 @@ class AuthViewModel @Inject constructor(
 
             response.collectLatest { result ->
                 _kakaoLoginState.value = result
-                if (_kakaoLoginState.value.status == ApiStatus.SUCCESS) {
-                    saveJwt(_kakaoLoginState.value.data?.jwtToken)
-                } else if (_kakaoLoginState.value.status == ApiStatus.FAIL || _kakaoLoginState.value.status == ApiStatus.ERROR) {
+                if (result.status == ApiStatus.SUCCESS) {
+                    saveJwt(result.data?.jwtToken)
+                } else if (result.status == ApiStatus.FAIL || result.status == ApiStatus.ERROR) {
                     _authUiEvent.emit(AuthUiEvent.LoginFail)
                 }
             }
@@ -91,13 +91,13 @@ class AuthViewModel @Inject constructor(
 
             response.collectLatest { result ->
                 _userState.value = result
-                if (_userState.value.status == ApiStatus.SUCCESS) {
+                if (result.status == ApiStatus.SUCCESS) {
                     val newUserInfo = _userState.value.data
                     newUserInfo?.let {
                         getAuthUseCase.setUserInfo(newUserInfo)
                         _authUiEvent.emit(AuthUiEvent.LoginSuccess)
                     }
-                } else if (_userState.value.status == ApiStatus.FAIL || _userState.value.status == ApiStatus.ERROR) {
+                } else if (result.status == ApiStatus.FAIL || result.status == ApiStatus.ERROR) {
                     _authUiEvent.emit(AuthUiEvent.LoginFail)
                 }
             }

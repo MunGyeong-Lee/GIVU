@@ -2,7 +2,6 @@ package com.wukiki.data.mapper
 
 import com.wukiki.data.entity.ProductReviewEntity
 import com.wukiki.domain.model.ProductReview
-import com.wukiki.domain.model.Review
 
 object ProductReviewsMapper {
 

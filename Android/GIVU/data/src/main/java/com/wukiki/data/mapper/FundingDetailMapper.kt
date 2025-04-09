@@ -25,7 +25,8 @@ object FundingDetailMapper {
                     image = letter.image ?: "",
                     access = letter.access ?: "",
                     createdAt = formatDateTime(letter.createdAt ?: ""),
-                    updatedAt = formatDateTime(letter.updatedAt ?: "")
+                    updatedAt = formatDateTime(letter.updatedAt ?: ""),
+                    hidden = letter.hidden
                 )
             )
         }
