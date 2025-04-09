@@ -9,7 +9,8 @@ const PaymentPasswordModal: React.FC<{
   onSubmit: (password: string) => Promise<void>;
   amount: number;
   isLoading: boolean;
-}> = ({ isOpen, onClose, onSubmit, amount }) => {
+  isFreeOrder?: boolean;
+}> = ({ isOpen, onClose, onSubmit, amount, isLoading, isFreeOrder = false }) => {
   const [password, setPassword] = useState<string>('');
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
@@ -61,6 +62,9 @@ const PaymentPasswordModal: React.FC<{
   
   if (!isOpen) return null;
   
+  // 버튼 로딩 상태 설정 - isLoading prop 사용하도록 수정
+  const buttonLoading = loading || isLoading;
+  
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <div className="bg-white rounded-2xl p-8 w-full max-w-md">
@@ -68,11 +72,15 @@ const PaymentPasswordModal: React.FC<{
         
         <div className="mb-6">
           <p className="text-gray-600 text-center mb-4">
-            결제를 완료하기 위해 6자리 비밀번호를 입력해주세요.
+            {isFreeOrder 
+              ? '무료 상품 수령을 완료하려면 비밀번호를 입력해주세요.' 
+              : '결제를 완료하기 위해 6자리 비밀번호를 입력해주세요.'}
           </p>
           
           <p className="text-center font-bold text-lg mb-4">
-            결제 금액: <span className="text-cusRed">{amount.toLocaleString()}원</span>
+            결제 금액: <span className={amount === 0 ? "text-cusBlue" : "text-cusRed"}>
+              {amount === 0 ? "무료" : `${amount.toLocaleString()}원`}
+            </span>
           </p>
           
           <div className="flex justify-center mb-3">
@@ -113,14 +121,14 @@ const PaymentPasswordModal: React.FC<{
           
           <button
             onClick={handleSubmit}
-            disabled={password.length !== 6 || loading}
+            disabled={password.length !== 6 || buttonLoading}
             className={`px-6 py-2 ${
-              password.length === 6 && !loading
+              password.length === 6 && !buttonLoading
                 ? 'bg-cusRed hover:bg-cusRed-light text-white' 
                 : 'bg-gray-300 text-gray-500 cursor-not-allowed'
             } rounded-md transition-colors`}
           >
-            {loading ? '처리중...' : '결제하기'}
+            {buttonLoading ? '처리중...' : (isFreeOrder ? '확인' : '결제하기')}
           </button>
         </div>
       </div>
@@ -145,10 +153,20 @@ const OrderPage = () => {
       try {
         // location.state에 product 정보가 있으면 그대로 사용
         if (location.state?.product) {
+          // 펀딩 상품 여부와 펀딩 ID 확인
+          const isFundingProduct = location.state.isFundingProduct || false;
+          const fundingId = location.state.fundingId || null;
+          
+          console.log('펀딩 상품 여부:', isFundingProduct);
+          console.log('펀딩 ID:', fundingId);
+          
           setOrderInfo({
             product: location.state.product,
             quantity: location.state.quantity || 1,
             options: location.state.options || {},
+            isFundingProduct,  // 펀딩 상품 여부 추가
+            fundingId,         // 펀딩 ID 추가
+            totalAmount: location.state.totalAmount // 펀딩 완료된 경우 0원
           });
           return;
         }
@@ -270,6 +288,20 @@ const OrderPage = () => {
     setError(null);
 
     try {
+      // 펀딩 상품인지 확인
+      const isFundingProduct = orderInfo.isFundingProduct || false;
+      const fundingId = orderInfo.fundingId || null;
+      
+      // 결제 금액 설정 (펀딩 상품이면 항상 0원)
+      let paymentAmount = isFundingProduct ? 0 : (orderInfo.product.price * orderInfo.quantity);
+      
+      // 로그 출력
+      console.log('주문 정보:', {
+        isFundingProduct,
+        fundingId,
+        paymentAmount
+      });
+
       // 1. 2차 비밀번호 확인
       console.log('비밀번호 확인 시작:', password);
       const isPasswordValid = await verifyPassword(password);
@@ -281,27 +313,48 @@ const OrderPage = () => {
         throw new Error('비밀번호가 일치하지 않습니다. 다시 시도해주세요.');
       }
 
-      // 2. 잔액 다시 확인
-      await fetchBalance();
-      const totalAmount = orderInfo.product.price * orderInfo.quantity;
-      
-      if (balance < totalAmount) {
-        throw new Error('잔액이 부족합니다. 충전 후 다시 시도해주세요.');
+      // 2. 잔액 다시 확인 (펀딩 상품이 아닌 경우에만)
+      if (!isFundingProduct && paymentAmount > 0) {
+        await fetchBalance();
+        
+        if (balance < paymentAmount) {
+          throw new Error('잔액이 부족합니다. 충전 후 다시 시도해주세요.');
+        }
       }
 
-      // 3. 상품 구매 요청
-      console.log('상품 구매 요청 시작:', orderInfo.product.id);
-      const result = await purchaseProduct(orderInfo.product.id);
-      console.log('상품 구매 응답:', result);
+      // 3. 주문 처리
+      let result;
       
-      if (result.code === 'SUCCESS') {
-        setIsPasswordModalOpen(false);
-        alert('결제가 완료되었습니다!');
+      try {
+        if (isFundingProduct && fundingId) {
+          // 펀딩 상품 구매 API 호출
+          result = await purchaseFundingProduct(fundingId);
+        } else {
+          // 일반 상품 구매 API 호출
+          result = await purchaseProduct(orderInfo.product.id);
+        }
         
-        // 쇼핑몰 메인 페이지로 이동
-        navigate('/shopping');
-      } else {
-        throw new Error(result.message || '결제에 실패했습니다.');
+        console.log('주문 응답:', result);
+        
+        if (result.code === 'SUCCESS') {
+          setIsPasswordModalOpen(false);
+          alert('결제가 완료되었습니다!');
+          
+          // 쇼핑몰 메인 페이지로 이동
+          navigate('/shopping');
+        } else {
+          throw new Error(result.message || '결제에 실패했습니다.');
+        }
+      } catch (apiError: any) {
+        // 특정 오류 메시지 확인 및 사용자 친화적인 메시지 표시
+        if (apiError.message && apiError.message.includes('이미 참여한 펀딩입니다')) {
+          setIsPasswordModalOpen(false);
+          alert('이미 상품을 구매하셨습니다. 마이페이지에서 확인하실 수 있습니다.');
+          navigate('/mypage');
+          return; // 함수 종료
+        }
+        // 다른 API 오류는 그대로 throw
+        throw apiError;
       }
 
     } catch (error: any) {
@@ -317,7 +370,14 @@ const OrderPage = () => {
       
       // 다른 오류의 경우 모달 닫기
       setIsPasswordModalOpen(false);
-      alert(error.message);
+      
+      // 사용자 친화적인 오류 메시지 표시
+      if (error.message.includes('이미 참여한 펀딩입니다')) {
+        alert('이미 상품을 구매하셨습니다. 마이페이지에서 확인하실 수 있습니다.');
+        navigate('/mypage');
+      } else {
+        alert(error.message);
+      }
     } finally {
       setIsLoading(false);
     }
@@ -501,6 +561,78 @@ const OrderPage = () => {
     }
   };
 
+  // 펀딩 상품 구매 요청 (새로 추가)
+  const purchaseFundingProduct = async (fundingId: number) => {
+    try {
+      const token = localStorage.getItem('auth_token');
+      if (!token) {
+        throw new Error('로그인이 필요합니다.');
+      }
+
+      console.log('펀딩 상품 구매 요청 시작 - 펀딩 ID:', fundingId);
+      
+      // 결제 금액 - 0원 처리
+      const amount = 0;
+      console.log('펀딩 상품 결제 금액:', amount);
+      
+      // API 기본 URL 확인
+      const baseUrl = import.meta.env.VITE_BASE_URL || import.meta.env.VITE_API_BASE_URL;
+      if (!baseUrl) {
+        throw new Error('API 기본 URL이 설정되지 않았습니다.');
+      }
+      
+      console.log('API 기본 URL:', baseUrl);
+      
+      // 백엔드 API 맵핑에 맞게 수정
+      // transferController에 정의된 엔드포인트 사용
+      console.log('펀딩 상품 구매 API 호출:', `${baseUrl}/transfer/${fundingId}`);
+      const response = await axios.post(
+        `${baseUrl}/transfer/${fundingId}`,
+        null, // 요청 본문은 비움
+        {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+            'Accept': 'application/json;charset=UTF-8'
+          },
+          params: {
+            amount: amount
+          }
+        }
+      );
+      
+      console.log('펀딩 상품 구매 성공 응답:', response.data);
+      return response.data;
+      
+    } catch (error: any) {
+      console.error('펀딩 상품 구매 최종 실패:', error);
+      
+      // 추가 에러 정보 로깅
+      if (axios.isAxiosError(error) && error.response) {
+        console.log('최종 에러 상태:', error.response.status);
+        console.log('최종 에러 데이터:', error.response.data);
+        
+        // 에러 메시지 추출 시도 (다양한 API 응답 형식 처리)
+        let errorMsg = '펀딩 상품 구매에 실패했습니다.';
+        
+        if (error.response.data) {
+          if (typeof error.response.data === 'string') {
+            errorMsg = error.response.data;
+          } else if (error.response.data.message) {
+            errorMsg = error.response.data.message;
+          } else if (error.response.data.error) {
+            errorMsg = error.response.data.error;
+          }
+        }
+        
+        console.log('최종 에러 메시지:', errorMsg);
+        throw new Error(errorMsg);
+      }
+      
+      throw new Error('펀딩 상품 구매에 실패했습니다.');
+    }
+  };
+
   if (!orderInfo) {
     return <div className="flex justify-center items-center h-screen">로딩 중...</div>;
   }
@@ -521,8 +653,9 @@ const OrderPage = () => {
   const deliveryInfo = product.deliveryInfo || { freeFeeOver: 50000, fee: 3000 };
   const shippingFee = productTotal >= deliveryInfo.freeFeeOver ? 0 : deliveryInfo.fee;
   
-  // 최종 결제 금액
-  const totalAmount = productTotal + shippingFee;
+  // 최종 결제 금액 (펀딩 상품이고 무료인 경우 0원)
+  const isFundingProduct = orderInfo.isFundingProduct || false;
+  const totalAmount = isFundingProduct ? 0 : (productTotal + shippingFee);
 
   return (
     <div className="max-w-5xl mx-auto px-4 py-8">
@@ -728,6 +861,12 @@ const OrderPage = () => {
                 <span className="text-cusBlack-light">배송비</span>
                 <span className="font-medium">{shippingFee > 0 ? `${shippingFee.toLocaleString()}원` : '무료'}</span>
               </div>
+              {orderInfo.isFundingProduct && (
+                <div className="flex justify-between text-cusBlue">
+                  <span className="font-medium">펀딩 달성 특별 혜택</span>
+                  <span className="font-medium">-{(productTotal + shippingFee).toLocaleString()}원</span>
+                </div>
+              )}
               <div className="flex justify-between pt-4 border-t border-cusGray">
                 <span className="text-cusBlack font-bold">총 결제 금액</span>
                 <span className="text-cusRed font-bold text-xl">{totalAmount.toLocaleString()}원</span>
@@ -744,10 +883,18 @@ const OrderPage = () => {
                   </div>
                   <p className="text-sm text-cusBlack-light">사용 가능한 기뷰페이: <span className="font-bold">{Number(balance).toLocaleString()}원</span></p>
                 </div>
-                <div className={`font-medium ${balance >= totalAmount ? 'text-cusBlue' : 'text-cusRed'}`}>
-                  {balance >= totalAmount 
-                    ? "기뷰페이로 결제됩니다" 
-                    : "잔액이 부족합니다"}
+                <div className={`font-medium ${
+                  orderInfo.isFundingProduct 
+                    ? 'text-cusBlue' 
+                    : balance >= totalAmount 
+                      ? "text-cusBlue" 
+                      : "text-cusRed"
+                }`}>
+                  {orderInfo.isFundingProduct 
+                    ? "펀딩 달성으로 무료 결제" 
+                    : balance >= totalAmount 
+                      ? "기뷰페이로 결제됩니다" 
+                      : "잔액이 부족합니다"}
                 </div>
               </div>
             </div>
@@ -765,7 +912,7 @@ const OrderPage = () => {
                 className="mr-2 h-4 w-4 text-cusBlue"
                 required
               />
-              <span>주문 내용을 확인하였으며, 결제에 동의합니다.</span>
+              <span>주문 내용을 확인하였으며, {orderInfo.isFundingProduct ? '상품 수령' : '결제'}에 동의합니다.</span>
             </label>
           </div>
         </div>
@@ -776,7 +923,9 @@ const OrderPage = () => {
             type="submit"
             className="w-full max-w-md py-4 bg-cusRed text-white font-bold text-lg rounded-lg hover:bg-cusRed-light transition-colors"
           >
-            {totalAmount.toLocaleString()}원 결제하기
+            {orderInfo.isFundingProduct 
+              ? "무료 상품 받기" 
+              : `${totalAmount.toLocaleString()}원 결제하기`}
           </button>
         </div>
       </form>
@@ -786,8 +935,9 @@ const OrderPage = () => {
         isOpen={isPasswordModalOpen}
         onClose={() => setIsPasswordModalOpen(false)}
         onSubmit={handlePaymentConfirm}
-        amount={orderInfo?.product ? orderInfo.product.price * orderInfo.quantity : 0}
+        amount={totalAmount}
         isLoading={isLoading}
+        isFreeOrder={orderInfo.isFundingProduct}
       />
     </div>
   );
