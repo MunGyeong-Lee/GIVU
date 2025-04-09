@@ -144,10 +144,12 @@ function FundingListPage() {
   const [hasMore, setHasMore] = useState<boolean>(true); // 더 로드할 항목이 있는지
   const observerRef = useRef<IntersectionObserver | null>(null);
   const loadingRef = useRef<HTMLDivElement>(null); // 관찰할 요소 참조
+  const [initialLoading, setInitialLoading] = useState<boolean>(true); // 초기 로딩 상태 추가
 
   // API에서 펀딩 데이터 가져오기
   const fetchFundings = useCallback(async () => {
     setIsLoading(true);
+    setInitialLoading(true); // 초기 데이터 로딩 시에만 true
     try {
       console.log('펀딩 데이터 가져오기 시작');
 
@@ -245,6 +247,7 @@ function FundingListPage() {
       setAchievementHighlightItems([]);
     } finally {
       setIsLoading(false);
+      setInitialLoading(false); // 초기 로딩 완료
     }
   }, []);
 
@@ -267,7 +270,14 @@ function FundingListPage() {
     console.log('카테고리 변경:', categoryId);
     setSelectedCategory(categoryId);
     // 카테고리 변경 시 필터링 초기화
-    resetPagination();
+    setVisibleCount(12);
+    setHasMore(true);
+
+    // 카테고리 변경은 클라이언트 사이드 필터링이므로 로딩 상태를 짧게 유지
+    setInitialLoading(true);
+    setTimeout(() => {
+      setInitialLoading(false);
+    }, 300);
   };
 
   // 정렬 옵션 변경 핸들러
@@ -275,7 +285,14 @@ function FundingListPage() {
     console.log('정렬 옵션 변경:', sortId);
     setSelectedSort(sortId);
     // 정렬 변경 시 필터링 초기화
-    resetPagination();
+    setVisibleCount(12);
+    setHasMore(true);
+
+    // 정렬 변경은 클라이언트 사이드 필터링이므로 로딩 상태를 짧게 유지
+    setInitialLoading(true);
+    setTimeout(() => {
+      setInitialLoading(false);
+    }, 300);
   };
 
   // 상태 필터 변경 핸들러
@@ -283,13 +300,26 @@ function FundingListPage() {
     console.log('상태 필터 변경:', status);
     setSelectedStatus(status);
     // 상태 필터 변경 시 필터링 초기화
-    resetPagination();
+    setVisibleCount(12);
+    setHasMore(true);
+
+    // 상태 필터 변경은 클라이언트 사이드 필터링이므로 로딩 상태를 짧게 유지
+    setInitialLoading(true);
+    setTimeout(() => {
+      setInitialLoading(false);
+    }, 300);
   };
 
-  // 페이지네이션 초기화
+  // 페이지네이션 초기화 - 검색 시에만 사용
   const resetPagination = () => {
     setVisibleCount(12);
     setHasMore(true);
+    setInitialLoading(true);
+
+    // 타임아웃으로 초기 로딩 상태 리셋
+    setTimeout(() => {
+      setInitialLoading(false);
+    }, 500);
   };
 
   // 추가: 검색어 필터링 함수
@@ -450,6 +480,7 @@ function FundingListPage() {
     if (isLoading || !hasMore) return;
 
     setIsLoading(true);
+    // 여기서는 initialLoading은 false로 유지 (초기 로딩이 아닌 추가 로딩)
 
     // 실제 API 페이지네이션 대신 클라이언트 사이드 페이지네이션 사용
     setTimeout(() => {
@@ -512,6 +543,20 @@ function FundingListPage() {
     resetPagination();
   };
 
+  // 필터링 및 정렬 적용 부분 수정
+  useEffect(() => {
+    // 필터링된 결과가 준비되면 로딩 상태 해제
+    setInitialLoading(false);
+  }, [processedFundings]);
+
+  // 필터링된 결과가 비어있는 경우 즉시 로딩 상태 해제
+  useEffect(() => {
+    if (filteredItems.length === 0 && initialLoading) {
+      // 필터링된 결과가 없으면 스켈레톤 UI 즉시 해제
+      setInitialLoading(false);
+    }
+  }, [filteredItems, initialLoading]);
+
   return (
     <div className="w-full p-0 m-0 overflow-hidden relative">
       {/* 상단 하이라이트 섹션 - 와디즈 스타일로 풀스크린 너비로 변경 */}
@@ -528,6 +573,7 @@ function FundingListPage() {
         <FundingHighlights
           popularItems={popularHighlightItems}
           achievementItems={achievementHighlightItems}
+          isLoading={initialLoading}
         />
       </div>
 
@@ -584,22 +630,24 @@ function FundingListPage() {
         <div className="mb-12">
           <FundingGrid
             fundings={mappedFundings}
-            isLoading={isLoading}
+            isLoading={initialLoading && processedFundings.length > 0} // 결과가 있는 경우에만 스켈레톤 표시
             onItemClick={(id) => handleItemClick(id)}
           />
+
+          {/* 필터링된 결과가 없고, 로딩 중이 아닐 때 메시지 표시 */}
+          {!initialLoading && mappedFundings.length === 0 && (
+            <div className="text-gray-500 text-sm my-10 p-8 text-center w-full">
+              {searchTerm ? `'${searchTerm}'에 대한 검색 결과가 없습니다.` : '해당 조건에 맞는 펀딩이 없습니다.'}
+            </div>
+          )}
         </div>
 
         {/* 무한 스크롤 로딩 표시 - 이 요소가 화면에 보이면 추가 로딩 시작 */}
         <div ref={loadingRef} className="w-full flex justify-center my-8 pb-4">
-          {isLoading && <LoadingSpinner className="my-10" />}
+          {isLoading && !initialLoading && mappedFundings.length > 0 && <LoadingSpinner className="my-10" />}
           {!isLoading && !hasMore && mappedFundings.length > 0 && (
             <div className="text-gray-500 text-sm my-3">
               모든 펀딩을 불러왔습니다.
-            </div>
-          )}
-          {!isLoading && !hasMore && mappedFundings.length === 0 && (
-            <div className="text-gray-500 text-sm my-3 p-8 text-center w-full">
-              {searchTerm ? `'${searchTerm}'에 대한 검색 결과가 없습니다.` : '해당 조건에 맞는 펀딩이 없습니다.'}
             </div>
           )}
         </div>
