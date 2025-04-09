@@ -1,4 +1,4 @@
-package com.backend.givu.kafka;
+package com.backend.givu.kafka.payment;
 
 import com.backend.givu.model.entity.Payment;
 import com.backend.givu.model.requestDTO.GivuTransferEventDTO;
@@ -25,7 +25,7 @@ public class GivuProducer {
                 new org.springframework.transaction.support.TransactionSynchronizationAdapter() {
                     @Override
                     public void afterCommit() {
-                        kafkaTemplate.send("userbalance", userId.toString(), event);
+                        kafkaTemplate.send("givu-transfer", userId.toString(), event);
                         log.info("✅ Kafka 이벤트 발행 완료 (after commit): {}", event.getPaymentId());
                     }
                 }

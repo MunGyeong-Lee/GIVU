@@ -18,12 +18,11 @@ import java.time.OffsetDateTime;
 @Entity
 @Table(
         name = "participants",
-        uniqueConstraints = {
-                @UniqueConstraint(columnNames = {"funding_id", "user_id"})
+        uniqueConstraints = {@UniqueConstraint(columnNames = {"funding_id", "user_id"})
         }
 )
 
-public class Participant {
+public class  Participant {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id", nullable = false)
