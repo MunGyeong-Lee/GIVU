@@ -9,7 +9,7 @@ const PaymentPasswordModal: React.FC<{
   onSubmit: (password: string) => Promise<void>;
   amount: number;
   isLoading: boolean;
-}> = ({ isOpen, onClose, onSubmit, amount, isLoading }) => {
+}> = ({ isOpen, onClose, onSubmit, amount }) => {
   const [password, setPassword] = useState<string>('');
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
@@ -136,7 +136,7 @@ const OrderPage = () => {
   const [isPasswordModalOpen, setIsPasswordModalOpen] = useState<boolean>(false);
   const [balance, setBalance] = useState<number>(0);  // 기뷰페이 잔액
   const [isLoading, setIsLoading] = useState<boolean>(false);  // 로딩 상태
-  const [error, setError] = useState<string | null>(null);  // 에러 메시지
+  const [, setError] = useState<string | null>(null);  // 에러 메시지
 
   // 구매 정보 및 상품 정보 (URL에서 가져오거나 location state에서 가져옴)
   useEffect(() => {
