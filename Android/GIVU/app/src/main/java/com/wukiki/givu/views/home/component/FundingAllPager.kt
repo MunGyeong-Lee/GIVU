@@ -108,5 +108,7 @@ fun FundingAllPager(
         ) { index ->
             FundingListPager(fundings[index], navController)
         }
+
+        Spacer(modifier = Modifier.height(16.dp))
     }
 }
