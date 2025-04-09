@@ -1,5 +1,6 @@
 package com.wukiki.givu.views.mypage
 
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -11,6 +12,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material.Divider
 import androidx.compose.material.Scaffold
 import androidx.compose.material.TopAppBar
@@ -18,6 +20,9 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -33,12 +38,20 @@ import com.wukiki.givu.ui.lusitana
 import com.wukiki.givu.ui.pretendard
 import com.wukiki.givu.util.CommonTopBar
 import com.wukiki.givu.util.CommonUtils
+import com.wukiki.givu.views.home.viewmodel.HomeViewModel
 import com.wukiki.givu.views.mypage.component.PayHistoryItem
 
 @Composable
 fun PayUsageScreen(
+    homeViewModel: HomeViewModel,
     navController: NavController
 ) {
+    val paymentHistoryList by homeViewModel.myPaymentHistoryList.collectAsState()
+
+    LaunchedEffect(Unit) {
+        homeViewModel.updatePaymentHistory()
+    }
+
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -52,10 +65,6 @@ fun PayUsageScreen(
                 .padding(top = 60.dp)
                 .padding(horizontal = 4.dp)
         ) {
-            item {
-
-            }
-
             item {
                 Column(
                     modifier = Modifier
@@ -83,10 +92,11 @@ fun PayUsageScreen(
                 Spacer(Modifier.height(16.dp))
             }
 
-            item {
-                PayHistoryItem()
+            items(paymentHistoryList) { history ->
+                PayHistoryItem(paymentHistory = history)
 
             }
+
         }
 
         Row(

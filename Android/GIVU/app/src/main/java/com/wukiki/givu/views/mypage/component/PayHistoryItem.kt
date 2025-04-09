@@ -20,12 +20,16 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.wukiki.domain.model.Payment
 import com.wukiki.givu.ui.pretendard
 import com.wukiki.givu.ui.suit
 import com.wukiki.givu.util.CommonUtils
 
 @Composable
-fun PayHistoryItem() {
+fun PayHistoryItem(
+    paymentHistory: Payment
+) {
+
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -37,7 +41,8 @@ fun PayHistoryItem() {
             .padding(horizontal = 20.dp, vertical = 8.dp),
     ) {
         Text(
-            text = "4.13",
+//            text = "4.13",
+            text = paymentHistory.date,
             fontFamily = pretendard,
             fontWeight = FontWeight.SemiBold,
             fontSize = 14.sp,
@@ -51,7 +56,7 @@ fun PayHistoryItem() {
             verticalArrangement = Arrangement.SpaceBetween
         ) {
             Text(
-                text = "사용 이름",
+                text = paymentHistory.fundingTitle,
                 fontFamily = suit,
                 fontWeight = FontWeight.Bold,
                 fontSize = 17.sp,
@@ -72,7 +77,7 @@ fun PayHistoryItem() {
             verticalArrangement = Arrangement.Center
         ) {
             Text(
-                text = CommonUtils.makeCommaPrice(10000),
+                text = CommonUtils.makeCommaPrice(paymentHistory.amount),
                 fontFamily = pretendard,
                 fontWeight = FontWeight.SemiBold,
                 fontSize = 16.sp,

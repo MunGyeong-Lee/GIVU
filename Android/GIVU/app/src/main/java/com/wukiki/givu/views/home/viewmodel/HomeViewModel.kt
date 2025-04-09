@@ -217,7 +217,7 @@ class HomeViewModel @Inject constructor(
     }
 
 
-    private fun updatePaymentHistory() {
+    fun updatePaymentHistory() {
         viewModelScope.launch {
             val response = getPaymentUseCase.getPaymentHistoryList()
 

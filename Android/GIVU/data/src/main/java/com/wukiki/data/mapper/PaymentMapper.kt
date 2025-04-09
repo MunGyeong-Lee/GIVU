@@ -14,7 +14,7 @@ object PaymentMapper {
                 Payment(
                     paymentId = payment.paymentId,
                     userId = payment.userId,
-                    fundingTitle = payment.fundingTilte,
+                    fundingTitle = payment.fundingTitle,
                     productName = payment.productName ?: "",
                     amount = payment.amount,
                     transactionType = payment.transactionType,
