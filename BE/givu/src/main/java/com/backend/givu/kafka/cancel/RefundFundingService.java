@@ -1,5 +1,6 @@
 package com.backend.givu.kafka.cancel;
 
+import com.backend.givu.model.Enum.FundingsStatus;
 import com.backend.givu.model.Enum.ParticipantsRefundStatus;
 import com.backend.givu.model.Enum.PaymentsStatus;
 import com.backend.givu.model.Enum.PaymentsTransactionType;
@@ -44,6 +45,9 @@ public class RefundFundingService {
                 .orElseThrow(()-> new EntityNotFoundException("펀딩을 찾을 수 없습니다."));
         // 2. 펀딩 참가자 리스트
         List<Participant> participants = participantRepository.findByFunding_Id(fundingId);
+        
+        // 3. 펀딩 상태 CANCELED 변환
+        funding.setStatus(FundingsStatus.CANCELED);
 
         for(Participant participant : participants){
             try {
@@ -119,6 +123,8 @@ public class RefundFundingService {
                 event.getUserId(),event.getFundingId(), event.getAmount())
                         .orElseThrow(()-> new EntityNotFoundException("참여자 정보가 없습니다."));
         participant.setStatus(ParticipantsRefundStatus.REFUND);
+
+        //
 
         log.info("✅ [최종] 환불 성공 처리 - paymentId={}, participantId={}, userId={}, fundingId={}",
                 payment.getId(), participant.getId(), event.getUserId(), event.getFundingId());
