@@ -49,7 +49,7 @@ pipeline {
         stage('Build Spring Boot') {
             steps {
                 dir('BE/givu') {
-                    withCredentials([file(credentialsId: 'spring_application', variable: 'SPRING_YML')]) {
+                    withCredentials([file(credentialsId: 'SPRING_APPLICATION', variable: 'SPRING_YML')]) {
                         sh '''
                             echo "[INFO] 복사 중..."
                             cp $SPRING_YML src/main/resources/application.yml
