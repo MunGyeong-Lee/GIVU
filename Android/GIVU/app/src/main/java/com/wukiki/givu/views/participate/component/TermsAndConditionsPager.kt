@@ -12,8 +12,11 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Checkbox
+import androidx.compose.material3.CheckboxDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -21,19 +24,33 @@ import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.navigation.NavController
 import com.wukiki.givu.R
 import com.wukiki.givu.ui.suit
+import com.wukiki.givu.views.detail.viewmodel.FundingViewModel
 
 @Composable
 fun TermsAndConditionsPager(
-    btnText: String,
-    navController: NavController,
-    actionId: Int
+    fundingViewModel: FundingViewModel,
+    btnText: String
 ) {
-    Column(modifier = Modifier.fillMaxWidth()) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Checkbox(checked = false, onCheckedChange = {})
+    val fundingUiState by fundingViewModel.fundingUiState.collectAsState()
+    val isFundingReviewPersonalCheck by fundingViewModel.isFundingReviewPersonalCheck.collectAsState()
+    val isFundingReviewNoteCheck by fundingViewModel.isFundingReviewNoteCheck.collectAsState()
+
+    Column(
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Checkbox(
+                checked = isFundingReviewPersonalCheck,
+                onCheckedChange = { fundingViewModel.setPersonalCheck() },
+                colors = CheckboxDefaults.colors(
+                    checkedColor = colorResource(R.color.main_primary),
+                    uncheckedColor = Color.LightGray
+                )
+            )
             Text(
                 modifier = Modifier.weight(1F),
                 text = "개인정보 제3자 제공 동의",
@@ -50,8 +67,17 @@ fun TermsAndConditionsPager(
                 color = Color.Black
             )
         }
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Checkbox(checked = false, onCheckedChange = {})
+        Row(
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Checkbox(
+                checked = isFundingReviewNoteCheck,
+                onCheckedChange = { fundingViewModel.setNoteCheck() },
+                colors = CheckboxDefaults.colors(
+                    checkedColor = colorResource(R.color.main_primary),
+                    uncheckedColor = Color.LightGray
+                )
+            )
             Text(
                 modifier = Modifier.weight(1F),
                 text = "펀딩 유의사항 확인",
@@ -99,20 +125,27 @@ fun TermsAndConditionsPager(
         )
 
         Spacer(modifier = Modifier.height(16.dp))
+
         Button(
-            onClick = { navController.navigate(actionId) },
-            modifier = Modifier.fillMaxSize().height(56.dp),
-            enabled = true,
+            onClick = {
+                if (fundingUiState.isFinishButton) {
+                    fundingViewModel.finishFunding()
+                }
+            },
+            modifier = Modifier
+                .fillMaxSize()
+                .height(56.dp),
+            enabled = fundingUiState.isFinishButton,
             shape = RoundedCornerShape(10.dp),
             border = BorderStroke(1.dp, Color(0xFFECECEC)),
-            colors = ButtonDefaults.buttonColors(colorResource(R.color.main_primary)),
+            colors = ButtonDefaults.buttonColors(if (fundingUiState.isFinishButton) colorResource(R.color.main_primary) else Color.LightGray),
         ) {
             Text(
                 text = btnText,
                 fontFamily = suit,
                 fontWeight = FontWeight.Bold,
                 fontSize = 18.sp,
-                color = Color.White
+                color = if (fundingUiState.isFinishButton) Color.White else Color.DarkGray
             )
         }
     }

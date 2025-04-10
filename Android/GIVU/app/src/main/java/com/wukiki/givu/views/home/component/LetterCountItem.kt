@@ -40,7 +40,7 @@ fun LetterCountItem(commentCount: String) {
         Text(
             text = commentCount,
             fontSize = 16.sp,
-            color = Color.Black,
+            color = Color.Gray,
             fontFamily = suit,
             fontWeight = FontWeight.Normal
         )

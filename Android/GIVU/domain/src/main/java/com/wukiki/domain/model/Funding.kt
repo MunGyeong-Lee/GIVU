@@ -1,9 +1,14 @@
 package com.wukiki.domain.model
 
 data class Funding(
-    val id: String,
-    val userId: String,
-    val productId: String,
+    val id: Int,
+    val userId: Int,
+    val userNickname: String,
+    val userProfile: String,
+    val productId: Int,
+    val productName: String,
+    val productPrice: String,
+    val productImage: String,
     val title: String,
     val body: String,
     val description: String,
@@ -15,5 +20,6 @@ data class Funding(
     val status: String,
     val images: List<String>,
     val createdAt: String,
-    val updatedAt: String
+    val updatedAt: String,
+    val hidden: Boolean
 )

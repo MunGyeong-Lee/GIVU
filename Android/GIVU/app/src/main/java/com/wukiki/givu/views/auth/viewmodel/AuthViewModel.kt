@@ -5,7 +5,9 @@ import android.content.Context
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.kakao.sdk.user.UserApiClient
+import com.wukiki.domain.model.ApiResult
 import com.wukiki.domain.model.ApiStatus
+import com.wukiki.domain.model.KakaoUser
 import com.wukiki.domain.model.User
 import com.wukiki.domain.usecase.GetAuthUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -14,6 +16,7 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.launch
@@ -26,9 +29,15 @@ class AuthViewModel @Inject constructor(
     private val getAuthUseCase: GetAuthUseCase
 ) : AndroidViewModel(application) {
 
-    /*** Ui Event ***/
+    /*** Ui State, Ui Event ***/
     private val _authUiEvent = MutableSharedFlow<AuthUiEvent>()
     val authUiEvent = _authUiEvent.asSharedFlow()
+
+    private val _kakaoLoginState = MutableStateFlow<ApiResult<KakaoUser?>>(ApiResult.success(null))
+    val kakaoLoginState = _kakaoLoginState.asStateFlow()
+
+    private val _userState = MutableStateFlow<ApiResult<User?>>(ApiResult.success(null))
+    val userState = _userState.asStateFlow()
 
     /*** Datas ***/
     private val _user = MutableStateFlow<User?>(null)
@@ -62,12 +71,11 @@ class AuthViewModel @Inject constructor(
             Timber.d("Access Token: $kakaoAccessToken")
             val response = getAuthUseCase.loginWithKakao(kakaoAccessToken)
 
-            when (response.status) {
-                ApiStatus.SUCCESS -> {
-                    saveJwt(response.data?.jwtToken)
-                }
-
-                else -> {
+            response.collectLatest { result ->
+                _kakaoLoginState.value = result
+                if (result.status == ApiStatus.SUCCESS) {
+                    saveJwt(result.data?.jwtToken)
+                } else if (result.status == ApiStatus.FAIL || result.status == ApiStatus.ERROR) {
                     _authUiEvent.emit(AuthUiEvent.LoginFail)
                 }
             }
@@ -81,18 +89,15 @@ class AuthViewModel @Inject constructor(
             getAuthUseCase.setJwt(jwtToken)
             val response = getAuthUseCase.fetchUserInfo()
 
-            when (response.status) {
-                ApiStatus.SUCCESS -> {
-                    val newUserInfo = response.data
+            response.collectLatest { result ->
+                _userState.value = result
+                if (result.status == ApiStatus.SUCCESS) {
+                    val newUserInfo = _userState.value.data
                     newUserInfo?.let {
-                        _user.value = newUserInfo
-                        Timber.d("User: ${_user.value}")
                         getAuthUseCase.setUserInfo(newUserInfo)
                         _authUiEvent.emit(AuthUiEvent.LoginSuccess)
                     }
-                }
-
-                else -> {
+                } else if (result.status == ApiStatus.FAIL || result.status == ApiStatus.ERROR) {
                     _authUiEvent.emit(AuthUiEvent.LoginFail)
                 }
             }
@@ -120,13 +125,6 @@ class AuthViewModel @Inject constructor(
                     getUserInfo(token.accessToken)
                 }
             }
-        }
-    }
-
-    fun logout() {
-        viewModelScope.launch {
-            getAuthUseCase.logout()
-            _authUiEvent.emit(AuthUiEvent.Logout)
         }
     }
 }

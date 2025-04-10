@@ -102,7 +102,7 @@ fun FriendFundingCard() {
                     )
                     Spacer(Modifier.weight(1f))
 
-                    CategoryTag()
+                    CategoryTag("집들이")
                 }
                 Spacer(Modifier.height(8.dp))
 
@@ -143,7 +143,7 @@ fun FriendFundingCard() {
 }
 
 @Composable
-fun CategoryTag() {
+fun CategoryTag(category: String) {
     Box(
         modifier = Modifier
             .height(28.dp)
@@ -152,7 +152,7 @@ fun CategoryTag() {
         contentAlignment = Alignment.Center
     ) {
         Text(
-            text = "집들이",
+            text = category,
             fontFamily = suit,
             fontWeight = FontWeight.SemiBold,
             fontSize = 14.sp,

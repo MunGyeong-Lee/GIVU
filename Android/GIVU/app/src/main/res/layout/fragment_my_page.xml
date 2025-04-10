@@ -6,7 +6,6 @@
     <data>
 
 
-
     </data>
 
     <androidx.constraintlayout.widget.ConstraintLayout
@@ -48,10 +47,9 @@
             android:id="@+id/compose_my_page"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            app:layout_constraintEnd_toStartOf="@id/gl_end_my_page"
-            app:layout_constraintStart_toEndOf="@id/gl_start_my_page"
-            app:layout_constraintTop_toBottomOf="@id/gl_top_my_page"
-            />
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 

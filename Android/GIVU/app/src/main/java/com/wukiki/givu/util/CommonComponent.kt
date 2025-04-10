@@ -34,6 +34,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -86,19 +87,24 @@ fun CommonTopBar(
 
 
 @Composable
-fun CommonBottomButton(modifier: Modifier, text: String) {
+fun CommonBottomButton(
+    modifier: Modifier,
+    text: String,
+    enabled: Boolean,
+    onClick: () -> Unit
+) {
     Box(
         modifier = modifier
     ) {
         Button(
-            onClick = { },
+            onClick = { onClick() },
             modifier = Modifier
                 .fillMaxSize()
                 .padding(8.dp),
-            enabled = true,
+            enabled = enabled,
             shape = RoundedCornerShape(5.dp),
             border = BorderStroke(1.dp, Color(0xFFECECEC)),
-            colors = ButtonDefaults.buttonColors(colorResource(R.color.main_primary)),
+            colors = ButtonDefaults.buttonColors(if (enabled) colorResource(R.color.main_primary) else Color.LightGray),
             elevation = ButtonDefaults.elevation(0.dp)
         ) {
             Text(
@@ -106,7 +112,7 @@ fun CommonBottomButton(modifier: Modifier, text: String) {
                 fontFamily = suit,
                 fontWeight = FontWeight.Bold,
                 fontSize = 18.sp,
-                color = Color.White
+                color = if (enabled) Color.White else Color.DarkGray
             )
         }
     }
@@ -142,7 +148,10 @@ fun StoreItemCategoryComponent(
 }
 
 @Composable
-fun StoreDetailTopBar() {
+fun StoreDetailTopBar(
+    onBackClick: () -> Unit,
+    onHomeClick: () -> Unit
+) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -152,7 +161,7 @@ fun StoreDetailTopBar() {
 
         IconButton(
             onClick = {
-
+                onBackClick()
             }
         ) {
             Icon(
@@ -177,7 +186,9 @@ fun StoreDetailTopBar() {
         }
 
         IconButton(
-            onClick = {},
+            onClick = {
+                onHomeClick()
+            },
         ) {
             Icon(painter = painterResource(R.drawable.ic_topbar_home), null)
         }
@@ -190,7 +201,9 @@ fun StoreDetailBottomButton(
     modifier: Modifier,
     text: String,
     navController: NavController,
-    actionId: Int
+    actionId: Int,
+    isAllFunded: Boolean,
+    onClick: () -> Unit
 ) {
     Box(
         modifier = modifier
@@ -200,7 +213,6 @@ fun StoreDetailBottomButton(
                 .fillMaxSize()
                 .padding(8.dp),
         ) {
-
             Column(
                 modifier = Modifier
                     .fillMaxWidth(0.15f)
@@ -227,26 +239,51 @@ fun StoreDetailBottomButton(
                 )
             }
 
-
-            Button(
-                onClick = { navController.navigate(actionId) },
+            Row (
                 modifier = Modifier.fillMaxSize(),
-                enabled = true,
-                shape = RoundedCornerShape(5.dp),
-                border = BorderStroke(1.dp, Color(0xFFECECEC)),
-                colors = ButtonDefaults.buttonColors(colorResource(R.color.main_primary)),
-                elevation = ButtonDefaults.elevation(0.dp)
             ) {
-                Text(
-                    text = text,
-                    fontFamily = suit,
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 18.sp,
-                    color = Color.White
-                )
+                Button(
+                    onClick = { if (actionId != -1) navController.navigate(actionId) else onClick() },
+                    modifier = Modifier.weight(1F)
+                        .fillMaxHeight(),
+                    enabled = !isAllFunded,
+                    shape = RoundedCornerShape(5.dp),
+                    border = BorderStroke(1.dp, Color(0xFFECECEC)),
+                    colors = ButtonDefaults.buttonColors(if (isAllFunded) Color.LightGray else colorResource(R.color.main_primary)),
+                    elevation = ButtonDefaults.elevation(0.dp)
+                ) {
+                    Text(
+                        text = text,
+                        fontFamily = suit,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 18.sp,
+                        color = if (isAllFunded) Color.DarkGray else Color.White
+                    )
+                }
+
+                if (text == stringResource(R.string.text_funding_update)) {
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Button(
+                        onClick = { navController.navigate(R.id.action_detail_funding_to_cancel_funding) },
+                        modifier = Modifier.weight(1F)
+                            .fillMaxHeight(),
+                        enabled = true,
+                        shape = RoundedCornerShape(5.dp),
+                        border = BorderStroke(1.dp, Color(0xFFECECEC)),
+                        colors = ButtonDefaults.buttonColors(colorResource(R.color.main_primary)),
+                        elevation = ButtonDefaults.elevation(0.dp)
+                    ) {
+                        Text(
+                            text = stringResource(R.string.text_funding_cancel),
+                            fontFamily = suit,
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 18.sp,
+                            color = Color.White
+                        )
+                    }
+                }
             }
         }
-
     }
 }
 

@@ -28,28 +28,31 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.wukiki.givu.R
 import com.wukiki.givu.ui.suit
 import com.wukiki.givu.util.CommonTopBar
+import com.wukiki.givu.util.CommonUtils.makeCommaPrice
 import com.wukiki.givu.util.InfoRow
 import com.wukiki.givu.views.detail.viewmodel.FundingViewModel
 import com.wukiki.givu.views.participate.component.FundingInfoPager
 
 @Composable
 fun CompleteFundingScreen(
-    fundingViewModel: FundingViewModel = hiltViewModel(),
-    navController: NavController
+    fundingViewModel: FundingViewModel,
+    navController: NavController,
+    xmlNavController: NavController
 ) {
+    val user by fundingViewModel.user.collectAsState()
     val funding by fundingViewModel.selectedFunding.collectAsState()
+    val transfer by fundingViewModel.transfer.collectAsState()
 
     Scaffold(
         topBar = {
             CommonTopBar(
                 stringResource(R.string.title_complete_funding),
                 onBackClick = {},
-                onHomeClick = {}
+                onHomeClick = { xmlNavController.popBackStack() }
             )
         },
         containerColor = Color.White
@@ -93,16 +96,19 @@ fun CompleteFundingScreen(
                 Spacer(modifier = Modifier.height(24.dp))
 
                 Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                    InfoRow("이름", "김싸피")
-                    InfoRow("이메일", "kimssafy@ssafy.com")
-                    InfoRow("연락처", "010-0000-0000")
-                    InfoRow("금액", "1,000원")
+                    InfoRow("이름", user?.nickname ?: "김싸피")
+                    InfoRow("이메일", user?.email ?: "kimssafy@ssafy.com")
+                    InfoRow("상품", it.productName)
+                    InfoRow("금액", makeCommaPrice(transfer?.amount ?: 0))
                 }
 
                 Spacer(modifier = Modifier.height(16.dp))
 
                 Button(
-                    onClick = { navController.navigate(R.id.action_participate_funding_to_write_letter) },
+                    onClick = {
+                        fundingViewModel.initTransfer()
+                        xmlNavController.popBackStack()
+                    },
                     modifier = Modifier
                         .fillMaxSize()
                         .height(56.dp),

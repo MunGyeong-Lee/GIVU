@@ -9,7 +9,7 @@ plugins {
 
 android {
     namespace = "com.wukiki.givu"
-    compileSdk = 34
+    compileSdk = 35
 
     defaultConfig {
         applicationId = "com.wukiki.givu"
@@ -82,6 +82,7 @@ dependencies {
     implementation("androidx.compose.ui:ui-tooling-preview")
     implementation("androidx.hilt:hilt-navigation-compose:1.1.0")
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.6.2")
+    implementation(libs.androidx.activity)
     debugImplementation("androidx.compose.ui:ui-tooling")
 
     // Compose View
@@ -130,8 +131,14 @@ dependencies {
     implementation("com.github.bumptech.glide:glide:4.12.0")
     kapt("com.github.bumptech.glide:compiler:4.12.0")
 
+    // Lottie
+    implementation("com.airbnb.android:lottie:6.1.0")
+
     // Timber
     implementation("com.jakewharton.timber:timber:5.0.1")
+
+    // Biometric
+    implementation("androidx.biometric:biometric:1.4.0-alpha02")
 
     // Test
     testImplementation(libs.junit)

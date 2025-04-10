@@ -6,7 +6,8 @@ data class Product(
     val category: String,
     val price: String,
     val image: String,
-    val favorite: String,
     val star: String,
-    val createdAt: String
+    val createdAt: String,
+    val description: String,
+    val reviews: List<ProductReview>
 )

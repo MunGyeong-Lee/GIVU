@@ -23,5 +23,9 @@ data class ApiResult<out T>(
         fun <T> loading(data: T?): ApiResult<T> {
             return ApiResult(ApiStatus.LOADING, data, null)
         }
+
+        fun <T> init(): ApiResult<T> {
+            return ApiResult(ApiStatus.INIT, null, null)
+        }
     }
 }

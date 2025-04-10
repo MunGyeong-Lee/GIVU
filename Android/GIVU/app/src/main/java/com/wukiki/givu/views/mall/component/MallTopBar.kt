@@ -25,12 +25,15 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
 import com.wukiki.givu.R
 import com.wukiki.givu.ui.lusitana
 import kotlinx.coroutines.launch
 
 @Composable
-fun MallTopBar() {
+fun MallTopBar(
+    navController: NavController
+) {
     TopAppBar(
         backgroundColor = Color.White,
         contentColor = Color.Black,
@@ -67,10 +70,7 @@ fun MallTopBar() {
                     .clickable(
                         interactionSource = remember { MutableInteractionSource() },
                         indication = null,
-                        onClick = {
-
-                        }
-
+                        onClick = { navController.navigate("SearchProduct") }
                     )
             )
             Spacer(Modifier.width(8.dp))

@@ -1,5 +1,6 @@
 package com.wukiki.givu.views.finish
 
+import android.widget.Toast
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -9,16 +10,18 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.wukiki.givu.R
 import com.wukiki.givu.util.CommonTopBar
+import com.wukiki.givu.views.detail.viewmodel.FundingUiEvent
 import com.wukiki.givu.views.finish.component.FinishFundingImagePager
 import com.wukiki.givu.views.finish.component.FinishFundingParticipantPager
 import com.wukiki.givu.views.finish.component.FinishFundingReviewPager
@@ -30,11 +33,33 @@ import com.wukiki.givu.views.participate.component.TermsAndConditionsPager
 
 @Composable
 fun FinishFundingScreen(
-    fundingViewModel: FundingViewModel = hiltViewModel(),
+    fundingViewModel: FundingViewModel,
     navController: NavController
 ) {
+    val context = LocalContext.current
     val funding by fundingViewModel.selectedFunding.collectAsState()
     val participants by fundingViewModel.fundingParticipants.collectAsState()
+    val fundingUiEvent = fundingViewModel.fundingUiEvent
+
+    LaunchedEffect(Unit) {
+        fundingUiEvent.collect { event ->
+            when (event) {
+                is FundingUiEvent.FinishFundingSuccess -> {
+                    navController.navigate("FundingFinished")
+                }
+
+                is FundingUiEvent.FinishFundingFail -> {
+                    Toast.makeText(
+                        context,
+                        context.getString(R.string.message_auto_login_fail),
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
+
+                else -> {}
+            }
+        }
+    }
 
     Scaffold(
         topBar = {
@@ -57,10 +82,10 @@ fun FinishFundingScreen(
                 FundingInfoPager(it)
                 Spacer(Modifier.height(32.dp))
 
-                FinishFundingReviewPager()
+                FinishFundingReviewPager(fundingViewModel)
                 Spacer(Modifier.height(32.dp))
 
-                FinishFundingImagePager()
+                FinishFundingImagePager(fundingViewModel)
                 Spacer(Modifier.height(32.dp))
 
                 FinishFundingParticipantPager(participants)
@@ -69,13 +94,12 @@ fun FinishFundingScreen(
                 IdentityVerificationPager()
                 Spacer(Modifier.height(16.dp))
 
-                PaymentBalancePager()
+                PaymentBalancePager(fundingViewModel, navController)
                 Spacer(Modifier.height(16.dp))
 
                 TermsAndConditionsPager(
-                    stringResource(R.string.title_finish_funding),
-                    navController,
-                    R.id.action_finish_funding_to_funding_finished
+                    fundingViewModel,
+                    stringResource(R.string.title_finish_funding)
                 )
             }
         }

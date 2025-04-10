@@ -1,5 +1,6 @@
 package com.wukiki.givu.views.participate
 
+import android.widget.Toast
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -20,32 +21,66 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.wukiki.givu.R
 import com.wukiki.givu.ui.suit
 import com.wukiki.givu.util.CommonTopBar
+import com.wukiki.givu.util.CommonUtils.makeCommaPrice
 import com.wukiki.givu.util.InfoRow
+import com.wukiki.givu.views.detail.viewmodel.FundingUiEvent
 import com.wukiki.givu.views.detail.viewmodel.FundingViewModel
 import com.wukiki.givu.views.participate.component.FundingInfoPager
 
 @Composable
 fun WriteLetterScreen(
-    fundingViewModel: FundingViewModel = hiltViewModel(),
-    navController: NavController
+    fundingViewModel: FundingViewModel,
+    navController: NavController,
+    xmlNavController: NavController,
+    onRequestFingerprint: () -> Unit
 ) {
+    val context = LocalContext.current
+    val user by fundingViewModel.user.collectAsState()
     val funding by fundingViewModel.selectedFunding.collectAsState()
+    val charge by fundingViewModel.charge.collectAsState()
     val writeLetter by fundingViewModel.writeLetter.collectAsState()
+    val fundingUiEvent = fundingViewModel.fundingUiEvent
+
+    LaunchedEffect(Unit) {
+        fundingUiEvent.collect { event ->
+            when (event) {
+                is FundingUiEvent.ParticipateFundingSuccess -> {
+                    Toast.makeText(
+                        context,
+                        context.getString(R.string.message_participate_funding_success),
+                        Toast.LENGTH_SHORT
+                    ).show()
+                    navController.navigate("CompleteParticipate")
+                }
+
+                is FundingUiEvent.ParticipateFundingFail -> {
+                    Toast.makeText(
+                        context,
+                        context.getString(R.string.message_participate_funding_fail),
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
+
+                else -> {}
+            }
+        }
+    }
 
     Scaffold(
         topBar = {
@@ -110,30 +145,33 @@ fun WriteLetterScreen(
                 Spacer(modifier = Modifier.height(16.dp))
 
                 Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                    InfoRow("이름", "김싸피")
-                    InfoRow("이메일", "kimssafy@ssafy.com")
-                    InfoRow("연락처", "010-0000-0000")
-                    InfoRow("금액", "1,000원")
+                    InfoRow("이름", user?.nickname ?: "김싸피")
+                    InfoRow("이메일", user?.email ?: "kimssafy@ssafy.com")
+                    InfoRow("상품", it.productName)
+                    InfoRow("금액", makeCommaPrice(charge))
                 }
 
                 Spacer(modifier = Modifier.height(16.dp))
 
                 Button(
-                    onClick = { navController.navigate(R.id.action_write_letter_to_complete_funding) },
+                    onClick = {
+                        onRequestFingerprint()
+                        // fundingViewModel.participateFunding()
+                    },
                     modifier = Modifier
                         .fillMaxSize()
                         .height(56.dp),
-                    enabled = true,
+                    enabled = writeLetter != "",
                     shape = RoundedCornerShape(10.dp),
                     border = BorderStroke(1.dp, Color(0xFFECECEC)),
-                    colors = ButtonDefaults.buttonColors(colorResource(R.color.main_primary)),
+                    colors = ButtonDefaults.buttonColors(if (writeLetter == "") Color.LightGray else colorResource(R.color.main_primary)),
                 ) {
                     Text(
                         text = stringResource(R.string.text_write_letter),
                         fontFamily = suit,
                         fontWeight = FontWeight.Bold,
                         fontSize = 18.sp,
-                        color = Color.White
+                        color = if (writeLetter == "") Color.DarkGray else Color.White
                     )
                 }
             }

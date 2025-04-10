@@ -1,24 +1,26 @@
 package com.wukiki.data.mapper
 
-import com.wukiki.data.entity.ProductReviewEntity
+import com.wukiki.data.entity.ReviewEntity
 import com.wukiki.domain.model.Review
 
 object ReviewsMapper {
 
-    operator fun invoke(productReviewEntities: List<ProductReviewEntity>): List<Review> {
+    operator fun invoke(reviewEntity: ReviewEntity): List<Review> {
         val newReviews = mutableListOf<Review>()
 
-        productReviewEntities.forEach { productReviewEntity ->
+        reviewEntity.data.forEach { reviewInfo ->
             newReviews.add(
                 Review(
-                    reviewId = productReviewEntity.reviewId,
-                    fundingId = "",
-                    userId = "",
-                    comment = "",
-                    image = "",
-                    createdAt = "",
-                    updatedAt = "",
-                    visit = ""
+                    reviewId = reviewInfo.reviewId,
+                    fundingId = reviewInfo.fundingId,
+                    userId = reviewInfo.user.userId,
+                    comment = reviewInfo.comment,
+                    image = reviewInfo.image ?: "",
+                    createdAt = reviewInfo.createdAt ?: "",
+                    updatedAt = reviewInfo.updatedAt ?: "",
+                    visit = reviewInfo.visit.toString(),
+                    userNickname = reviewInfo.user.nickname,
+                    userProfile = reviewInfo.user.image ?: ""
                 )
             )
         }

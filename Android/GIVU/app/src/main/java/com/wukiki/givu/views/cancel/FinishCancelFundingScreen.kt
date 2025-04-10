@@ -23,24 +23,21 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import com.wukiki.givu.R
 import com.wukiki.givu.ui.suit
 import com.wukiki.givu.util.CommonTopBar
-import com.wukiki.givu.views.detail.viewmodel.FundingViewModel
 
 @Composable
 fun FinishCancelFundingScreen(
-    fundingViewModel: FundingViewModel = hiltViewModel(),
     navController: NavController
 ) {
     Scaffold(
         topBar = {
             CommonTopBar(
                 stringResource(R.string.title_finish_cancel_funding),
-                onBackClick = {},
-                onHomeClick = {}
+                onBackClick = { navController.popBackStack(R.id.fragment_home, false) },
+                onHomeClick = { navController.popBackStack(R.id.fragment_home, false) }
             )
         },
         containerColor = Color.White
@@ -71,7 +68,7 @@ fun FinishCancelFundingScreen(
             Spacer(modifier = Modifier.height(24.dp))
 
             Button(
-                onClick = { },
+                onClick = { navController.popBackStack(R.id.fragment_home, false) },
                 colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFFF6B6B)),
                 shape = RoundedCornerShape(12.dp),
                 modifier = Modifier

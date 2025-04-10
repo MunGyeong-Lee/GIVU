@@ -3,6 +3,9 @@ package com.wukiki.givu.views.finish
 import android.os.Bundle
 import android.view.View
 import androidx.fragment.app.activityViewModels
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
 import androidx.navigation.fragment.findNavController
 import com.wukiki.givu.R
 import com.wukiki.givu.config.BaseFragment
@@ -22,7 +25,19 @@ class FinishFundingFragment :
         binding.vm = viewModel
 
         binding.composeFinishFunding.setContent {
-            FinishFundingScreen(navController = findNavController())
+            val navController = rememberNavController()
+            NavHost(
+                navController = navController,
+                startDestination = "FinishFunding"
+            ) {
+                composable("FinishFunding") {
+                    FinishFundingScreen(viewModel, navController)
+                }
+
+                composable("FundingFinished") {
+                    FundingFinishedScreen(findNavController())
+                }
+            }
         }
     }
 }

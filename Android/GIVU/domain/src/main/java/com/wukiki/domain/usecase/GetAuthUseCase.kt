@@ -13,10 +13,10 @@ class GetAuthUseCase @Inject constructor(
     private val dataStoreRepository: DataStoreRepository
 ) {
 
-    suspend fun loginWithKakao(accessToken: String): ApiResult<KakaoUser> =
+    suspend fun loginWithKakao(accessToken: String): Flow<ApiResult<KakaoUser>> =
         authRepository.loginWithKakao(accessToken)
 
-    suspend fun fetchUserInfo(): ApiResult<User> =
+    suspend fun fetchUserInfo(): Flow<ApiResult<User>> =
         authRepository.getUserInfo()
 
     suspend fun setUserInfo(userInfo: User) = dataStoreRepository.setUserInfo(userInfo)

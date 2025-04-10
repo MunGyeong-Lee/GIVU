@@ -21,13 +21,13 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.rememberAsyncImagePainter
-import com.wukiki.domain.model.User
+import com.wukiki.domain.model.Review
 import com.wukiki.givu.R
 import com.wukiki.givu.ui.suit
 
 @Composable
 fun FinishFundingParticipantPager(
-    participants: List<User>
+    reviews: List<Review>
 ) {
     Column(
         modifier = Modifier
@@ -44,7 +44,7 @@ fun FinishFundingParticipantPager(
         Row(
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            participants.forEach { participant ->
+            reviews.forEach { review ->
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     Image(
                         painter = rememberAsyncImagePainter("https://placekitten.com/100/100"),
@@ -57,7 +57,7 @@ fun FinishFundingParticipantPager(
                     )
                     Spacer(modifier = Modifier.height(4.dp))
                     Text(
-                        text = participant.id,
+                        text = review.userNickname,
                         fontSize = 14.sp,
                         fontWeight = FontWeight.Medium,
                         fontFamily = suit

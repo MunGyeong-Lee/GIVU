@@ -21,7 +21,7 @@ fun CategoryTagItem(category: String) {
             .padding(horizontal = 12.dp, vertical = 2.dp)
     ) {
         Text(
-            text = "생일",
+            text = if (category == "") "기타" else category,
             fontSize = 14.sp,
             fontWeight = FontWeight.Medium,
             fontFamily = suit,

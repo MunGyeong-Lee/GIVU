@@ -19,14 +19,13 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.hilt.navigation.compose.hiltViewModel
 import com.wukiki.givu.R
 import com.wukiki.givu.ui.suit
 import com.wukiki.givu.views.detail.viewmodel.FundingViewModel
 
 @Composable
 fun FinishFundingReviewPager(
-    fundingViewModel: FundingViewModel = hiltViewModel()
+    fundingViewModel: FundingViewModel
 ) {
     val fundingReview by fundingViewModel.fundingReview.collectAsState()
 
@@ -44,7 +43,10 @@ fun FinishFundingReviewPager(
 
         TextField(
             value = fundingReview,
-            onValueChange = { fundingViewModel.fundingReview.value = it },
+            onValueChange = {
+                fundingViewModel.fundingReview.value = it
+                fundingViewModel.validateReviewComment(it)
+            },
             placeholder = { Text(stringResource(R.string.text_hint_finish_funding_review)) },
             modifier = Modifier.fillMaxWidth()
                 .heightIn(min = 196.dp, max = 196.dp),

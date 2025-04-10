@@ -46,7 +46,7 @@ fun HomeAppBarPager(
                 painter = painterResource(id = R.drawable.ic_logo),
                 contentDescription = "GIVU Logo",
                 modifier = Modifier
-                    .height(20.dp)
+                    .height(64.dp)
             )
 
             when (user == null) {

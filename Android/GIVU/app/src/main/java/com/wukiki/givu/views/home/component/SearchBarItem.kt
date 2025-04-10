@@ -29,7 +29,8 @@ import com.wukiki.givu.ui.suit
 
 @Composable
 fun SearchBarItem(
-    navController: NavController
+    navController: NavController,
+    actionId: Int
 ) {
     Box(
         modifier = Modifier
@@ -37,7 +38,7 @@ fun SearchBarItem(
             .height(40.dp)
             .clip(RoundedCornerShape(10.dp))
             .border(1.dp, Color(0xFFFF6F61), RoundedCornerShape(10.dp))
-            .clickable { navController.navigate(R.id.action_home_to_search) }
+            .clickable { navController.navigate(actionId) }
             .padding(horizontal = 12.dp),
         contentAlignment = Alignment.CenterStart
     ) {
