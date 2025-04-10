@@ -43,7 +43,7 @@ public class SuccessFundingService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new EntityNotFoundException("유저가 존재하지 않습니다"));
 
-        funding.setStatus(FundingsStatus.COMPLETED); // 펀딩 상태 COMPLETE 처리
+        funding.setStatus(FundingsStatus.CANCELED); // 펀딩 상태 CANCELED 처리
 
         // 2. 거래내역 생성 및 pending 상태로 저장
         Payment payment = Payment.builder() //serId, fundingId, amount, PaymentsStatus.PENDING);
