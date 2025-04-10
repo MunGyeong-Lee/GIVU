@@ -29,7 +29,7 @@ public class JwtExceptionFilter extends OncePerRequestFilter {
             handleException(response, e.getErrorStatus().name(), e.getErrorMsg());
         } catch (Exception e){
             log.error("💥 JwtExceptionFilter - 알 수 없는 예외 발생: {}", e.getMessage());
-            handleException(response, "UNKNOWN_ERROR", "서버 내부 오류가 발생했습니다.");
+            handleException(response, "UNKNOWN_ERROR", e.getMessage());
         }
 
     }
