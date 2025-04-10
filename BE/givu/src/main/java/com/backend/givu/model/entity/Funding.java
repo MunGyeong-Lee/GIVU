@@ -46,9 +46,9 @@ public class Funding {
     @JoinColumn(name = "product_id", nullable = false)
     private Product product;
 
-    @Size(max = 20)
+    @Size(max = 50)
     @NotNull
-    @Column(name = "title", nullable = false, length = 20)
+    @Column(name = "title", nullable = false, length = 50)
     private String title;
 
     @Column(name = "description", length = Integer.MAX_VALUE)

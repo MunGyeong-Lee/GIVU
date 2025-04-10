@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { getFundingReviews, getFundingData } from '../../services/review.service';
-import axios from 'axios';
+// import axios from 'axios';
 import { motion } from 'framer-motion'; // 애니메이션을 위한 framer-motion 추가
 
 // 리뷰 아이템 타입 수정
@@ -20,25 +20,6 @@ interface ReviewItem {
   fundingImage?: string;
   // API 응답에 맞게 추가 필드 허용
   [key: string]: any;
-}
-
-// 펀딩 아이템 타입 정의
-interface FundingItem {
-  id: number;
-  title: string;
-  status: string;
-  endDate: string;
-  hasReview: boolean;
-  achievementRate?: number; // 달성률 추가
-  // 펀딩 이미지 필드 추가
-  image?: string;
-  thumbnailImage?: string;
-  product?: {
-    id: number;
-    productName: string;
-    price: number;
-    image: string;
-  };
 }
 
 // 기본 이미지 경로 상수로 정의 - 절대 경로 사용
