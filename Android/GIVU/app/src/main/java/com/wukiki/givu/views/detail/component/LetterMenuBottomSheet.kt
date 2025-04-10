@@ -25,6 +25,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.wukiki.domain.model.Letter
 import com.wukiki.givu.R
 import com.wukiki.givu.views.detail.viewmodel.FundingViewModel
 
@@ -32,7 +33,7 @@ import com.wukiki.givu.views.detail.viewmodel.FundingViewModel
 @Composable
 fun LetterMenuBottomSheet(
     onDismissRequest: () -> Unit,
-    letterId: String,
+    letter: Letter,
     fundingViewModel: FundingViewModel
 ) {
     val user by fundingViewModel.user.collectAsState()
@@ -56,7 +57,7 @@ fun LetterMenuBottomSheet(
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = "후기 정렬 기준",
+                    text = "축하 편지",
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Bold
                 )
@@ -71,28 +72,28 @@ fun LetterMenuBottomSheet(
             Spacer(modifier = Modifier.height(8.dp))
 
             Column {
-                Text(
-                    text = "삭제",
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clickable {
-                            fundingViewModel.deleteLetter(letterId)
-                            onDismissRequest()
-                        }
-                        .padding(horizontal = 16.dp, vertical = 14.dp),
-                    fontSize = 16.sp
-                )
-                if (user != null) {
-                    HorizontalDivider(color = Color(0xFFECECEC), thickness = 1.dp)
+                if (letter.isCreator) {
                     Text(
-                        text = "신고",
+                        text = "삭제",
                         modifier = Modifier
                             .fillMaxWidth()
-                            .clickable { onDismissRequest() }
+                            .clickable {
+                                fundingViewModel.deleteLetter(letter.letterId)
+                                onDismissRequest()
+                            }
                             .padding(horizontal = 16.dp, vertical = 14.dp),
                         fontSize = 16.sp
                     )
+                    HorizontalDivider(color = Color(0xFFECECEC), thickness = 1.dp)
                 }
+                Text(
+                    text = "신고",
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable { onDismissRequest() }
+                        .padding(horizontal = 16.dp, vertical = 14.dp),
+                    fontSize = 16.sp
+                )
             }
         }
     }

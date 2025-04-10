@@ -150,7 +150,7 @@ fun LetterItem(
     if (showSheet.value) {
         LetterMenuBottomSheet(
             onDismissRequest = { showSheet.value = false },
-            letterId = letter.letterId,
+            letter = letter,
             fundingViewModel = fundingViewModel
         )
     }
