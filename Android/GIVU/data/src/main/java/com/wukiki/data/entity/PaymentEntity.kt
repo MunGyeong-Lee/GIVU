@@ -26,7 +26,7 @@ data class PaymentHistoryEntity(
     val userId: Int,
 
     @Json(name = "fundingTitle")
-    val fundingTitle: String,
+    val fundingTitle: String?,
 
     @Json(name = "productName")
     val productName: String?,
