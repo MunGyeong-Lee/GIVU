@@ -1,9 +1,14 @@
 package com.wukiki.givu.views
 
+import android.app.Activity
+import android.app.Dialog
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
+import android.os.Message
 import android.util.Log
+import android.view.ViewGroup
+import android.webkit.WebChromeClient
 import android.webkit.WebResourceRequest
 import android.webkit.WebSettings
 import android.webkit.WebView
@@ -28,6 +33,7 @@ class OrderWebviewActivity : BaseActivity<ActivityOrderWebviewBinding>(ActivityO
 
     @Inject
     lateinit var getAuthUseCase: GetAuthUseCase
+    private var popupDialog: Dialog? = null
 
     companion object {
         fun newIntent(context: Context, productId: String): Intent {
@@ -43,12 +49,55 @@ class OrderWebviewActivity : BaseActivity<ActivityOrderWebviewBinding>(ActivityO
         val webView = binding.webviewOrder
         webView.settings.javaScriptEnabled = true
         webView.settings.domStorageEnabled = true
-//        webView.settings.mixedContentMode = WebSettings.MIXED_CONTENT_ALWAYS_ALLOW
-
+        webView.settings.javaScriptCanOpenWindowsAutomatically = true
+        webView.settings.setSupportMultipleWindows(true)
 
         val productId = intent.getStringExtra("productId") ?: return
-        val url = "https://j12d107.p.ssafy.io/shopping/product/$productId"
-//        val url = "$baseUrl"
+        val url = "https://j12d107.p.ssafy.io/shopping/order/$productId"
+
+
+
+        // 웹뷰 팝업 허용을 위한 ChromeClient 설정
+        webView.webChromeClient = object : WebChromeClient() {
+            override fun onCreateWindow(
+                view: WebView,
+                isDialog: Boolean,
+                isUserGesture: Boolean,
+                resultMsg: Message
+            ): Boolean {
+                val newWebView = WebView(view.context).apply {
+                    settings.javaScriptEnabled = true
+                    settings.domStorageEnabled = true
+                }
+
+                val dialog = Dialog(this@OrderWebviewActivity).apply {
+                    setContentView(newWebView)
+                    window?.setLayout(
+                        ViewGroup.LayoutParams.MATCH_PARENT,
+                        ViewGroup.LayoutParams.MATCH_PARENT
+                    )
+                    show()
+                }
+                popupDialog = dialog
+                newWebView.webChromeClient = this
+                newWebView.webViewClient = WebViewClient()
+
+                (resultMsg.obj as WebView.WebViewTransport).webView = newWebView
+                resultMsg.sendToTarget()
+
+                return true
+            }
+
+            override fun onCloseWindow(window: WebView) {
+                // window.close() 호출될 때 실행
+                popupDialog?.dismiss()
+                popupDialog = null
+
+                setResult(Activity.RESULT_OK)
+                finish()
+
+            }
+        }
 
         webView.webViewClient = object : WebViewClient() {
 
@@ -69,16 +118,7 @@ class OrderWebviewActivity : BaseActivity<ActivityOrderWebviewBinding>(ActivityO
                 }
             }
 
-            // 새 URL을 로딩, 특정 URL이 나오면 앱에서 처리
-            override fun shouldOverrideUrlLoading(view: WebView?, request: WebResourceRequest?): Boolean {
-                val reqUrl = request?.url.toString()
-                if (reqUrl.contains("/payment/success")) {
-                    setResult(RESULT_OK)
-                    finish()
-                    return true
-                }
-                return false
-            }
+
         }
 
         webView.loadUrl(url)
