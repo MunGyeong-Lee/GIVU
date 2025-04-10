@@ -2,6 +2,7 @@ package com.wukiki.givu.views.home.component
 
 import android.os.Bundle
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -47,122 +48,145 @@ fun FundingItem(
     navController: NavController,
     onLikeClick: () -> Unit
 ) {
-    Card(
-        modifier = Modifier.wrapContentHeight()
-            .clickable {
-                val bundle = Bundle().apply {
-                    putInt("fundingId", funding.id)
-                }
-                navController.navigate(R.id.action_home_to_detail_funding, bundle)
-            },
-        colors = CardDefaults.cardColors(containerColor = Color.White)
+    Box(
+        modifier = Modifier
+            .wrapContentHeight()
+            .padding(vertical = 4.dp, horizontal = 8.dp)
     ) {
-        Row(
+        Card(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            // 이미지 (왼쪽)
-            SubcomposeAsyncImage(
-                model = if (funding.images.isNotEmpty()) funding.images[0] else "",
-                contentDescription = "Funding Image",
-                contentScale = ContentScale.Crop,
-                modifier = Modifier
-                    .width(180.dp) // 이미지 크기
-                    .aspectRatio(3F / 2F)
-                    .clip(RoundedCornerShape(15.dp)),
-                loading = {
-                    Box(
-                        modifier = Modifier
-                            .matchParentSize()
-                            .clip(RoundedCornerShape(10.dp))
-                            .shimmerEffect()
-                    )
+                .clickable {
+                    if (!funding.hidden) {
+                        val bundle = Bundle().apply {
+                            putInt("fundingId", funding.id)
+                        }
+                        navController.navigate(R.id.action_home_to_detail_funding, bundle)
+                    }
                 },
-                error = {
-                    Image(
-                        painter = painterResource(id = R.drawable.ic_logo),
-                        contentDescription = "Error",
-                        modifier = Modifier
-                            .clip(RoundedCornerShape(10.dp))
-                            .size(24.dp)
-                    )
-                }
-            )
-
-            Spacer(modifier = Modifier.width(8.dp))
-
-            // 텍스트 & 좋아요 버튼 (오른쪽)
-            Column(
-                modifier = Modifier.fillMaxWidth(),
-                verticalArrangement = Arrangement.SpaceBetween
+            colors = CardDefaults.cardColors(containerColor = Color.White),
+            shape = RoundedCornerShape(12.dp),
+            elevation = CardDefaults.cardElevation(4.dp)
+        ) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                Text(
-                    text = funding.title,
-                    fontSize = 18.sp,
-                    fontWeight = FontWeight.SemiBold,
-                    fontFamily = suit,
-                    color = Color.Black,
-                    maxLines = 2,
-                    overflow = TextOverflow.Ellipsis
+                // 이미지
+                SubcomposeAsyncImage(
+                    model = if (funding.images.isNotEmpty()) funding.images[0] else "",
+                    contentDescription = "Funding Image",
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier
+                        .width(180.dp)
+                        .aspectRatio(3f / 2f)
+                        .clip(RoundedCornerShape(15.dp)),
+                    loading = {
+                        Box(
+                            modifier = Modifier
+                                .matchParentSize()
+                                .clip(RoundedCornerShape(10.dp))
+                                .shimmerEffect()
+                        )
+                    },
+                    error = {
+                        Image(
+                            painter = painterResource(id = R.drawable.ic_logo),
+                            contentDescription = "Error",
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(10.dp))
+                                .size(24.dp)
+                        )
+                    }
                 )
 
-                Spacer(modifier = Modifier.height(4.dp))
+                Spacer(modifier = Modifier.width(8.dp))
 
-                Text(
-                    text = funding.userNickname,
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.SemiBold,
-                    fontFamily = suit,
-                    color = Color.Gray
-                )
-
-                Spacer(modifier = Modifier.height(4.dp))
-
-                Row(
+                Column(
                     modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.Start
+                    verticalArrangement = Arrangement.SpaceBetween
                 ) {
                     Text(
-                        text = CommonUtils.makeCommaPrice(funding.productPrice.toInt()),
+                        text = funding.title,
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        fontFamily = suit,
+                        color = Color.Black,
+                        maxLines = 2,
+                        overflow = TextOverflow.Ellipsis
+                    )
+
+                    Spacer(modifier = Modifier.height(4.dp))
+
+                    Text(
+                        text = funding.userNickname,
                         fontSize = 16.sp,
                         fontWeight = FontWeight.SemiBold,
                         fontFamily = suit,
-                        color = Color.Black
+                        color = Color.Gray
                     )
-                    Spacer(modifier = Modifier.width(4.dp))
-                    Text(
-                        text = "${makePercentage(funding.fundedAmount, funding.productPrice.toInt())}%",
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight.Medium,
-                        fontFamily = suit,
-                        color = Color.Red
-                    )
+
+                    Spacer(modifier = Modifier.height(4.dp))
+
+                    Row {
+                        Text(
+                            text = CommonUtils.makeCommaPrice(funding.productPrice.toInt()),
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.SemiBold,
+                            fontFamily = suit,
+                            color = Color.Black
+                        )
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text(
+                            text = "${makePercentage(funding.fundedAmount, funding.productPrice.toInt())}%",
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.Medium,
+                            fontFamily = suit,
+                            color = Color.Red
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.height(4.dp))
+
+                    Row {
+                        Icon(
+                            painter = painterResource(R.drawable.ic_like_on),
+                            contentDescription = "Like Button",
+                            tint = Color.Red,
+                            modifier = Modifier
+                                .size(24.dp)
+                                .clickable { onLikeClick() }
+                        )
+                        Spacer(modifier = Modifier.width(4.dp))
+                        Text(
+                            text = funding.participantsNumber,
+                            fontSize = 16.sp,
+                            fontWeight = FontWeight.SemiBold,
+                            fontFamily = suit,
+                            color = Color.Black
+                        )
+                    }
                 }
+            }
+        }
 
-                Spacer(modifier = Modifier.height(4.dp))
-
-                Row {
-                    Icon(
-                        painter = painterResource(R.drawable.ic_like_on),
-                        contentDescription = "Like Button",
-                        tint = Color.Red,
-                        modifier = Modifier
-                            .size(24.dp)
-                            .clickable { onLikeClick() }
-                    )
-
-                    Spacer(modifier = Modifier.width(4.dp))
-
-                    Text(
-                        text = funding.participantsNumber,
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight.SemiBold,
-                        fontFamily = suit,
-                        color = Color.Black
-                    )
-                }
+        if (funding.hidden) {
+            Box(
+                modifier = Modifier
+                    .matchParentSize()
+                    .clip(RoundedCornerShape(12.dp))
+                    .background(Color.Black.copy(alpha = 0.6f)),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = "조회 불가능한 펀딩입니다.",
+                    color = Color.White,
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Bold,
+                    fontFamily = suit
+                )
             }
         }
     }
