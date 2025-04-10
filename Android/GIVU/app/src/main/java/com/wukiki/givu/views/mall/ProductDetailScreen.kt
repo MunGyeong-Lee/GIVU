@@ -1,7 +1,10 @@
 package com.wukiki.givu.views.mall
 
+import android.app.Activity
 import android.content.Intent
 import android.util.Log
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
@@ -76,6 +79,15 @@ fun ProductDetailScreen(
     val productInfo by mallViewModel.selectedProduct.collectAsState()
     var productReviewList by remember { mutableStateOf(emptyList<ProductReview>()) }
     val context = LocalContext.current
+
+    val launcher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        if (result.resultCode == Activity.RESULT_OK) {
+            // ✅ 결제 성공 처리 → OrderSuccessScreen으로 이동
+            navController.navigate("OrderSuccessScreen")
+        }
+    }
 
     LaunchedEffect(Unit) {
         productId?.let {
@@ -310,7 +322,7 @@ fun ProductDetailScreen(
                                     Intent(context, OrderWebviewActivity::class.java).apply {
                                         putExtra("productId", productId)
                                     }
-                                context.startActivity(intent)
+                                launcher.launch(intent)
                             },
                             modifier = Modifier
                                 .weight(1f)

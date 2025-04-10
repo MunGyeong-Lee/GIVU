@@ -34,6 +34,7 @@ class OrderWebviewActivity : BaseActivity<ActivityOrderWebviewBinding>(ActivityO
     @Inject
     lateinit var getAuthUseCase: GetAuthUseCase
     private var popupDialog: Dialog? = null
+    private var popupWebView: WebView? = null
 
     companion object {
         fun newIntent(context: Context, productId: String): Intent {
@@ -53,7 +54,7 @@ class OrderWebviewActivity : BaseActivity<ActivityOrderWebviewBinding>(ActivityO
         webView.settings.setSupportMultipleWindows(true)
 
         val productId = intent.getStringExtra("productId") ?: return
-        val url = "https://j12d107.p.ssafy.io/shopping/order/$productId"
+        val url = "https://j12d107.p.ssafy.io/shopping/mobile/order/$productId"
 
 
 
@@ -69,6 +70,7 @@ class OrderWebviewActivity : BaseActivity<ActivityOrderWebviewBinding>(ActivityO
                     settings.javaScriptEnabled = true
                     settings.domStorageEnabled = true
                 }
+                popupWebView = newWebView
 
                 val dialog = Dialog(this@OrderWebviewActivity).apply {
                     setContentView(newWebView)
@@ -89,17 +91,29 @@ class OrderWebviewActivity : BaseActivity<ActivityOrderWebviewBinding>(ActivityO
             }
 
             override fun onCloseWindow(window: WebView) {
-                // window.close() 호출될 때 실행
-                popupDialog?.dismiss()
-                popupDialog = null
-
-                setResult(Activity.RESULT_OK)
-                finish()
-
+                // 팝업에서 호출된 window.close()인지 확인
+                if (window == popupWebView) {
+                    popupDialog?.dismiss()
+                    popupDialog = null
+                    popupWebView = null
+                }
             }
         }
 
         webView.webViewClient = object : WebViewClient() {
+            override fun shouldOverrideUrlLoading(
+                view: WebView?,
+                request: WebResourceRequest?
+            ): Boolean {
+                val urlStr = request?.url.toString()
+                if (urlStr.equals("givu:://finish", ignoreCase = true)) {
+                    setResult(Activity.RESULT_OK)
+                    finish()
+                    return true
+                }
+                return super.shouldOverrideUrlLoading(view, request)
+            }
+
 
             // 페이지 로딩이 끝났을 때 호출
             override fun onPageFinished(view: WebView?, url: String?) {
