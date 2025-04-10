@@ -201,19 +201,6 @@ export const logoutUser = async (): Promise<void> => {
     const state = store.getState();
     const token = state.auth.token;
     
-    // 백엔드 로그아웃 API 호출
-    if (token) {
-      try {
-        await axios.post(`${API_BASE_URL}/auth/logout`, {}, {
-          headers: {
-            'Authorization': `Bearer ${token}`
-          }
-        });
-      } catch (error) {
-        console.error('백엔드 로그아웃 실패:', error);
-      }
-    }
-    
     // Redux 스토어 업데이트
     store.dispatch(logout());
     
@@ -225,11 +212,39 @@ export const logoutUser = async (): Promise<void> => {
     // axios 헤더에서 토큰 제거
     delete axios.defaults.headers.common['Authorization'];
     
-    console.log('로그아웃 완료');
+    // 백엔드 로그아웃 API 호출 (존재하는 경우)
+    if (token) {
+      try {
+        await axios.post(`${API_BASE_URL}/auth/logout`, {}, {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+      } catch (error) {
+        console.error('백엔드 로그아웃 실패:', error);
+        // 오류가 발생해도 계속 진행
+      }
+    }
+    
+    console.log('로컬 로그아웃 완료');
+    
+    // 카카오 로그아웃 URL로 리다이렉트하여 강제로 카카오 세션 삭제
+    const kakaoRestApiKey = import.meta.env.VITE_KAKAO_REST_API_KEY;
+    if (kakaoRestApiKey) {
+      // 로그아웃 후 로그인 페이지로 리다이렉트하기 위한 URL
+      const logoutRedirectUri = encodeURIComponent(`${window.location.origin}/login`);
+      
+      // 카카오 서버에서 로그아웃하도록 리다이렉트
+      window.location.href = `https://kauth.kakao.com/oauth/logout?client_id=${kakaoRestApiKey}&logout_redirect_uri=${logoutRedirectUri}`;
+    } else {
+      // API 키가 없는 경우 로그인 페이지로 이동
+      window.location.href = '/login';
+    }
     
   } catch (error) {
     console.error('로그아웃 중 오류 발생:', error);
-    throw error;
+    // 오류 발생 시에도 로그인 페이지로 이동
+    window.location.href = '/login';
   }
 };
 
