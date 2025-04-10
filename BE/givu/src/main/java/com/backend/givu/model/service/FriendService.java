@@ -56,4 +56,14 @@ public class FriendService {
                 .map(friend -> new UserSimpleInfoDTO(friend.getFriend()))
                 .collect(Collectors.toList()));
     }
+
+    public ApiResponse<List<UserSimpleInfoDTO>> searchFriends(String username) {
+        List<User> users = userRepository.findByUsernameContaining(username);
+
+        List<UserSimpleInfoDTO> userList = users.stream()
+                .map(user -> new UserSimpleInfoDTO(user.getId(), user.getNickname(), user.getProfileImage()))
+                .collect(Collectors.toList());
+
+        return ApiResponse.success(userList);
+    }
 }
