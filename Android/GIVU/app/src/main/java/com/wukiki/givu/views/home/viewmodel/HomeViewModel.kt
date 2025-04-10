@@ -186,6 +186,8 @@ class HomeViewModel @Inject constructor(
                 _userState.value = result
                 if (_userState.value.status == ApiStatus.SUCCESS) {
                     _user.value = _userState.value.data
+                } else {
+                    _user.value = null
                 }
             }
         }
@@ -335,7 +337,7 @@ class HomeViewModel @Inject constructor(
     fun logout() {
         viewModelScope.launch {
             getAuthUseCase.logout()
-            updateUserInfo()
+            _user.value = null
             _homeUiEvent.emit(HomeUiEvent.Logout)
         }
     }

@@ -39,6 +39,7 @@ import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.MultipartBody
 import okhttp3.RequestBody
 import okhttp3.RequestBody.Companion.toRequestBody
+import timber.log.Timber
 import javax.inject.Inject
 
 @HiltViewModel
@@ -313,8 +314,11 @@ class FundingViewModel @Inject constructor(
 
             response.collectLatest { result ->
                 _userState.value = result
+                Timber.d("User: ${result.data}")
                 if (result.status == ApiStatus.SUCCESS) {
                     _user.value = result.data
+                } else {
+                    _user.value = null
                 }
             }
         }
