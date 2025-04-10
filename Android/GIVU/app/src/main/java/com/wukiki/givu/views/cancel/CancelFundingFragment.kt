@@ -32,9 +32,9 @@ class CancelFundingFragment :
                     val fundedAmount = viewModel.selectedFunding.value?.fundedAmount ?: 0
                     val productPrice = (viewModel.selectedFunding.value?.productPrice ?: "0").toInt()
                     if (fundedAmount * 2 <= productPrice) {
-                        viewModel.cancelFunding()
+                        viewModel.refundFunding()
                     } else {
-                        viewModel.finishFunding()
+                        viewModel.successFunding()
                     }
                 }
             }

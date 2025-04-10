@@ -10,4 +10,8 @@ interface TransferRepository {
     suspend fun transferFunding(fundingId: Int, amount: Int): Flow<ApiResult<Transfer>>
 
     suspend fun getPaymentHistory(): Flow<ApiResult<List<Payment>>>
+
+    suspend fun refundTransfer(fundingId: String): Flow<ApiResult<String>>
+
+    suspend fun successTransfer(fundingId: String): Flow<ApiResult<String>>
 }

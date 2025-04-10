@@ -2,6 +2,8 @@ package com.wukiki.data.repository.transfer
 
 import com.wukiki.data.api.TransferApi
 import com.wukiki.data.entity.FundingTransferEntity
+import com.wukiki.data.entity.FundingTransferRefundEntity
+import com.wukiki.data.entity.FundingTransferSuccessEntity
 import com.wukiki.data.entity.PaymentEntity
 import retrofit2.Response
 import javax.inject.Inject
@@ -17,4 +19,10 @@ class TransferRemoteDataSourceImpl @Inject constructor(
 
     override suspend fun getPaymentHistory(): Response<PaymentEntity> =
         transferApi.getPaymentHistory()
+
+    override suspend fun postFundingTransferRefund(fundingId: String): Response<FundingTransferRefundEntity> =
+        transferApi.postFundingTransferRefund(fundingId)
+
+    override suspend fun postFundingTransferSuccess(fundingId: String): Response<FundingTransferSuccessEntity> =
+        transferApi.postFundingTransferSuccess(fundingId)
 }

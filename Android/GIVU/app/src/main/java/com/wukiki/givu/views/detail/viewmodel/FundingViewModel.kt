@@ -291,6 +291,22 @@ class FundingViewModel @Inject constructor(
         }
     }
 
+    private fun cancelFunding() {
+        viewModelScope.launch {
+            val response = getFundingUseCase.cancelFunding(
+                fundingId = _selectedFunding.value?.id ?: -1
+            )
+
+            response.collectLatest { result ->
+                if (result.status == ApiStatus.SUCCESS) {
+                    _fundingUiEvent.emit(FundingUiEvent.CancelFundingSuccess)
+                } else if ((result.status == ApiStatus.FAIL) || (result.status == ApiStatus.ERROR)) {
+                    _fundingUiEvent.emit(FundingUiEvent.CancelFundingFail)
+                }
+            }
+        }
+    }
+
     fun initUserInfo() {
         viewModelScope.launch {
             val response = getAuthUseCase.fetchUserInfo()
@@ -513,10 +529,26 @@ class FundingViewModel @Inject constructor(
         }
     }
 
-    fun cancelFunding() {
+    fun refundFunding() {
         viewModelScope.launch {
-            val response = getFundingUseCase.cancelFunding(
-                fundingId = _selectedFunding.value?.id ?: -1
+            val response = getTransferUseCase.refundFunding(
+                fundingId = (_selectedFunding.value?.id ?: -1).toString()
+            )
+
+            response.collectLatest { result ->
+                if (result.status == ApiStatus.SUCCESS) {
+                    cancelFunding()
+                } else if ((result.status == ApiStatus.FAIL) || (result.status == ApiStatus.ERROR)) {
+                    _fundingUiEvent.emit(FundingUiEvent.CancelFundingFail)
+                }
+            }
+        }
+    }
+
+    fun successFunding() {
+        viewModelScope.launch {
+            val response = getTransferUseCase.successFunding(
+                fundingId = (_selectedFunding.value?.id ?: -1).toString()
             )
 
             response.collectLatest { result ->

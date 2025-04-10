@@ -12,4 +12,10 @@ class GetTransferUseCase @Inject constructor(
 
     suspend fun transferFunding(fundingId: Int, amount: Int): Flow<ApiResult<Transfer>> =
         transferRepository.transferFunding(fundingId, amount)
+
+    suspend fun refundFunding(fundingId: String): Flow<ApiResult<String>> =
+        transferRepository.refundTransfer(fundingId)
+
+    suspend fun successFunding(fundingId: String): Flow<ApiResult<String>> =
+        transferRepository.successTransfer(fundingId)
 }

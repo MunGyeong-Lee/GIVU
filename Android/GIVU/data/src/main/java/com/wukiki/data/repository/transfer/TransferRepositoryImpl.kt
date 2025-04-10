@@ -65,5 +65,49 @@ class TransferRepositoryImpl @Inject constructor(
             }
         }
 
+    override suspend fun refundTransfer(fundingId: String): Flow<ApiResult<String>> =
+        flow {
+            emit(ApiResult.loading(null))
+            try {
+                val response = withContext(CoroutineScope(Dispatchers.IO).coroutineContext) {
+                    transferRemoteDataSource.postFundingTransferRefund(fundingId)
+                }
 
+                val responseBody = response.body()
+                Log.d("FundingRepositoryImpl", "Response: $responseBody")
+                if (response.isSuccessful && (responseBody != null)) {
+                    Log.d("FundingRepositoryImpl", "refundTransfer Success")
+                    emit(ApiResult.success(responseBody.message))
+                } else {
+                    Log.d("FundingRepositoryImpl", "refundTransfer Fail: ${response.code()}")
+                    emit(ApiResult.error(response.errorBody().toString(), null))
+                }
+            } catch (e: Exception) {
+                Log.e("FundingRepositoryImpl", "refundTransfer Error: $e")
+                emit(ApiResult.fail())
+            }
+        }
+
+    override suspend fun successTransfer(fundingId: String): Flow<ApiResult<String>>  =
+        flow {
+            emit(ApiResult.loading(null))
+            try {
+                val response = withContext(CoroutineScope(Dispatchers.IO).coroutineContext) {
+                    transferRemoteDataSource.postFundingTransferSuccess(fundingId)
+                }
+
+                val responseBody = response.body()
+                Log.d("FundingRepositoryImpl", "Response: $responseBody")
+                if (response.isSuccessful && (responseBody != null)) {
+                    Log.d("FundingRepositoryImpl", "successTransfer Success")
+                    emit(ApiResult.success(responseBody.message))
+                } else {
+                    Log.d("FundingRepositoryImpl", "successTransfer Fail: ${response.code()}")
+                    emit(ApiResult.error(response.errorBody().toString(), null))
+                }
+            } catch (e: Exception) {
+                Log.e("FundingRepositoryImpl", "successTransfer Error: $e")
+                emit(ApiResult.fail())
+            }
+        }
 }
