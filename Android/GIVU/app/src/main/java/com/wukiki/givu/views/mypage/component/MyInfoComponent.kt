@@ -2,7 +2,6 @@ package com.wukiki.givu.views.mypage.component
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -10,7 +9,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -24,14 +22,18 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
 import com.wukiki.givu.R
 import com.wukiki.givu.ui.suit
+import com.wukiki.givu.views.home.viewmodel.HomeViewModel
 
 @Composable
-fun MyInfoComponent() {
+fun MyInfoComponent(
+    homeViewModel: HomeViewModel,
+    navController: NavController
+) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -66,15 +68,16 @@ fun MyInfoComponent() {
                     .padding(vertical = 4.dp)
                     .clip(shape = RoundedCornerShape(10.dp))
                     .clickable {
-
+                        homeViewModel.initMyParticipateFundings()
+                        navController.navigate("MyParticipateFunding")
                     },
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = "관심 펀딩 목록",
+                    text = "참여한 펀딩 목록",
                     fontFamily = suit,
                     fontWeight = FontWeight.SemiBold,
-                    fontSize = 20.sp,
+                    fontSize = 16.sp,
                     modifier = Modifier.padding(start = 4.dp)
                 )
 
@@ -97,16 +100,16 @@ fun MyInfoComponent() {
                     .padding(vertical = 4.dp)
                     .clip(shape = RoundedCornerShape(10.dp))
                     .clickable {
-
+                        homeViewModel.initMyRegisterFundings()
+                        navController.navigate("MyRegisterFunding")
                     },
-
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
                     text = "내가 만든 펀딩 조회",
                     fontFamily = suit,
                     fontWeight = FontWeight.SemiBold,
-                    fontSize = 20.sp,
+                    fontSize = 16.sp,
                     modifier = Modifier.padding(start = 4.dp)
 
                 )
@@ -130,16 +133,16 @@ fun MyInfoComponent() {
                     .padding(vertical = 4.dp)
                     .clip(shape = RoundedCornerShape(10.dp))
                     .clickable {
-
+                        homeViewModel.initMyLikeProducts()
+                        navController.navigate("MyLikeProduct")
                     },
-
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = "후원 내역",
+                    text = "내가 찜한 상품",
                     fontFamily = suit,
                     fontWeight = FontWeight.SemiBold,
-                    fontSize = 20.sp,
+                    fontSize = 16.sp,
                     modifier = Modifier.padding(start = 4.dp)
 
                 )
@@ -164,16 +167,16 @@ fun MyInfoComponent() {
                     .padding(vertical = 4.dp)
                     .clip(shape = RoundedCornerShape(10.dp))
                     .clickable {
-
+                        homeViewModel.initMyFundingReviews()
+                        navController.navigate("MyFundingReview")
                     },
-
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
                     text = "후기",
                     fontFamily = suit,
                     fontWeight = FontWeight.SemiBold,
-                    fontSize = 20.sp,
+                    fontSize = 16.sp,
                     modifier = Modifier.padding(start = 4.dp)
 
                 )
@@ -193,11 +196,4 @@ fun MyInfoComponent() {
 
         }
     }
-}
-
-@Preview(showBackground = true)
-@Composable
-private fun InfoPreview() {
-    MyInfoComponent()
-
 }

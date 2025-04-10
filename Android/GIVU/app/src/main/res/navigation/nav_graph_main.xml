@@ -36,6 +36,10 @@
         tools:layout="@layout/fragment_community">
 
         <action
+            android:id="@+id/action_community_to_login"
+            app:destination="@id/fragment_login" />
+
+        <action
             android:id="@+id/action_community_to_detail_funding"
             app:destination="@id/fragment_detail_funding" />
 
@@ -47,6 +51,9 @@
         android:label="@string/menu_title_mall"
         tools:layout="@layout/fragment_mall">
 
+        <action
+            android:id="@+id/action_fragment_mall_to_fragment_login"
+            app:destination="@id/fragment_login" />
     </fragment>
 
     <fragment
@@ -54,6 +61,13 @@
         android:name="com.wukiki.givu.views.mypage.MyPageFragment"
         android:label="@string/menu_title_my_page"
         tools:layout="@layout/fragment_my_page">
+
+        <action
+            android:id="@+id/action_my_page_to_detail_funding"
+            app:destination="@id/fragment_detail_funding" />
+        <action
+            android:id="@+id/action_fragment_my_page_to_fragment_login"
+            app:destination="@id/fragment_login" />
 
     </fragment>
 
@@ -88,12 +102,19 @@
             app:destination="@id/fragment_participate_funding" />
 
         <action
+            android:id="@+id/action_detail_funding_to_update_funding"
+            app:destination="@id/fragment_update_funding" />
+
+        <action
             android:id="@+id/action_detail_funding_to_cancel_funding"
             app:destination="@id/fragment_cancel_funding" />
 
         <action
             android:id="@+id/action_detail_funding_to_finish_funding"
             app:destination="@id/fragment_finish_funding" />
+        <action
+            android:id="@+id/action_fragment_detail_funding_to_fragment_login"
+            app:destination="@id/fragment_login" />
 
     </fragment>
 
@@ -111,29 +132,13 @@
         android:label="@string/label_participate_funding"
         tools:layout="@layout/fragment_participate_funding">
 
-        <action
-            android:id="@+id/action_participate_funding_to_write_letter"
-            app:destination="@id/fragment_write_letter" />
-
     </fragment>
 
     <fragment
-        android:id="@+id/fragment_write_letter"
-        android:name="com.wukiki.givu.views.participate.WriteLetterFragment"
-        android:label="@string/label_write_letter"
-        tools:layout="@layout/fragment_write_letter">
-
-        <action
-            android:id="@+id/action_write_letter_to_complete_funding"
-            app:destination="@id/fragment_complete_funding" />
-
-    </fragment>
-
-    <fragment
-        android:id="@+id/fragment_complete_funding"
-        android:name="com.wukiki.givu.views.participate.CompleteFundingFragment"
-        android:label="@string/label_complete_funding"
-        tools:layout="@layout/fragment_complete_funding">
+        android:id="@+id/fragment_update_funding"
+        android:name="com.wukiki.givu.views.update.UpdateFundingFragment"
+        android:label="@string/label_update_funding"
+        tools:layout="@layout/fragment_update_funding">
 
     </fragment>
 
@@ -162,18 +167,6 @@
         android:name="com.wukiki.givu.views.finish.FinishFundingFragment"
         android:label="@string/label_finish_funding"
         tools:layout="@layout/fragment_finish_funding">
-
-        <action
-            android:id="@+id/action_finish_funding_to_funding_finished"
-            app:destination="@id/fragment_funding_finished" />
-
-    </fragment>
-
-    <fragment
-        android:id="@+id/fragment_funding_finished"
-        android:name="com.wukiki.givu.views.finish.FundingFinishedFragment"
-        android:label="@string/label_funding_finished"
-        tools:layout="@layout/fragment_funding_finished">
 
     </fragment>
 

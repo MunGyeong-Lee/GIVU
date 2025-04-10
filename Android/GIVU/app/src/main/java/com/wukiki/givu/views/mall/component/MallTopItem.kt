@@ -2,6 +2,8 @@ package com.wukiki.givu.views.mall.component
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -20,6 +22,7 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
@@ -32,12 +35,18 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import coil.compose.SubcomposeAsyncImage
+import com.wukiki.domain.model.Product
 import com.wukiki.givu.R
 import com.wukiki.givu.ui.pretendard
 import com.wukiki.givu.ui.suit
+import com.wukiki.givu.util.CommonUtils
 
 @Composable
-fun MallItemPopular() {
+fun MallItemPopular(
+    product: Product,
+    onProductClick: () -> Unit
+) {
     Card(
         modifier = Modifier
             .width(200.dp)
@@ -46,21 +55,25 @@ fun MallItemPopular() {
                 elevation = 4.dp,
                 shape = RoundedCornerShape(10.dp),
                 clip = true
+            )
+            .clickable(
+                interactionSource = remember { MutableInteractionSource() },
+                indication = null,
+                onClick = onProductClick
             ),
         shape = RoundedCornerShape(10.dp),
         colors = CardDefaults.cardColors(containerColor = Color.White),
     ) {
         Column(modifier = Modifier.fillMaxWidth()) {
 
-            Image(
-                painter = painterResource(R.drawable.test_img_doll),
+            SubcomposeAsyncImage(
+                model = product.image,
                 contentDescription = null,
+                contentScale = ContentScale.Crop,
                 modifier = Modifier
                     .fillMaxWidth()
                     .aspectRatio(5f / 4f),
-                contentScale = ContentScale.Crop
             )
-
 
             Spacer(Modifier.height(8.dp))
 
@@ -71,12 +84,13 @@ fun MallItemPopular() {
             ) {
 
                 Text(
-                    text = "[카이스트특허기술] 그래비티 헤어리프팅 샴푸 엑스트라 버진",
+                    text = product.productName,
                     fontFamily = suit,
                     fontWeight = FontWeight.SemiBold,
                     fontSize = 16.sp,
                     maxLines = 2,
-                    overflow = TextOverflow.Ellipsis
+                    overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier.height(42.dp)
                 )
 
                 Spacer(Modifier.height(8.dp))
@@ -85,8 +99,25 @@ fun MallItemPopular() {
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
-                    BestItemTag()
-                    NewItemTag()
+                    BestItemTag(
+                        modifier = Modifier
+                            .height(28.dp)
+                            .weight(1f)
+                            .background(
+                                color = Color(0xFFFFE100),
+                                shape = RoundedCornerShape(8.dp)
+                            ),
+                    )
+                    Spacer(Modifier.width(4.dp))
+                    NewItemTag(
+                        modifier = Modifier
+                            .height(28.dp)
+                            .weight(1f)
+                            .background(
+                                color = Color(0xFF00B2FF),
+                                shape = RoundedCornerShape(8.dp)
+                            ),
+                    )
                 }
 
                 Spacer(Modifier.height(8.dp))
@@ -96,10 +127,10 @@ fun MallItemPopular() {
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = "10,000원",
+                        text = CommonUtils.makeCommaPrice(product.price.toInt()),
                         fontFamily = pretendard,
-                        fontWeight = FontWeight.ExtraBold,
-                        fontSize = 17.sp,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 18.sp,
                     )
 
                     Spacer(Modifier.weight(1f))
@@ -107,12 +138,11 @@ fun MallItemPopular() {
                         painter = painterResource(R.drawable.ic_star_best),
                         contentDescription = null,
                         modifier = Modifier
-//                            .padding( end = 2.dp)
                             .size(28.dp),
                         tint = colorResource(R.color.main_secondary)
                     )
                     Text(
-                        text = "4.9",
+                        text = product.star,
                         fontFamily = pretendard,
                         fontSize = 14.sp,
                         fontWeight = FontWeight.Normal
@@ -146,15 +176,9 @@ fun MallItemPopular() {
 }
 
 @Composable
-private fun BestItemTag() {
+private fun BestItemTag(modifier: Modifier) {
     Row(
-        modifier = Modifier
-            .height(28.dp)
-//            .width(88.dp)
-            .background(
-                color = Color(0xFFFFE100),
-                shape = RoundedCornerShape(8.dp)
-            ),
+        modifier = modifier,
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.Center
     ) {
@@ -176,15 +200,9 @@ private fun BestItemTag() {
 }
 
 @Composable
-private fun NewItemTag() {
+private fun NewItemTag(modifier: Modifier) {
     Row(
-        modifier = Modifier
-            .height(28.dp)
-//            .width(88.dp)
-            .background(
-                color = Color(0xFF00B2FF),
-                shape = RoundedCornerShape(8.dp)
-            ),
+        modifier = modifier,
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.Center
     ) {
@@ -209,7 +227,7 @@ private fun NewItemTag() {
 @Preview(showBackground = true)
 @Composable
 private fun PreviewMallItem() {
-    MallItemPopular()
+//    MallItemPopular()
 
 //    NewItemTag()
 }

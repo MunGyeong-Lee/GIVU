@@ -33,7 +33,7 @@ fun SortOptionBottomSheet(
     onDismissRequest: () -> Unit,
     searchViewModel: SearchViewModel = hiltViewModel()
 ) {
-    val sortOptions = listOf("최신순", "참여도순", "추천순", "이름순", "오래된순", "금액순")
+    val sortOptions = listOf("최신순", "오래된순", "참여도순", "달성률순")
 
     ModalBottomSheet(
         onDismissRequest = onDismissRequest,
