@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface FriendRepository extends JpaRepository<Friend, Long> {
 
@@ -16,4 +17,5 @@ public interface FriendRepository extends JpaRepository<Friend, Long> {
     List<Friend> findByUserWithFriend(@Param("userId") Long userId);
 
     boolean existsByUserAndFriend(User user, User friend);
+    Optional<Friend> findByUserAndFriend(User user, User friend);
 }
