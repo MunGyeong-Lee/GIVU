@@ -38,8 +38,12 @@ function MyFriendPage() {
   const [showModal, setShowModal] = useState<boolean>(false);
   // 친구 추가 모달 상태
   const [showAddFriendModal, setShowAddFriendModal] = useState<boolean>(false);
-  // 친구 ID 입력 상태
-  const [friendId, setFriendId] = useState<string>('');
+  // 친구 검색어 상태
+  const [searchQuery, setSearchQuery] = useState<string>('');
+  // 검색 결과 상태
+  const [searchResults, setSearchResults] = useState<Friend[]>([]);
+  // 검색 로딩 상태
+  const [searchLoading, setSearchLoading] = useState<boolean>(false);
   // 친구 추가 로딩 상태
   const [addingFriend, setAddingFriend] = useState<boolean>(false);
   // 친구 추가 결과 메시지
@@ -207,9 +211,34 @@ function MyFriendPage() {
     friend.nickName.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  // 펀딩하기 버튼 클릭 핸들러
-  const handleFundingClick = () => {
-    setShowModal(true);
+  // 친구 삭제 핸들러
+  const handleDeleteFriend = async (friendId: number) => {
+    if (window.confirm('정말로 이 친구를 삭제하시겠습니까?')) {
+      try {
+        const token = localStorage.getItem('auth_token') || '';
+        const baseUrl = import.meta.env.VITE_API_BASE_URL || 'https://j12d107.p.ssafy.io/api';
+
+        console.log(`친구 삭제 API 호출: ${baseUrl}/friends/${friendId}`);
+
+        const response = await axios.delete(`${baseUrl}/friends/${friendId}`, {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Accept': 'application/json'
+          }
+        });
+
+        console.log('친구 삭제 응답:', response.data);
+
+        if (response.status === 200) {
+          alert('친구가 삭제되었습니다.');
+          // 친구 목록 새로고침
+          await fetchFriends();
+        }
+      } catch (err) {
+        console.error('친구 삭제 실패:', err);
+        alert('친구 삭제 중 오류가 발생했습니다.');
+      }
+    }
   };
 
   // 모달 닫기 핸들러
@@ -220,7 +249,9 @@ function MyFriendPage() {
   // 친구 추가 모달 열기 핸들러
   const handleOpenAddFriendModal = () => {
     setShowAddFriendModal(true);
-    setFriendId('');
+    // 빈 검색어로 초기화
+    setSearchQuery('');
+    setSearchResults([]);
     setAddFriendResult(null);
   };
 
@@ -229,31 +260,52 @@ function MyFriendPage() {
     setShowAddFriendModal(false);
   };
 
-  // 친구 ID 입력 핸들러
-  const handleFriendIdChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFriendId(e.target.value);
+  // 친구 검색어 입력 핸들러
+  const handleSearchQueryChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchQuery(e.target.value);
+  };
+
+  // 친구 검색 핸들러
+  const handleSearchFriends = async () => {
+    if (!searchQuery.trim()) {
+      setSearchResults([]);
+      return;
+    }
+
+    try {
+      setSearchLoading(true);
+
+      const token = localStorage.getItem('auth_token') || '';
+      const baseUrl = import.meta.env.VITE_API_BASE_URL || 'https://j12d107.p.ssafy.io/api';
+
+      // 스웨거 문서에 따른 올바른 API 형식 적용
+      const url = `${baseUrl}/friends/search?username=${encodeURIComponent(searchQuery)}`;
+      console.log(`친구 검색 API 호출: ${url}`);
+
+      const response = await axios.get<ApiResponse>(url, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Accept': 'application/json'
+        }
+      });
+
+      console.log('검색 응답:', response.data);
+
+      if (response.data && response.data.code === 'SUCCESS' && Array.isArray(response.data.data)) {
+        setSearchResults(response.data.data);
+      } else {
+        setSearchResults([]);
+      }
+    } catch (err) {
+      console.error('친구 검색 실패:', err);
+      setSearchResults([]);
+    } finally {
+      setSearchLoading(false);
+    }
   };
 
   // 친구 추가 API 호출
-  const handleAddFriend = async () => {
-    // 입력 값 검증
-    if (!friendId.trim()) {
-      setAddFriendResult({
-        success: false,
-        message: '친구 ID를 입력해주세요.'
-      });
-      return;
-    }
-
-    // 숫자만 입력 가능하도록 검증
-    if (!/^\d+$/.test(friendId.trim())) {
-      setAddFriendResult({
-        success: false,
-        message: '친구 ID는 숫자만 입력 가능합니다.'
-      });
-      return;
-    }
-
+  const handleAddFriend = async (userId: string) => {
     try {
       setAddingFriend(true);
       setAddFriendResult(null);
@@ -262,17 +314,15 @@ function MyFriendPage() {
       const baseUrl = import.meta.env.VITE_API_BASE_URL || 'https://j12d107.p.ssafy.io/api';
 
       // API 요청 로깅
-      console.log(`친구 추가 API 호출: ${baseUrl}/friends/${friendId.trim()}`);
+      console.log(`친구 추가 API 호출: ${baseUrl}/friends/${userId}`);
 
-      // 요청 형식 변경: 쿼리 파라미터로 전송
       const response = await axios({
         method: 'post',
-        url: `${baseUrl}/friends/${friendId.trim()}`,
+        url: `${baseUrl}/friends/${userId}`,
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
         },
-        // POST 요청이지만 본문이 비어있는 경우를 처리하기 위해 빈 객체 전달
         data: {}
       });
 
@@ -291,6 +341,9 @@ function MyFriendPage() {
         setTimeout(() => {
           handleCloseAddFriendModal();
         }, 1500);
+
+        // 친구 목록 새로고침
+        await fetchFriends();
       } else {
         setAddFriendResult({
           success: false,
@@ -332,13 +385,20 @@ function MyFriendPage() {
       }
     } finally {
       setAddingFriend(false);
+    }
+  };
 
-      // 성공/실패와 관계없이 친구 목록 다시 불러오기
-      // (API 호출이 실제론 성공했을 수 있으므로)
-      try {
-        await fetchFriends();
-      } catch (refreshErr) {
-        console.error('친구 목록 새로고침 실패:', refreshErr);
+  // 친구 목록 검색창 엔터 키 핸들러
+  const handleMainSearchKeyDown = (_e: React.KeyboardEvent<HTMLInputElement>) => {
+    // 메인 검색창에서는 특별한 동작 필요 없음 (이미 onChange로 필터링됨)
+  };
+
+  // 친구 추가 모달 검색창 엔터 키 핸들러
+  const handleSearchKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault(); // 폼 제출 방지
+      if (searchQuery.trim()) {
+        handleSearchFriends();
       }
     }
   };
@@ -371,7 +431,17 @@ function MyFriendPage() {
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="max-w-4xl mx-auto">
-        <h1 className="text-2xl font-bold mb-6">내 친구</h1>
+        <h1 className="text-2xl font-bold mb-3">내 친구</h1>
+
+        <div className="bg-primary-color/10 rounded-lg p-4 mb-6 border border-primary-color/20 shadow-sm">
+          <p className="text-gray-700 mb-2">
+            <span className="font-medium text-primary-color">친구</span>와 함께하는 나만의 기뷰 네트워크
+          </p>
+          <p className="text-sm text-gray-600">
+            친구를 추가하면 친구만 볼 수 있는 <span className="text-primary-color font-medium">비밀 펀딩</span>을 확인할 수 있어요.
+            특별한 사람들과 함께하는 의미 있는 기뷰를 시작해보세요.
+          </p>
+        </div>
 
         {/* 검색창 */}
         <div className="mb-6">
@@ -381,6 +451,7 @@ function MyFriendPage() {
               placeholder="친구 이름 검색..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
+              onKeyDown={handleMainSearchKeyDown}
               className="w-full border border-gray-300 rounded-md py-2 px-4 pl-10 focus:outline-none focus:ring-2 focus:ring-primary-color focus:border-transparent"
             />
             <div className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">
@@ -415,9 +486,9 @@ function MyFriendPage() {
                       <h3 className="text-lg font-medium text-gray-800">{friend.nickName}</h3>
                     </div>
                     <button
-                      onClick={handleFundingClick}
-                      className="px-4 py-2 bg-primary-color text-white rounded-md text-sm hover:bg-primary-color/90 transition">
-                      펀딩하기
+                      onClick={() => handleDeleteFriend(friend.userId)}
+                      className="px-4 py-2 bg-red-500 text-white rounded-md text-sm hover:bg-red-600 transition">
+                      삭제
                     </button>
                   </div>
                 ))
@@ -479,50 +550,92 @@ function MyFriendPage() {
         {/* 친구 추가 모달 */}
         {showAddFriendModal && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div className="bg-white rounded-lg p-6 max-w-sm w-full">
-              <div className="text-center">
-                <h3 className="text-lg font-medium text-gray-900 mb-4">친구 추가하기</h3>
-                <div className="mb-4">
+            <div className="bg-white rounded-lg p-6 max-w-md w-full max-h-[80vh] overflow-y-auto">
+              <div className="text-center mb-6">
+                <h3 className="text-xl font-bold text-gray-900">친구 추가하기</h3>
+                <p className="text-gray-600 text-sm mt-1">사용자 이름으로 검색하여 친구를 추가하세요</p>
+              </div>
+
+              {/* 검색 UI */}
+              <div>
+                <div className="flex mb-4">
                   <input
                     type="text"
-                    placeholder="친구 ID를 입력하세요"
-                    value={friendId}
-                    onChange={handleFriendIdChange}
-                    disabled={addingFriend}
-                    className="w-full border border-gray-300 rounded-md py-2 px-4 focus:outline-none focus:ring-2 focus:ring-primary-color focus:border-transparent"
+                    placeholder="친구 이름 검색..."
+                    value={searchQuery}
+                    onChange={handleSearchQueryChange}
+                    onKeyDown={handleSearchKeyDown}
+                    className="flex-1 border border-gray-300 rounded-l-md py-2 px-4 focus:outline-none focus:ring-2 focus:ring-primary-color focus:border-transparent"
                   />
-                </div>
-
-                {addFriendResult && (
-                  <div className={`mb-4 text-sm ${addFriendResult.success ? 'text-green-600' : 'text-red-600'}`}>
-                    {addFriendResult.message}
-                  </div>
-                )}
-
-                <div className="flex space-x-2">
                   <button
-                    onClick={handleCloseAddFriendModal}
-                    disabled={addingFriend}
-                    className="flex-1 bg-gray-200 text-gray-800 py-2 px-4 rounded-md hover:bg-gray-300 transition"
+                    onClick={handleSearchFriends}
+                    disabled={searchLoading || !searchQuery.trim()}
+                    className="bg-primary-color text-white py-2 px-4 rounded-r-md hover:bg-primary-color/90 transition"
                   >
-                    취소
-                  </button>
-                  <button
-                    onClick={handleAddFriend}
-                    disabled={addingFriend}
-                    className="flex-1 bg-primary-color text-white py-2 px-4 rounded-md hover:bg-primary-color/90 transition flex items-center justify-center"
-                  >
-                    {addingFriend ? (
-                      <>
-                        <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                        </svg>
-                        처리중...
-                      </>
-                    ) : '추가하기'}
+                    {searchLoading ? '검색 중...' : '검색'}
                   </button>
                 </div>
+
+                <div className="mb-6 border rounded-md overflow-hidden">
+                  {searchLoading ? (
+                    <div className="p-4 text-center text-gray-500">
+                      <div className="inline-block animate-spin h-5 w-5 border-2 border-primary-color border-t-transparent rounded-full mr-2"></div>
+                      검색 중...
+                    </div>
+                  ) : searchResults.length > 0 ? (
+                    <div className="divide-y divide-gray-200">
+                      {searchResults.map(user => (
+                        <div key={user.userId} className="flex items-center justify-between p-3 hover:bg-gray-50 transition">
+                          <div className="flex items-center">
+                            <img
+                              src={user.image || '/avatar.png'}
+                              alt={user.nickName}
+                              className="w-10 h-10 rounded-full mr-3 object-cover"
+                              onError={(e) => {
+                                e.currentTarget.src = "/avatar.png";
+                              }}
+                            />
+                            <div>
+                              <h4 className="text-sm font-medium">{user.nickName}</h4>
+                              <p className="text-xs text-gray-500">ID: {user.userId}</p>
+                            </div>
+                          </div>
+                          <button
+                            onClick={() => handleAddFriend(user.userId.toString())}
+                            disabled={addingFriend}
+                            className="ml-2 px-3 py-1 bg-primary-color text-white text-sm rounded-md hover:bg-primary-color/90 transition"
+                          >
+                            추가
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  ) : searchQuery && !searchLoading ? (
+                    <div className="p-4 text-center text-gray-500">
+                      검색 결과가 없습니다.
+                    </div>
+                  ) : (
+                    <div className="p-4 text-center text-gray-500">
+                      찾고 싶은 친구 이름을 입력하세요.
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {addFriendResult && (
+                <div className={`mb-4 text-sm ${addFriendResult.success ? 'text-green-600' : 'text-red-600'}`}>
+                  {addFriendResult.message}
+                </div>
+              )}
+
+              <div className="flex space-x-2">
+                <button
+                  onClick={handleCloseAddFriendModal}
+                  disabled={addingFriend}
+                  className="w-full bg-gray-200 text-gray-800 py-2 px-4 rounded-md hover:bg-gray-300 transition"
+                >
+                  닫기
+                </button>
               </div>
             </div>
           </div>
