@@ -13,11 +13,9 @@ interface ReviewItem {
   title?: string;
   author?: string;
   date?: string;
-  views?: number;
-  rating?: number;
   content?: string;
   image?: string;
-  authorFundingCount?: number;
+  creator?: boolean;
   // API 응답에 맞게 추가 필드 허용
   [key: string]: any;
 }
@@ -436,68 +434,58 @@ function FundingReviewPage() {
                 >
             <Link 
               to={`/funding/review/${item.id}`} 
-                    className="block bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-shadow border border-gray-100"
+              className="block bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-shadow border border-gray-100"
             >
                     <div className="flex flex-col md:flex-row p-0">
                 {/* 후기 이미지 */}
                       <div className="w-full md:w-64 h-48 md:h-36 flex-shrink-0 overflow-hidden">
                         <img 
-                          src={item.image || 'https://via.placeholder.com/400x300?text=No+Image'} 
+                          src={item.image || '/src/assets/images/default-finding-image.jpg'} 
                           alt={item.title || '후기 이미지'} 
                           className="w-full h-full object-cover hover:scale-110 transition-transform duration-500"
                   />
                 </div>
                 
                 {/* 후기 내용 */}
-                      <div className="flex-1 p-4">
-                        <div className="flex flex-col justify-between h-full">
-              <div>
-                            <div className="flex items-center justify-between mb-1">
-                              <h2 className="text-xl font-bold text-gray-800 group-hover:text-rose-500 line-clamp-1">
-                                {item.fundingTitle || item.title || (
-                                  <>
-                                    펀딩 후기 #{item.id}
-                                  </>
-                                )}
+                <div className="flex-1 p-4">
+                  <div className="flex flex-col justify-between h-full">
+                    <div>
+                      <div className="flex items-center justify-between mb-1">
+                        <h2 className="text-xl font-bold text-gray-800 group-hover:text-rose-500 line-clamp-1">
+                          {item.fundingTitle || item.title || (
+                            <>
+                              펀딩 후기 #{item.id}
+                            </>
+                          )}
                         </h2>
-                      <StarRating rating={item.rating} />
+                      </div>
+                      
+                      {/* 후기 내용 미리보기 */}
+                      <p className="text-gray-600 text-sm mb-2 line-clamp-2">
+                        {item.content || '내용이 없습니다.'}
+                      </p>
                     </div>
                     
-                    {/* 후기 내용 미리보기 */}
-                            <p className="text-gray-600 text-xs mb-2 line-clamp-2">
-                              {item.content || '내용이 없습니다.'}
-                    </p>
-                          </div>
-                    
-                          <div className="flex items-center justify-between text-xs">
-                            <div className="flex items-center space-x-2 text-gray-500">
-                      <span className="inline-flex items-center">
-                                <svg className="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                    <div className="flex flex-wrap items-center gap-2 text-xs">
+                      <div className="flex items-center bg-gray-100 px-2 py-1 rounded-full">
+                        <svg className="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
                           <path d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z"/>
                         </svg>
-                                {item.author || '익명'}
-                      </span>
-                      {/* 펀딩 참여 수 표시 */}
-                      <span className="text-rose-500 font-medium">
-                                {item.authorFundingCount || 0}회 펀딩 참여
-                      </span>
-                            </div>
-                            
-                            <div className="flex items-center space-x-2 text-gray-500">
-                              <span>{item.date || '날짜 정보 없음'}</span>
-                      <span>•</span>
-                      <span className="inline-flex items-center">
-                                <svg className="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
-                          <path d="M10 12a2 2 0 100-4 2 2 0 000 4z"/>
-                          <path fillRule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clipRule="evenodd"/>
-                        </svg>
-                                조회 {item.views || 0}
-                      </span>
-                            </div>
+                        {item.author || '익명'}
+                        {item.creator && (
+                          <span className="ml-1 bg-blue-100 text-blue-800 text-xs px-1.5 py-0.5 rounded-full">
+                            작성자
+                          </span>
+                        )}
+                      </div>
+                      
+                      <div className="bg-gray-100 px-2 py-1 rounded-full">
+                        {item.date || '날짜 정보 없음'}
+                      </div>
                     </div>
+                  </div>
+                </div>
               </div>
-            </div>
-          </div>
             </Link>
                 </motion.div>
           ))}
