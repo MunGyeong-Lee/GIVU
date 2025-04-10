@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useSearchParams, Link } from 'react-router-dom';
+import { useSearchParams, Link, useNavigate } from 'react-router-dom';
 import { searchProducts } from '../../services/product.service';
 
 // 검색 결과 상품 타입 정의
@@ -16,10 +16,12 @@ interface Product {
 const SearchPage = () => {
   const [searchParams] = useSearchParams();
   const query = searchParams.get('q') || '';
+  const navigate = useNavigate();
   
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState(query);
 
   // 검색 결과 가져오기
   useEffect(() => {
@@ -34,7 +36,7 @@ const SearchPage = () => {
         const productResults = await searchProducts(query);
         
         if (productResults.length === 0) {
-          setError('검색 결과가 없습니다.');
+          // 검색 결과가 없을 때 에러 메시지를 표시하지 않음
           setProducts([]);
           return;
         }
@@ -67,6 +69,18 @@ const SearchPage = () => {
     fetchSearchResults();
   }, [query]);
 
+  // 검색 처리 함수
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!searchQuery.trim()) return;
+    navigate(`/search?q=${encodeURIComponent(searchQuery)}`);
+  };
+
+  // 검색창 초기화
+  const clearSearch = () => {
+    setSearchQuery('');
+  };
+
   // 카테고리 이름 표시 (임시)
   const getCategoryName = (category: string) => {
     const categories: Record<string, string> = {
@@ -86,6 +100,49 @@ const SearchPage = () => {
 
   return (
     <div className="container mx-auto px-4 py-8">
+      {/* 헤더 영역 */}
+      <div className="flex flex-col md:flex-row items-center justify-between mb-8 gap-4">
+        {/* GIVUMALL 로고 */}
+        <Link to="/shopping" className="text-2xl font-bold text-pink-500 hover:text-pink-600 transition-colors">
+          GIVUMALL
+        </Link>
+        
+        {/* 검색창 */}
+        <form onSubmit={handleSearch} className="relative w-full md:w-96 flex">
+          <input 
+            type="text"
+            placeholder="상품명 또는 브랜드 입력"
+            className="w-full py-2.5 px-4 pr-10 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-pink-300 focus:border-transparent transition-all"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
+          <div className="absolute inset-y-0 right-0 flex items-center pr-2">
+            {searchQuery ? (
+              <button 
+                type="button"
+                onClick={clearSearch}
+                className="p-1 text-gray-400 hover:text-gray-600 transition-colors focus:outline-none"
+                aria-label="검색어 지우기"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            ) : (
+              <button 
+                type="submit"
+                className="p-1 text-gray-400 hover:text-gray-600 transition-colors focus:outline-none"
+                aria-label="검색"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+              </button>
+            )}
+          </div>
+        </form>
+      </div>
+      
       <h1 className="text-2xl font-bold mb-2">검색 결과</h1>
       <p className="text-gray-600 mb-6">
         <span className="font-medium">"{query}"</span>에 대한 검색 결과입니다.
@@ -102,19 +159,6 @@ const SearchPage = () => {
       {error && (
         <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4" role="alert">
           <span className="block sm:inline">{error}</span>
-        </div>
-      )}
-      
-      {/* 검색 결과 없음 */}
-      {!loading && !error && products.length === 0 && (
-        <div className="text-center py-12 bg-gray-50 rounded-lg">
-          <div className="text-5xl mb-4">🔍</div>
-          <h3 className="text-xl font-bold text-gray-700 mb-2">
-            검색 결과가 없습니다
-          </h3>
-          <p className="text-gray-500">
-            다른 키워드로 검색해보세요.
-          </p>
         </div>
       )}
       

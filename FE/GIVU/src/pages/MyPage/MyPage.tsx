@@ -48,25 +48,25 @@ import axios from "axios";
 // ];
 
 // 임시 후기 데이터 - 더 많은 데이터 추가 (페이지네이션 테스트용)
-const MY_REVIEWS = [
-  {
-    id: 1,
-    title: "노란색이 된 도현이의 속옷을 사주세요 !!!",
-    date: "2025.03.10",
-    author: "닉네임",
-    views: 235,
-    image: "https://via.placeholder.com/150x100?text=속옷이미지"
-  },
-  {
-    id: 2,
-    title: "제 워너비 복장입니다 사주세요 !!!",
-    date: "2025.03.01",
-    author: "정도현",
-    views: 124,
-    image: "https://via.placeholder.com/150x100?text=복장이미지"
-  },
-  // 추가 데이터는 실제 구현 시 API에서 가져올 것입니다
-];
+// const MY_REVIEWS = [
+//   {
+//     id: 1,
+//     title: "노란색이 된 도현이의 속옷을 사주세요 !!!",
+//     date: "2025.03.10",
+//     author: "닉네임",
+//     views: 235,
+//     image: "https://via.placeholder.com/150x100?text=속옷이미지"
+//   },
+//   {
+//     id: 2,
+//     title: "제 워너비 복장입니다 사주세요 !!!",
+//     date: "2025.03.01",
+//     author: "정도현",
+//     views: 124,
+//     image: "https://via.placeholder.com/150x100?text=복장이미지"
+//   },
+//   // 추가 데이터는 실제 구현 시 API에서 가져올 것입니다
+// ];
 
 // 임시 찜 목록 데이터
 // const WISHLIST_ITEMS = [
@@ -89,7 +89,7 @@ const MY_REVIEWS = [
 // ];
 
 // 탭 메뉴 타입 정의
-type TabType = "created" | "participated" | "liked" | "wishlist" | "purchased";
+type TabType = "created" | "participated" | "wishlist" | "purchased";
 
 // Funding 타입을 먼저 정의
 type Funding = {
@@ -98,6 +98,8 @@ type Funding = {
   progress: number;
   tag: string;
   imageUrl: string;
+  createdAt?: string; // 생성일 추가
+  updatedAt?: string; // 업데이트일 추가
 };
 
 // 구매 상품 타입 정의
@@ -694,17 +696,26 @@ const MyPage = () => {
   const [loadingMyFundings, setLoadingMyFundings] = useState(false);
   const [loadingParticipatedFundings, setLoadingParticipatedFundings] = useState(false);
   
-  // 스크롤 함수 타입 정의 변경
+  // CSS 애니메이션 속성을 담은 스타일 객체
+  const scrollbarStyle = {
+    scrollbarWidth: 'none' as const,
+    msOverflowStyle: 'none' as const,
+    WebkitOverflowScrolling: 'touch' as const, // 부드러운 스크롤을 위한 속성
+    transition: 'all 0.3s ease-in-out'
+  };
+
+  // 스크롤 함수 수정
   const scrollHorizontally = (ref: React.RefObject<HTMLDivElement> | any, direction: 'left' | 'right') => {
     if (ref && ref.current) {
-      const scrollAmount = 300;
+      // 스크롤 양을 화면 너비의 80%로 설정하여 더 자연스럽게 이동
+      const scrollAmount = window.innerWidth * 0.8;
       const scrollLeft = direction === 'left' 
         ? ref.current.scrollLeft - scrollAmount 
         : ref.current.scrollLeft + scrollAmount;
       
       ref.current.scrollTo({
         left: scrollLeft,
-        behavior: 'smooth'
+        behavior: 'smooth' // CSS 스크롤 동작 설정
       });
     }
   };
@@ -857,9 +868,15 @@ const MyPage = () => {
       
       if (response.data && Array.isArray(response.data)) {
         // 찜한 상품만 필터링
-        const wishlist = response.data.filter((product: any) => 
-          favoriteProductIds.includes(String(product.id))
-        );
+        const wishlist = response.data
+          .filter((product: any) => favoriteProductIds.includes(String(product.id)))
+          // 최신순 정렬 (createdAt 기준 내림차순)
+          .sort((a: { createdAt?: string }, b: { createdAt?: string }) => {
+            const dateA = new Date(a.createdAt || 0).getTime();
+            const dateB = new Date(b.createdAt || 0).getTime();
+            return dateB - dateA;
+          });
+          
         setWishlistProducts(wishlist);
       }
     } catch (error) {
@@ -907,8 +924,15 @@ const MyPage = () => {
           description: item.description
         }));
         
-        console.log('변환된 구매 상품 데이터:', products);
-        setPurchasedProducts(products);
+        // 최신순 정렬 (생성일 기준 내림차순)
+        const sortedProducts = products.sort((a: PurchasedProduct, b: PurchasedProduct) => {
+          const dateA = new Date(a.createdAt || 0).getTime();
+          const dateB = new Date(b.createdAt || 0).getTime();
+          return dateB - dateA; // 내림차순
+        });
+        
+        console.log('변환된 구매 상품 데이터:', sortedProducts);
+        setPurchasedProducts(sortedProducts);
       } else {
         console.log('구매한 상품 데이터 없음 또는 응답 형식 불일치');
         setPurchasedProducts([]);
@@ -972,10 +996,30 @@ const MyPage = () => {
             imageUrl: item.image && item.image.length > 0 
               ? item.image[0] 
               : item.product.image || 'https://via.placeholder.com/300x200?text=펀딩이미지',
+            createdAt: item.createdAt, // 생성일 추가
+            updatedAt: item.updatedAt // 업데이트일 추가
           };
         });
         
-        setMyFundings(fundings);
+        // 최신순으로 정렬 (생성일 기준 내림차순)
+        const sortedFundings = fundings.sort((a: Funding, b: Funding) => {
+          // 1. createdAt 날짜를 기준으로 정렬 (최신이 앞으로)
+          const aCreated = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+          const bCreated = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+          
+          if (aCreated !== bCreated) {
+            return bCreated - aCreated; // 내림차순 (최신이 앞으로)
+          }
+          
+          // 2. updatedAt이 있다면 이를 기준으로 정렬
+          const aUpdated = a.updatedAt ? new Date(a.updatedAt).getTime() : 0;
+          const bUpdated = b.updatedAt ? new Date(b.updatedAt).getTime() : 0;
+          
+          return bUpdated - aUpdated; // 내림차순 (최신이 앞으로)
+        });
+        
+        console.log('정렬된 생성 펀딩 데이터:', sortedFundings);
+        setMyFundings(sortedFundings);
       } else {
         setMyFundings([]);
       }
@@ -1041,12 +1085,31 @@ const MyPage = () => {
               title: item.title,
               progress: progress,
               tag: `${progress}% 달성`,
-              imageUrl: imageUrl
+              imageUrl: imageUrl,
+              createdAt: item.createdAt, // 생성일 추가
+              updatedAt: item.updatedAt // 업데이트일 추가
             };
           });
         
-        console.log('변환된 참여 펀딩 데이터:', fundings);
-        setParticipatedFundings(fundings);
+        // 최신순으로 정렬 (생성일 기준 내림차순)
+        const sortedFundings = fundings.sort((a: Funding, b: Funding) => {
+          // 1. createdAt 날짜를 기준으로 정렬 (최신이 앞으로)
+          const aCreated = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+          const bCreated = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+          
+          if (aCreated !== bCreated) {
+            return bCreated - aCreated; // 내림차순 (최신이 앞으로)
+          }
+          
+          // 2. updatedAt이 있다면 이를 기준으로 정렬
+          const aUpdated = a.updatedAt ? new Date(a.updatedAt).getTime() : 0;
+          const bUpdated = b.updatedAt ? new Date(b.updatedAt).getTime() : 0;
+          
+          return bUpdated - aUpdated; // 내림차순 (최신이 앞으로)
+        });
+        
+        console.log('정렬된 참여 펀딩 데이터:', sortedFundings);
+        setParticipatedFundings(sortedFundings);
       } else {
         console.log('참여한 펀딩 데이터 없음 또는 응답 형식 불일치');
         setParticipatedFundings([]);
@@ -1088,7 +1151,7 @@ const MyPage = () => {
             <div className="absolute -left-4 top-1/2 transform -translate-y-1/2 z-10">
               <button 
                 onClick={() => handleScrollLeft(createdFundingsRef)}
-                className="p-2 bg-cusBlack text-white rounded-full shadow-md hover:bg-cusBlack-light"
+                className="p-2 bg-cusBlack text-white rounded-full shadow-md hover:bg-cusBlack-light transition-all duration-300"
                 aria-label="이전 항목"
               >
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -1105,13 +1168,13 @@ const MyPage = () => {
             <div 
               ref={createdFundingsRef}
               className="flex overflow-x-auto scrollbar-hide gap-4 py-4 pl-2 pr-6"
-              style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+              style={{ ...scrollbarStyle }}
             >
                 {myFundings.map((funding) => (
                 <Link 
                   key={funding.id} 
                   to={`/funding/${funding.id}`} 
-                  className="flex-shrink-0"
+                  className="flex-shrink-0 transform transition-transform duration-300 hover:scale-105"
                   style={{ width: '300px' }}
                 >
                   <FundingCard funding={funding} />
@@ -1134,7 +1197,7 @@ const MyPage = () => {
             <div className="absolute -right-4 top-1/2 transform -translate-y-1/2 z-10">
               <button 
                 onClick={() => handleScrollRight(createdFundingsRef)}
-                className="p-2 bg-cusBlack text-white rounded-full shadow-md hover:bg-cusBlack-light"
+                className="p-2 bg-cusBlack text-white rounded-full shadow-md hover:bg-cusBlack-light transition-all duration-300"
                 aria-label="다음 항목"
               >
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -1152,7 +1215,7 @@ const MyPage = () => {
             <div className="absolute -left-4 top-1/2 transform -translate-y-1/2 z-10">
               <button 
                 onClick={() => handleScrollLeft(participatedFundingsRef)}
-                className="p-2 bg-cusBlack text-white rounded-full shadow-md hover:bg-cusBlack-light"
+                className="p-2 bg-cusBlack text-white rounded-full shadow-md hover:bg-cusBlack-light transition-all duration-300"
                 aria-label="이전 항목"
               >
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -1169,13 +1232,13 @@ const MyPage = () => {
             <div 
               ref={participatedFundingsRef}
               className="flex overflow-x-auto scrollbar-hide gap-4 py-4 pl-2 pr-6"
-              style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+              style={{ ...scrollbarStyle }}
             >
                 {participatedFundings.map((funding) => (
                 <Link 
                   key={funding.id} 
                   to={`/funding/${funding.id}`} 
-                  className="flex-shrink-0"
+                  className="flex-shrink-0 transform transition-transform duration-300 hover:scale-105"
                   style={{ width: '300px' }}
                 >
                   <FundingCard funding={funding} />
@@ -1198,7 +1261,7 @@ const MyPage = () => {
             <div className="absolute -right-4 top-1/2 transform -translate-y-1/2 z-10">
               <button 
                 onClick={() => handleScrollRight(participatedFundingsRef)}
-                className="p-2 bg-cusBlack text-white rounded-full shadow-md hover:bg-cusBlack-light"
+                className="p-2 bg-cusBlack text-white rounded-full shadow-md hover:bg-cusBlack-light transition-all duration-300"
                 aria-label="다음 항목"
               >
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -1217,7 +1280,7 @@ const MyPage = () => {
             <div className="absolute -left-4 top-1/2 transform -translate-y-1/2 z-10">
               <button 
                 onClick={() => handleScrollLeft(purchasedProductsRef)}
-                className="p-2 bg-cusBlack text-white rounded-full shadow-md hover:bg-cusBlack-light"
+                className="p-2 bg-cusBlack text-white rounded-full shadow-md hover:bg-cusBlack-light transition-all duration-300"
                 aria-label="이전 항목"
               >
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -1234,13 +1297,13 @@ const MyPage = () => {
               <div 
                 ref={purchasedProductsRef}
                 className="flex overflow-x-auto scrollbar-hide gap-4 py-4 pl-2 pr-6"
-                style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+                style={{ ...scrollbarStyle }}
               >
                 {purchasedProducts.map((product) => (
                   <Link 
                     key={product.id} 
                     to={`/shopping/product/${product.id}`} 
-                    className="flex-shrink-0"
+                    className="flex-shrink-0 transform transition-transform duration-300 hover:scale-105"
                     style={{ width: '280px' }}
                   >
                     <div className="bg-white border border-cusGray rounded-xl overflow-hidden hover:shadow-lg transition-all transform hover:-translate-y-1 h-full">
@@ -1289,7 +1352,7 @@ const MyPage = () => {
               <div className="absolute -right-4 top-1/2 transform -translate-y-1/2 z-10">
                 <button 
                   onClick={() => handleScrollRight(purchasedProductsRef)}
-                  className="p-2 bg-cusBlack text-white rounded-full shadow-md hover:bg-cusBlack-light"
+                  className="p-2 bg-cusBlack text-white rounded-full shadow-md hover:bg-cusBlack-light transition-all duration-300"
                   aria-label="다음 항목"
                 >
                   <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -1298,54 +1361,6 @@ const MyPage = () => {
                 </button>
               </div>
             )}
-          </div>
-        );
-        
-      case "liked":
-        const paginatedReviews = getPaginatedItems(MY_REVIEWS, currentPage, itemsPerPage);
-        
-        return MY_REVIEWS.length > 0 ? (
-          <div>
-            <div className="space-y-4">
-              {paginatedReviews.map((review) => (
-                <Link 
-                  key={review.id} 
-                  to={`/funding/review/${review.id}`}
-                  className="block hover:bg-cusGray-light transition-colors rounded-xl"
-                >
-                  <div className="flex gap-6 p-4 border border-cusGray bg-white rounded-lg">
-                    <div className="w-32 h-24 flex-shrink-0 rounded-lg overflow-hidden">
-                      <img 
-                        src={review.image} 
-                        alt={review.title} 
-                        className="w-full h-full object-cover"
-                      />
-                    </div>
-                    <div className="flex-1">
-                      <h2 className="text-xl font-bold mb-2 text-cusBlack">{review.title}</h2>
-                      <div className="text-sm text-cusBlack-light">
-                        작성자: <span className="text-cusBlue font-medium">{review.author}</span> | {review.date} | 조회 {review.views}
-                      </div>
-                    </div>
-                  </div>
-                </Link>
-              ))}
-            </div>
-            
-            {/* 페이지네이션 컴포넌트 */}
-            <Pagination 
-              totalItems={MY_REVIEWS.length}
-              itemsPerPage={itemsPerPage}
-              currentPage={currentPage}
-              onPageChange={handlePageChange}
-            />
-          </div>
-        ) : (
-          <div className="bg-cusGray-light rounded-xl py-10 text-center">
-            <p className="text-cusBlack-light font-medium">아직 작성한 후기가 없습니다.</p>
-            <button className="mt-4 px-6 py-2 bg-cusBlue text-white rounded-full hover:bg-cusBlue-light transition-colors text-sm">
-              첫 후기 작성하기
-            </button>
           </div>
         );
         
@@ -2039,84 +2054,67 @@ const MyPage = () => {
                 />
               </div>
               <div className="text-center">
-                <button className="px-4 py-2 bg-btnPink hover:bg-btnPink-hover text-black hover:text-white rounded-full text-sm transition-colors shadow-md">
-                  프로필 수정
-                </button>
+                <h2 className="text-xl font-bold text-cusBlack">{userData.nickname}</h2>
               </div>
             </div>
             
             <div className="flex-1 w-full">
-              <div className="bg-cusLightBlue-lighter rounded-2xl p-6 mb-6 shadow-md">
-                <div className="flex flex-col md:flex-row md:justify-between md:items-center border-b border-cusGray pb-4 mb-4">
-                  <div className="mr-auto md:ml-4">
-                    <h1 className="text-2xl font-bold text-cusBlack">{userData.nickname}</h1>
-                  </div>
-                  {hasAccount ? (
-                    <div className="flex gap-3">
-                      {/* 버튼 위치 이동 - 상단 버튼 제거 */}
-                    </div>
-                  ) : (
-                    <button
-                      onClick={() => setIsAccountModalOpen(true)}
-                      className="px-5 py-2 border border-cusBlue rounded-full text-sm bg-btnLightBlue text-cusBlue hover:bg-btnLightBlue-hover hover:text-white transition-colors shadow-sm"
-                    >
-                      연동 계좌 생성하기
-                    </button>
-                  )}
-                </div>
+              <div className="bg-cusLightBlue-lighter rounded-2xl p-6 mb-6 shadow-md relative">
+                {/* 새로고침 버튼 - 네모 컴포넌트 오른쪽 상단에 배치 */}
+                <button
+                  onClick={refreshBalances}
+                  className="absolute top-3 right-3 px-3 py-1.5 text-sm bg-white border border-gray-300 text-gray-700 rounded-full hover:bg-gray-100 transition-colors shadow-sm flex items-center"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                  </svg>
+                  새로고침
+                </button>
                 
                 {hasAccount ? (
-                  <div className="flex flex-col md:flex-row items-center md:items-start justify-start gap-10 py-4 md:pl-4">
-                    <div className="text-center md:text-left bg-blue-50 p-4 rounded-lg shadow-sm">
+                  <div className="flex flex-wrap md:flex-nowrap items-center justify-between gap-4 py-2">
+                    {/* 내 기뷰페이 */}
+                    <div className="flex-1 min-w-[200px] text-center md:text-left bg-blue-50 p-3 rounded-lg shadow-sm">
                       <div className="flex items-center justify-center md:justify-start mb-2">
-                        <span className="text-yellow-500 text-3xl mr-2">👑</span>
-                        <h3 className="text-xl font-bold text-cusBlue">내 기뷰페이</h3>
+                        <span className="text-yellow-500 text-2xl mr-2">👑</span>
+                        <h3 className="font-bold text-cusBlue">내 기뷰페이</h3>
                       </div>
-                      <p className="text-3xl font-bold text-cusBlack">{userData?.balance?.toLocaleString()}<span className="text-xl ml-1">원</span></p>
-                      <div className="flex justify-center md:justify-start gap-2 mt-3">
+                      <p className="text-2xl font-bold text-cusBlack">{userData?.balance?.toLocaleString()}<span className="text-lg ml-1">원</span></p>
+                      <div className="flex justify-center md:justify-start gap-2 mt-2">
                         <button
                           onClick={() => handleTransactionClick('deposit')}
-                          className="px-4 py-1.5 text-sm bg-cusBlue text-white rounded-full hover:bg-cusBlue-dark transition-colors shadow-sm"
+                          className="px-3 py-1 text-xs bg-cusBlue text-white rounded-full hover:bg-cusBlue-dark transition-colors shadow-sm"
                         >
-                          충전하기
+                          충전
                         </button>
                         <button
                           onClick={() => handleTransactionClick('withdrawal')}
-                          className="px-4 py-1.5 text-sm bg-yellow-500 text-white rounded-full hover:bg-yellow-600 transition-colors shadow-sm"
+                          className="px-3 py-1 text-xs bg-yellow-500 text-white rounded-full hover:bg-yellow-600 transition-colors shadow-sm"
                         >
-                          출금하기
+                          출금
                         </button>
+                      </div>
                     </div>
-                    </div>
-                    <div className="text-center md:text-left bg-gray-50 p-4 rounded-lg shadow-sm">
-                      <p className="text-cusBlack-light mb-2">내 연동 계좌 (한국은행)</p>
-                      <p className="text-xl font-bold text-cusBlack">{accountNumber}</p>
-                      <p className="text-lg font-bold text-cusBlack-light mt-1">잔액: <span className="text-green-600">{bankBalance.toLocaleString()} 원</span></p>
-                    </div>
-                    <div className="flex items-end justify-center mt-4 md:mt-auto">
-                      <button
-                        onClick={refreshBalances}
-                        className="px-4 py-2 text-sm bg-white border border-gray-300 text-gray-700 rounded-full hover:bg-gray-100 transition-colors shadow-sm flex items-center"
-                      >
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                        </svg>
-                        잔액 새로고침
-                      </button>
+                    
+                    {/* 내 연동 계좌 - 회색 배경 제거 및 붙이기 */}
+                    <div className="flex-1 min-w-[200px] text-center md:text-left pl-3 border-l border-gray-200">
+                      <h3 className="font-bold text-cusBlack-light mb-1">내 연동계좌 (한국은행)</h3>
+                      <p className="text-lg font-bold text-cusBlack">{accountNumber}</p>
+                      <p className="text-sm font-bold text-green-600 mt-1">잔액: {bankBalance.toLocaleString()} 원</p>
                     </div>
                   </div>
                 ) : (
-                  <div className="flex flex-col items-center justify-center py-10">
-                    <div className="w-16 h-16 rounded-full bg-blue-100 flex items-center justify-center mb-4">
-                      <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-cusBlue" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <div className="flex flex-col items-center justify-center py-8">
+                    <div className="w-14 h-14 rounded-full bg-blue-100 flex items-center justify-center mb-3">
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-7 w-7 text-cusBlue" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
                       </svg>
                     </div>
                     <h3 className="text-lg font-bold mb-2">기뷰페이 계좌가 없습니다</h3>
-                    <p className="text-gray-500 mb-4 text-center">후원과 상품 구매를 편리하게 이용하려면<br />기뷰페이 계좌를 만들어보세요!</p>
+                    <p className="text-gray-500 mb-3 text-center">후원과 상품 구매를 편리하게 이용하려면<br />기뷰페이 계좌를 만들어보세요!</p>
                     <button 
                       onClick={() => setIsAccountModalOpen(true)}
-                      className="bg-cusBlue hover:bg-cusBlue-dark text-white px-6 py-2 rounded-full transition-colors"
+                      className="bg-cusBlue hover:bg-cusBlue-dark text-white px-5 py-2 rounded-full transition-colors"
                     >
                       계좌 만들기
                     </button>
@@ -2126,10 +2124,10 @@ const MyPage = () => {
             </div>
           </div>
           
-          {/* 탭 메뉴 - 글자 색상 강조 */}
-          <div className="mb-8 mt-10">
-            <div className="mb-4">
-              <div className="flex flex-wrap justify-center md:justify-start gap-2 md:gap-4" role="group">
+          {/* 탭 내비게이션 */}
+          <div className="bg-white rounded-xl shadow-sm p-3 mb-6">
+            <div className="overflow-x-auto no-scrollbar">
+              <div className="flex flex-nowrap min-w-full space-x-2 px-2">
                 <button
                   className={`px-5 py-3 text-base font-bold rounded-full transition-all ${
                     activeTab === "created" 
@@ -2153,22 +2151,12 @@ const MyPage = () => {
                 <button
                   className={`px-5 py-3 text-base font-bold rounded-full transition-all ${
                     activeTab === "purchased" 
-                      ? "bg-cusBlack text-green-500 shadow-lg" 
+                      ? "bg-cusBlack text-cusBlue shadow-lg" 
                       : "bg-cusGray-light text-cusBlack-light hover:bg-cusGray"
                   }`}
                   onClick={() => setActiveTab("purchased")}
                 >
                   구매한 상품
-                </button>
-                <button
-                  className={`px-5 py-3 text-base font-bold rounded-full transition-all ${
-                    activeTab === "liked" 
-                      ? "bg-cusBlack text-success shadow-lg" 
-                      : "bg-cusGray-light text-cusBlack-light hover:bg-cusGray"
-                  }`}
-                  onClick={() => setActiveTab("liked")}
-                >
-                  내가 쓴 후기
                 </button>
                 <button
                   className={`px-5 py-3 text-base font-bold rounded-full transition-all ${

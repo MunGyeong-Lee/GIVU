@@ -137,7 +137,7 @@ function FundingReviewDetailPage() {
             {review.creator && (
               <span className="ml-1 bg-blue-100 text-blue-800 text-xs px-1.5 py-0.5 rounded-full">
                 작성자
-              </span>
+          </span>
             )}
           </div>
           
@@ -152,11 +152,11 @@ function FundingReviewDetailPage() {
         {review.images.length > 0 && (
           <div className="flex justify-center p-4">
             <div className="max-w-lg w-full">
-              <img
+            <img
                 src={review.images[0]}
                 alt={`후기 이미지`}
                 className="w-full h-auto rounded-lg object-contain max-h-[400px] mx-auto"
-              />
+            />
             </div>
           </div>
         )}

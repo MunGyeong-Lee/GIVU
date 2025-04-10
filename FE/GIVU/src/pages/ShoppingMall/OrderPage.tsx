@@ -349,7 +349,7 @@ const OrderPage = () => {
         // 특정 오류 메시지 확인 및 사용자 친화적인 메시지 표시
         if (apiError.message && apiError.message.includes('이미 참여한 펀딩입니다')) {
           setIsPasswordModalOpen(false);
-          alert('이미 상품을 구매하셨습니다. 마이페이지에서 확인하실 수 있습니다.');
+          alert('상품을 구매하셨습니다. 마이페이지에서 확인하실 수 있습니다.');
           navigate('/mypage');
           return; // 함수 종료
         }
@@ -373,7 +373,7 @@ const OrderPage = () => {
       
       // 사용자 친화적인 오류 메시지 표시
       if (error.message.includes('이미 참여한 펀딩입니다')) {
-        alert('이미 상품을 구매하셨습니다. 마이페이지에서 확인하실 수 있습니다.');
+        alert('상품을 구매하셨습니다. 마이페이지에서 확인하실 수 있습니다.');
         navigate('/mypage');
       } else {
         alert(error.message);
