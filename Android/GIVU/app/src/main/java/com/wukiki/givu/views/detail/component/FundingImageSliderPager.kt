@@ -21,13 +21,15 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import coil.compose.AsyncImage
 import coil.compose.SubcomposeAsyncImage
+import com.wukiki.domain.model.FundingDetail
 import com.wukiki.givu.R
 import com.wukiki.givu.ui.suit
 import com.wukiki.givu.util.shimmerEffect
 
 @Composable
-fun FundingImageSliderPager(images: List<String>) {
+fun FundingImageSliderPager(images: List<String>, funding: FundingDetail) {
     val pagerState = rememberPagerState(
         initialPage = 0,
         initialPageOffsetFraction = 0F,
@@ -39,12 +41,20 @@ fun FundingImageSliderPager(images: List<String>) {
     ) {
         when (images.isEmpty()) {
             true -> {
-                Image(
-                    painter = painterResource(id = R.drawable.ic_logo),
-                    contentDescription = "Error",
+//                Image(
+//                    painter = painterResource(id = R.drawable.ic_logo),
+//                    contentDescription = "Error",
+//                    modifier = Modifier
+//                        .clip(RoundedCornerShape(10.dp))
+//                        .aspectRatio(4F / 3F)
+//                )
+                AsyncImage(
+                    model = funding.productImage,
+                    contentDescription = null,
                     modifier = Modifier
                         .clip(RoundedCornerShape(10.dp))
-                        .aspectRatio(4F / 3F)
+                        .aspectRatio(4F / 3F),
+                    contentScale = ContentScale.FillHeight
                 )
             }
 
