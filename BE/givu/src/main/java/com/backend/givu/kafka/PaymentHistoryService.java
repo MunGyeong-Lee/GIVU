@@ -10,6 +10,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.List;
 
 @Service
@@ -30,8 +31,10 @@ public class PaymentHistoryService {
 
         // 2. PaymentHistoryDTO DTO로 매핑
         List<PaymentHistoryDTO> paymentHistorys = payments.stream()
+                .sorted(Comparator.comparing(Payment::getDate).reversed())
                 .map(PaymentHistoryDTO::new)
                 .toList();
+
         return paymentHistorys;
 
     }

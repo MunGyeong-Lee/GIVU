@@ -274,11 +274,11 @@ public class FundingService {
     /**
      * 펀딩 결제 확인
      */
-    public PaymentResultDTO paymentResult(Long userId, int transactiontId){
+    public PaymentResultDTO paymentResult(Long userId, int transactionId){
 
         User user = userRepository.findById(userId)
                 .orElseThrow(()-> new EntityNotFoundException("유저를 찾을 수 없습니다."));
-        Payment payment = paymentRepository.findById(transactiontId)
+        Payment payment = paymentRepository.findById(transactionId)
                 .orElseThrow(()-> new EntityNotFoundException("해당 결제 이력을 찾을 수 없습니다."));
 
         // 유저가 본인 결제인지 검증 (선택사항)
