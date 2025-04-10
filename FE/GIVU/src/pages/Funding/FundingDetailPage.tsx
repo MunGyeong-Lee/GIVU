@@ -227,7 +227,11 @@ const FundingDetailPage = () => {
                            fundingData.status === 'Completed' ||
                            fundingData.status === '환불' ||
                            fundingData.status === 'REFUNDED' ||
-                           fundingData.status === 'Refunded';
+                           fundingData.status === 'Refunded' ||
+                           fundingData.status === '취소' ||
+                           fundingData.status === 'CANCELED' ||
+                           fundingData.status === 'Canceled' ||
+                           fundingData.status === 'canceled';
     
     console.log(`펀딩 상태 완료 여부: ${completedStatus ? '완료됨' : '진행중'}, 현재 상태: ${fundingData.status}`);
     
@@ -244,7 +248,11 @@ const FundingDetailPage = () => {
                         fundingData.status === 'Completed' ||
                         fundingData.status === '환불' || 
                         fundingData.status === 'REFUNDED' || 
-                        fundingData.status === 'Refunded';
+                        fundingData.status === 'Refunded' ||
+                        fundingData.status === '취소' ||
+                        fundingData.status === 'CANCELED' ||
+                        fundingData.status === 'Canceled' ||
+                        fundingData.status === 'canceled';
     
     // 100% 달성된 경우 자동으로 완료 상태로 간주
     const is100PercentDone = isFundingCompleted;
@@ -268,7 +276,11 @@ const FundingDetailPage = () => {
     // 환불 상태 확인 (50% 미만이고 환불 버튼 클릭한 경우)
     const isRefunded = fundingData.status === '환불' || 
                       fundingData.status === 'REFUNDED' || 
-                      fundingData.status === 'Refunded';
+                      fundingData.status === 'Refunded' ||
+                      fundingData.status === '취소' ||
+                      fundingData.status === 'CANCELED' ||
+                      fundingData.status === 'Canceled' ||
+                      fundingData.status === 'canceled';
 
     // 성공 처리된 상태 확인 (50% 이상이고 성공 처리 버튼 클릭한 경우)
     const isSuccessCompleted = fundingData.status === '완료' || 
@@ -276,6 +288,35 @@ const FundingDetailPage = () => {
                               fundingData.status === 'Completed';
 
     if (isRefunded) {
+      // 취소 상태인 경우 달성률에 따라 메시지 구분
+      if (fundingData.status === '취소' || 
+          fundingData.status === 'CANCELED' || 
+          fundingData.status === 'Canceled' || 
+          fundingData.status === 'canceled') {
+        
+        // 달성률 50% 이상이면 성공 처리로 표시
+        if (fundingPercentage >= 50) {
+          return {
+            text: "펀딩 성공 처리",
+            bgColor: "bg-purple-100",
+            textColor: "text-purple-800",
+            borderColor: "border-purple-200",
+            description: "펀딩이 성공적으로 처리되었습니다. 모금된 금액이 GIVU Pay로 이체되었습니다."
+          };
+        } 
+        // 달성률 50% 미만이면 환불 완료로 표시
+        else {
+          return {
+            text: "환불 완료",
+            bgColor: "bg-gray-100",
+            textColor: "text-gray-800",
+            borderColor: "border-gray-200",
+            description: "펀딩이 환불 처리되었습니다. 참여자들에게 모든 금액이 환불되었습니다."
+          };
+        }
+      }
+      
+      // 기존 환불 상태 처리
       return {
         text: "환불 완료",
         bgColor: "bg-gray-100",
@@ -321,7 +362,7 @@ const FundingDetailPage = () => {
         description: "목표 금액의 달성을 위해 펀딩이 진행 중입니다. 50% 미만인 경우 환불 처리가 가능합니다."
       };
     }
-  }, [isFundingCompleted, isHalfCompleted, fundingData]);
+  }, [isFundingCompleted, isHalfCompleted, fundingData, fundingPercentage]);
 
   // 펀딩 상세 정보 가져오기 함수 정의 (useCallback으로 감싸기)
   const fetchFundingDetail = useCallback(async () => {
@@ -386,6 +427,15 @@ const FundingDetailPage = () => {
             
             // 펀딩 데이터 설정
             setFundingData(response.data.data);
+            
+            // 상태값 로그 추가
+            console.log('현재 펀딩 상태값:', response.data.data.status);
+            console.log('펀딩 상태 전체 정보:', {
+              status: response.data.data.status,
+              isCompleted: response.data.data.fundedAmount >= response.data.data.product?.price,
+              fundedAmount: response.data.data.fundedAmount,
+              targetAmount: response.data.data.product?.price
+            });
             
             // 상품 구매 여부와 후기 작성 여부 확인
             if (response.data.data.hasOwnProperty('hasPurchased')) {
@@ -2043,7 +2093,7 @@ const FundingDetailPage = () => {
             </div>
           )}
 
-          {isCompleted ? (
+          {isCompleted || isStatusCompleted ? (
             <div className="bg-yellow-50 border border-yellow-200 text-yellow-700 px-4 py-3 rounded-lg">
               <p>이 펀딩은 완료 처리되어 더 이상 편지를 보낼 수 없습니다.</p>
             </div>
@@ -2201,7 +2251,7 @@ const FundingDetailPage = () => {
             </div>
           </div>
 
-          {isCompleted ? (
+          {isCompleted || isStatusCompleted ? (
             <div className="bg-yellow-50 border border-yellow-200 text-yellow-700 px-4 py-3 rounded-lg">
               <p>이 펀딩은 완료 처리되어 더 이상 선물하기를 할 수 없습니다.</p>
             </div>
