@@ -45,6 +45,7 @@ public class LetterDetailDTO {
 
         if (isPrivate && !(this.creator || isFundingOwner)) {
             this.comment = "비밀 댓글입니다.";
+            this.image = null;
             this.hidden = true;
         } else {
             this.comment = letter.getComment();
