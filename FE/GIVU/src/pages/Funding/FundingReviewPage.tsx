@@ -460,6 +460,9 @@ function FundingReviewPage() {
                         </h2>
                       </div>
                       
+                      {/* 별점 표시 추가 */}
+                      {item.rating && <StarRating rating={item.rating} />}
+                      
                       {/* 후기 내용 미리보기 */}
                       <p className="text-gray-600 text-sm mb-2 line-clamp-2">
                         {item.content || '내용이 없습니다.'}
