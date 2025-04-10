@@ -12,7 +12,7 @@ data class FundingTransferEntity(
     val message: String,
 
     @Json(name = "data")
-    val data: FundingTransferInfoEntity
+    val data: FundingTransferInfoEntity?
 )
 
 @JsonClass(generateAdapter = true)
