@@ -1837,9 +1837,9 @@ const FundingDetailPage = () => {
                     <input
                       type="radio"
                       name="letterAccess"
-                      value="비공개"
-                      checked={letterAccess === '비공개'}
-                      onChange={() => setLetterAccess('비공개')}
+                      value="비밀"
+                      checked={letterAccess === '비밀'}
+                      onChange={() => setLetterAccess('비밀')}
                       className="form-radio h-4 w-4 text-purple-600"
                     />
                     <span className="ml-2 text-gray-700">비공개</span>
