@@ -81,7 +81,7 @@ services:
       - POSTGRES_DB=givudb
       - POSTGRES_USER=d107
       - POSTGRES_PASSWORD=d107password
-      - TZ: Asia/Seoul
+      - TZ=Asia/Seoul
     volumes:
       - pgdata:/var/lib/postgresql/data
       - /etc/localtime:/etc/localtime:ro
