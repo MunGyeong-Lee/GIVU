@@ -32,17 +32,50 @@ pipeline {
             }
         }
 
+//        stage('Build Spring Boot') {
+//            steps {
+//                dir('BE/givu') {
+//                    sh 'chmod +x gradlew'
+//                    //sh './gradlew build -Dspring.profiles.active=test --no-daemon'
+//                    sh './gradlew build -x test -Dspring.profiles.active=test --no-daemon'
+//                }
+//                sh "docker build -t ${SPRING_IMAGE} -f BE/givu/Dockerfile BE/givu"
+//                
+//            }
+//        }
+
+
+
         stage('Build Spring Boot') {
             steps {
                 dir('BE/givu') {
-                    sh 'chmod +x gradlew'
-                    //sh './gradlew build -Dspring.profiles.active=test --no-daemon'
-                    sh './gradlew build -x test -Dspring.profiles.active=test --no-daemon'
-                }
-                sh "docker build -t ${SPRING_IMAGE} -f BE/givu/Dockerfile BE/givu"
-                
-            }
+                    withCredentials([file(credentialsId: 'spring_application', variable: 'SPRING_YML')]) {
+                        sh '''
+                            echo "[INFO] 복사 중..."
+                            cp $SPRING_YML src/main/resources/application.yml
+                            echo "[DEBUG] application.yml 내용:"
+                            cat src/main/resources/application.yml
+                        '''
+                    }
+
+                sh 'chmod +x gradlew'
+                sh './gradlew build -x test -Dspring.profiles.active=test --no-daemon'
+
+                // Docker build
+                sh "docker build -t ${SPRING_IMAGE} -f Dockerfile ."
         }
+    }
+}
+
+
+
+
+
+
+
+
+
+
 
         stage('Build React') {
             steps {
