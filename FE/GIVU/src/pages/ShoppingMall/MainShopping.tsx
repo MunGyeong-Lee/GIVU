@@ -112,7 +112,7 @@ const MainShopping = () => {
   
   // 무한 스크롤을 위한 상태
   const [page, setPage] = useState(1);
-  const [itemsPerPage] = useState(8); // 한 번에 보여줄 상품 수
+  const [itemsPerPage] = useState(20); // 한 번에 보여줄 상품 수를 20개로 증가
   const [hasMore, setHasMore] = useState(true);
   
   // ref 정의
@@ -131,26 +131,80 @@ const MainShopping = () => {
 
   // 필터 적용 함수 - 카테고리와 가격대 필터를 모두 적용
   const applyFilters = (allProducts: Product[]) => {
-    let result = [...allProducts];
+    // 깊은 복사를 통해 원본 배열과의 참조 관계를 끊음
+    let result = JSON.parse(JSON.stringify(allProducts)) as Product[];
+    
+    console.log("필터링 전 상품 수:", result.length);
+    if (result.length > 0) {
+      console.log("첫 번째 상품: ", result[0].productName, "가격:", result[0].price, "타입:", typeof result[0].price);
+    }
     
     // 카테고리 필터 적용
     if (selectedCategory && selectedCategory !== 'all') {
-      result = result.filter(product => product.category === selectedCategory);
+      console.log(`카테고리 필터 적용: ${selectedCategory}`);
+      result = result.filter(product => {
+        const match = product.category === selectedCategory;
+        return match;
+      });
     }
     
     // 가격대 필터 적용
     if (selectedPriceRange !== null && selectedPriceRange !== 1) {
       const selectedRange = PRICE_RANGES.find(range => range.id === selectedPriceRange);
       if (selectedRange) {
+        console.log(`가격대 필터 적용: ${selectedRange.name}, 최소: ${selectedRange.min}, 최대: ${selectedRange.max}`);
+        
         result = result.filter(product => {
-          if (selectedRange.min !== null && selectedRange.max !== null) {
-            return product.price >= selectedRange.min && product.price < selectedRange.max;
-          } else if (selectedRange.min !== null) {
-            return product.price >= selectedRange.min;
-          } else if (selectedRange.max !== null) {
-            return product.price < selectedRange.max;
+          // 상품 가격이 숫자인지 확인
+          const price = typeof product.price === 'number' ? product.price : Number(product.price);
+          
+          if (isNaN(price)) {
+            console.warn(`유효하지 않은 가격: ${product.productName}, 가격: ${product.price}`);
+            return false;
           }
-          return true;
+          
+          let match = true;
+          
+          if (selectedRange.min !== null && selectedRange.max !== null) {
+            match = price >= selectedRange.min && price < selectedRange.max;
+          } else if (selectedRange.min !== null) {
+            match = price >= selectedRange.min;
+          } else if (selectedRange.max !== null) {
+            match = price < selectedRange.max;
+          }
+          
+          return match;
+        });
+      }
+    }
+    
+    // 정렬 로직을 별도 함수로 분리 - 가격이 문자열인 경우도 처리
+    const sortByPrice = (products: Product[]): Product[] => {
+      return [...products].sort((a, b) => {
+        // 상품 가격이 숫자인지 확인하고 변환
+        const priceA = typeof a.price === 'number' ? a.price : Number(a.price);
+        const priceB = typeof b.price === 'number' ? b.price : Number(b.price);
+        
+        // 디버깅: 비정상적인 가격 로그
+        if (isNaN(priceA) || isNaN(priceB)) {
+          console.warn("정렬 중 비정상 가격:", a.productName, priceA, b.productName, priceB);
+        }
+        
+        return priceA - priceB;
+      });
+    };
+    
+    // 가격대별 필터 선택한 경우 항상 가격 오름차순으로 정렬
+    if (selectedPriceRange !== null && selectedPriceRange !== 1) {
+      result = sortByPrice(result);
+      
+      // 디버깅: 정렬 후 로그 출력
+      console.log(`필터링 및 정렬 후 상품 수: ${result.length}`);
+      if (result.length > 0) {
+        const lowestProducts = result.slice(0, Math.min(3, result.length));
+        console.log("정렬 후 가장 낮은 가격 상품들:");
+        lowestProducts.forEach((p, i) => {
+          console.log(`${i+1}. ${p.productName}: ${p.price}원 (${typeof p.price})`);
         });
       }
     }
@@ -169,7 +223,7 @@ const MainShopping = () => {
         {
           params: {
             page: pageNum,
-            size: 10,
+            size: 20, // 한 번에 가져오는 상품 수를 20개로 증가
             sort: 'createdAt,desc'
           }
         }
@@ -200,7 +254,7 @@ const MainShopping = () => {
         // 초기 필터링된 상품 목록 설정
         setFilteredProducts(productsWithFavorites);
         // 초기 표시할 상품 목록 설정
-        setDisplayedProducts(productsWithFavorites.slice(0, itemsPerPage));
+        setDisplayedProducts(productsWithFavorites);
         
         // 베스트 상품 설정 (별점 순 -> 가격 순)
         const bestProductsList = [...productsWithFavorites]
@@ -224,11 +278,11 @@ const MainShopping = () => {
         // 필터링된 상품 목록에도 추가 (필터 적용)
         setFilteredProducts(prev => applyFilters([...prev, ...productsWithFavorites]));
         // 표시할 상품 목록 업데이트
-        setDisplayedProducts(prev => [...prev, ...productsWithFavorites.slice(0, itemsPerPage)]);
+        setDisplayedProducts(prev => [...prev, ...productsWithFavorites]);
       }
 
       // 페이지네이션 처리
-      setHasMore(productsData.length === 10); // 10개가 있으면 다음 페이지가 있다고 가정
+      setHasMore(productsData.length === 20); // 20개가 있으면 다음 페이지가 있다고 가정
       setPage(pageNum);
     } catch (err) {
       console.error('상품을 불러오는 중 오류가 발생했습니다:', err);
@@ -269,7 +323,14 @@ const MainShopping = () => {
     
     // 필터 적용
     if (products.length > 0) {
+      console.log("가격대 필터 적용:", priceRangeId);
       const filtered = applyFilters(products);
+      
+      console.log("필터링 후 상품 개수:", filtered.length);
+      if (filtered.length > 0) {
+        console.log("필터링 후 첫 번째 상품:", filtered[0].productName, filtered[0].price);
+      }
+      
       setFilteredProducts(filtered);
       setDisplayedProducts(filtered.slice(0, itemsPerPage));
       setHasMore(filtered.length > itemsPerPage);
@@ -286,105 +347,9 @@ const MainShopping = () => {
     setSelectedPriceRange(null);
     
     setFilteredProducts(products);
-    setDisplayedProducts(products.slice(0, itemsPerPage));
-    setHasMore(products.length > itemsPerPage);
+    setDisplayedProducts(products); // 모든 상품을 표시하도록 수정
+    setHasMore(products.length > 0); // 상품이 있으면 더 불러올 수 있음
     setPage(1);
-  };
-
-  // 더 많은 상품 로드하기 - 수정
-  const loadMoreProducts = () => {
-    if (!hasMore || loading) return;
-    
-    const nextPage = page + 1;
-    const startIndex = page * itemsPerPage;
-    const endIndex = startIndex + itemsPerPage;
-    
-    // 이미 필터링된 상품 목록 사용
-    if (startIndex >= filteredProducts.length) {
-      setHasMore(false);
-      return;
-    }
-    
-    setLoading(true);
-    
-    setTimeout(() => {
-      const newDisplayedProducts = [
-        ...displayedProducts,
-        ...filteredProducts.slice(startIndex, endIndex)
-      ];
-      
-      setDisplayedProducts(newDisplayedProducts);
-      setPage(nextPage);
-      
-      // 더 불러올 상품이 있는지 확인
-      setHasMore(endIndex < filteredProducts.length);
-      setLoading(false);
-    }, 500);
-  };
-
-  // 검색 처리 함수
-  const handleSearch = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!searchQuery.trim()) return;
-    
-    setIsSearching(true);
-    setLoading(true);
-    setError(null);
-    
-    try {
-      const results = await searchProducts(searchQuery);
-      
-      // 검색 결과가 없는 경우
-      if (results.length === 0) {
-        setFilteredProducts([]);
-        setDisplayedProducts([]);
-        setHasMore(false);
-        setError('검색 결과가 없습니다.');
-      } else {
-        // API 결과를 로컬 Product 타입으로 변환
-        const formattedResults = results.map(item => ({
-          id: Number(item.id),
-          productName: item.productName,
-          price: item.price,
-          image: item.image,
-          favorite: item.favorite || false,
-          star: item.star || 0,
-          views: 0, // 기본값 설정
-          description: item.description || '',
-          createdAt: item.createdAt || '',
-          payments: [],
-          category: item.category
-        }));
-        
-        setSearchResults(formattedResults);
-        setFilteredProducts(formattedResults);
-        setDisplayedProducts(formattedResults.slice(0, itemsPerPage));
-        setHasMore(formattedResults.length > itemsPerPage);
-        setPage(1);
-      }
-    } catch (err) {
-      setFilteredProducts([]);
-      setDisplayedProducts([]);
-      setHasMore(false);
-      setError('상품 검색 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.');
-      console.error('검색 오류:', err);
-    } finally {
-      setLoading(false);
-      setIsSearching(true);
-      
-      // 결과 영역으로 스크롤
-      allProductsRef.current?.scrollIntoView({ behavior: 'smooth' });
-    }
-  };
-
-  // 검색창 초기화
-  const clearSearch = () => {
-    setSearchQuery('');
-    setIsSearching(false);
-    setSearchResults([]);
-    
-    // 필터 초기화
-    resetAllFilters();
   };
 
   // 인터섹션 옵저버 설정 (무한 스크롤용)
@@ -411,7 +376,114 @@ const MainShopping = () => {
         observer.unobserve(loadingRef.current);
       }
     };
-  }, [loadingRef, hasMore, loading]);
+  }, [loadingRef, hasMore, loading, filteredProducts, page]);
+
+  // 더 많은 상품 로드하기 - 수정
+  const loadMoreProducts = () => {
+    if (!hasMore || loading) return;
+    
+    // 현재 표시된 상품 수
+    const currentProductCount = displayedProducts.length;
+    
+    // 이미 모든 필터링된 상품이 표시되었다면 더 이상 로드하지 않음
+    if (currentProductCount >= filteredProducts.length) {
+      setHasMore(false);
+      return;
+    }
+    
+    setLoading(true);
+    
+    // 필터링이 적용된 경우 필터링된 상품에서 추가 항목을 가져옴
+    if (selectedCategory || selectedPriceRange !== null) {
+      // 다음 배치의 상품을 가져옴 (최대 itemsPerPage 개)
+      const nextBatch = filteredProducts.slice(
+        currentProductCount,
+        currentProductCount + itemsPerPage
+      );
+      
+      if (nextBatch.length > 0) {
+        // 현재 표시된 상품에 새 배치 추가
+        setDisplayedProducts(prev => [...prev, ...nextBatch]);
+        
+        // 더 불러올 상품이 있는지 확인
+        setHasMore(currentProductCount + nextBatch.length < filteredProducts.length);
+      } else {
+        setHasMore(false);
+      }
+      
+      setLoading(false);
+    } else {
+      // 필터링이 적용되지 않은 경우, API에서 다음 페이지 데이터를 가져옴
+      const nextPage = page + 1;
+      fetchProducts(nextPage);
+    }
+  };
+
+  // 검색 처리 함수
+  const handleSearch = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!searchQuery.trim()) return;
+    
+    setIsSearching(true);
+    setLoading(true);
+    setError(null);
+    
+    try {
+      const results = await searchProducts(searchQuery);
+      
+      // 검색 결과가 없는 경우
+      if (results.length === 0) {
+        setFilteredProducts([]);
+        setDisplayedProducts([]);
+        setHasMore(false);
+        // 에러 메시지 표시하지 않음
+        // setError('검색 결과가 없습니다.');
+      } else {
+        // API 결과를 로컬 Product 타입으로 변환
+        const formattedResults = results.map(item => ({
+          id: Number(item.id),
+          productName: item.productName,
+          price: item.price,
+          image: item.image,
+          favorite: item.favorite || false,
+          star: item.star || 0,
+          views: 0, // 기본값 설정
+          description: item.description || '',
+          createdAt: item.createdAt || '',
+          payments: [],
+          category: item.category
+        }));
+        
+        setSearchResults(formattedResults);
+        setFilteredProducts(formattedResults);
+        setDisplayedProducts(formattedResults); // 모든 검색 결과를 표시
+        setHasMore(false); // 이미 모든 검색 결과를 표시했으므로 false로 설정
+        setPage(1);
+      }
+    } catch (err) {
+      setFilteredProducts([]);
+      setDisplayedProducts([]);
+      setHasMore(false);
+      setError('상품 검색 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.');
+      console.error('검색 오류:', err);
+    } finally {
+      setLoading(false);
+      setIsSearching(true);
+      
+      // 결과 영역으로 스크롤
+      allProductsRef.current?.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
+
+  // 검색창 초기화
+  const clearSearch = () => {
+    setSearchQuery('');
+    setIsSearching(false);
+    setSearchResults([]);
+    
+    // 필터 초기화
+    resetAllFilters();
+  };
 
   // 첫 로드 시 상품 가져오기
   useEffect(() => {
@@ -455,8 +527,8 @@ const MainShopping = () => {
     if (products.length > 0) {
       const filtered = applyFilters(products);
       setFilteredProducts(filtered);
-      setDisplayedProducts(filtered.slice(0, itemsPerPage));
-      setHasMore(filtered.length > itemsPerPage);
+      setDisplayedProducts(filtered); // 필터링된 모든 상품을 표시
+      setHasMore(false); // 이미 모든 필터링된 상품을 표시했으므로 false로 설정
       setPage(1);
     }
   }, [selectedCategory, selectedPriceRange]);
@@ -625,34 +697,41 @@ const MainShopping = () => {
       {/* 헤더 영역 */}
       <header className="py-4 border-b border-gray-200 bg-white w-full">
         <div className="container mx-auto px-4 flex justify-between items-center">
-          <h1 className="text-2xl font-bold text-pink-500">GIVUMALL</h1>
+          <Link to="/shopping" className="text-2xl font-bold text-pink-500 hover:text-pink-600 transition-colors">
+            GIVUMALL
+          </Link>
           <form onSubmit={handleSearch} className="relative w-64 md:w-96 flex">
             <input 
               type="text"
               placeholder="상품명 또는 브랜드 입력"
-              className="w-full py-2 px-4 border border-gray-300 rounded-md"
+              className="w-full py-2.5 px-4 pr-10 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-pink-300 focus:border-transparent transition-all"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
-            {searchQuery && (
-              <button 
-                type="button"
-                onClick={clearSearch}
-                className="absolute right-10 top-1/2 transform -translate-y-1/2"
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
-            )}
-            <button 
-              type="submit"
-              className="absolute right-2 top-1/2 transform -translate-y-1/2"
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-              </svg>
-            </button>
+            <div className="absolute inset-y-0 right-0 flex items-center pr-2">
+              {searchQuery ? (
+                <button 
+                  type="button"
+                  onClick={clearSearch}
+                  className="p-1 text-gray-400 hover:text-gray-600 transition-colors focus:outline-none"
+                  aria-label="검색어 지우기"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              ) : (
+                <button 
+                  type="submit"
+                  className="p-1 text-gray-400 hover:text-gray-600 transition-colors focus:outline-none"
+                  aria-label="검색"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                  </svg>
+                </button>
+              )}
+            </div>
           </form>
         </div>
       </header>

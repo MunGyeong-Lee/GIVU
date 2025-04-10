@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { createReview } from '../../services/review.service';
+import { createReview, getFundingData } from '../../services/review.service';
 import { motion } from 'framer-motion';
 
 const FundingReviewWritePage = () => {
@@ -18,11 +18,39 @@ const FundingReviewWritePage = () => {
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [step, setStep] = useState(1);
+  
+  // 펀딩 상품 정보를 저장하기 위한 상태 추가
+  const [fundingData, setFundingData] = useState<any>(null);
+  const [fundingImage, setFundingImage] = useState<string>('/src/assets/images/default-finding-image.jpg');
+  const [isLoadingFunding, setIsLoadingFunding] = useState<boolean>(true);
 
   useEffect(() => {
     if (!fundingId) {
       navigate('/funding');
+      return;
     }
+    
+    // 펀딩 상품 정보 가져오기
+    const fetchFundingData = async () => {
+      try {
+        setIsLoadingFunding(true);
+        const data = await getFundingData(parseInt(fundingId));
+        setFundingData(data);
+        
+        // 펀딩 이미지가 있으면 저장
+        if (data.image) {
+          setFundingImage(data.image);
+        } else if (data.thumbnailImage) {
+          setFundingImage(data.thumbnailImage);
+        }
+      } catch (error) {
+        console.error('펀딩 정보를 가져오는데 실패했습니다:', error);
+      } finally {
+        setIsLoadingFunding(false);
+      }
+    };
+    
+    fetchFundingData();
   }, [fundingId, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -47,11 +75,11 @@ const FundingReviewWritePage = () => {
       setIsSubmitting(true);
       setError(null);
 
-      // 이미지가 없는 경우 기본 이미지 경로 사용
+      // 이미지가 없는 경우 펀딩 상품의 이미지를 기본 이미지로 사용
       const reviewData = {
         ...formData,
         fundingId: parseInt(fundingId),
-        defaultImagePath: formData.images.length === 0 ? "/src/assets/images/default-finding-image.jpg" : undefined
+        defaultImagePath: formData.images.length === 0 ? fundingImage : undefined
       };
 
       await createReview(reviewData);
@@ -171,6 +199,28 @@ const FundingReviewWritePage = () => {
           >
             펀딩을 통해 얻은 경험을 공유해주세요. 여러분의 솔직한 후기가 다른 사용자들에게 도움이 됩니다.
           </motion.p>
+          
+          {/* 펀딩 상품 정보 표시 */}
+          {fundingData && (
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.6, delay: 0.3 }}
+              className="mt-4 bg-rose-50 p-3 rounded-lg inline-flex items-center"
+            >
+              <div className="w-10 h-10 rounded-md overflow-hidden mr-3 flex-shrink-0">
+                <img 
+                  src={fundingImage} 
+                  alt={fundingData.title || '펀딩 이미지'} 
+                  className="w-full h-full object-cover"
+                />
+              </div>
+              <div className="text-left">
+                <p className="text-sm font-medium text-gray-800">{fundingData.title || '펀딩 정보'}</p>
+                <p className="text-xs text-gray-500">펀딩 후기 작성 중</p>
+              </div>
+            </motion.div>
+          )}
         </div>
         
         <motion.div
@@ -216,7 +266,20 @@ const FundingReviewWritePage = () => {
           </motion.div>
         )}
 
-        {step === 1 && (
+        {isLoadingFunding && (
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="text-center py-8"
+          >
+            <div className="inline-block mx-auto mb-4">
+              <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-rose-500"></div>
+            </div>
+            <p className="text-gray-500">펀딩 정보를 불러오는 중...</p>
+          </motion.div>
+        )}
+
+        {!isLoadingFunding && step === 1 && (
           <motion.div
             variants={formVariants}
             initial="hidden"
@@ -253,7 +316,7 @@ const FundingReviewWritePage = () => {
           </motion.div>
         )}
 
-        {step === 2 && (
+        {!isLoadingFunding && step === 2 && (
           <motion.form 
             onSubmit={handleSubmit}
             variants={formVariants}
@@ -316,6 +379,24 @@ const FundingReviewWritePage = () => {
                   <p className="text-sm text-gray-600 mb-2">
                     이미지는 후기의 신뢰도를 높여줍니다. 펀딩 상품의 사진을 공유해주세요.
                   </p>
+                  
+                  {/* 이미지 안내 문구 추가 */}
+                  <p className="text-xs text-gray-500 mb-2">
+                    이미지를 등록하지 않으면 펀딩 상품 이미지가 자동으로 사용됩니다.
+                  </p>
+                  
+                  {!previewImage && fundingImage && (
+                    <div className="flex items-center mt-2">
+                      <div className="w-8 h-8 rounded overflow-hidden mr-2">
+                        <img 
+                          src={fundingImage} 
+                          alt="펀딩 이미지" 
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                      <span className="text-xs text-gray-600">기본 이미지로 사용됩니다</span>
+                    </div>
+                  )}
                   
                   {previewImage && (
                     <button
