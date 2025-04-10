@@ -58,7 +58,7 @@ public class FriendService {
     }
 
     public ApiResponse<List<UserSimpleInfoDTO>> searchFriends(String username) {
-        List<User> users = userRepository.findByUsernameContaining(username);
+        List<User> users = userRepository.findByNicknameContaining(username);
 
         List<UserSimpleInfoDTO> userList = users.stream()
                 .map(user -> new UserSimpleInfoDTO(user.getId(), user.getNickname(), user.getProfileImage()))
