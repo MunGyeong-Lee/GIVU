@@ -53,5 +53,16 @@ public class FriendController {
         return friendService.searchFriends(username);
     }
 
+    /**
+     * 친구 삭제
+     */
+    @Operation(summary = "친구 삭제", description = "친구를 삭제합니다.")
+    @DeleteMapping("/{friendId}")
+    public ResponseEntity<ApiResponse<Void>> removeFriend(@AuthenticationPrincipal CustomUserDetail userDetail,
+                                                          @PathVariable Long friendId) {
+        Long userId = userDetail.getId();
+        friendService.removeFriend(userId, friendId);
+        return ResponseEntity.ok(ApiResponse.success(null));
+    }
 
 }
