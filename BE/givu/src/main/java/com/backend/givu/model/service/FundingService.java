@@ -345,6 +345,7 @@ public class FundingService {
         Payment payment = Payment.builder()
                 .user(funding.getUser())
                 .relatedFunding(funding)
+                .relatedProduct(funding.getProduct())
                 .amount(funding.getFundedAmount())
                 .transactionType(PaymentsTransactionType.PRODUCT)
                 .status(PaymentsStatus.SUCCESS)
