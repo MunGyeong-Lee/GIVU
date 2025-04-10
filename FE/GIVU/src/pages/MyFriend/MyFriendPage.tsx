@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 
 // 친구 인터페이스 업데이트
 interface Friend {
@@ -15,7 +16,16 @@ interface ApiResponse {
   data: Friend[];
 }
 
+// 개발자 정보 타입 정의
+interface Developer {
+  id: number;
+  name: string;
+  role: string;
+  description: string;
+}
+
 function MyFriendPage() {
+  const navigate = useNavigate();
   // 친구 목록 상태
   const [friends, setFriends] = useState<Friend[]>([]);
   // 로딩 상태
@@ -34,6 +44,123 @@ function MyFriendPage() {
   const [addingFriend, setAddingFriend] = useState<boolean>(false);
   // 친구 추가 결과 메시지
   const [addFriendResult, setAddFriendResult] = useState<{ success: boolean, message: string } | null>(null);
+  // 로그인 필요 모달 상태
+  const [showLoginModal, setShowLoginModal] = useState<boolean>(false);
+  // 개발자 정보 모달 상태
+  const [showDeveloperModal, setShowDeveloperModal] = useState<boolean>(false);
+  // 개발자 정보 (임시 데이터)
+  const [developers] = useState<Developer[]>([
+    {
+      id: 7,
+      name: '신은찬',
+      role: 'FE',
+      description: '기뷰 서비스의 프론트엔드를 담당하고 있습니다.'
+    },
+    {
+      id: 9,
+      name: '박민수',
+      role: 'FE',
+      description: '기뷰 서비스의 프론트엔드를 담당하고 있습니다.'
+    },
+    {
+      id: 10,
+      name: '정지원',
+      role: 'Android',
+      description: '기뷰 서비스의 안드로이드를 담당하고 있습니다.'
+    },
+    {
+      id: 11,
+      name: '이문경',
+      role: 'BE',
+      description: '기뷰 서비스의 서버 및 인프라를 담당하고 있습니다.'
+    },
+    {
+      id: 12,
+      name: '장홍준',
+      role: '[팀장]',
+      description: '내가 팀장이야'
+    },
+    {
+      id: 13,
+      name: '장홍준',
+      role: 'Android',
+      description: '기뷰 서비스의 안드로이드를 담당하고 있습니다.'
+    },
+    {
+      id: 14,
+      name: '정도현',
+      role: 'BE',
+      description: '기뷰 서비스의 백엔드를 담당하고 있습니다.'
+    }
+  ]);
+
+  // 개발자 추가 핸들러
+  const handleAddDeveloper = async (developerId: number) => {
+    try {
+      setAddingFriend(true);
+
+      const token = localStorage.getItem('auth_token') || '';
+      const baseUrl = import.meta.env.VITE_API_BASE_URL || 'https://j12d107.p.ssafy.io/api';
+
+      const response = await axios({
+        method: 'post',
+        url: `${baseUrl}/friends/${developerId}`,
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        data: {}
+      });
+
+      // 응답 상태 코드로 성공 여부 판단
+      const isSuccess = response.status >= 200 && response.status < 300;
+
+      if (isSuccess) {
+        alert('개발자와 친구가 되었습니다!');
+        // 친구 목록 새로고침
+        await fetchFriends();
+      } else {
+        alert('친구 추가에 실패했습니다. 다시 시도해주세요.');
+      }
+    } catch (err: any) {
+      console.error('개발자 친구 추가 실패:', err);
+
+      if (err.response && err.response.status === 400) {
+        alert('이미 친구인 개발자입니다.');
+      } else {
+        alert('친구 추가 중 오류가 발생했습니다.');
+      }
+    } finally {
+      setAddingFriend(false);
+    }
+  };
+
+  // 개발자 모달 열기 핸들러
+  const handleOpenDeveloperModal = () => {
+    setShowDeveloperModal(true);
+  };
+
+  // 개발자 모달 닫기 핸들러
+  const handleCloseDeveloperModal = () => {
+    setShowDeveloperModal(false);
+  };
+
+  // 인증 확인 및 로그인 모달 표시
+  useEffect(() => {
+    const checkAuth = () => {
+      const token = localStorage.getItem('auth_token');
+      if (!token) {
+        setShowLoginModal(true);
+      }
+    };
+
+    checkAuth();
+  }, []);
+
+  // 로그인 페이지로 이동
+  const handleGoToLogin = () => {
+    navigate('/login');
+  };
 
   // 친구 목록 조회 API 호출
   useEffect(() => {
@@ -45,6 +172,14 @@ function MyFriendPage() {
     try {
       setLoading(true);
       const token = localStorage.getItem('auth_token') || '';
+
+      // 토큰이 없으면 API 호출하지 않음
+      if (!token) {
+        setError('로그인이 필요합니다.');
+        setLoading(false);
+        return;
+      }
+
       const baseUrl = import.meta.env.VITE_API_BASE_URL || 'https://j12d107.p.ssafy.io/api';
 
       const response = await axios.get<ApiResponse>(`${baseUrl}/friends`, {
@@ -208,6 +343,31 @@ function MyFriendPage() {
     }
   };
 
+  // 로그인이 필요하면 로그인 모달만 표시
+  if (showLoginModal) {
+    return (
+      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div className="bg-white rounded-lg p-6 max-w-sm w-full">
+          <div className="text-center">
+            <div className="mb-4 text-blue-500">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </div>
+            <h3 className="text-lg font-medium text-gray-900 mb-2">로그인이 필요합니다</h3>
+            <p className="text-gray-600 mb-4">친구 목록을 확인하려면 로그인이 필요합니다.</p>
+            <button
+              onClick={handleGoToLogin}
+              className="w-full bg-primary-color text-white py-2 px-4 rounded-md hover:bg-primary-color/90 transition"
+            >
+              로그인 페이지로 이동
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="max-w-4xl mx-auto">
@@ -270,8 +430,8 @@ function MyFriendPage() {
           )}
         </div>
 
-        {/* 친구 추가 버튼 */}
-        <div className="mt-6 text-center">
+        {/* 버튼 그룹 */}
+        <div className="mt-6 flex justify-center gap-4">
           <button
             onClick={handleOpenAddFriendModal}
             className="inline-flex items-center px-4 py-2 bg-primary-color text-white rounded-md hover:bg-primary-color/90 transition"
@@ -280,6 +440,16 @@ function MyFriendPage() {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
             </svg>
             친구 추가하기
+          </button>
+
+          <button
+            onClick={handleOpenDeveloperModal}
+            className="inline-flex items-center px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
+            </svg>
+            개발자랑 친구하기
           </button>
         </div>
 
@@ -353,6 +523,48 @@ function MyFriendPage() {
                     ) : '추가하기'}
                   </button>
                 </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* 개발자 정보 모달 */}
+        {showDeveloperModal && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-white rounded-lg p-6 max-w-md w-full max-h-[80vh] overflow-y-auto">
+              <div className="text-center mb-4">
+                <h3 className="text-xl font-bold text-gray-900">GIVU 개발자들</h3>
+                <p className="text-gray-600 text-sm mt-1">개발자와 친구가 되어보세요!</p>
+              </div>
+
+              <div className="divide-y divide-gray-200">
+                {developers.map(developer => (
+                  <div key={developer.id} className="py-4">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <h4 className="text-lg font-medium text-gray-800">{developer.name}</h4>
+                        <p className="text-sm text-gray-500">{developer.role}</p>
+                        <p className="text-sm text-gray-600 mt-1">{developer.description}</p>
+                      </div>
+                      <button
+                        onClick={() => handleAddDeveloper(developer.id)}
+                        disabled={addingFriend}
+                        className="ml-4 px-3 py-1 bg-indigo-600 text-white text-sm rounded-md hover:bg-indigo-700 transition"
+                      >
+                        친구 추가
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <div className="mt-6 text-center">
+                <button
+                  onClick={handleCloseDeveloperModal}
+                  className="px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300 transition"
+                >
+                  닫기
+                </button>
               </div>
             </div>
           </div>
