@@ -28,12 +28,21 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import coil.compose.AsyncImage
 import com.wukiki.givu.R
 import com.wukiki.givu.ui.pretendard
 import com.wukiki.givu.ui.suit
+import com.wukiki.givu.util.CommonUtils
 
 @Composable
-fun FriendFundingCard() {
+fun FriendFundingCard(
+    name: String,
+    category: String,
+    title: String,
+    price: Int,
+    percent: Int,
+    imageUrl: String
+) {
     Card(
         modifier = Modifier
             .width(250.dp)
@@ -51,19 +60,22 @@ fun FriendFundingCard() {
             Box(
                 modifier = Modifier
                     .height(190.dp)
-                    .background(Color.Gray)
+                    .background(Color.White)
                     .fillMaxWidth(),
             ) {
-//                AsyncImage(
-//                    model = painterResource(R.drawable.test_img_doll), contentDescription = null,
-//                    contentScale = ContentScale.FillWidth,
-//                )
-
-                Image(
-                    painter = painterResource(R.drawable.test_img_doll),
-                    contentDescription = null,
-                    contentScale = ContentScale.FillWidth
-                )
+                if (imageUrl != "") {
+                    AsyncImage(
+                        model = imageUrl,
+                        contentDescription = null,
+                        contentScale = ContentScale.FillWidth,
+                    )
+                } else {
+                    Image(
+                        painter = painterResource(R.drawable.ic_logo),
+                        contentDescription = null,
+                        contentScale = ContentScale.FillWidth
+                    )
+                }
 
                 Box(
                     modifier = Modifier
@@ -93,7 +105,7 @@ fun FriendFundingCard() {
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = "신창섭",
+                        text = name,
                         fontFamily = suit,
                         fontWeight = FontWeight.SemiBold,
                         fontSize = 16.sp,
@@ -102,12 +114,12 @@ fun FriendFundingCard() {
                     )
                     Spacer(Modifier.weight(1f))
 
-                    CategoryTag("집들이")
+                    CategoryTag(category)
                 }
                 Spacer(Modifier.height(8.dp))
 
                 Text(
-                    text = "인형 사주세요.",
+                    text = title,
                     fontFamily = suit,
                     fontWeight = FontWeight.Bold,
                     fontSize = 20.sp,
@@ -119,14 +131,14 @@ fun FriendFundingCard() {
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = "10,000원",
+                        text = CommonUtils.makeCommaPrice(price),
                         fontFamily = pretendard,
                         fontWeight = FontWeight.ExtraBold,
                         fontSize = 16.sp,
                     )
                     Spacer(Modifier.width(8.dp))
                     Text(
-                        text = "58% 달성",
+                        text = "${percent}% 달성",
                         fontFamily = pretendard,
                         fontWeight = FontWeight.Bold,
                         fontSize = 16.sp,
@@ -164,5 +176,5 @@ fun CategoryTag(category: String) {
 @Preview(showBackground = false)
 @Composable
 private fun PreviewTest() {
-    FriendFundingCard()
+//    FriendFundingCard()
 }

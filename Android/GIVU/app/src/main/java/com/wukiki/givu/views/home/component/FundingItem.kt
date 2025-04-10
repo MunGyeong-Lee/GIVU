@@ -76,7 +76,7 @@ fun FundingItem(
             ) {
                 // 이미지
                 SubcomposeAsyncImage(
-                    model = if (funding.images.isNotEmpty()) funding.images[0] else "",
+                    model = if (funding.images.isNotEmpty()) funding.images[0] else funding.productImage,
                     contentDescription = "Funding Image",
                     contentScale = ContentScale.Crop,
                     modifier = Modifier
