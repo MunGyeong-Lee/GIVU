@@ -202,6 +202,36 @@ const FundingDetailPage = () => {
     return isCompleted;
   }, [fundingData]);
 
+  // 펀딩 50% 이상 달성 여부 확인
+  const isHalfCompleted = useMemo(() => {
+    if (!fundingData?.product || !fundingData.product.price) return false;
+    
+    // 모금액이 목표금액의 50% 이상인지 확인
+    const isHalf = fundingData.fundedAmount >= (fundingData.product.price * 0.5);
+    console.log(`펀딩 50% 이상 달성 여부: ${isHalf ? '달성' : '미달성'}`);
+    
+    return isHalf;
+  }, [fundingData]);
+
+  // 펀딩이 완료 상태인지 확인 (status 기준)
+  const isStatusCompleted = useMemo(() => {
+    if (!fundingData) return false;
+    
+    // status가 '완료' 또는 'COMPLETED'인지 확인
+    const completedStatus = fundingData.status === '완료' || 
+                           fundingData.status === 'COMPLETED' || 
+                           fundingData.status === 'Completed';
+    
+    console.log(`펀딩 상태 완료 여부: ${completedStatus ? '완료됨' : '진행중'}, 현재 상태: ${fundingData.status}`);
+    
+    return completedStatus;
+  }, [fundingData]);
+
+  // 펀딩이 완료된 상태인지 (금액 기준 또는 상태 기준)
+  const isCompleted = useMemo(() => {
+    return isFundingCompleted || isStatusCompleted;
+  }, [isFundingCompleted, isStatusCompleted]);
+
   // 펀딩 상세 정보 가져오기 함수 정의 (useCallback으로 감싸기)
   const fetchFundingDetail = useCallback(async () => {
     try {
@@ -324,7 +354,7 @@ const FundingDetailPage = () => {
   // 펀딩 100% 달성 시 폭죽 효과 및 구매 페이지 자동 이동 처리
   useEffect(() => {
     // 펀딩이 100% 달성되었고, 데이터가 있으며, 현재 사용자가 펀딩 생성자인 경우에만 처리
-    if (fundingData && isFundingCompleted) {
+    if (fundingData && isCompleted) {
       // 1. 폭죽 효과 표시 (기존 코드)
       if (!showConfetti) {
         const fundingId = fundingData.fundingId.toString();
@@ -336,7 +366,7 @@ const FundingDetailPage = () => {
           
           if (typeof window !== 'undefined') {
             // 축하 메시지 표시
-            alert("🎉 축하합니다! 펀딩 목표 100%를 달성했습니다! 🎉");
+            alert("🎉 축하합니다! 펀딩 목표가 달성되었습니다! 🎉");
             
             // 동적으로 confetti 라이브러리 로드 (기존 코드와 동일)
             import('canvas-confetti').then((confettiModule) => {
@@ -379,41 +409,16 @@ const FundingDetailPage = () => {
         }
       }
       
-      // 2. 생성자인 경우 구매 페이지 자동 이동 처리
+      // 2. 생성자인 경우 구매 페이지 자동 이동 처리 부분 제거
+      // 확인 창을 표시하지 않도록 수정
       if (isCreator) {
-        console.log('펀딩 목표 달성 & 생성자 확인됨 - 상품 구매 페이지로 이동 가능');
+        console.log('펀딩 목표 달성 & 생성자 확인됨');
         
         const fundingId = fundingData.fundingId.toString();
-        const hasMoved = localStorage.getItem(`purchase_${fundingId}`);
-        
-        if (!hasMoved) {
-          // 1초 후 Confirm 창 표시 (폭죽과 alert가 먼저 표시되도록)
-          setTimeout(() => {
-            const shouldNavigate = window.confirm(
-              '펀딩 목표를 달성했습니다! 상품 구매 페이지로 이동하시겠습니까?\n(취소를 선택하면 나중에 상품 구매하기 버튼을 통해 이동할 수 있습니다)'
-            );
-            
-            if (shouldNavigate) {
-              // 상품 구매 페이지로 이동
-              if (fundingData && fundingData.product) {
-                navigate('/order', {
-                  state: {
-                    product: fundingData.product,
-                    isFundingProduct: true,
-                    totalAmount: 0,
-                    fundingId: fundingData.fundingId
-                  }
-                });
-              }
-            }
-            
-            // 페이지 이동 여부 저장 (다시 묻지 않도록)
-            localStorage.setItem(`purchase_${fundingId}`, 'true');
-          }, 1000);
-        }
+        localStorage.setItem(`purchase_${fundingId}`, 'true');
       }
     }
-  }, [fundingData, isFundingCompleted, isCreator, showConfetti, navigate]);
+  }, [fundingData, isCompleted, isCreator, showConfetti]);
 
   // 펀딩 생성자 확인 함수 수정
   useEffect(() => {
@@ -1157,8 +1162,15 @@ const FundingDetailPage = () => {
   const navigateToReviewPage = useCallback(() => {
     if (!fundingData) return;
     
-    // 후기 작성 페이지로 이동
-    navigate(`/funding/review/write?fundingId=${fundingData.fundingId}`);
+    // 후기 작성 페이지로 이동 (상품 이미지 정보 추가)
+    navigate(`/funding/review/write`, {
+      state: {
+        fundingId: fundingData.fundingId,
+        productImage: fundingData.product?.image || fundingData.image,
+        productName: fundingData.product?.productName || fundingData.title,
+        fundingTitle: fundingData.title
+      }
+    });
   }, [fundingData, navigate]);
 
   // 수정 모달 표시 함수
@@ -1319,6 +1331,83 @@ const FundingDetailPage = () => {
     setShowDeleteConfirmModal(true);
   };
 
+  // 펀딩 성공 처리 함수 추가
+  const handleFundingSuccess = async () => {
+    if (!fundingId || !fundingData) {
+      alert('펀딩 정보를 찾을 수 없습니다.');
+      return;
+    }
+
+    // 50% 미만인 경우 경고
+    if (!isHalfCompleted) {
+      alert('펀딩이 최소 50% 이상 달성되어야 성공 처리가 가능합니다.');
+      return;
+    }
+
+    try {
+      setIsLoading(true);
+      const baseUrl = import.meta.env.VITE_BASE_URL || import.meta.env.VITE_API_BASE_URL || 'https://j12d107.p.ssafy.io/api';
+      
+      // 토큰 확인
+      const token = localStorage.getItem('auth_token') || 
+                   localStorage.getItem('access_token') ||
+                   localStorage.getItem('token') ||
+                   localStorage.getItem('accessToken');
+                   
+      if (!token) {
+        alert('로그인이 필요합니다.');
+        setIsLoading(false);
+        return;
+      }
+      
+      // 성공 확인 모달
+      const isConfirmed = window.confirm(
+        `현재 모금액 ${fundingData.fundedAmount.toLocaleString()}원(${fundingPercentage}%)으로 펀딩을 성공 처리하시겠습니까?\n모금된 금액은 기뷰페이로 이체됩니다.`
+      );
+      
+      if (!isConfirmed) {
+        setIsLoading(false);
+        return;
+      }
+      
+      // 펀딩 성공 API 호출
+      const response = await axios.post(
+        `${baseUrl}/transfer/${fundingId}/success`,
+        {},
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        }
+      );
+      
+      console.log('펀딩 성공 처리 응답:', response.data);
+      
+      if (response.data.code === 'SUCCESS') {
+        alert('펀딩이 성공적으로 처리되었습니다. 모금액이 기뷰페이로 이체되었습니다.');
+        // 페이지 새로고침
+        fetchFundingDetail();
+      } else {
+        alert(`펀딩 성공 처리 중 오류가 발생했습니다: ${response.data.message || '알 수 없는 오류'}`);
+      }
+    } catch (error) {
+      console.error('펀딩 성공 처리 중 오류:', error);
+      
+      if (axios.isAxiosError(error)) {
+        if (error.response?.status === 403) {
+          alert('펀딩 성공 처리 권한이 없습니다.');
+        } else {
+          alert(`펀딩 성공 처리 중 오류가 발생했습니다: ${error.response?.data?.message || error.message || '알 수 없는 오류'}`);
+        }
+      } else {
+        alert('펀딩 성공 처리 중 알 수 없는 오류가 발생했습니다.');
+      }
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   // 로딩 중 표시
   if (loading) {
     return (
@@ -1366,845 +1455,881 @@ const FundingDetailPage = () => {
   }
 
   return (
-    <div className="max-w-3xl mx-auto px-4 py-6">
-      {/* 100% 달성 축하 메시지 */}
-      {isFundingCompleted && (
-        <div className="fixed top-0 left-0 w-full bg-purple-600 text-white py-2 text-center z-40 animate-pulse">
-          <span className="font-bold">축하합니다! 펀딩 목표 100%를 달성했습니다! 🎉</span>
-        </div>
-      )}
+    <main className="max-w-4xl mx-auto py-8 px-4 relative">
+      {/* 펀딩 완료 시 전체 페이지에 오버레이 추가 - 제거 */}
       
-      {/* 100% 달성 & 생성자인 경우 상품 구매 버튼 표시 - 상단 */}
-      {isFundingCompleted && isCreator && (
-        <div className="my-6 bg-green-50 border border-green-200 rounded-lg p-4 shadow-md">
-          <div className="flex flex-col sm:flex-row justify-between items-center">
-            <div className="mb-4 sm:mb-0">
-              <h3 className="text-lg font-bold text-green-800">펀딩 목표가 달성되었습니다!</h3>
-              <p className="text-green-600">이제 상품을 구매하고 후기를 작성할 수 있습니다.</p>
-            </div>
-            <div className="flex flex-col sm:flex-row gap-3">
-              <button
-                onClick={navigateToOrderPage}
-                className="px-6 py-3 bg-green-600 hover:bg-green-700 text-white font-bold rounded-lg transition-colors shadow-sm flex items-center"
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
-                </svg>
-                상품 구매하기
-              </button>
-              <button
-                onClick={navigateToReviewPage}
-                className="px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white font-bold rounded-lg transition-colors shadow-sm flex items-center"
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                </svg>
-                후기 작성하기
-              </button>
-            </div>
+      <div className={isFundingCompleted ? "pointer-events-none opacity-70" : ""}>
+        {/* 기존 내용은 그대로 유지하되, 펀딩 완료 시 전체 콘텐츠 영역에 pointer-events-none 적용 */}
+        {/* 100% 달성 축하 메시지 */}
+        {isCompleted && (
+          <div className="fixed top-0 left-0 w-full bg-purple-600 text-white py-2 text-center z-40 animate-pulse">
+            <span className="font-bold">축하합니다! 펀딩 목표가 달성되었습니다! 🎉</span>
           </div>
-        </div>
-      )}
-      
-      {/* 100% 달성 & 생성자가 아닌 일반 참여자의 경우 후기 작성 버튼 표시 - 제거 */}
-      
-      {/* 잔액 정보 표시 섹션 */}
-      <div className="mb-6 bg-white rounded-lg shadow overflow-hidden">
-        <div className="p-4 flex justify-between items-center bg-gray-50">
-          <h2 className="text-lg font-semibold">내 잔액 정보</h2>
-          <button 
-            onClick={fetchBalanceInfo} 
-            className="px-3 py-1.5 bg-black text-white rounded-md text-sm hover:bg-gray-800 transition"
-            disabled={balanceLoading}
-          >
-            {balanceLoading ? '로딩 중...' : '잔액 조회'}
-          </button>
-        </div>
+        )}
         
-        {showBalanceInfo && (
-          <div className="p-4">
-            <div className="mb-2">
-              <span className="font-semibold">GIVU Pay 잔액:</span> 
-              <span className="ml-2 text-primary-color">{balanceInfo.givuPayBalance.toLocaleString()} 원</span>
-            </div>
-            
-            {balanceInfo.accountNumber !== null ? (
-              <div>
-                <span className="font-semibold">연동 계좌 잔액:</span>
-                <span className="ml-2">{(balanceInfo.bankBalance || 0).toLocaleString()} 원</span>
-                {balanceInfo.accountNumber && (
-                  <span className="ml-2 text-xs text-gray-500">
-                    ({balanceInfo.accountNumber.replace(/(\d{4})(\d{4})(\d{4})(\d*)/, '$1-$2-$3-$4')})
-                  </span>
-                )}
+        {/* 100% 달성 & 생성자인 경우 상품 구매 버튼 표시 - 상단 */}
+        {isCompleted && isCreator && (
+          <div className="my-6 bg-green-50 border border-green-200 rounded-lg p-4 shadow-md">
+            <div className="flex flex-col sm:flex-row justify-between items-center">
+              <div className="mb-4 sm:mb-0">
+                <h3 className="text-lg font-bold text-green-800">펀딩 목표가 달성되었습니다!</h3>
+                <p className="text-green-600">이제 상품을 구매하고 후기를 작성할 수 있습니다.</p>
               </div>
-            ) : (
-              <div className="text-sm text-gray-500">
-                연동된 계좌가 없습니다. 마이페이지에서 계좌를 연동해 주세요.
-              </div>
-            )}
-          </div>
-        )}
-      </div>
-
-      {/* 이미지 슬라이더 섹션 */}
-      <div className="relative mb-6 bg-gray-100 rounded-lg overflow-hidden">
-        <div className="h-[400px] flex items-center justify-center">
-          <img
-            src={fundingData.product?.image || fundingData.image || "https://via.placeholder.com/800x500?text=이미지없음"}
-            alt={`${fundingData.title} 이미지`}
-            className="max-h-full object-contain"
-          />
-        </div>
-
-        {/* 좌우 화살표 버튼 - 이미지가 여러 개인 경우에만 표시 */}
-        {/* 현재는 이미지가 하나만 있으므로 주석 처리
-        <button
-          onClick={prevImage}
-          className="absolute left-4 top-1/2 transform -translate-y-1/2 bg-white/50 hover:bg-white/80 rounded-full p-2"
-          aria-label="이전 이미지"
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-          </svg>
-        </button>
-        <button
-          onClick={nextImage}
-          className="absolute right-4 top-1/2 transform -translate-y-1/2 bg-white/50 hover:bg-white/80 rounded-full p-2"
-          aria-label="다음 이미지"
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-          </svg>
-        </button>
-        */}
-
-        {/* 이미지 인디케이터 - 이미지가 여러 개인 경우에만 표시 */}
-        {/* 
-        <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-black/70 text-white px-3 py-1 rounded-full text-sm">
-          {currentImageIndex + 1}/{images.length}
-        </div>
-        */}
-      </div>
-
-      {/* 펀딩 요약 정보 수정 */}
-      <div className="border border-gray-200 rounded-lg p-6 mb-8">
-        <div className="flex justify-between items-center mb-2">
-          <h1 className="text-xl font-bold">{fundingData.title}</h1>
-          <span className="text-gray-600">{fundingData.categoryName || fundingData.category}</span>
-        </div>
-
-        <div className="flex flex-col md:flex-row justify-between mb-4">
-          <div>
-            <span className="text-gray-600">참여자: {fundingData.participantsNumber}명</span>
-            <span className="ml-4 px-2 py-1 bg-gray-100 rounded text-sm">{fundingData.status}</span>
-          </div>
-          <div className="md:text-right">
-            <div className="text-gray-600">
-              현재 모금액: {fundingData.fundedAmount.toLocaleString()}원 ({fundingPercentage}%)
-            </div>
-            <div className="font-bold">
-              목표 금액: {fundingData.product?.price.toLocaleString() || "설정되지 않음"}원
-            </div>
-          </div>
-        </div>
-
-        {/* 진행 바 */}
-        <div className="w-full bg-gray-200 rounded-full h-2.5 mb-3">
-          <div
-            className="bg-black h-2.5 rounded-full"
-            style={{ width: `${fundingPercentage}%` }}
-          ></div>
-        </div>
-
-        {/* 펀딩 생성자인 경우 수정/삭제 버튼 표시 */}
-        {isCreator && (
-          <div className="flex justify-end gap-2 mt-2">
-            <button
-              onClick={openEditModal}
-              className="px-3 py-1.5 bg-gray-700 hover:bg-gray-800 text-white rounded-md text-sm transition-colors flex items-center"
-              disabled={isFundingCompleted}
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
-              </svg>
-              수정
-            </button>
-            <button
-              onClick={showDeleteConfirmation}
-              className="px-3 py-1.5 bg-red-600 hover:bg-red-700 text-white rounded-md text-sm transition-colors flex items-center"
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-              </svg>
-              삭제
-            </button>
-          </div>
-        )}
-      </div>
-
-      {/* 대상자 소개 섹션 */}
-      <section className="mb-10">
-        <h2 className="text-xl font-bold mb-4">대상자 소개</h2>
-        <div className="flex flex-col md:flex-row gap-6">
-          <div className="border border-gray-200 rounded-lg p-6 md:w-1/2">
-            <div className="mb-4">
-              <div className="w-24 h-24 rounded-lg mb-4 overflow-hidden">
-                <img 
-                  src={fundingData.writer.image || "https://via.placeholder.com/200x200?text=프로필"}
-                  alt={`${fundingData.writer.nickName}의 프로필`}
-                  className="w-full h-full object-cover"
-                />
-              </div>
-              <div className="font-bold">{fundingData.writer.nickName}</div>
-              <div className="text-gray-600">{fundingData.categoryName || fundingData.category}</div>
-            </div>
-          </div>
-
-          <div className="border border-gray-200 rounded-lg p-6 md:w-1/2">
-            <h3 className="font-bold mb-4">펀딩 소개글</h3>
-            <p className="text-gray-600">{fundingData.description}</p>
-          </div>
-        </div>
-      </section>
-
-      {/* 참여자 섹션 */}
-      <section className="mb-10">
-        <h2 className="text-xl font-bold mb-4">참여자 섹션</h2>
-        <div className="border border-gray-200 rounded-lg p-6">
-          <div className="mb-6">
-            <h3 className="font-bold mb-4">함께하는 사람들 ({fundingData.participantsNumber}명)</h3>
-          </div>
-
-          <div>
-            <h3 className="font-bold mb-4">참여자 목록</h3>
-            {displayedParticipants.length > 0 ? (
-            <div className="space-y-6">
-                {displayedParticipants.map((letter) => (
-                  <div key={letter.letterId} className="border-b border-gray-200 pb-4 last:border-b-0">
-                  <div className="flex items-center gap-2 mb-2">
-                      <div className="w-8 h-8 rounded-full overflow-hidden">
-                        <img 
-                          src={letter.user.image || "https://via.placeholder.com/50x50"}
-                          alt={`${letter.user.nickName}의 프로필`}
-                          className="w-full h-full object-cover"
-                        />
-                    </div>
-                      <span className="font-bold">{letter.user.nickName}</span>
-                  </div>
-                    <p className="text-gray-600 pl-10">{letter.comment}</p>
-                    {letter.image && (
-                      <div className="pl-10 mt-2">
-                        <img 
-                          src={letter.image} 
-                          alt="편지 첨부 이미지" 
-                          className="max-w-xs rounded-lg border border-gray-200"
-                        />
-                      </div>
-                    )}
-                </div>
-              ))}
-            </div>
-            ) : (
-              <p className="text-gray-500 text-center py-4">아직 참여자가 없습니다.</p>
-            )}
-
-            {fundingData.letters.length > 3 && (
-              <button
-                onClick={toggleParticipantsList}
-                className="w-full py-2 border border-gray-200 rounded-md mt-4 text-gray-600 hover:bg-gray-50"
-              >
-                {showAllParticipants ? "숨기기" : "펼쳐보기"}
-              </button>
-            )}
-          </div>
-        </div>
-      </section>
-
-      {/* 편지 작성 섹션 추가 */}
-      <section className="mb-10">
-        <h2 className="text-xl font-bold mb-4">응원 편지 남기기</h2>
-        <div className="bg-gradient-to-br from-pink-50 to-purple-50 rounded-lg p-6">
-          {letterSuccess && (
-            <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg mb-6 flex items-center">
-              <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path>
-              </svg>
-              <span>편지가 성공적으로 등록되었습니다! 참여자 목록에서 확인해 보세요.</span>
-            </div>
-          )}
-
-          {letterError && (
-            <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-lg mb-6">
-              <p>{letterError}</p>
-              <p className="mt-2 text-sm">
-                메시지가 표시되어도 편지가 등록되었을 수 있으니 참여자 목록을 확인해보세요.
-              </p>
-            </div>
-          )}
-
-          <form onSubmit={handleLetterSubmit}>
-            <div className="mb-6">
-              <label htmlFor="letterComment" className="block text-sm font-bold text-gray-700 mb-2">
-                응원 메시지
-              </label>
-              <textarea
-                id="letterComment"
-                value={letterComment}
-                onChange={(e) => setLetterComment(e.target.value)}
-                placeholder="응원의 메시지를 남겨주세요!"
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 resize-none"
-                rows={4}
-                maxLength={200}
-              />
-              <div className="text-right text-sm text-gray-500 mt-1">
-                {letterComment.length}/200자
-              </div>
-            </div>
-
-            <div className="mb-6">
-              <p className="block text-sm font-bold text-gray-700 mb-2">
-                이미지 첨부 (선택)
-              </p>
-
-              {!letterImagePreview ? (
-                <div 
-                  onClick={() => fileInputRef.current?.click()}
-                  className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center cursor-pointer hover:bg-purple-50 transition-colors"
+              <div className="flex flex-col sm:flex-row gap-3">
+                <button
+                  onClick={navigateToOrderPage}
+                  className="px-6 py-3 bg-green-600 hover:bg-green-700 text-white font-bold rounded-lg transition-colors shadow-sm flex items-center"
                 >
-                  <svg className="w-12 h-12 mx-auto text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
                   </svg>
-                  <p className="text-sm text-gray-500 mt-2">클릭하여 이미지 첨부하기</p>
+                  상품 구매하기
+                </button>
+                <button
+                  onClick={navigateToReviewPage}
+                  className="px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white font-bold rounded-lg transition-colors shadow-sm flex items-center"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                  </svg>
+                  후기 작성하기
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+        
+        {/* 100% 달성 & 생성자가 아닌 일반 참여자의 경우 후기 작성 버튼 표시 - 제거 */}
+        
+        {/* 잔액 정보 표시 섹션 */}
+        <div className="mb-6 bg-white rounded-lg shadow overflow-hidden">
+          <div className="p-4 flex justify-between items-center bg-gray-50">
+            <h2 className="text-lg font-semibold">내 잔액 정보</h2>
+            <button 
+              onClick={fetchBalanceInfo} 
+              className="px-3 py-1.5 bg-black text-white rounded-md text-sm hover:bg-gray-800 transition"
+              disabled={balanceLoading}
+            >
+              {balanceLoading ? '로딩 중...' : '잔액 조회'}
+            </button>
+          </div>
+          
+          {showBalanceInfo && (
+            <div className="p-4">
+              <div className="mb-2">
+                <span className="font-semibold">GIVU Pay 잔액:</span> 
+                <span className="ml-2 text-primary-color">{balanceInfo.givuPayBalance.toLocaleString()} 원</span>
+              </div>
+              
+              {balanceInfo.accountNumber !== null ? (
+                <div>
+                  <span className="font-semibold">연동 계좌 잔액:</span>
+                  <span className="ml-2">{(balanceInfo.bankBalance || 0).toLocaleString()} 원</span>
+                  {balanceInfo.accountNumber && (
+                    <span className="ml-2 text-xs text-gray-500">
+                      ({balanceInfo.accountNumber.replace(/(\d{4})(\d{4})(\d{4})(\d*)/, '$1-$2-$3-$4')})
+                    </span>
+                  )}
                 </div>
               ) : (
-                <div className="relative">
-                  <img 
-                    src={letterImagePreview} 
-                    alt="미리보기" 
-                    className="max-h-48 rounded-lg mx-auto object-contain bg-white p-2 border border-gray-200"
-                  />
-                  <button
-                    type="button"
-                    onClick={handleRemoveLetterImage}
-                    className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 focus:outline-none"
-                  >
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                  </button>
+                <div className="text-sm text-gray-500">
+                  연동된 계좌가 없습니다. 마이페이지에서 계좌를 연동해 주세요.
                 </div>
               )}
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept="image/*"
-                onChange={handleLetterImageChange}
-                className="hidden"
-              />
-              
-              <div className="text-xs text-gray-500 mt-1 pl-1">
-                * JPG, PNG 파일만 업로드 가능합니다 (최대 5MB)
-              </div>
             </div>
-
-            <div className="mb-6">
-              <label className="block text-sm font-bold text-gray-700 mb-2">
-                공개 설정
-              </label>
-              <div className="flex space-x-4">
-                <label className="inline-flex items-center">
-                  <input
-                    type="radio"
-                    name="letterAccess"
-                    value="공개"
-                    checked={letterAccess === '공개'}
-                    onChange={() => setLetterAccess('공개')}
-                    className="form-radio h-4 w-4 text-purple-600"
-                  />
-                  <span className="ml-2 text-gray-700">공개</span>
-                </label>
-                <label className="inline-flex items-center">
-                  <input
-                    type="radio"
-                    name="letterAccess"
-                    value="비공개"
-                    checked={letterAccess === '비공개'}
-                    onChange={() => setLetterAccess('비공개')}
-                    className="form-radio h-4 w-4 text-purple-600"
-                  />
-                  <span className="ml-2 text-gray-700">비공개</span>
-                </label>
-              </div>
-            </div>
-
-            <div className="text-right">
-              <button
-                type="submit"
-                disabled={isLetterSubmitting || letterComment.trim() === ''}
-                className={`px-6 py-3 rounded-lg text-white font-bold transition-colors ${
-                  isLetterSubmitting || letterComment.trim() === ''
-                    ? 'bg-gray-400 cursor-not-allowed'
-                    : 'bg-purple-600 hover:bg-purple-700'
-                }`}
-              >
-                {isLetterSubmitting ? (
-                  <span className="flex items-center">
-                    <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                    </svg>
-                    전송 중...
-                  </span>
-                ) : (
-                  '편지 보내기'
-                )}
-              </button>
-            </div>
-          </form>
+          )}
         </div>
-      </section>
 
-      {/* 선물하기 섹션 수정 */}
-      <section className="mb-10">
-        <div className="bg-gray-50 rounded-lg p-6">
-          <div className="text-center mb-6">
-            <div className="w-16 h-16 bg-black rounded-full mx-auto mb-4 flex items-center justify-center">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-              </svg>
-            </div>
-            <h2 className="text-xl font-bold">
-              <span className="text-red-500">{fundingData.writer.nickName}님</span>의<br />
-              위시 펀딩 동참하기
-            </h2>
+        {/* 이미지 슬라이더 섹션 */}
+        <div className="relative mb-6 bg-gray-100 rounded-lg overflow-hidden">
+          <div className="h-[400px] flex items-center justify-center relative">
+            <img
+              src={fundingData?.product?.image || fundingData?.image || "/src/assets/images/default-finding-image.jpg"}
+              alt={`${fundingData?.title} 이미지`}
+              className="max-h-full object-contain"
+            />
+            {/* 펀딩 완료 도장 추가 */}
+            {isFundingCompleted && (
+              <div className="absolute inset-0 flex items-center justify-center">
+                <div className="bg-red-600 bg-opacity-80 rounded-full w-40 h-40 flex items-center justify-center transform rotate-[-20deg] border-4 border-red-700 z-20">
+                  <span className="text-white text-5xl font-bold">완료</span>
+                </div>
+              </div>
+            )}
           </div>
+        </div>
 
-          <div className="bg-white rounded-lg p-4 mb-6">
-            <div className="text-purple-600 font-bold">
-              목표까지 {remainingAmount.toLocaleString()}원 남았어요
-            </div>
-            <div className="w-full bg-purple-100 rounded-full h-2 my-2">
-              <div
-                className="bg-purple-500 h-2 rounded-full"
-                style={{ width: `${fundingPercentage}%` }}
-              ></div>
-            </div>
-            <div className="text-right text-gray-600">
-              목표금액 {fundingData.product?.price.toLocaleString() || "0"}원
-            </div>
-          </div>
-
-          {/* 오류 메시지 표시 */}
-          {amountError && (
-            <div className="mb-4 bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-lg">
-              <div className="flex items-center">
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+        {/* 펀딩 완료 메시지 */}
+        {isCompleted && (
+          <div className="bg-green-50 border border-green-200 rounded-lg p-4 shadow-md mb-6">
+            <div className="flex items-center gap-3">
+              <div className="bg-green-100 p-2 rounded-full">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                 </svg>
-                <span>{amountError}</span>
+              </div>
+              <div>
+                <h3 className="text-lg font-bold text-green-800">펀딩이 성공적으로 완료되었습니다!</h3>
+                <p className="text-green-600">목표 금액 {fundingData.product?.price.toLocaleString()}원 중 {fundingData.fundedAmount.toLocaleString()}원이 모금되었습니다.</p>
               </div>
             </div>
-          )}
+          </div>
+        )}
 
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-6">
-            {GIFT_OPTIONS.map((option) => (
-              <button
-                key={option.amount}
-                onClick={() => selectAmount(option.amount)}
-                className={`p-4 rounded-lg text-white flex flex-col items-start ${
-                  selectedAmount === option.amount && !isCustomInput 
-                    ? 'bg-gray-800' 
-                    : 'bg-black'
-                }`}
-              >
-                <span className="font-bold text-lg mb-2">{option.label}</span>
-                <span className="text-sm">{option.description}</span>
-              </button>
-            ))}
+        {/* 펀딩 요약 정보 수정 */}
+        <div className="border border-gray-200 rounded-lg p-6 mb-8">
+          <div className="flex justify-between items-center mb-2">
+            <h1 className="text-xl font-bold">{fundingData.title}</h1>
+            <span className="text-gray-600">{fundingData.categoryName || fundingData.category}</span>
           </div>
 
-          {/* 직접 입력 필드 추가 */}
-          {isCustomInput && (
-            <div className="mb-6">
-              <div className="bg-white rounded-lg p-4 border border-gray-200">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  금액을 직접 입력해주세요
-                </label>
-                <div className="relative">
-                  <input
-                    type="text"
-                    value={customAmount}
-                    onChange={handleCustomAmountChange}
-                    placeholder="금액을 입력하세요"
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black"
-                  />
-                  <span className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-500">
-                    원
-                  </span>
-                </div>
-                {customAmount && (
-                  <p className="mt-2 text-sm text-gray-600">
-                    {parseInt(customAmount).toLocaleString()}원을 선물합니다
-                  </p>
-                )}
-              </div>
-            </div>
-          )}
-
-          <button 
-            onClick={handleGiftClick}
-            className={`w-full py-3 text-white font-bold rounded-lg transition ${
-              (selectedAmount || (isCustomInput && customAmount)) && !amountError
-                ? 'bg-black hover:bg-gray-800' 
-                : 'bg-gray-400 cursor-not-allowed'
-            }`}
-            disabled={!selectedAmount && (!isCustomInput || !customAmount) || !!amountError}
-          >
-            {selectedAmount ? 
-              `${selectedAmount.toLocaleString()}원 선물하기` : 
-              '선물하기'
-            }
-          </button>
-        </div>
-      </section>
-
-      {/* 안내사항 섹션 */}
-      <section className="mb-6">
-        <div className="space-y-6 text-sm">
-          <div>
-            <h3 className="font-bold flex items-center">
-              <span className="text-red-500 mr-1">✓</span> 펀딩 참여 안내
-            </h3>
-            <ul className="ml-4 mt-2 space-y-1 list-disc text-gray-600">
-              <li>펀딩에 참여하시면 GIVU 페이로 결제가 진행됩니다</li>
-              <li>펀딩 목표 금액 달성 시, 마이페이지 내 펀딩 목록에서 상품 구매를 진행할 수 있습니다.</li>
-              <li>펀딩 참여 내역은 마이페이지에서 확인하실 수 있습니다</li>
-            </ul>
-          </div>
-
-          <div>
-            <h3 className="font-bold flex items-center">
-              <span className="text-yellow-500 mr-1">💰</span> GIVU 페이 안내
-            </h3>
-            <ul className="ml-4 mt-2 space-y-1 list-disc text-gray-600">
-              <li>펀딩 참여 시 GIVU 페이 잔액이 부족할 경우, 충전 후 참여가 가능합니다</li>
-              <li>펀딩 참여 시 참여하신 금액은 GIVU 페이로 차감 완료됩니다</li>
-              <li>GIVU 페이 충전 금액의 환불은 고객센터를 통해 가능합니다</li>
-            </ul>
-          </div>
-
-          <div>
-            <h3 className="font-bold flex items-center">
-              <span className="text-orange-500 mr-1">🎁</span> 선물 관련 안내
-            </h3>
-            <ul className="ml-4 mt-2 space-y-1 list-disc text-gray-600">
-              <li>목표 금액 달성 시 GIVU 자사몰에 등록된 상품으로 구매가 진행됩니다</li>
-              <li>선물 수령자의 주소지로 배송이 이루어집니다</li>
-              <li>상품 하자 및 오배송의 경우 교환/반품이 가능합니다</li>
-              <li>단순 변심에 의한 교환/반품은 불가합니다</li>
-            </ul>
-          </div>
-
-          <div>
-            <h3 className="font-bold flex items-center">
-              <span className="text-red-500 mr-1">❌</span> 펀딩 취소 안내
-            </h3>
-            <ul className="ml-4 mt-2 space-y-1 list-disc text-gray-600">
-              <li>펀딩 달성률에 따라 취소 정책이 달라집니다.
-                <br />(50% 이하 → 참여자 환불 / 50% 이상 → 정상자 GIVU 페이 증정)</li>
-              <li>목표 금액 달성 후에는 취소가 불가합니다</li>
-            </ul>
-          </div>
-
-          <div>
-            <h3 className="font-bold flex items-center">
-              <span className="text-yellow-500 mr-1">⚠</span> 교환/반품이 불가능한 경우
-            </h3>
-            <ul className="ml-4 mt-2 space-y-1 list-disc text-gray-600">
-              <li>선물 수령자가 상품을 사용하거나 훼손한 경우</li>
-              <li>상품의 포장을 개봉하여 가치가 하락한 경우</li>
-              <li>시간 경과로 재판매가 어려울 정도로 상품 가치가 하락한 경우</li>
-            </ul>
-          </div>
-
-          <div>
-            <h3 className="font-bold flex items-center">
-              <span className="text-gray-500 mr-1">📞</span> 고객 지원
-            </h3>
-            <ul className="ml-4 mt-2 space-y-1 list-disc text-gray-600">
-              <li>펀딩 관련 문의: 채널톡 상담</li>
-              <li>상품 관련 문의: GIVU 고객센터</li>
-              <li>운영시간: 평일 10:00 - 18:00 (주말/공휴일 제외)</li>
-            </ul>
-          </div>
-        </div>
-      </section>
-
-      {/* 푸터 안내 */}
-      <footer className="text-center text-sm text-gray-500 mt-10 pb-6">
-        <p>모든 펀딩 정보는 실제 정보와 다를 수 있습니다.</p>
-        <p className="mt-1">© 2025 GIVU. All rights reserved.</p>
-      </footer>
-
-      {/* 펀딩 100% 달성 시 하단에 고정된 버튼 표시 */}
-      {isFundingCompleted && (
-        <div className="fixed bottom-0 left-0 w-full bg-white border-t border-gray-200 p-4 shadow-lg z-40">
-          <div className="max-w-3xl mx-auto flex justify-between items-center">
+          <div className="flex flex-col md:flex-row justify-between mb-4">
             <div>
-              <h3 className="font-bold text-lg text-green-800">펀딩 목표 달성 완료! 🎉</h3>
-              <p className="text-green-600">모금된 금액: {fundingData.fundedAmount.toLocaleString()}원</p>
+              <span className="text-gray-600">참여자: {fundingData.participantsNumber}명</span>
+              <span className="ml-4 px-2 py-1 bg-gray-100 rounded text-sm">{fundingData.status}</span>
             </div>
-            <div className="flex gap-3">
-              {isCreator && (
-                <>
-                  <button
-                    onClick={navigateToOrderPage}
-                    className="px-6 py-3 bg-green-600 hover:bg-green-700 text-white font-bold rounded-lg transition-colors shadow-sm flex items-center"
-                  >
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
-                    </svg>
-                    상품 구매하기
-                  </button>
-                  <button
-                    onClick={navigateToReviewPage}
-                    className="px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white font-bold rounded-lg transition-colors shadow-sm flex items-center"
-                  >
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                    </svg>
-                    후기 작성하기
-                  </button>
-                </>
-              )}
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* 비밀번호 확인 모달 추가 */}
-      {showPasswordModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 px-4">
-          <div className="bg-white rounded-lg p-6 w-full max-w-md">
-            <h3 className="text-xl font-bold mb-4">결제 비밀번호 확인</h3>
-            <p className="mb-4 text-gray-600">
-              GIVU Pay 결제를 위해 비밀번호를 입력해주세요.
-            </p>
-            
-            <div className="mb-4">
-              <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
-                결제 비밀번호
-              </label>
-              <input
-                type="password"
-                id="password"
-                value={password}
-                onChange={handlePasswordChange}
-                onKeyPress={handlePasswordKeyPress}
-                placeholder="비밀번호를 입력하세요"
-                className={`w-full px-3 py-2 border rounded-md ${
-                  passwordError ? 'border-red-500' : 'border-gray-300'
-                } focus:outline-none focus:ring-2 focus:ring-purple-500`}
-                autoFocus
-              />
-              {passwordError && (
-                <p className="mt-1 text-sm text-red-500">{passwordError}</p>
-              )}
-            </div>
-            
-            <div className="flex justify-end space-x-3">
-              <button
-                onClick={handlePasswordCancel}
-                className="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50"
-              >
-                취소
-              </button>
-              <button
-                onClick={processPayment}
-                disabled={!password.trim() || isLoading}
-                className={`px-4 py-2 rounded-md text-white ${
-                  !password.trim() || isLoading
-                    ? 'bg-gray-400 cursor-not-allowed'
-                    : 'bg-purple-600 hover:bg-purple-700'
-                }`}
-              >
-                {isLoading ? (
-                  <span className="flex items-center">
-                    <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                    </svg>
-                    확인 중...
-                  </span>
-                ) : (
-                  '결제 확인'
-                )}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* 펀딩 삭제 확인 모달 추가 */}
-      {showDeleteConfirmModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 px-4">
-          <div className="bg-white rounded-lg p-6 w-full max-w-md">
-            <h3 className="text-xl font-bold mb-4 text-red-600">펀딩 삭제 확인</h3>
-            <div className="mb-6">
-              <p className="mb-2 text-gray-700">
-                정말로 이 펀딩을 삭제하시겠습니까?
-              </p>
-              <p className="text-gray-500 text-sm">
-                삭제된 펀딩은 복구할 수 없으며, 관련된 모든 데이터가 영구적으로 삭제됩니다.
-              </p>
-              {fundingData && fundingData.participantsNumber > 0 && (
-                <div className="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded-md">
-                  <p className="text-yellow-700 text-sm">
-                    <span className="font-bold">주의!</span> 이 펀딩에는 이미 {fundingData.participantsNumber}명이 참여하고 있습니다.
-                    삭제하면 참여자들의 데이터도 함께 삭제됩니다.
-                  </p>
-                </div>
-              )}
-            </div>
-            
-            <div className="flex justify-end space-x-3">
-              <button
-                onClick={() => setShowDeleteConfirmModal(false)}
-                className="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50"
-              >
-                취소
-              </button>
-              <button
-                onClick={handleDeleteFunding}
-                disabled={isLoading}
-                className={`px-4 py-2 rounded-md text-white ${
-                  isLoading
-                    ? 'bg-gray-400 cursor-not-allowed'
-                    : 'bg-red-600 hover:bg-red-700'
-                }`}
-              >
-                {isLoading ? (
-                  <span className="flex items-center">
-                    <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                    </svg>
-                    삭제 중...
-                  </span>
-                ) : (
-                  '펀딩 삭제'
-                )}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* 펀딩 수정 모달 추가 */}
-      {showEditModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 px-4">
-          <div className="bg-white rounded-lg p-6 w-full max-w-md">
-            <h3 className="text-xl font-bold mb-4">펀딩 정보 수정</h3>
-            
-            <div className="space-y-4">
-              <div>
-                <label htmlFor="title" className="block text-sm font-medium text-gray-700 mb-1">
-                  펀딩 제목
-                </label>
-                <input
-                  type="text"
-                  id="title"
-                  name="title"
-                  value={editFormData.title}
-                  onChange={handleEditFormChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
-                />
+            <div className="md:text-right">
+              <div className="text-gray-600">
+                현재 모금액: {fundingData.fundedAmount.toLocaleString()}원 ({fundingPercentage}%)
               </div>
-              
-              <div>
-                <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-1">
-                  펀딩 설명
+              <div className="font-bold">
+                목표 금액: {fundingData.product?.price.toLocaleString() || "설정되지 않음"}원
+              </div>
+            </div>
+          </div>
+
+          {/* 진행 바 */}
+          <div className="w-full bg-gray-200 rounded-full h-2.5 mb-3">
+            <div
+              className="bg-black h-2.5 rounded-full"
+              style={{ width: `${fundingPercentage}%` }}
+            ></div>
+          </div>
+
+          {/* 펀딩 생성자인 경우 수정/삭제 버튼 표시 */}
+          {isCreator && (
+            <div className="flex justify-end gap-2 mt-2">
+              {/* 50% 이상 달성한 경우 펀딩 즉시 성공 처리 버튼 - 이미 성공 처리된 경우 비활성화 */}
+              {isHalfCompleted && (
+                <button
+                  onClick={handleFundingSuccess}
+                  className={`px-3 py-1.5 text-white rounded-md text-sm transition-colors flex items-center ${
+                    isLoading || isCompleted ? 'bg-gray-400 cursor-not-allowed' : 'bg-green-600 hover:bg-green-700'
+                  }`}
+                  disabled={isLoading || isCompleted}
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  {isLoading ? '처리 중...' : isCompleted ? '펀딩 완료됨' : '펀딩 성공 처리'}
+                </button>
+              )}
+              <button
+                onClick={openEditModal}
+                className={`px-3 py-1.5 text-white rounded-md text-sm transition-colors flex items-center ${
+                  isCompleted ? 'bg-gray-400 cursor-not-allowed' : 'bg-gray-700 hover:bg-gray-800'
+                }`}
+                disabled={isCompleted}
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                </svg>
+                수정
+              </button>
+              <button
+                onClick={showDeleteConfirmation}
+                className={`px-3 py-1.5 text-white rounded-md text-sm transition-colors flex items-center ${
+                  isCompleted ? 'bg-gray-400 cursor-not-allowed' : 'bg-red-600 hover:bg-red-700'
+                }`}
+                disabled={isCompleted}
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                </svg>
+                삭제
+              </button>
+            </div>
+          )}
+        </div>
+
+        {/* 대상자 소개 섹션 */}
+        <section className="mb-10">
+          <h2 className="text-xl font-bold mb-4">대상자 소개</h2>
+          <div className="flex flex-col md:flex-row gap-6">
+            <div className="border border-gray-200 rounded-lg p-6 md:w-1/2">
+              <div className="mb-4">
+                <div className="w-24 h-24 rounded-lg mb-4 overflow-hidden">
+                  <img 
+                    src={fundingData.writer.image || "https://via.placeholder.com/200x200?text=프로필"}
+                    alt={`${fundingData.writer.nickName}의 프로필`}
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+                <div className="font-bold">{fundingData.writer.nickName}</div>
+                <div className="text-gray-600">{fundingData.categoryName || fundingData.category}</div>
+              </div>
+            </div>
+
+            <div className="border border-gray-200 rounded-lg p-6 md:w-1/2">
+              <h3 className="font-bold mb-4">펀딩 소개글</h3>
+              <p className="text-gray-600">{fundingData.description}</p>
+            </div>
+          </div>
+        </section>
+
+        {/* 참여자 섹션 */}
+        <section className="mb-10">
+          <h2 className="text-xl font-bold mb-4">참여자 섹션</h2>
+          <div className="border border-gray-200 rounded-lg p-6">
+            <div className="mb-6">
+              <h3 className="font-bold mb-4">함께하는 사람들 ({fundingData.participantsNumber}명)</h3>
+            </div>
+
+            <div>
+              <h3 className="font-bold mb-4">참여자 목록</h3>
+              {displayedParticipants.length > 0 ? (
+              <div className="space-y-6">
+                  {displayedParticipants.map((letter) => (
+                    <div key={letter.letterId} className="border-b border-gray-200 pb-4 last:border-b-0">
+                    <div className="flex items-center gap-2 mb-2">
+                        <div className="w-8 h-8 rounded-full overflow-hidden">
+                          <img 
+                            src={letter.user.image || "https://via.placeholder.com/50x50"}
+                            alt={`${letter.user.nickName}의 프로필`}
+                            className="w-full h-full object-cover"
+                          />
+                      </div>
+                        <span className="font-bold">{letter.user.nickName}</span>
+                    </div>
+                      <p className="text-gray-600 pl-10">{letter.comment}</p>
+                      {letter.image && (
+                        <div className="pl-10 mt-2">
+                          <img 
+                            src={letter.image} 
+                            alt="편지 첨부 이미지" 
+                            className="max-w-xs rounded-lg border border-gray-200"
+                          />
+                        </div>
+                      )}
+                  </div>
+                ))}
+              </div>
+              ) : (
+                <p className="text-gray-500 text-center py-4">아직 참여자가 없습니다.</p>
+              )}
+
+              {fundingData.letters.length > 3 && (
+                <button
+                  onClick={toggleParticipantsList}
+                  className="w-full py-2 border border-gray-200 rounded-md mt-4 text-gray-600 hover:bg-gray-50"
+                >
+                  {showAllParticipants ? "숨기기" : "펼쳐보기"}
+                </button>
+              )}
+            </div>
+          </div>
+        </section>
+
+        {/* 편지 작성 섹션 추가 */}
+        <section className="mb-10">
+          <h2 className="text-xl font-bold mb-4">응원 편지 남기기</h2>
+          <div className="bg-gradient-to-br from-pink-50 to-purple-50 rounded-lg p-6">
+            {letterSuccess && (
+              <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg mb-6 flex items-center">
+                <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path>
+                </svg>
+                <span>편지가 성공적으로 등록되었습니다! 참여자 목록에서 확인해 보세요.</span>
+              </div>
+            )}
+
+            {letterError && (
+              <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-lg mb-6">
+                <p>{letterError}</p>
+                <p className="mt-2 text-sm">
+                  메시지가 표시되어도 편지가 등록되었을 수 있으니 참여자 목록을 확인해보세요.
+                </p>
+              </div>
+            )}
+
+            <form onSubmit={handleLetterSubmit}>
+              <div className="mb-6">
+                <label htmlFor="letterComment" className="block text-sm font-bold text-gray-700 mb-2">
+                  응원 메시지
                 </label>
                 <textarea
-                  id="description"
-                  name="description"
-                  value={editFormData.description}
-                  onChange={handleEditFormChange}
+                  id="letterComment"
+                  value={letterComment}
+                  onChange={(e) => setLetterComment(e.target.value)}
+                  placeholder="응원의 메시지를 남겨주세요!"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 resize-none"
                   rows={4}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 resize-none"
+                  maxLength={200}
                 />
+                <div className="text-right text-sm text-gray-500 mt-1">
+                  {letterComment.length}/200자
+                </div>
               </div>
-              
-              <div>
-                <label htmlFor="category" className="block text-sm font-medium text-gray-700 mb-1">
-                  카테고리
-                </label>
-                <select
-                  id="category"
-                  name="category"
-                  value={editFormData.category}
-                  onChange={handleEditFormChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
-                >
-                  <option value="생일">생일</option>
-                  <option value="결혼">결혼</option>
-                  <option value="집들이">집들이</option>
-                  <option value="기념일">기념일</option>
-                  <option value="기타">기타</option>
-                </select>
+
+              <div className="mb-6">
+                <p className="block text-sm font-bold text-gray-700 mb-2">
+                  이미지 첨부 (선택)
+                </p>
+
+                {!letterImagePreview ? (
+                  <div 
+                    onClick={() => fileInputRef.current?.click()}
+                    className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center cursor-pointer hover:bg-purple-50 transition-colors"
+                  >
+                    <svg className="w-12 h-12 mx-auto text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                    <p className="text-sm text-gray-500 mt-2">클릭하여 이미지 첨부하기</p>
+                  </div>
+                ) : (
+                  <div className="relative">
+                    <img 
+                      src={letterImagePreview} 
+                      alt="미리보기" 
+                      className="max-h-48 rounded-lg mx-auto object-contain bg-white p-2 border border-gray-200"
+                    />
+                    <button
+                      type="button"
+                      onClick={handleRemoveLetterImage}
+                      className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 focus:outline-none"
+                    >
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                      </svg>
+                    </button>
+                  </div>
+                )}
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  onChange={handleLetterImageChange}
+                  className="hidden"
+                />
+                
+                <div className="text-xs text-gray-500 mt-1 pl-1">
+                  * JPG, PNG 파일만 업로드 가능합니다 (최대 5MB)
+                </div>
               </div>
-              
-              <div>
-                <label htmlFor="scope" className="block text-sm font-medium text-gray-700 mb-1">
-                  공개 범위
+
+              <div className="mb-6">
+                <label className="block text-sm font-bold text-gray-700 mb-2">
+                  공개 설정
                 </label>
-                <select
-                  id="scope"
-                  name="scope"
-                  value={editFormData.scope}
-                  onChange={handleEditFormChange}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
+                <div className="flex space-x-4">
+                  <label className="inline-flex items-center">
+                    <input
+                      type="radio"
+                      name="letterAccess"
+                      value="공개"
+                      checked={letterAccess === '공개'}
+                      onChange={() => setLetterAccess('공개')}
+                      className="form-radio h-4 w-4 text-purple-600"
+                    />
+                    <span className="ml-2 text-gray-700">공개</span>
+                  </label>
+                  <label className="inline-flex items-center">
+                    <input
+                      type="radio"
+                      name="letterAccess"
+                      value="비공개"
+                      checked={letterAccess === '비공개'}
+                      onChange={() => setLetterAccess('비공개')}
+                      className="form-radio h-4 w-4 text-purple-600"
+                    />
+                    <span className="ml-2 text-gray-700">비공개</span>
+                  </label>
+                </div>
+              </div>
+
+              <div className="text-right">
+                <button
+                  type="submit"
+                  disabled={isLetterSubmitting || letterComment.trim() === '' || isCompleted}
+                  className={`px-6 py-3 rounded-lg text-white font-bold transition-colors ${
+                    isLetterSubmitting || letterComment.trim() === '' || isCompleted
+                      ? 'bg-gray-400 cursor-not-allowed'
+                      : 'bg-purple-600 hover:bg-purple-700'
+                  }`}
                 >
-                  <option value="공개">공개</option>
-                  <option value="비공개">비공개</option>
-                </select>
+                  {isLetterSubmitting ? (
+                    <span className="flex items-center">
+                      <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      </svg>
+                      전송 중...
+                    </span>
+                  ) : (
+                    isCompleted ? '펀딩 완료됨' : '편지 보내기'
+                  )}
+                </button>
+              </div>
+            </form>
+          </div>
+        </section>
+
+        {/* 선물하기 섹션 수정 */}
+        <section className="mb-10">
+          <div className="bg-gray-50 rounded-lg p-6">
+            <div className="text-center mb-6">
+              <div className="w-16 h-16 bg-black rounded-full mx-auto mb-4 flex items-center justify-center">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                </svg>
+              </div>
+              <h2 className="text-xl font-bold">
+                <span className="text-red-500">{fundingData.writer.nickName}님</span>의<br />
+                위시 펀딩 동참하기
+              </h2>
+            </div>
+
+            <div className="bg-white rounded-lg p-4 mb-6">
+              <div className="text-purple-600 font-bold">
+                목표까지 {remainingAmount.toLocaleString()}원 남았어요
+              </div>
+              <div className="w-full bg-purple-100 rounded-full h-2 my-2">
+                <div
+                  className="bg-purple-500 h-2 rounded-full"
+                  style={{ width: `${fundingPercentage}%` }}
+                ></div>
+              </div>
+              <div className="text-right text-gray-600">
+                목표금액 {fundingData.product?.price.toLocaleString() || "0"}원
               </div>
             </div>
-            
-            <div className="flex justify-end space-x-3 mt-6">
-              <button
-                onClick={() => setShowEditModal(false)}
-                className="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50"
-              >
-                취소
-              </button>
-              <button
-                onClick={handleUpdateFunding}
-                disabled={editLoading}
-                className={`px-4 py-2 rounded-md text-white ${
-                  editLoading
-                    ? 'bg-gray-400 cursor-not-allowed'
-                    : 'bg-purple-600 hover:bg-purple-700'
-                }`}
-              >
-                {editLoading ? (
-                  <span className="flex items-center">
-                    <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                    </svg>
-                    저장 중...
-                  </span>
-                ) : (
-                  '저장하기'
+
+            {/* 오류 메시지 표시 */}
+            {amountError && !isCompleted && (
+              <div className="mb-4 bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-lg">
+                <div className="flex items-center">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                  </svg>
+                  <span>{amountError}</span>
+                </div>
+              </div>
+            )}
+
+            {!isCompleted ? (
+              <>
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-6">
+                  {GIFT_OPTIONS.map((option) => (
+                    <button
+                      key={option.amount}
+                      onClick={() => selectAmount(option.amount)}
+                      className={`p-4 rounded-lg text-white flex flex-col items-start ${
+                        selectedAmount === option.amount && !isCustomInput 
+                          ? 'bg-gray-800' 
+                          : 'bg-black'
+                      }`}
+                    >
+                      <span className="font-bold text-lg mb-2">{option.label}</span>
+                      <span className="text-sm">{option.description}</span>
+                    </button>
+                  ))}
+                </div>
+
+                {/* 직접 입력 필드 추가 */}
+                {isCustomInput && (
+                  <div className="mb-6">
+                    <div className="bg-white rounded-lg p-4 border border-gray-200">
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        금액을 직접 입력해주세요
+                      </label>
+                      <div className="relative">
+                        <input
+                          type="text"
+                          value={customAmount}
+                          onChange={handleCustomAmountChange}
+                          placeholder="금액을 입력하세요"
+                          className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black"
+                        />
+                        <span className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-500">
+                          원
+                        </span>
+                      </div>
+                      {customAmount && (
+                        <p className="mt-2 text-sm text-gray-600">
+                          {parseInt(customAmount).toLocaleString()}원을 선물합니다
+                        </p>
+                      )}
+                    </div>
+                  </div>
                 )}
-              </button>
+
+                <button 
+                  onClick={handleGiftClick}
+                  className={`w-full py-3 text-white font-bold rounded-lg transition ${
+                    (selectedAmount || (isCustomInput && customAmount)) && !amountError
+                      ? 'bg-black hover:bg-gray-800' 
+                      : 'bg-gray-400 cursor-not-allowed'
+                  }`}
+                  disabled={!selectedAmount && (!isCustomInput || !customAmount) || !!amountError}
+                >
+                  {selectedAmount ? 
+                    `${selectedAmount.toLocaleString()}원 선물하기` : 
+                    '선물하기'
+                  }
+                </button>
+              </>
+            ) : (
+              <div className="bg-green-50 p-4 rounded-lg text-center">
+                <p className="text-green-700 font-medium">펀딩이 성공적으로 완료되었습니다.</p>
+                <p className="text-green-600 mt-2">모금된 금액: {fundingData.fundedAmount.toLocaleString()}원</p>
+              </div>
+            )}
+          </div>
+        </section>
+
+        {/* 안내사항 섹션 */}
+        <section className="mb-6">
+          <div className="space-y-6 text-sm">
+            <div>
+              <h3 className="font-bold flex items-center">
+                <span className="text-red-500 mr-1">✓</span> 펀딩 참여 안내
+              </h3>
+              <ul className="ml-4 mt-2 space-y-1 list-disc text-gray-600">
+                <li>펀딩에 참여하시면 GIVU 페이로 결제가 진행됩니다</li>
+                <li>펀딩 목표 금액 달성 시, 마이페이지 내 펀딩 목록에서 상품 구매를 진행할 수 있습니다.</li>
+                <li>펀딩 참여 내역은 마이페이지에서 확인하실 수 있습니다</li>
+              </ul>
+            </div>
+
+            <div>
+              <h3 className="font-bold flex items-center">
+                <span className="text-yellow-500 mr-1">💰</span> GIVU 페이 안내
+              </h3>
+              <ul className="ml-4 mt-2 space-y-1 list-disc text-gray-600">
+                <li>펀딩 참여 시 GIVU 페이 잔액이 부족할 경우, 충전 후 참여가 가능합니다</li>
+                <li>펀딩 참여 시 참여하신 금액은 GIVU 페이로 차감 완료됩니다</li>
+                <li>GIVU 페이 충전 금액의 환불은 고객센터를 통해 가능합니다</li>
+              </ul>
+            </div>
+
+            <div>
+              <h3 className="font-bold flex items-center">
+                <span className="text-orange-500 mr-1">🎁</span> 선물 관련 안내
+              </h3>
+              <ul className="ml-4 mt-2 space-y-1 list-disc text-gray-600">
+                <li>목표 금액 달성 시 GIVU 자사몰에 등록된 상품으로 구매가 진행됩니다</li>
+                <li>선물 수령자의 주소지로 배송이 이루어집니다</li>
+                <li>상품 하자 및 오배송의 경우 교환/반품이 가능합니다</li>
+                <li>단순 변심에 의한 교환/반품은 불가합니다</li>
+              </ul>
+            </div>
+
+            <div>
+              <h3 className="font-bold flex items-center">
+                <span className="text-red-500 mr-1">❌</span> 펀딩 취소 안내
+              </h3>
+              <ul className="ml-4 mt-2 space-y-1 list-disc text-gray-600">
+                <li>펀딩 달성률에 따라 취소 정책이 달라집니다.
+                  <br />(50% 이하 → 참여자 환불 / 50% 이상 → 정상자 GIVU 페이 증정)</li>
+                <li>목표 금액 달성 후에는 취소가 불가합니다</li>
+              </ul>
+            </div>
+
+            <div>
+              <h3 className="font-bold flex items-center">
+                <span className="text-yellow-500 mr-1">⚠</span> 교환/반품이 불가능한 경우
+              </h3>
+              <ul className="ml-4 mt-2 space-y-1 list-disc text-gray-600">
+                <li>선물 수령자가 상품을 사용하거나 훼손한 경우</li>
+                <li>상품의 포장을 개봉하여 가치가 하락한 경우</li>
+                <li>시간 경과로 재판매가 어려울 정도로 상품 가치가 하락한 경우</li>
+              </ul>
+            </div>
+
+            <div>
+              <h3 className="font-bold flex items-center">
+                <span className="text-gray-500 mr-1">📞</span> 고객 지원
+              </h3>
+              <ul className="ml-4 mt-2 space-y-1 list-disc text-gray-600">
+                <li>펀딩 관련 문의: 채널톡 상담</li>
+                <li>상품 관련 문의: GIVU 고객센터</li>
+                <li>운영시간: 평일 10:00 - 18:00 (주말/공휴일 제외)</li>
+              </ul>
             </div>
           </div>
-        </div>
-      )}
-    </div>
+        </section>
+
+        {/* 푸터 안내 */}
+        <footer className="text-center text-sm text-gray-500 mt-10 pb-6">
+          <p>모든 펀딩 정보는 실제 정보와 다를 수 있습니다.</p>
+          <p className="mt-1">© 2025 GIVU. All rights reserved.</p>
+        </footer>
+
+        {/* 펀딩 100% 달성 시 하단에 고정된 버튼 표시 */}
+        {isCompleted && (
+          <div className="fixed bottom-0 left-0 w-full bg-white border-t border-gray-200 p-4 shadow-lg z-40">
+            <div className="max-w-3xl mx-auto flex justify-between items-center">
+              <div>
+                <h3 className="font-bold text-lg text-green-800">펀딩 목표 달성 완료! 🎉</h3>
+                <p className="text-green-600">모금된 금액: {fundingData.fundedAmount.toLocaleString()}원</p>
+              </div>
+              <div className="flex gap-3">
+                {isCreator && (
+                  <>
+                    <button
+                      onClick={navigateToOrderPage}
+                      className={`px-6 py-3 text-white font-bold rounded-lg transition-colors shadow-sm flex items-center ${
+                        fundingData?.reviews?.length > 0 ? 'bg-gray-400 cursor-not-allowed' : 'bg-green-600 hover:bg-green-700'
+                      }`}
+                      disabled={fundingData?.reviews?.length > 0}
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+                      </svg>
+                      {fundingData?.reviews?.length > 0 ? '이미 구매 완료됨' : '상품 구매하기'}
+                    </button>
+                    <button
+                      onClick={navigateToReviewPage}
+                      className={`px-6 py-3 text-white font-bold rounded-lg transition-colors shadow-sm flex items-center ${
+                        fundingData?.reviews?.length > 0 ? 'bg-gray-400 cursor-not-allowed' : 'bg-purple-600 hover:bg-purple-700'
+                      }`}
+                      disabled={fundingData?.reviews?.length > 0}
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                      </svg>
+                      {fundingData?.reviews?.length > 0 ? '후기 작성 완료' : '후기 작성하기'}
+                    </button>
+                  </>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* 비밀번호 확인 모달 추가 */}
+        {showPasswordModal && !isCompleted && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 px-4">
+            <div className="bg-white rounded-lg p-6 w-full max-w-md">
+              <h3 className="text-xl font-bold mb-4">결제 비밀번호 확인</h3>
+              <p className="mb-4 text-gray-600">
+                GIVU Pay 결제를 위해 비밀번호를 입력해주세요.
+              </p>
+              
+              <div className="mb-4">
+                <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
+                  결제 비밀번호
+                </label>
+                <input
+                  type="password"
+                  id="password"
+                  value={password}
+                  onChange={handlePasswordChange}
+                  onKeyPress={handlePasswordKeyPress}
+                  placeholder="비밀번호를 입력하세요"
+                  className={`w-full px-3 py-2 border rounded-md ${
+                    passwordError ? 'border-red-500' : 'border-gray-300'
+                  } focus:outline-none focus:ring-2 focus:ring-purple-500`}
+                  autoFocus
+                />
+                {passwordError && (
+                  <p className="mt-1 text-sm text-red-500">{passwordError}</p>
+                )}
+              </div>
+              
+              <div className="flex justify-end space-x-3">
+                <button
+                  onClick={handlePasswordCancel}
+                  className="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50"
+                >
+                  취소
+                </button>
+                <button
+                  onClick={processPayment}
+                  disabled={!password.trim() || isLoading}
+                  className={`px-4 py-2 rounded-md text-white ${
+                    !password.trim() || isLoading
+                      ? 'bg-gray-400 cursor-not-allowed'
+                      : 'bg-purple-600 hover:bg-purple-700'
+                  }`}
+                >
+                  {isLoading ? (
+                    <span className="flex items-center">
+                      <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      </svg>
+                      확인 중...
+                    </span>
+                  ) : (
+                    '결제 확인'
+                  )}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* 펀딩 삭제 확인 모달 추가 */}
+        {showDeleteConfirmModal && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 px-4">
+            <div className="bg-white rounded-lg p-6 w-full max-w-md">
+              <h3 className="text-xl font-bold mb-4 text-red-600">펀딩 삭제 확인</h3>
+              <div className="mb-6">
+                <p className="mb-2 text-gray-700">
+                  정말로 이 펀딩을 삭제하시겠습니까?
+                </p>
+                <p className="text-gray-500 text-sm">
+                  삭제된 펀딩은 복구할 수 없으며, 관련된 모든 데이터가 영구적으로 삭제됩니다.
+                </p>
+                {fundingData && fundingData.participantsNumber > 0 && (
+                  <div className="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded-md">
+                    <p className="text-yellow-700 text-sm">
+                      <span className="font-bold">주의!</span> 이 펀딩에는 이미 {fundingData.participantsNumber}명이 참여하고 있습니다.
+                      삭제하면 참여자들의 데이터도 함께 삭제됩니다.
+                    </p>
+                  </div>
+                )}
+              </div>
+              
+              <div className="flex justify-end space-x-3">
+                <button
+                  onClick={() => setShowDeleteConfirmModal(false)}
+                  className="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50"
+                >
+                  취소
+                </button>
+                <button
+                  onClick={handleDeleteFunding}
+                  disabled={isLoading}
+                  className={`px-4 py-2 rounded-md text-white ${
+                    isLoading
+                      ? 'bg-gray-400 cursor-not-allowed'
+                      : 'bg-red-600 hover:bg-red-700'
+                  }`}
+                >
+                  {isLoading ? (
+                    <span className="flex items-center">
+                      <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      </svg>
+                      삭제 중...
+                    </span>
+                  ) : (
+                    '펀딩 삭제'
+                  )}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* 펀딩 수정 모달 추가 */}
+        {showEditModal && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 px-4">
+            <div className="bg-white rounded-lg p-6 w-full max-w-md">
+              <h3 className="text-xl font-bold mb-4">펀딩 정보 수정</h3>
+              
+              <div className="space-y-4">
+                <div>
+                  <label htmlFor="title" className="block text-sm font-medium text-gray-700 mb-1">
+                    펀딩 제목
+                  </label>
+                  <input
+                    type="text"
+                    id="title"
+                    name="title"
+                    value={editFormData.title}
+                    onChange={handleEditFormChange}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  />
+                </div>
+                
+                <div>
+                  <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-1">
+                    펀딩 설명
+                  </label>
+                  <textarea
+                    id="description"
+                    name="description"
+                    value={editFormData.description}
+                    onChange={handleEditFormChange}
+                    rows={4}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 resize-none"
+                  />
+                </div>
+                
+                <div>
+                  <label htmlFor="category" className="block text-sm font-medium text-gray-700 mb-1">
+                    카테고리
+                  </label>
+                  <select
+                    id="category"
+                    name="category"
+                    value={editFormData.category}
+                    onChange={handleEditFormChange}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  >
+                    <option value="생일">생일</option>
+                    <option value="결혼">결혼</option>
+                    <option value="집들이">집들이</option>
+                    <option value="기념일">기념일</option>
+                    <option value="기타">기타</option>
+                  </select>
+                </div>
+                
+                <div>
+                  <label htmlFor="scope" className="block text-sm font-medium text-gray-700 mb-1">
+                    공개 범위
+                  </label>
+                  <select
+                    id="scope"
+                    name="scope"
+                    value={editFormData.scope}
+                    onChange={handleEditFormChange}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  >
+                    <option value="공개">공개</option>
+                    <option value="비공개">비공개</option>
+                  </select>
+                </div>
+              </div>
+              
+              <div className="flex justify-end space-x-3 mt-6">
+                <button
+                  onClick={() => setShowEditModal(false)}
+                  className="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-50"
+                >
+                  취소
+                </button>
+                <button
+                  onClick={handleUpdateFunding}
+                  disabled={editLoading}
+                  className={`px-4 py-2 rounded-md text-white ${
+                    editLoading
+                      ? 'bg-gray-400 cursor-not-allowed'
+                      : 'bg-purple-600 hover:bg-purple-700'
+                  }`}
+                >
+                  {editLoading ? (
+                    <span className="flex items-center">
+                      <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      </svg>
+                      저장 중...
+                    </span>
+                  ) : (
+                    '저장하기'
+                  )}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    </main>
   );
 };
 
