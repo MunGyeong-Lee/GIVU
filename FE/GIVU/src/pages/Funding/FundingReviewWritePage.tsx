@@ -11,7 +11,6 @@ const FundingReviewWritePage = () => {
   const [formData, setFormData] = useState({
     title: '',
     content: '',
-    rating: 5,
     images: [] as File[]
   });
 
@@ -48,10 +47,14 @@ const FundingReviewWritePage = () => {
       setIsSubmitting(true);
       setError(null);
 
-      await createReview({
+      // 이미지가 없는 경우 기본 이미지 경로 사용
+      const reviewData = {
         ...formData,
-        fundingId: parseInt(fundingId)
-      });
+        fundingId: parseInt(fundingId),
+        defaultImagePath: formData.images.length === 0 ? "/src/assets/images/default-finding-image.jpg" : undefined
+      };
+
+      await createReview(reviewData);
 
       showSuccessMessage();
       
@@ -233,35 +236,6 @@ const FundingReviewWritePage = () => {
                 className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-rose-500 focus:border-rose-500 transition-colors"
                 required
               />
-            </motion.div>
-
-            <motion.div variants={itemVariants} className="mb-6">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                별점 <span className="text-rose-500">*</span>
-              </label>
-              <div className="flex items-center space-x-1">
-                {[1, 2, 3, 4, 5].map((star) => (
-                  <button
-                    key={star}
-                    type="button"
-                    onClick={() => setFormData(prev => ({ ...prev, rating: star }))}
-                    className="focus:outline-none transform hover:scale-110 transition-transform"
-                  >
-                    <svg
-                      className={`w-10 h-10 ${
-                        star <= formData.rating ? 'text-yellow-400' : 'text-gray-300'
-                      }`}
-                      fill="currentColor"
-                      viewBox="0 0 20 20"
-                    >
-                      <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                    </svg>
-                  </button>
-                ))}
-                <span className="ml-3 text-lg font-medium text-gray-700">
-                  {formData.rating}/5
-                </span>
-              </div>
             </motion.div>
 
             <motion.div variants={itemVariants} className="flex justify-end mt-8">

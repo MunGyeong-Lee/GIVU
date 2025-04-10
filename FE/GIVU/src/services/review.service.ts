@@ -8,9 +8,9 @@ import { getAuthToken } from './auth.service';
 export interface ReviewData {
   title: string;
   content: string;
-  rating: number;
   fundingId: number | string;
   images?: File[];
+  defaultImagePath?: string;
 }
 
 // 후기 응답 인터페이스
@@ -18,7 +18,6 @@ export interface ReviewResponse {
   id: number;
   title: string;
   content: string;
-  rating: number;
   author: {
     userId: number;
     nickName: string;
@@ -28,6 +27,7 @@ export interface ReviewResponse {
   images: string[];
   createdAt: string;
   updatedAt: string;
+  creator?: boolean;
 }
 
 /**
@@ -59,6 +59,10 @@ export const createReview = async (reviewData: ReviewData): Promise<ReviewRespon
     if (reviewData.images && reviewData.images.length > 0) {
       formData.append('image', reviewData.images[0]);
     } else {
+      // 이미지가 없는 경우 기본 이미지 경로 추가
+      if (reviewData.defaultImagePath) {
+        formData.append('defaultImagePath', reviewData.defaultImagePath);
+      }
       // 빈 이미지 필드 추가 (백엔드 요구사항)
       formData.append('image', '');
     }
@@ -83,7 +87,6 @@ export const createReview = async (reviewData: ReviewData): Promise<ReviewRespon
       id: response.data.reviewId,
       title: reviewData.title,  // 백엔드에서 반환하지 않으므로 원래 입력값 사용
       content: response.data.comment,
-      rating: reviewData.rating, // 백엔드에서 반환하지 않으므로 원래 입력값 사용
       author: {
         userId: response.data.user.userId,
         nickName: response.data.user.nickName,
@@ -92,7 +95,8 @@ export const createReview = async (reviewData: ReviewData): Promise<ReviewRespon
       fundingId: response.data.fundingId,
       images: response.data.image ? [response.data.image] : [],
       createdAt: response.data.createdAt,
-      updatedAt: response.data.updatedAt
+      updatedAt: response.data.updatedAt,
+      creator: response.data.creator
     };
     
     return reviewResponse;
@@ -174,12 +178,10 @@ export const getFundingReviews = async (
       title: `펀딩 후기 #${item.reviewId}`, // API에서 제공하지 않는 경우 기본값 설정
       author: item.user?.nickName,
       date: new Date(item.createdAt).toLocaleDateString(),
-      views: item.visit || 0,
       content: item.comment,
       image: item.image,
-      authorFundingCount: 1, // API에서 제공하지 않는 경우 기본값 설정
-      rating: 5, // API에서 제공하지 않는 경우 기본값 설정
-      user: item.user
+      user: item.user,
+      creator: item.creator || false
     }));
     
     return {
