@@ -71,7 +71,7 @@ fun PopularFundingCardItem(
                         .height(180.dp)
                 ) {
                     SubcomposeAsyncImage(
-                        model = if (funding.images.isEmpty()) "" else funding.images[0],
+                        model = if (funding.images.isEmpty()) funding.productImage else funding.images[0],
                         contentDescription = "Funding Image",
                         contentScale = ContentScale.Crop,
                         modifier = Modifier.fillMaxSize(),

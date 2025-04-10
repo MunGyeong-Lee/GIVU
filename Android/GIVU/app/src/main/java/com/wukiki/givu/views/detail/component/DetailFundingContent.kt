@@ -20,7 +20,7 @@ fun DetailFundingContent(
         modifier = Modifier.fillMaxWidth()
     ) {
         item {
-            FundingImageSliderPager(funding.images)
+            FundingImageSliderPager(funding.images, funding = funding)
         }
 
         item {
