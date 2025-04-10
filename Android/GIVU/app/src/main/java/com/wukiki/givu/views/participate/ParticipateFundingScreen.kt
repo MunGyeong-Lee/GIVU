@@ -97,7 +97,7 @@ fun ParticipateFundingScreen(
                     FundingAmountSelectionPager(fundingViewModel, it)
                     ParticipantInfoPager(user)
                     // IdentityVerificationPager()
-                    PaymentBalancePager(fundingViewModel)
+                    PaymentBalancePager(fundingViewModel, navController)
                     Button(
                         onClick = {
                             navController.navigate("WriteLetter")
@@ -105,11 +105,11 @@ fun ParticipateFundingScreen(
                         modifier = Modifier
                             .fillMaxSize()
                             .height(56.dp),
-                        enabled = (charge > 0) && (charge <= (it.productPrice.toInt() - it.fundedAmount)),
+                        enabled = (charge > 0) && (charge <= (it.productPrice.toInt() - it.fundedAmount)) && (charge <= (user?.balance ?: "0").toInt()),
                         shape = RoundedCornerShape(10.dp),
                         border = BorderStroke(1.dp, Color(0xFFECECEC)),
                         colors = ButtonDefaults.buttonColors(
-                            if ((charge == 0) || (charge > (it.productPrice.toInt() - it.fundedAmount))) Color.LightGray else colorResource(
+                            if ((charge == 0) || (charge > (it.productPrice.toInt() - it.fundedAmount)) || (charge > (user?.balance ?: "0").toInt())) Color.LightGray else colorResource(
                                 R.color.main_primary
                             )
                         ),
@@ -119,7 +119,7 @@ fun ParticipateFundingScreen(
                             fontFamily = suit,
                             fontWeight = FontWeight.Bold,
                             fontSize = 18.sp,
-                            color = if ((charge == 0) || (charge > (it.productPrice.toInt() - it.fundedAmount))) Color.DarkGray else Color.White
+                            color = if ((charge == 0) || (charge > (it.productPrice.toInt() - it.fundedAmount)) || (charge > (user?.balance ?: "0").toInt())) Color.DarkGray else Color.White
                         )
                     }
                 }

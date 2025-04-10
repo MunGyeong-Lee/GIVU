@@ -22,6 +22,7 @@ class ParticipateFundingFragment :
 
     private val viewModel: FundingViewModel by activityViewModels()
     private var biometricAuthResult = mutableStateOf(false)
+    private var biometricAuthChargeResult = mutableStateOf(false)
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -37,6 +38,12 @@ class ParticipateFundingFragment :
                     viewModel.transferFunding()
                 }
             }
+            if (biometricAuthChargeResult.value) {
+                LaunchedEffect(Unit) {
+                    biometricAuthChargeResult.value = false
+                    viewModel.withdrawAccount()
+                }
+            }
 
             NavHost(
                 navController = navController,
@@ -44,6 +51,20 @@ class ParticipateFundingFragment :
             ) {
                 composable("ParticipateFunding") {
                     ParticipateFundingScreen(viewModel, navController, findNavController())
+                }
+
+                composable("ParticipateCharge") {
+                    ParticipateChargeScreen(viewModel, navController, findNavController()) {
+                        BiometricAuth(
+                            activity = requireActivity(),
+                            onSuccess = {
+                                biometricAuthChargeResult.value = true
+                            },
+                            onFailure = {
+                                // 실패 시 처리
+                            }
+                        ).authenticate()
+                    }
                 }
 
                 composable("WriteLetter") {

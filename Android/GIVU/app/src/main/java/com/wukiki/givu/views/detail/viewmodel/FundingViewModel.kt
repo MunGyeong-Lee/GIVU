@@ -24,6 +24,7 @@ import com.wukiki.domain.usecase.GetReviewUseCase
 import com.wukiki.domain.usecase.GetTransferUseCase
 import com.wukiki.givu.util.CheckState
 import com.wukiki.givu.util.InputValidState
+import com.wukiki.givu.views.home.viewmodel.HomeUiEvent
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -109,8 +110,25 @@ class FundingViewModel @Inject constructor(
     private val _originalImages = MutableStateFlow<HashMap<String, Boolean>>(hashMapOf())
     val originalImages = _originalImages.asStateFlow()
 
+    private val _selectedAmount = MutableStateFlow<String>("")
+    val selectedAmount = _selectedAmount
+
+    fun setSelectedAmount(amount: String) {
+        _selectedAmount.value = amount
+    }
+
+    private val _amountText = MutableStateFlow<String>("")
+    val amountText = _amountText
+
+    fun setAmountText(text: String) {
+        _amountText.value = text
+    }
+
     private val _charge = MutableStateFlow<Int>(0)
     val charge = _charge.asStateFlow()
+
+    private val _payCharge = MutableStateFlow<Int>(0)
+    val payCharge = _payCharge.asStateFlow()
 
     private val _transfer = MutableStateFlow<Transfer?>(null)
     val transfer = _transfer.asStateFlow()
@@ -221,6 +239,15 @@ class FundingViewModel @Inject constructor(
         return json.toRequestBody("application/json".toMediaTypeOrNull())
     }
 
+    private fun makePayRequestBody(amount: Int): RequestBody {
+        val metadata = mapOf(
+            "amount" to amount
+        )
+        val gson = GsonBuilder().serializeNulls().create()
+        val json = gson.toJson(metadata)
+        return json.toRequestBody("application/json".toMediaTypeOrNull())
+    }
+
     private fun makeReviewRequestBody(): RequestBody {
         val metadata = mapOf(
             "comment" to _fundingReview.value
@@ -324,6 +351,19 @@ class FundingViewModel @Inject constructor(
         }
     }
 
+    fun initAccount() {
+        viewModelScope.launch {
+            val response = getMyPageUseCase.fetchAccount()
+
+            response.collectLatest { result ->
+                _accountState.value = result
+                if (result.status == ApiStatus.SUCCESS) {
+                    _account.value = result.data
+                }
+            }
+        }
+    }
+
     fun initFunding(fundingId: Int) {
         viewModelScope.launch {
             _fundingId.value = fundingId
@@ -374,6 +414,10 @@ class FundingViewModel @Inject constructor(
 
     fun setCharge(money: Int) {
         _charge.value = money
+    }
+
+    fun setPayCharge(money: Int) {
+        _payCharge.value = money
     }
 
     fun sortLetters(sortOption: String) {
@@ -490,6 +534,25 @@ class FundingViewModel @Inject constructor(
                     _fundingUiEvent.emit(FundingUiEvent.DeleteLetterSuccess)
                 } else if ((result.status == ApiStatus.FAIL) || (result.status == ApiStatus.ERROR)) {
                     _fundingUiEvent.emit(FundingUiEvent.DeleteLetterFail)
+                }
+            }
+        }
+    }
+
+    fun withdrawAccount() {
+        viewModelScope.launch {
+            val response = getMyPageUseCase.withdrawGivuPay(
+                body = makePayRequestBody(_payCharge.value)
+            )
+
+            response.collectLatest { result ->
+                if (result.status == ApiStatus.SUCCESS) {
+                    _fundingUiEvent.emit(FundingUiEvent.WithdrawalSuccess)
+                    _payCharge.value = 0
+                    initUserInfo()
+                    initAccount()
+                } else if (result.status == ApiStatus.FAIL) {
+                    _fundingUiEvent.emit(FundingUiEvent.WithdrawalFail)
                 }
             }
         }

@@ -94,7 +94,7 @@ fun FinishFundingScreen(
                 IdentityVerificationPager()
                 Spacer(Modifier.height(16.dp))
 
-                PaymentBalancePager(fundingViewModel)
+                PaymentBalancePager(fundingViewModel, navController)
                 Spacer(Modifier.height(16.dp))
 
                 TermsAndConditionsPager(

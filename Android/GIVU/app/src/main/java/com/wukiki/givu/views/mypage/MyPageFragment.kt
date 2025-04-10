@@ -19,7 +19,6 @@ import com.wukiki.givu.databinding.FragmentMyPageBinding
 import com.wukiki.givu.views.BiometricAuth
 import com.wukiki.givu.views.MainViewModel
 import com.wukiki.givu.views.home.viewmodel.HomeViewModel
-import com.wukiki.givu.views.mypage.component.DepositAccountScreen
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint

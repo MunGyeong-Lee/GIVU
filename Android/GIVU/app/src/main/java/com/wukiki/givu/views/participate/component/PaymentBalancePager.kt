@@ -1,5 +1,6 @@
 package com.wukiki.givu.views.participate.component
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -16,13 +17,15 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
 import com.wukiki.givu.ui.suit
 import com.wukiki.givu.util.CommonUtils.makeCommaPrice
 import com.wukiki.givu.views.detail.viewmodel.FundingViewModel
 
 @Composable
 fun PaymentBalancePager(
-    fundingViewModel: FundingViewModel
+    fundingViewModel: FundingViewModel,
+    navController: NavController
 ) {
     val user by fundingViewModel.user.collectAsState()
 
@@ -44,6 +47,9 @@ fun PaymentBalancePager(
                 color = Color.Black
             )
             Text(
+                modifier = Modifier.clickable {
+                    navController.navigate("ParticipateCharge")
+                },
                 text = "충전하기 >",
                 fontSize = 14.sp,
                 color = Color.Gray,

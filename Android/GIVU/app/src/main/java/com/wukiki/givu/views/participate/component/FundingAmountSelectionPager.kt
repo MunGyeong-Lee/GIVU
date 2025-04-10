@@ -53,8 +53,8 @@ fun FundingAmountSelectionPager(
         val amounts = listOf(5000, 10000, 20000, 30000, 50000)
         val amountsDescription =
             listOf("커피 한 잔 선물", "디저트 한 개 선물", "식사 한 끼 선물", "소품 한 개 선물", "프리미엄 선물")
-        var selectedAmount by remember { mutableStateOf("") }
-        var text by remember { mutableStateOf("") }
+        val selectedAmount by fundingViewModel.selectedAmount.collectAsState()
+        val text by fundingViewModel.amountText.collectAsState()
         val shadowBrush = Brush.verticalGradient(
             colors = listOf(Color.Gray.copy(alpha = 0.3f), Color.Transparent)
         )
@@ -73,7 +73,7 @@ fun FundingAmountSelectionPager(
                         .padding(16.dp)
                         .clickable {
                             if (amount <= (fundingDetail.productPrice.toInt() - fundingDetail.fundedAmount)) {
-                                selectedAmount = makeCommaPrice(amount)
+                                fundingViewModel.setSelectedAmount(makeCommaPrice(amount))
                                 fundingViewModel.setCharge(amount)
                             }
                         },
@@ -83,7 +83,7 @@ fun FundingAmountSelectionPager(
                         enabled = amount <= (fundingDetail.productPrice.toInt() - fundingDetail.fundedAmount),
                         selected = selectedAmount == makeCommaPrice(amount),
                         onClick = {
-                            selectedAmount = makeCommaPrice(amount)
+                            fundingViewModel.setSelectedAmount(makeCommaPrice(amount))
                             fundingViewModel.setCharge(amount)
                         }
                     )
@@ -120,13 +120,13 @@ fun FundingAmountSelectionPager(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(16.dp)
-                    .clickable { selectedAmount = "직접 입력" },
+                    .clickable { fundingViewModel.setSelectedAmount("직접 입력") },
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 RadioButton(
                     selected = selectedAmount == "직접 입력",
                     onClick =  {
-                        selectedAmount = "직접 입력"
+                        fundingViewModel.setSelectedAmount("직접 입력")
                         fundingViewModel.setCharge(0)
                     }
                 )
@@ -158,7 +158,7 @@ fun FundingAmountSelectionPager(
                                 BasicTextField(
                                     value = text,
                                     onValueChange = {
-                                        text = it
+                                        fundingViewModel.setAmountText(it)
                                         fundingViewModel.setCharge(if (it == "") 0 else it.toInt())
                                     },
                                     singleLine = true,
