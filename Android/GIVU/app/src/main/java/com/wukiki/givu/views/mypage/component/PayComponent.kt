@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -27,17 +28,20 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import coil.compose.SubcomposeAsyncImage
 import com.wukiki.givu.R
 import com.wukiki.givu.ui.lusitana
 import com.wukiki.givu.ui.pretendard
 import com.wukiki.givu.ui.suit
 import com.wukiki.givu.util.CommonUtils
+import com.wukiki.givu.util.shimmerEffect
 import com.wukiki.givu.views.home.viewmodel.HomeViewModel
 
 @Composable
@@ -77,12 +81,31 @@ fun PayComponent(
             verticalAlignment = Alignment.CenterVertically,
 
             ) {
-            Image(
-                painter = painterResource(R.drawable.ic_profile_default),
-                contentDescription = null,
+            SubcomposeAsyncImage(
+                model = user?.profileImage,
+                contentDescription = "Profile Image",
+                contentScale = ContentScale.Crop,
                 modifier = Modifier
                     .padding(start = 16.dp)
                     .size(60.dp)
+                    .clip(CircleShape),
+                loading = {
+                    Box(
+                        modifier = Modifier
+                            .matchParentSize()
+                            .clip(RoundedCornerShape(10.dp))
+                            .shimmerEffect()
+                    )
+                },
+                error = {
+                    Image(
+                        painter = painterResource(id = R.drawable.ic_profile_default),
+                        contentDescription = "Error",
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(10.dp))
+                            .size(60.dp)
+                    )
+                }
             )
             Spacer(Modifier.width(16.dp))
 
@@ -188,7 +211,12 @@ fun PayComponent(
                         interactionSource = remember { MutableInteractionSource() },
                         indication = null,
                         onClick = {
-
+                            if (user != null) {
+                                navController.navigate("DepositAccount")
+                            }
+                            else {
+                                xmlNavController.navigate(R.id.action_fragment_my_page_to_fragment_login)
+                            }
                         }
                     ),
                 contentAlignment = Alignment.Center
