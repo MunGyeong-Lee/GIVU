@@ -5,6 +5,7 @@ import com.backend.givu.model.entity.CustomUserDetail;
 import com.backend.givu.model.responseDTO.ApiResponse;
 import com.backend.givu.model.responseDTO.UserSimpleInfoDTO;
 import com.backend.givu.model.service.FriendService;
+import com.backend.givu.model.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
@@ -30,7 +31,7 @@ public class FriendController {
     @Operation(summary = "친구 추가", description = "친구를 추가합니다.")
     @PostMapping("/{friendId}")
     public ResponseEntity<ApiResponse<Void>> addFriend(@AuthenticationPrincipal CustomUserDetail userDetail,
-                                                      @PathVariable Long friendId) {
+                                                       @PathVariable Long friendId) {
         Long userId = userDetail.getId();
         friendService.addFriend(userId, friendId);
         return ResponseEntity.ok().build();
@@ -45,4 +46,23 @@ public class FriendController {
         Long userId = userDetail.getId();
         return ResponseEntity.ok(friendService.getFriends(userId));
     }
+
+    @GetMapping("/search")
+    public ApiResponse<List<UserSimpleInfoDTO>> searchFriends(@AuthenticationPrincipal CustomUserDetail userDetail,
+                                                              @RequestParam String username) {
+        return friendService.searchFriends(username);
+    }
+
+    /**
+     * 친구 삭제
+     */
+    @Operation(summary = "친구 삭제", description = "친구를 삭제합니다.")
+    @DeleteMapping("/{friendId}")
+    public ResponseEntity<ApiResponse<Void>> removeFriend(@AuthenticationPrincipal CustomUserDetail userDetail,
+                                                          @PathVariable Long friendId) {
+        Long userId = userDetail.getId();
+        friendService.removeFriend(userId, friendId);
+        return ResponseEntity.ok(ApiResponse.success(null));
+    }
+
 }

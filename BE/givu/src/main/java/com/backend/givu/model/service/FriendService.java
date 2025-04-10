@@ -56,4 +56,40 @@ public class FriendService {
                 .map(friend -> new UserSimpleInfoDTO(friend.getFriend()))
                 .collect(Collectors.toList()));
     }
+
+    public ApiResponse<List<UserSimpleInfoDTO>> searchFriends(String username) {
+        List<User> users = userRepository.findByNicknameContaining(username);
+
+        List<UserSimpleInfoDTO> userList = users.stream()
+                .map(user -> new UserSimpleInfoDTO(user.getId(), user.getNickname(), user.getProfileImage()))
+                .collect(Collectors.toList());
+
+        return ApiResponse.success(userList);
+    }
+
+    /**
+     * 친구 삭제 (양방향 제거)
+     */
+    public void removeFriend(Long userId, Long friendId) {
+        if (userId.equals(friendId)) {
+            throw new IllegalArgumentException("자기 자신은 삭제할 수 없습니다.");
+        }
+
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new EntityNotFoundException("해당 유저가 존재하지 않습니다."));
+        User friend = userRepository.findById(friendId)
+                .orElseThrow(() -> new EntityNotFoundException("삭제 대상 유저가 존재하지 않습니다."));
+
+        // 친구 관계가 존재하는지 확인
+        Friend relation1 = friendRepository
+                .findByUserAndFriend(user, friend)
+                .orElseThrow(() -> new EntityNotFoundException("해당 친구 관계가 존재하지 않습니다."));
+        Friend relation2 = friendRepository.findByUserAndFriend(friend, user)
+                .orElseThrow(() -> new EntityNotFoundException("해당 친구 관계가 존재하지 않습니다."));
+
+        // 양방향 삭제
+        friendRepository.delete(relation1);
+        friendRepository.delete(relation2);
+    }
+
 }
