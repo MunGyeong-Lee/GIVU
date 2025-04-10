@@ -20,6 +20,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.wukiki.domain.model.Payment
@@ -39,10 +40,13 @@ fun PayHistoryItem(
     val time = dateParts[1]
     val dayFormatted = "$month.$day"
 
+    val productName = paymentHistory.productName ?: ""
+    val fundingName = paymentHistory.fundingTitle ?: ""
+
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .height(64.dp)
+            .height(74.dp)
             .clip(shape = RoundedCornerShape(10.dp))
             .clickable {
 
@@ -60,14 +64,16 @@ fun PayHistoryItem(
         )
         Spacer(Modifier.width(20.dp))
         Column(
-            modifier = Modifier.fillMaxHeight(),
+            modifier = Modifier.fillMaxHeight().padding(vertical = 4.dp),
             verticalArrangement = Arrangement.SpaceBetween
         ) {
             Text(
-                text = paymentHistory.fundingTitle,
+                text = if (productName == "") fundingName else productName,
                 fontFamily = suit,
                 fontWeight = FontWeight.Bold,
                 fontSize = 17.sp,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
             )
             Spacer(Modifier.height(8.dp))
             Text(
