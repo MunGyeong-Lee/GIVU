@@ -117,6 +117,36 @@ class MallFragment : BaseFragment<FragmentMallBinding>(R.layout.fragment_mall) {
                 }
 
                 composable(
+                    route = "OrderSuccessScreen",
+                    enterTransition = {
+                        slideIntoContainer(
+                            towards = AnimatedContentTransitionScope.SlideDirection.Left,
+                            animationSpec = tween(300)
+                        )
+                    },
+                    exitTransition = {
+                        slideOutOfContainer(
+                            towards = AnimatedContentTransitionScope.SlideDirection.Left,
+                            animationSpec = tween(300)
+                        )
+                    },
+                    popEnterTransition = {
+                        slideIntoContainer(
+                            towards = AnimatedContentTransitionScope.SlideDirection.Right,
+                            animationSpec = tween(300)
+                        )
+                    },
+                    popExitTransition = {
+                        slideOutOfContainer(
+                            towards = AnimatedContentTransitionScope.SlideDirection.Right,
+                            animationSpec = tween(300)
+                        )
+                    }
+                ) {
+                    OrderSuccessScreen(findNavController())
+                }
+
+                composable(
                     route = "ProductDetailScreen/{productId}",
                     arguments = listOf(navArgument("productId") { type = NavType.StringType }),
                     enterTransition = {
