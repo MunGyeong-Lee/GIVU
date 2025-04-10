@@ -173,7 +173,7 @@ const TransactionModal: React.FC<{
   };
 
   // 로컬에 저장된 계좌 비밀번호 검증 함수
-  const verifyAccountPassword = (inputPassword: string): boolean => {
+  const verifyAccountPassword = async (inputPassword: string): Promise<boolean> => {
     console.log('[verifyAccountPassword] 계좌 비밀번호 검증 시작');
     
     // 입력 비밀번호 유효성 확인
@@ -182,30 +182,45 @@ const TransactionModal: React.FC<{
       return false;
     }
     
-    // 로컬 스토리지에서 비밀번호 확인
-    const encodedPassword = localStorage.getItem('account_password');
-    if (!encodedPassword) {
-      console.error('[verifyAccountPassword] 저장된 계좌 비밀번호가 없습니다.');
-      
-      // 사용자에게 비밀번호 분실 안내 추가
-      alert('저장된 계좌 비밀번호를 찾을 수 없습니다. 계좌 비밀번호를 확인해주세요.');
-      
-      return false;
-    }
-    
     try {
-      // 저장된 암호화된 비밀번호 디코딩
-      const storedPassword = atob(encodedPassword);
+      // 토큰 가져오기
+      const token = localStorage.getItem('auth_token');
+      if (!token) {
+        console.error('[verifyAccountPassword] 인증 토큰이 없습니다.');
+        return false;
+      }
       
-      // 입력된 비밀번호와 저장된 비밀번호 비교
-      const isMatch = inputPassword === storedPassword;
+      // API 호출로 비밀번호 확인
+      const response = await axios.post(
+        `${import.meta.env.VITE_API_BASE_URL}/users/checkPassword`,
+        { password: inputPassword },
+        {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        }
+      );
+      
+      console.log('[verifyAccountPassword] API 응답:', response.data);
+      
+      // API 응답에 따라 검증 결과 판단
+      const isMatch = response.data.code === 'SUCCESS' || response.data.success === true;
       
       // 결과 로깅 (실제 비밀번호는 로깅하지 않음)
       console.log(`[verifyAccountPassword] 비밀번호 검증 결과: ${isMatch ? '일치' : '불일치'}`);
       
       return isMatch;
-    } catch (error) {
-      console.error('[verifyAccountPassword] 비밀번호 디코딩 오류:', error);
+      
+    } catch (error: any) {
+      console.error('[verifyAccountPassword] API 오류:', error);
+      
+      // 응답 오류 상세 로깅
+      if (error.response) {
+        console.error('응답 상태:', error.response.status);
+        console.error('응답 데이터:', error.response.data);
+      }
+      
       return false;
     }
   };
@@ -216,16 +231,20 @@ const TransactionModal: React.FC<{
       return;
     }
 
-    // 로컬에서 계좌 비밀번호 검증
-    if (!verifyAccountPassword(password)) {
-      setError('계좌 비밀번호가 일치하지 않습니다.');
-      return;
-    }
-
     setLoading(true);
-    setError(null);
-
+    
     try {
+      // API를 통한 계좌 비밀번호 검증
+      const isPasswordValid = await verifyAccountPassword(password);
+      
+      if (!isPasswordValid) {
+        setError('계좌 비밀번호가 일치하지 않습니다.');
+        setLoading(false);
+        return;
+      }
+      
+      setError(null);
+
       // 토큰 가져오기
       const token = localStorage.getItem('auth_token');
       if (!token) {
