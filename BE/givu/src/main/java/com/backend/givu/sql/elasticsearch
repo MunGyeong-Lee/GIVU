@@ -1,4 +1,4 @@
-PUT /products
+products
 {
   "settings": {
     "analysis": {
@@ -60,7 +60,7 @@ PUT /products
   }
 }
 ---------
-PUT funding-index
+funding-index
 {
   "settings": {
     "analysis": {
