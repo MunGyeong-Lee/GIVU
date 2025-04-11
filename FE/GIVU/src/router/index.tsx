@@ -8,6 +8,7 @@ import FundingDetailPage from "../pages/Funding/FundingDetailPage";
 import FundingReviewPage from "../pages/Funding/FundingReviewPage";
 import FundingReviewDetailPage from "../pages/Funding/FundingReviewDetailPage";
 import FundingReviewWritePage from "../pages/Funding/FundingReviewWritePage";
+import FundingOrderPage from "../pages/Funding/FundingOrderPage";
 import ShoppingProductDetail from '../pages/ShoppingMall/ShoppingDetail';
 import { authRoutes } from './authRouter';
 import FundingCreateContainer from "../pages/FundingCreate";
@@ -77,6 +78,10 @@ const routes = [
           {
             path: "complete/:id",
             element: <Complete />,
+          },
+          {
+            path: "order/:productId",
+            element: <FundingOrderPage />,
           },
         ],
       },
