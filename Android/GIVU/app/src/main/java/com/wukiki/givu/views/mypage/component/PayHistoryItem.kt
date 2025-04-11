@@ -64,7 +64,7 @@ fun PayHistoryItem(
         )
         Spacer(Modifier.width(20.dp))
         Column(
-            modifier = Modifier.fillMaxHeight().padding(vertical = 4.dp),
+            modifier = Modifier.fillMaxHeight().padding(vertical = 4.dp).width(180.dp),
             verticalArrangement = Arrangement.SpaceBetween
         ) {
             Text(
@@ -94,7 +94,7 @@ fun PayHistoryItem(
                 text = (if (isPlus) "+" else "-") + CommonUtils.makeCommaPrice(paymentHistory.amount),
                 fontFamily = pretendard,
                 fontWeight = FontWeight.SemiBold,
-                fontSize = 18.sp,
+                fontSize = 17.sp,
                 color = if (isPlus) colorResource(R.color.main_secondary) else Color.Black
 
             )
