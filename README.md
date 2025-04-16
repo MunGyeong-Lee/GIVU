@@ -42,50 +42,66 @@ GIVU는 **모두가 기여한 만큼 감동을 전할 수 있는 새로운 방�
 &nbsp;
 
 ## 📒 주요 기능
-### 펀딩 참여
+### 1. 펀딩 참여
+#### Web
   <p>
+    <img src="/uploads/72e5596b43e4b95323d507023e53a9b9/funding_list.png" width="600" style="margin: 8px" />
     <img src="/uploads/db38a2fe1ed28362bb885998d2309527/funding-product.gif" width="600" style="margin: 8px" />
   </p>
+
+#### App
   <p>
     <img src="/uploads/431c2d9c9c1f0663e5495e55072c0032/Android-Participate.gif" width="200" style="margin: 8px" />
   </p>
 
-### 펀딩 생성
+### 2. 펀딩 생성
+#### Web
   <p>
     <img src="/uploads/1fa0204e585ad42911c1032aab36ec22/funding-register.gif" width="600" style="margin: 8px" />
   </p>
+
+#### App
   <p>
     <img src="/uploads/cbfe5605857c165ccc7d3fe7e5cbdd19/Android-Register-02.gif" width="200" style="margin: 8px" />
     <img src="/uploads/f437119be283062d09e7041972eef3a8/Android-Register-01.gif" width="200" style="margin: 8px" />
   </p>
 
-### 펀딩 취소
+### 3. 펀딩 취소
+#### Web
   <p>
     <img src="/uploads/4a1e26fbaae7dc4e743bc04191ff0254/funding-cancel.gif" width="600" style="margin: 8px" />
   </p>
+
+#### App
   <p>
     <img src="/uploads/a9209b92caee4aeec73d035cda57f669/Android-Cancel.gif" width="200" style="margin: 8px" />
   </p>
 
-### GIVU Pay
+### 4. GIVU Pay
+#### App
   <p>
     <img src="/uploads/d3cfbae316bc551b324130b4b6c5e8f7/Android-GIVU-Pay.gif" width="200" style="margin: 8px" />
   </p>
 
-### GIVU Mall
+### 5. GIVU Mall
+#### Web
   <p>
     <img src="/uploads/47fc984458e3a5499bde3c5e267b0bcd/shoppingmall.gif" width="600" style="margin: 8px" />
   </p>
+
+#### App
   <p>
     <img src="/uploads/45ef586cce1a06d3089d9a4eb60000c6/Android-Mall.gif" width="200" style="margin: 8px" />
   </p>
 
-### 상품 주문
+### 6. 상품 주문
+#### Web
   <p>
     <img src="/uploads/1177fa3b9087c681208cf3011c1b52cc/Buying-products.gif" width="600" style="margin: 8px" />
   </p>
 
-### 부가 기능
+### 7. 부가 기능
+#### Web
   <p>
     <img src="/uploads/dc6b889a17ea614776dbbf6d7f557107/main-3d.gif" width="600" style="margin: 8px" />
   </p>
