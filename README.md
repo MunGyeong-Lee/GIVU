@@ -163,12 +163,12 @@ GIVU는 **모두가 기여한 만큼 감동을 전할 수 있는 새로운 방�
 ## 📂 프로젝트 구조
 ### 시스템 아키텍처
 <p>
-    <img src="/uploads/2a1c5ab889de8eb5c6148c6b91e2ee90/ERD_기뷰png.png" width="1000" style="margin: 8px" />
+    <img src="/uploads/f1af5b72357b2624232d37cac7f4cd15/시스템아키텍쳐_기뷰.png" width="600" style="margin: 8px" />
   </p>
 
 ### ER Diagram
 <p>
-    <img src="/uploads/f1af5b72357b2624232d37cac7f4cd15/시스템아키텍쳐_기뷰.png" width="600" style="margin: 8px" />
+    <img src="/uploads/2a1c5ab889de8eb5c6148c6b91e2ee90/ERD_기뷰png.png" width="1000" style="margin: 8px" />
   </p>
 
 &nbsp;
