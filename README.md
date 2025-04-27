@@ -86,7 +86,7 @@ GIVU는 **모두가 기여한 만큼 감동을 전할 수 있는 새로운 방�
 ### 5. GIVU Mall
 #### Web
   <p>
-    <img src="./images/shoppingmall.gif" width="600" style="margin: 8px" />
+    <img src="./images/ezgif-616b75c5e7ad3f.gif" width="600" style="margin: 8px" />
   </p>
 
 #### App
