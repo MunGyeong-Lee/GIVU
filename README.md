@@ -103,7 +103,7 @@ GIVU는 **모두가 기여한 만큼 감동을 전할 수 있는 새로운 방�
 ### 7. 부가 기능
 #### Web
   <p>
-    <img src="./images/main-3d.gif" width="600" style="margin: 8px" />
+    <img src="./images/ezgif-7190d0f6431d8c.gif" width="600" style="margin: 8px" />
   </p>
 
 &nbsp;
